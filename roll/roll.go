@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -52,6 +53,7 @@ func GetRolls(root string) ([]Roll, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	sort.Sort(ByRollNumber(rolls))
 	return rolls, err
 }
 
@@ -64,3 +66,9 @@ func Filter(vs []Roll, f func(Roll) bool) []Roll {
 	}
 	return filtered
 }
+
+type ByRollNumber []Roll
+
+func (a ByRollNumber) Len() int           { return len(a) }
+func (a ByRollNumber) Less(i, j int) bool { return a[i].Metadata.RollNumber < a[j].Metadata.RollNumber }
+func (a ByRollNumber) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

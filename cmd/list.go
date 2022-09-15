@@ -5,6 +5,7 @@ import (
 
 	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ys/rolls/roll"
 )
 
@@ -20,9 +21,12 @@ It will also filter down by year or camera or film
 		if err != nil {
 			panic(err)
 		}
-		rolls, err := roll.GetRolls("/Users/ys/Library/Mobile Documents/com~apple~CloudDocs/Photos/analog/Scans")
+
+		root := viper.GetString("scansPath")
+		fmt.Printf("Reading rolls from: %s\n", root)
+		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
-			return (roll.Metadata.ShotAt.Year() == year) ||
+			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
 				(roll.Metadata.ScannedAt.Year() == year)
 		})
 		if err != nil {
@@ -54,5 +58,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	listCmd.Flags().Int("year", 2022, "Filter by year")
+	listCmd.Flags().Int("year", 0, "Filter by year")
 }
