@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -9,11 +8,7 @@ import (
 
 	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/camera"
 )
-
-type Camera struct {
-}
 
 // camerasCmd represents the cameras command
 var camerasCmd = &cobra.Command{
@@ -30,9 +25,10 @@ to quickly create a Cobra application.`,
 		table := uitable.New()
 		table.MaxColWidth = 80
 		table.Wrap = true // wrap columns
-		for _, camera := range camera.GetAll() {
+		for id, camera := range cameras {
 
-			table.AddRow("camera:", camera.Name)
+			table.AddRow("id:", id)
+			table.AddRow("camera:", camera.Name())
 			table.AddRow("---") // blank
 		}
 

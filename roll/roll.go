@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,33 @@ type Roll struct {
 	Folder   string
 	Content  string
 	Metadata Metadata
+}
+
+type Camera struct {
+	ID       string `yaml:"-"`
+	Brand    string `yaml:"brand" mapstructure:"brand"`
+	Model    string `yaml:"model" mapstructure:"model"`
+	Nickname string `yaml:"nickname" mapstructure:"nickname"`
+	Format   int    `yaml:"format" mapstructure:"format"`
+}
+
+func (c *Camera) Name() string {
+	if c.Nickname != "" {
+		return c.Nickname
+	}
+	return c.Brand + " " + c.Model
+}
+
+type Film struct {
+	ID    string `yaml:"-"`
+	Brand string `yaml:"brand" mapstructure:"brand"`
+	Name  string `yaml:"name" mapstructure:"name"`
+	Color bool   `yaml:"color" mapstructure:"color"`
+	Iso   int    `yaml:"iso" mapstructure:"iso"`
+}
+
+func (f *Film) NameWithBrand() string {
+	return f.Brand + " " + f.Name + " " + strconv.Itoa(f.Iso)
 }
 
 func GetRolls(root string) ([]Roll, error) {

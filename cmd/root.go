@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -10,10 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ys/rolls/roll"
 )
 
 var cfgFile string
-var cameras []Camera
+var camerasCfg viper.Viper
+var filmsCfg viper.Viper
+var cameras map[string]*roll.Camera
+var films map[string]*roll.Film
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -65,12 +65,27 @@ func initConfig() {
 		cobra.CheckErr(err)
 		viper.AddConfigPath(home + "/.config/rolls")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName("config")
+		viper.SetConfigName("config.yml")
 
 		camerasCfg := viper.New()
 		camerasCfg.AddConfigPath(home + "/.config/rolls")
 		camerasCfg.SetConfigType("yaml")
-		camerasCfg.SetConfigName("cameras")
+		camerasCfg.SetConfigName("cameras.yml")
+		camerasCfg.ReadInConfig()
+
+		cameras = make(map[string]*roll.Camera)
+		err = camerasCfg.Unmarshal(&cameras)
+		cobra.CheckErr(err)
+
+		filmsCfg := viper.New()
+		filmsCfg.AddConfigPath(home + "/.config/rolls")
+		filmsCfg.SetConfigType("yaml")
+		filmsCfg.SetConfigName("films.yml")
+		filmsCfg.ReadInConfig()
+
+		films = make(map[string]*roll.Film)
+		err = filmsCfg.Unmarshal(&films)
+		cobra.CheckErr(err)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

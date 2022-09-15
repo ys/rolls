@@ -1,12 +1,12 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
 
+	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,15 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("films called")
+		table := uitable.New()
+		table.MaxColWidth = 80
+		table.Wrap = true // wrap columns
+		for _, film := range films {
+
+			table.AddRow("film:", film.NameWithBrand())
+		}
+
+		fmt.Println(table)
 	},
 }
 
