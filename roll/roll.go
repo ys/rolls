@@ -10,7 +10,13 @@ import (
 	"time"
 
 	"github.com/adrg/frontmatter"
+	"github.com/spf13/viper"
 )
+
+var camerasCfg viper.Viper
+var filmsCfg viper.Viper
+var cameras map[string]*Camera
+var films map[string]*Film
 
 type Metadata struct {
 	CameraID   string    `yaml:"camera"`
@@ -24,6 +30,22 @@ type Roll struct {
 	Folder   string
 	Content  string
 	Metadata Metadata
+}
+
+func (r *Roll) Camera() string {
+	camera := cameras[r.Metadata.CameraID]
+	if camera != nil {
+		return camera.Name()
+	}
+	return r.Metadata.CameraID
+}
+
+func (r *Roll) Film() string {
+	film := films[r.Metadata.FilmID]
+	if film != nil {
+		return film.NameWithBrand()
+	}
+	return r.Metadata.FilmID
 }
 
 type Camera struct {
@@ -51,6 +73,14 @@ type Film struct {
 
 func (f *Film) NameWithBrand() string {
 	return f.Brand + " " + f.Name + " " + strconv.Itoa(f.Iso)
+}
+
+func GetCameras() map[string]*Camera {
+	return cameras
+}
+
+func GetFilms() map[string]*Film {
+	return films
 }
 
 func GetRolls(root string) ([]Roll, error) {
@@ -100,3 +130,30 @@ type ByRollNumber []Roll
 func (a ByRollNumber) Len() int           { return len(a) }
 func (a ByRollNumber) Less(i, j int) bool { return a[i].Metadata.RollNumber < a[j].Metadata.RollNumber }
 func (a ByRollNumber) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+func init() {
+	home, err := os.UserHomeDir()
+	camerasCfg := viper.New()
+	camerasCfg.AddConfigPath(home + "/.config/rolls")
+	camerasCfg.SetConfigType("yaml")
+	camerasCfg.SetConfigName("cameras.yml")
+	camerasCfg.ReadInConfig()
+
+	cameras = make(map[string]*Camera)
+	err = camerasCfg.Unmarshal(&cameras)
+	if err != nil {
+		panic(err)
+	}
+
+	filmsCfg := viper.New()
+	filmsCfg.AddConfigPath(home + "/.config/rolls")
+	filmsCfg.SetConfigType("yaml")
+	filmsCfg.SetConfigName("films.yml")
+	filmsCfg.ReadInConfig()
+
+	films = make(map[string]*Film)
+	err = filmsCfg.Unmarshal(&films)
+	if err != nil {
+		panic(err)
+	}
+}
