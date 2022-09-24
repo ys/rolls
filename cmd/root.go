@@ -6,14 +6,21 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ys/rolls/roll"
 )
 
 var cfgFile string
-var camerasCfg viper.Viper
-var filmsCfg viper.Viper
-var cameras map[string]*roll.Camera
-var films map[string]*roll.Film
+
+type Config struct {
+	ScansPath    string `mapstructure:"scans_path"`
+	AuthorizeURL string `mapstructure:"authorize_url"`
+	TokenURL     string `mapstructure:"token_url"`
+	Scopes       string `mapstructure:"scopes"`
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	AccessToken  string `mapstructure:"access_token"`
+}
+
+var config Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -66,26 +73,6 @@ func initConfig() {
 		viper.AddConfigPath(home + "/.config/rolls")
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("config.yml")
-
-		camerasCfg := viper.New()
-		camerasCfg.AddConfigPath(home + "/.config/rolls")
-		camerasCfg.SetConfigType("yaml")
-		camerasCfg.SetConfigName("cameras.yml")
-		camerasCfg.ReadInConfig()
-
-		cameras = make(map[string]*roll.Camera)
-		err = camerasCfg.Unmarshal(&cameras)
-		cobra.CheckErr(err)
-
-		filmsCfg := viper.New()
-		filmsCfg.AddConfigPath(home + "/.config/rolls")
-		filmsCfg.SetConfigType("yaml")
-		filmsCfg.SetConfigName("films.yml")
-		filmsCfg.ReadInConfig()
-
-		films = make(map[string]*roll.Film)
-		err = filmsCfg.Unmarshal(&films)
-		cobra.CheckErr(err)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -94,4 +81,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+	err := viper.Unmarshal(&config)
+
+	cobra.CheckErr(err)
 }

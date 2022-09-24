@@ -5,7 +5,6 @@ import (
 
 	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/ys/rolls/roll"
 )
 
@@ -18,27 +17,23 @@ It will also filter down by year or camera or film
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		year, err := cmd.Flags().GetInt("year")
-		if err != nil {
-			panic(err)
-		}
+		cobra.CheckErr(err)
 
-		root := viper.GetString("scansPath")
+		root := config.ScansPath
 		fmt.Printf("Reading rolls from: %s\n", root)
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
 			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
 				(roll.Metadata.ScannedAt.Year() == year)
 		})
-		if err != nil {
-			panic(err)
-		}
+		cobra.CheckErr(err)
 		table := uitable.New()
 		table.MaxColWidth = 80
 		table.Wrap = true // wrap columns
 		for _, roll := range rolls {
 			table.AddRow("roll:", roll.Metadata.RollNumber)
-			table.AddRow("camera:", roll.Metadata.CameraID)
-			table.AddRow("film:", roll.Metadata.FilmID)
+			table.AddRow("camera:", roll.Camera())
+			table.AddRow("film:", roll.Film())
 			table.AddRow("shot at:", roll.Metadata.ShotAt)
 			table.AddRow("---") // blank
 		}
