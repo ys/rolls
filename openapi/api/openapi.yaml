@@ -1,0 +1,4921 @@
+openapi: 3.0.1
+info:
+  description: "Lightroom API Documentation, made available through [adobe.io](https://developer.adobe.com).\
+    \ API Change Logs are available [here](https://developer.adobe.com/lightroom/lightroom-api-docs/release-notes/)."
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Lightroom API Documentation
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Lightroom
+  url: https://www.adobe.com/products/photoshop-lightroom.html
+servers:
+- url: https://lr.adobe.io/
+tags:
+- description: Lightroom Services status.
+  name: Health
+- description: Account information for the authenticated user.
+  name: Accounts
+- description: Catalog information for the authenticated user.
+  name: Catalogs
+- description: "Information for assets, typically images or videos."
+  name: Assets
+- description: "Information for albums, which contain references to zero or more assets."
+  name: Albums
+paths:
+  /v2/health:
+    get:
+      description: Will return the Lightroom server version ID (a hexadecimal value
+        not guaranteed to be sequential) if the services are up.
+      operationId: getHealth
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getHealth_200_response'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getHealth_403_response'
+          description: The request failed because the API Key is not valid.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Lightroom Services health check
+      tags:
+      - Health
+  /v2/account:
+    get:
+      description: An account is associated with each Adobe customer and contains
+        the personal information and subscription status. This information can be
+        obtained through the authentication APIs and is provided by Lightroom as a
+        convenience.
+      operationId: getAccount
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getAccount_200_response'
+          description: OK
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getHealth_403_response'
+          description: The request failed because the API Key is not valid.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AccountNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Retrieve the user account metadata
+      tags:
+      - Accounts
+  /v2/catalog:
+    get:
+      description: "A catalog is the topmost container of resources for a user. Each\
+        \ catalog contains zero or more assets, albums, or other resources."
+      operationId: getCatalog
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getCatalog_200_response'
+          description: OK
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+                AccessForbiddenAccountStateError:
+                  $ref: '#/components/examples/AccessForbiddenAccountStateExample'
+              schema:
+                $ref: '#/components/schemas/getCatalog_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/CatalogNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Retrieve the user catalog metadata
+      tags:
+      - Catalogs
+  /v2/catalogs/{catalog_id}/assets/{asset_id}:
+    get:
+      description: Retrieves information about a single asset in a catalog that the
+        caller owns. Successful response may also return invalid flag in the rendition
+        link for the asset. A rendition becomes invalid when an asset is edited after
+        rendition has been generated. New renditions (only 2560 and fullsize) can
+        be generated via Generate Renditions API. The read xmp/develop link in the
+        response will have the invalid flag as true if asset with SHA256 has been
+        created but external xmp/develop has not been uploaded yet.
+      operationId: getAsset
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the asset
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                SuccessImageAsset:
+                  $ref: '#/components/examples/SuccessImageAssetExample'
+                SuccessVideoAsset:
+                  $ref: '#/components/examples/SuccessVideoAssetExample'
+              schema:
+                $ref: '#/components/schemas/getAsset_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+                InvaildRequestAssetIds:
+                  $ref: '#/components/examples/InvaildRequestAssetIdsExample'
+                InvaildRequestGroup:
+                  $ref: '#/components/examples/InvaildRequestGroupExample'
+                InvaildRequestName:
+                  $ref: '#/components/examples/InvaildRequestNameExample'
+                InvaildRequestFavorite:
+                  $ref: '#/components/examples/InvaildRequestFavoriteExample'
+                InvaildRequestMissingSubtypeWithGroupOrName:
+                  $ref: '#/components/examples/InvaildRequestMissingSubtypeWithGroupOrNameExample'
+                InvaildRequestMissingSubtypeWithFavorite:
+                  $ref: '#/components/examples/InvaildRequestMissingSubtypeWithFavoriteExample'
+                InvaildRequestInvalidDateTime:
+                  $ref: '#/components/examples/InvaildRequestInvalidDateTimeExample'
+              schema:
+                $ref: '#/components/schemas/getAsset_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                InvalidApiKey:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                ForbiddenClient:
+                  $ref: '#/components/examples/ForbiddenClientErrorExample'
+              schema:
+                $ref: '#/components/schemas/getAsset_403_response'
+          description: The request failed due to insufficient permissions
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Get a catalog asset
+      tags:
+      - Assets
+    put:
+      description: Create a new asset with initial metadata and import information.
+      operationId: createAsset
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog in which the asset will be created.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Client-generated Lightroom unique identifier for the new asset.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createAsset_request'
+        description: Initial asset metadata and import information.
+        required: true
+      responses:
+        "201":
+          description: Created
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+                InvaildRequestJSON:
+                  $ref: '#/components/examples/InvaildRequestJSONExample'
+                InvaildRequestSubtype:
+                  $ref: '#/components/examples/InvaildRequestSubtypeExample'
+                InvaildRequestPayload:
+                  $ref: '#/components/examples/InvaildRequestPayloadExample'
+              schema:
+                $ref: '#/components/schemas/createAsset_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                InvalidApiKey:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                ResourceExists:
+                  $ref: '#/components/examples/ResourceExistsErrorExample'
+                QuotaExceeded:
+                  $ref: '#/components/examples/AssetQuotaExceededErrorExample'
+              schema:
+                $ref: '#/components/schemas/createAsset_403_response'
+          description: The request failed due to insufficient permissions
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AssetNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Create asset
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/assets:
+    get:
+      description: Retrieve a list of existing assets that caller owns. Successful
+        response may also return invalid flag in the rendition link for the asset.
+        A rendition becomes invalid when an asset is edited after rendition has been
+        generated. New renditions (only 2560 and fullsize) can be generated via Generate
+        Renditions API. The read xmp/develop link in the response will have the invalid
+        flag as true if asset with SHA256 has been created but external xmp/develop
+        has not been uploaded yet.
+      operationId: getAssets
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Starting timestamp
+        explode: true
+        in: query
+        name: updated_since
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request assets captured before a given time. captured_before\
+          \ will be found in the \"links.next.href\" link. If no links.next is included\
+          \ in a listing response, this is a hint from the server that there are no\
+          \ assets in the catalog with a date captured_before the last asset in the\
+          \ list (the client has reached the \"bottom\" of the list). captured_before\
+          \ may not be used in conjunction with captured_after."
+        explode: true
+        in: query
+        name: captured_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request assets captured after a given time. captured_after\
+          \ will be found in the \"links.prev.href\" link. If no links.prev is included\
+          \ in a listing response, this is a hint from the server that there are no\
+          \ assets in the catalog with a date captured_after the first asset in the\
+          \ list (the client has reached the \"top\" of the list). Note: assets imported\
+          \ without a captureDate payload property default to the value \"0000-00-00T00:00:00\"\
+          . To list these assets set captured_after to \"-0001-12-31T23:59:59\". captured_after\
+          \ may not be used in conjunction with captured_before."
+        explode: true
+        in: query
+        name: captured_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Number of assets to return. Default value is 100. Maximum is\
+          \ 500. Please note that the response may contain more than 'limit' number\
+          \ of assets returned if the assets at the 'limit' boundary has the same\
+          \ capture_date. For example if there are 5 assets in a catalog and the 3rd,\
+          \ 4th and 5th assets all have the same capture dates the response will contain\
+          \ all 5 assets whether 'limit' is 3, 4 or 5."
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: SHA256 hash value of original file. Assets with a matching SHA256
+          hash will be returned. May be used in conjunction with subtype.
+        explode: true
+        in: query
+        name: sha256
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "To show or hide assets inside stacks in the catalog. If hide_stacked_assets\
+          \ is passed as true, assets inside stacks won't be returned. Default value\
+          \ is false."
+        explode: true
+        in: query
+        name: hide_stacked_assets
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Semi-colon separated asset subtype values.
+        explode: true
+        in: query
+        name: subtype
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Set of 1 - 100 comma separated asset_id values. Other parameters
+          can not be used in conjunction with this parameter.
+        explode: true
+        in: query
+        name: asset_ids
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request the list for different types of assets excluding\
+          \ incomplete or complete image and video assets. The valid values are \"\
+          incomplete\" and \"complete\". An image or video asset is considered to\
+          \ be complete if its proxy or original upload exists. An asset of subtypes\
+          \ profile, preset, camera_profile or lens_profile is considered complete\
+          \ if its original upload exists."
+        explode: true
+        in: query
+        name: exclude
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Semi-colon separated group values. Subtype parameter of "preset"
+          or "profile" is required when using this parameter.
+        explode: true
+        in: query
+        name: group
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Semi-colon separated name values. Subtype parameter of "preset"
+          or "profile" is required when using this parameter.
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Favorite status, subtype parameter of \"preset\" is required\
+          \ when using this parameter."
+        explode: true
+        in: query
+        name: favorite
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                Success:
+                  $ref: '#/components/examples/SuccessExample'
+                SuccessQueryParam:
+                  $ref: '#/components/examples/SuccessQueryParamExample'
+              schema:
+                $ref: '#/components/schemas/getAssets_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+                InvaildRequestAssetIds:
+                  $ref: '#/components/examples/InvaildRequestAssetIdsExample'
+                InvaildRequestGroup:
+                  $ref: '#/components/examples/InvaildRequestGroupExample'
+                InvaildRequestName:
+                  $ref: '#/components/examples/InvaildRequestNameExample'
+                InvaildRequestFavorite:
+                  $ref: '#/components/examples/InvaildRequestFavoriteExample'
+                InvaildRequestMissingSubtypeWithGroupOrName:
+                  $ref: '#/components/examples/InvaildRequestMissingSubtypeWithGroupOrNameExample'
+                InvaildRequestMissingSubtypeWithFavorite:
+                  $ref: '#/components/examples/InvaildRequestMissingSubtypeWithFavoriteExample'
+                InvaildRequestInvalidDateTime:
+                  $ref: '#/components/examples/InvaildRequestInvalidDateTimeExample'
+              schema:
+                $ref: '#/components/schemas/getAsset_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                InvalidApiKey:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                ForbiddenClient:
+                  $ref: '#/components/examples/ForbiddenClientErrorExample'
+              schema:
+                $ref: '#/components/schemas/getAsset_403_response'
+          description: The request failed due to insufficient permissions
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Retrieve assets
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/assets/{asset_id}/master:
+    put:
+      description: "Create and upload an original file for the asset. Up to 200 MB\
+        \ may be uploaded per invocation, and larger files may be uploaded by calling\
+        \ this API multiple times with Content-Range headers for each part. When all\
+        \ parts are received the upload will be consolidated asynchronously. All partial\
+        \ uploads should include optional rendition type parameters to ensure the\
+        \ last part received has the necessary options for request post-processing."
+      operationId: createAssetOriginal
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Length in bytes of the content.
+        explode: false
+        in: header
+        name: Content-Length
+        required: false
+        schema:
+          type: integer
+        style: simple
+      - description: "Byte range for the request, including first and last bytes and\
+          \ entity length as defined in RFC 2616. Should be included only when the\
+          \ data cannot be uploaded in a single call."
+        explode: false
+        in: header
+        name: Content-Range
+        required: false
+        schema:
+          type: string
+        style: simple
+      - description: "Content type. For jpeg assets, the only allowed type is 'image/jpeg'.\
+          \ For camera raw assets the type is 'application/octet-stream'. For video\
+          \ assets, the content-type is of the format video/* where * depends upon\
+          \ the video type and can contain only ASCII characters. Or the content-type\
+          \ of video can be application/octet-stream;video"
+        explode: false
+        in: header
+        name: Content-Type
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog in which the asset will be created.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the asset to which the XMP settings are associated.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "201":
+          description: Created
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+              schema:
+                $ref: '#/components/schemas/InvaildRequestGUID'
+          description: The request failed due to an invalid resource identifier.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getHealth_403_response'
+          description: The request failed because the API Key is not valid.
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAssetOriginal_413_response'
+          description: The request failed because it is too large.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Create an asset original file
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/assets/{asset_id}/renditions:
+    post:
+      description: Generate renditions for an original file asynchronously. Allowed
+        rendition types are fullsize and 2560. Generated rendition will be deleted
+        after 1 day automatically.
+      operationId: generateRenditions
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "One or multiple of the supported rendition types separated by\
+          \ ','. Supported rendition types are : ['fullsize', '2560']."
+        explode: false
+        in: header
+        name: X-Generate-Renditions
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Length in bytes of the content.
+        explode: false
+        in: header
+        name: Content-Length
+        required: false
+        schema:
+          type: integer
+        style: simple
+      - description: Identifier of the catalog in which the asset was created.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the asset for which rendition gets generated.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/generateRenditions_202_response'
+          description: Accepted.(Client needs to poll on rendition link in response
+            and accessing it might not immediately returns a success response.)
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+                InvaildRequestSubtype:
+                  $ref: '#/components/examples/InvaildRequestSubtypeExample'
+                InvaildRequestMissingParameter:
+                  $ref: '#/components/examples/InvaildRequestMissingParameterExample'
+                InvaildRequestRenditionType:
+                  $ref: '#/components/examples/InvaildRequestRenditionTypeExample'
+              schema:
+                $ref: '#/components/schemas/generateRenditions_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getHealth_403_response'
+          description: The request failed because the API Key is not valid.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AssetNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Generate renditions for an original file
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/assets{asset_id}/renditions/{rendition_type}:
+    get:
+      description: Get latest asset rendition of specified type. It returns 404 if
+        rendition does not exist. It returns 404 in another case when rendition is
+        invalid (only for rendition type 2560 and fullsize)
+      operationId: getAssetRendition
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog in which asset exists.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the asset for which to fetch rendition.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "One of the supported rendition types. Supported rendition types\
+          \ are : ['thumbnail2x', 'fullsize', '640', '1280', '2048', '2560']."
+        explode: false
+        in: path
+        name: rendition_type
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: "Asset rendition file. Response content type : image/jpeg"
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/RenditionInvaildRequestGUIDExample'
+                InvaildRequestRenditionType:
+                  $ref: '#/components/examples/InvaildRequestRenditionTypeExample'
+              schema:
+                $ref: '#/components/schemas/getAssetRendition_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/RenditionNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Get latest asset rendition
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/assets/{asset_id}/xmp/develop:
+    get:
+      description: Get latest asset external xmp develop setting file
+      operationId: getAssetExternalXmpDevelopSetting
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog in which asset exists.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the asset for which to fetch rendition.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: External XMP Develop Setting file. Content type of the response
+            is application/rdf+xml.
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+              schema:
+                $ref: '#/components/schemas/InvaildRequestGUID'
+          description: The request failed due to an invalid resource identifier.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+              schema:
+                $ref: '#/components/schemas/getAssetExternalXmpDevelopSetting_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AssetNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Get latest asset external xmp develop setting
+      tags:
+      - Assets
+    put:
+      description: This API support two workflows. The first workflow is to upload
+        external XMP develop settings file for the asset. Content-type header for
+        this case is application/rdf+xml. The second workflow is to create an external
+        XMP develop settings file by copying from another asset's external xmp develop
+        setting file. Content-type header for this case is application/json.
+      operationId: putAssetExternalXmpDevelopSetting
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog in which the asset will be created.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Content length, in bytes. Current maximum size is 200 Mb."
+        explode: false
+        in: header
+        name: Content-Length
+        required: true
+        schema:
+          type: integer
+        style: simple
+      - description: For uploading a new xmp/develop file content-type='application/rdf+xml'
+          and for copying xmp/develop file from another asset content-type='application/json'
+        explode: false
+        in: header
+        name: Content-Type
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Client-generated Lightroom unique identifier for the new asset.
+        explode: false
+        in: path
+        name: asset_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/putAssetExternalXmpDevelopSetting_request'
+        description: The below request body example is for copying external xmp/develop
+          file from another asset. (For upload external xmp/develop  case the body
+          will be a xml string. Eg. '\<xml.../xml\>')
+        required: true
+      responses:
+        "201":
+          description: Created
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+                InvaildRequestSubtype:
+                  $ref: '#/components/examples/InvaildRequestSubtypeExample'
+                InvaildRequestJSON:
+                  $ref: '#/components/examples/InvaildRequestJSONExample'
+                InvaildRequestPayload:
+                  $ref: '#/components/examples/InvaildRequestPayloadExample'
+              schema:
+                $ref: '#/components/schemas/putAssetExternalXmpDevelopSetting_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                InvalidApiKey:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                ResourceExists:
+                  $ref: '#/components/examples/ResourceExistsErrorExample'
+                QuotaExceeded:
+                  $ref: '#/components/examples/AssetQuotaExceededErrorExample'
+              schema:
+                $ref: '#/components/schemas/createAsset_403_response'
+          description: The request failed due to insufficient permissions
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AssetNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Create asset external xmp develop setting file
+      tags:
+      - Assets
+  /v2/catalogs/{catalog_id}/albums/{album_id}:
+    delete:
+      description: Delete an existing album. The existing album should be created
+        via the same client app and of subtype project or project_set.
+      operationId: deleteAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier for the album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "This parameter when passed with a value, for example: true would\
+          \ delete all the child albums as well of the album specified. The deletion\
+          \ of child albums will be done asynchronously."
+        explode: true
+        in: query
+        name: child_albums
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteAlbum_400_response'
+          description: The request failed due to an invalid JSON.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+                OperationNotPermittedError:
+                  $ref: '#/components/examples/OperationNotPermittedExample'
+              schema:
+                $ref: '#/components/schemas/readAlbum_403_response'
+          description: The request failed due to insufficient permissions.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Delete album
+      tags:
+      - Albums
+    get:
+      description: Read a album.
+      operationId: readAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Client-generated Lightroom unique identifier for the new album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/readAlbum_200_response'
+          description: OK
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+                OperationNotPermittedError:
+                  $ref: '#/components/examples/OperationNotPermittedExample'
+              schema:
+                $ref: '#/components/schemas/readAlbum_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AlbumNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Get album
+      tags:
+      - Albums
+    post:
+      description: Update an existing album. The existing album should be created
+        via the same client app and of subtype project or project_set.
+      operationId: updateAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier for the album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateAlbum_request'
+        description: Album metadata and information to be updated.
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestJSON:
+                  $ref: '#/components/examples/InvaildRequestJSONExample'
+                InvaildRequestPayload:
+                  $ref: '#/components/examples/InvaildRequestPayloadExample'
+              schema:
+                $ref: '#/components/schemas/createAlbum_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+                OperationNotPermittedError:
+                  $ref: '#/components/examples/OperationNotPermittedExample'
+              schema:
+                $ref: '#/components/schemas/readAlbum_403_response'
+          description: The request failed due to insufficient permissions.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Update album
+      tags:
+      - Albums
+    put:
+      description: Create a new album.
+      operationId: createAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Client-generated Lightroom unique identifier for the new album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createAlbum_request'
+        description: Initial album metadata and information.
+        required: true
+      responses:
+        "201":
+          description: Created
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestJSON:
+                  $ref: '#/components/examples/InvaildRequestJSONExample'
+                InvaildRequestPayload:
+                  $ref: '#/components/examples/InvaildRequestPayloadExample'
+              schema:
+                $ref: '#/components/schemas/createAlbum_400_response'
+          description: The request failed due to an invalid input
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                InvalidApiKey:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                ResourceExists:
+                  $ref: '#/components/examples/AlbumResourceExistsErrorExample'
+              schema:
+                $ref: '#/components/schemas/createAlbum_403_response'
+          description: The request failed due to insufficient permissions
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Create album
+      tags:
+      - Albums
+  /v2/catalogs/{catalog_id}/albums:
+    get:
+      description: Retrieve a list of existing albums.
+      operationId: getAlbums
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Comma-separated list of subtypes to enumerate. Subtype can be
+          one of 'project' or 'project_set'.
+        explode: true
+        in: query
+        name: subtype
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "UTF-8 string representing the name of the album that should\
+          \ precede the current page of results. In other words, the response will\
+          \ contain result with names greater than the 'name_after' value using standard\
+          \ string ordering relations."
+        explode: true
+        in: query
+        name: name_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Number of albums to return. Default value is 100. Please note
+          that the response may contain more than 'limit' number of albums returned
+          if multiple albums at the 'limit' boundary have the same name_after.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getAlbums_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/CatalogInvaildRequestGUIDExample'
+              schema:
+                $ref: '#/components/schemas/InvaildRequestGUID'
+          description: The request failed due to an invalid resource identifier.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+              schema:
+                $ref: '#/components/schemas/getAssetExternalXmpDevelopSetting_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AlbumNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createAsset_415_response'
+          description: The request failed because the Content-Type did not match the
+            request.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Retrieve albums
+      tags:
+      - Albums
+  /v2/catalogs/{catalog_id}/albums/{album_id}/assets:
+    get:
+      description: Lists assets in an album. The assets in an album are returned sorted
+        on either order if order* parameters are used. The assets in an album are
+        returned sorted on captured date if order* parameters are not used and captured*
+        parameters are used. Please note that the created and updated dates for Album
+        asset documents will be returned as "0000-00-00T00:00:00". Successful response
+        may also return invalid flag in the rendition link for the asset. A rendition
+        becomes invalid when an asset is edited after rendition has been generated.
+        New renditions (only 2560 and fullsize) can be generated via Generate Renditions
+        API. The read xmp/develop link in the response will have the invalid flag
+        as true if asset with SHA256 has been created but external xmp/develop has
+        not been uploaded yet.
+      operationId: listAssetsOfAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Used to request assets captured before a given time. captured_before\
+          \ will be found in the \"links.next.href\" link. If no links.next is included\
+          \ in a listing response, this is a hint from the server that there are no\
+          \ assets in the catalog with a date captured_before the last asset in the\
+          \ list (the client has reached the \"bottom\" of the list). captured_before\
+          \ may not be used in conjunction with captured_after."
+        explode: true
+        in: query
+        name: captured_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request assets captured after a given time. captured_after\
+          \ will be found in the \"links.prev.href\" link. If no links.prev is included\
+          \ in a listing response, this is a hint from the server that there are no\
+          \ assets in the catalog with a date captured_after the first asset in the\
+          \ list (the client has reached the \"top\" of the list). Note: assets imported\
+          \ without a captureDate payload property default to the value \"0000-00-00T00:00:00\"\
+          . To list these assets set captured_after to \"-0001-12-31T23:59:59\". captured_after\
+          \ may not be used in conjunction with captured_before."
+        explode: true
+        in: query
+        name: captured_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request assets having order value greater than specified\
+          \ value. Next and previous pages will be found in the \"links.next.href\"\
+          \ and \"links.prev.href\" links respectively. If next/prev link is missing,\
+          \ it indicates that there is no next/prev page. Some rules about using order_after:\
+          \ 1) Specify \"-\" to get the first page. 2) Can be max of 1024 characters.\
+          \ 3) Should be a lex64 sort order string with characters in the set: [-0-9A-Z_a-z]\
+          \ with sort order in the same sequence as in the set [-0-9A-Z_a-z]. 4) captured_before\
+          \ cannot be used with order_after 5) captured_after can be used only if\
+          \ order_after==\"\""
+        explode: true
+        in: query
+        name: order_after
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request assets having order value lesser than specified\
+          \ value. Next and previous pages will be found in the \"links.next.href\"\
+          \ and \"links.prev.href\" links respectively. If next/prev link is missing,\
+          \ it indicates that there is no next/prev page. Some rules about using order_before:\
+          \ 1) Specify order_before as \"\" and captured_before as a future date to\
+          \ get the first page. 2) Can be max of 1024 characters. 3) Should be a lex64\
+          \ sort order string with characters in the set: [-0-9A-Z_a-z] with sort\
+          \ order in the same sequence as in the set [-0-9A-Z_a-z]. 4) captured_after\
+          \ cannot be used with order_before 5) captured_before can be used only if\
+          \ order_before==\"\""
+        explode: true
+        in: query
+        name: order_before
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Number of assets to return. Default value is 100. Maximum is\
+          \ 500. Please note that the response may contain more than 'limit' number\
+          \ of assets returned if the assets at the 'limit' boundary has the same\
+          \ capture_date. For example if there are 5 assets in a catalog and the 3rd,\
+          \ 4th and 5th assets all have the same capture dates the response will contain\
+          \ all 5 assets whether 'limit' is 3, 4 or 5."
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: "To show or hide assets inside stacks in the catalog. If hide_stacked_assets\
+          \ is passed as true, assets inside stacks won't be returned. Default value\
+          \ is false."
+        explode: true
+        in: query
+        name: hide_stacked_assets
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Semi-colon separated asset subtype values.
+        explode: true
+        in: query
+        name: subtype
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Semi-colon separated review flag values used to filter assets\
+          \ returned. Can be combined with subtype filter. Valid values for flags\
+          \ are 'pick', 'unflagged' and 'reject'. This parameter cannot be used along\
+          \ with album_filters parameter. Default behavior is to display all assets."
+        explode: true
+        in: query
+        name: flag
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Semicolon-delimited list of additional data to include. When\
+          \ the list includes \"asset\", the asset subdocuments contains all the fields.\
+          \ Otherwise, only the id and self href link are returned in the asset subdocuments."
+        explode: true
+        in: query
+        name: embed
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Used to request the list for different types of assets excluding\
+          \ incomplete or complete image and video assets. The valid values are \"\
+          incomplete\" and \"complete\". An image or video asset is considered to\
+          \ be complete if its proxy or original upload exists. An asset of subtypes\
+          \ profile, preset, camera_profile or lens_profile is considered complete\
+          \ if its original upload exists."
+        explode: true
+        in: query
+        name: exclude
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Set of 1 - 100 comma separated asset_id values. Other parameters
+          can not be used in conjunction with this parameter.
+        explode: true
+        in: query
+        name: asset_ids
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "When album_filters is set to 'true', it filters out all the\
+          \ album assets based on the presentation filters set on the album. With\
+          \ this parameter, rejected assets always get filtered out irrespective of\
+          \ settings in presentation filters. Presentation filters are not applied\
+          \ when any value other than 'true' is set for album_filters. Default behavior\
+          \ is to display all assets. This parameter cannot be used along with flag\
+          \ parameter.\t\tno\nResponse: 200 OK"
+        explode: true
+        in: query
+        name: album_filters
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/listAssetsOfAlbum_200_response'
+          description: Ok
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AlbumInvaildRequestGUIDExample'
+              schema:
+                $ref: '#/components/schemas/InvaildRequestGUID'
+          description: The request failed due to an invalid resource identifier.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+                OperationNotPermittedError:
+                  $ref: '#/components/examples/OperationNotPermittedExample'
+              schema:
+                $ref: '#/components/schemas/readAlbum_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AlbumNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: List assets of an album
+      tags:
+      - Albums
+    put:
+      description: "Add many assets to the album. Note that there is no default defined\
+        \ order/position for the asset in the album. A payload may be provided with\
+        \ cover, order, and any other data allowed in the data model. If the asset\
+        \ already exists in the album and the cover field is supplied, then no error\
+        \ is thrown but only the cover update is applied and other entries in the\
+        \ payload are completely ignored. In all other cases trying to add an asset\
+        \ to an album that is already in the album will return an error. Limited to\
+        \ 50 assets per API call. Returns http status 201 if at least one asset was\
+        \ added to the album. If all assets could not be added, http status 403 is\
+        \ returned. Individual error codes are returned for each asset in the response\
+        \ body."
+      operationId: addAssetsToAlbum
+      parameters:
+      - description: Client ID (API Key) which is subscribed to the Lightroom APIs
+          through console.adobe.io
+        explode: false
+        in: header
+        name: X-API-Key
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: "Bearer [token] - User access token of an authenticated Lightroom\
+          \ customer"
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the catalog containing the album.
+        explode: false
+        in: path
+        name: catalog_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Identifier of the album.
+        explode: false
+        in: path
+        name: album_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addAssetsToAlbum_request'
+        description: Album asset metadata and information.
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/addAssetsToAlbum_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              examples:
+                InvaildRequestGUID:
+                  $ref: '#/components/examples/AlbumInvaildRequestGUIDExample'
+              schema:
+                $ref: '#/components/schemas/InvaildRequestGUID'
+          description: The request failed due to an invalid resource identifier.
+        "401":
+          description: The request failed due to missing or invalid authentication
+            token.
+        "403":
+          content:
+            application/json:
+              examples:
+                ForbiddenKeyError:
+                  $ref: '#/components/examples/ForbiddenKeyExample'
+                AccessForbiddenError:
+                  $ref: '#/components/examples/AccessForbiddenExample'
+              schema:
+                $ref: '#/components/schemas/getAssetExternalXmpDevelopSetting_403_response'
+          description: The request failed due to insufficient permissions.
+        "404":
+          content:
+            application/json:
+              examples:
+                ResourceNotFound:
+                  $ref: '#/components/examples/AlbumNotFoundExample'
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: The request failed because the resource being requested does
+            not exist.
+        "503":
+          content:
+            application/json:
+              examples:
+                ServiceUnavailable:
+                  $ref: '#/components/examples/ServiceUnavailableExample'
+                MaintenanceError:
+                  $ref: '#/components/examples/MaintenanceErrorExample'
+              schema:
+                $ref: '#/components/schemas/getHealth_503_response'
+          description: The request failed because the service is temporarily unavailable.
+            Try again later.
+      summary: Add assets to album
+      tags:
+      - Albums
+components:
+  examples:
+    SuccessImageAssetExample:
+      summary: SuccessImageAsset
+      value:
+        base: <base_url>
+        id: <asset_id>
+        type: asset
+        subtype: image
+        created: <created_date>
+        updated: <updated_date>
+        links:
+          self:
+            href: assets/<asset_id>
+          /rels/master_create:
+            href: assets/<asset_id>/master
+          /rels/xmp_develop_create:
+            href: assets/<asset_id>/xmp/develop
+          /rels/rendition_type/<rendition_type>:
+            href: assets/<asset_id>/renditions/<rendition_type>
+          /rels/xmp/develop:
+            href: assets/<asset_id>/xmp/develop
+            invalid: "true"
+            fileSize: <external_xmp_develop_setting_file_size>
+        payload:
+          captureDate: <image_capture_date>
+          importSource:
+            fileName: <file_name>
+            fileSize: <image_file_size>
+            originalWidth: <image_width>
+            originalHeight: <image_height>
+            sha256: <image_sha256>
+            importedOnDevice: <import_device_name>
+            importedBy: <import_account_id>
+            importTimestamp: <import_time>
+          <key>: <value>
+          develop:
+            <dev_key>: <dev_value>
+    SuccessVideoAssetExample:
+      summary: SuccessVideoAsset
+      value:
+        base: <base_url>
+        id: <asset_id>
+        type: asset
+        subtype: video
+        created: <created_date>
+        updated: <updated_date>
+        links:
+          self:
+            href: assets/<asset_id>
+          /rels/master_create:
+            href: assets/<asset_id>/master
+          /rels/xmp_develop_create:
+            href: assets/<asset_id>/xmp/develop
+          /rels/rendition_type/<rendition_type>:
+            href: assets/<asset_id>/renditions/<rendition_type>
+          /rels/xmp/develop:
+            href: assets/<asset_id>/xmp/develop
+            invalid: "true"
+            fileSize: <external_xmp_develop_setting_file_size>
+        unshareable: <unshareable>
+        payload:
+          captureDate: <image_capture_date>
+          importSource:
+            fileName: <file_name>
+            fileSize: <image_file_size>
+            originalWidth: <image_width>
+            originalHeight: <image_height>
+            sha256: <image_sha256>
+            importedOnDevice: <import_device_name>
+            importedBy: <import_account_id>
+            importTimestamp: <import_time>
+          video:
+            frameRate:
+            - <video_frame_rate_numerator>
+            - <video_frame_rate_denominator>
+            duration:
+            - <video_duration_numerator>
+            - <video_duration_denominator>
+            displayAspectRatio:
+            - <video_aspect_ratio_numerator>
+            - <video_aspect_ratio_denominator>
+            storageWidth: <video_storage_width>
+            storageHeight: <video_storage_height>
+          <key>: <value>
+          develop:
+            <dev_key>: <dev_value>
+        favorites:
+          <account_id>: <created_date>
+    SuccessExample:
+      summary: Success
+      value:
+        base: <base_url>
+        resources:
+        - id: <asset_id>
+          type: asset
+          subtype: image
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: assets/<asset_id>
+            /rels/master_create:
+              href: assets/<asset_id>/master
+            /rels/xmp_develop_create:
+              href: assets/<asset_id>/xmp/develop
+            /rels/rendition_type/<rendition_type>:
+              href: assets/<asset_id>/renditions/<rendition_type>
+            /rels/xmp/develop:
+              href: assets/<asset_id>/xmp/develop
+              invalid: "true"
+              fileSize: <external_xmp_develop_setting_file_size>
+          payload:
+            captureDate: <image_capture_date>
+            importSource:
+              fileName: <file_name>
+              fileSize: <image_file_size>
+              originalWidth: <image_width>
+              originalHeight: <image_height>
+              sha256: <image_sha256>
+              importedOnDevice: <import_device_name>
+              importedBy: <import_account_id>
+              importTimestamp: <import_time>
+            <key>: <value>
+            develop:
+              <dev_key>: <dev_value>
+        - id: <asset_id>
+          type: asset
+          subtype: video
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: assets/<asset_id>
+            /rels/master_create:
+              href: assets/<asset_id>/master
+            /rels/xmp_develop_create:
+              href: assets/<asset_id>/xmp/develop
+            /rels/rendition_type/<rendition_type>:
+              href: assets/<asset_id>/renditions/<rendition_type>
+            /rels/xmp/develop:
+              href: assets/<asset_id>/xmp/develop
+              invalid: "true"
+              fileSize: <external_xmp_develop_setting_file_size>
+          unshareable: <unshareable>
+          payload:
+            captureDate: <image_capture_date>
+            importSource:
+              fileName: <file_name>
+              fileSize: <image_file_size>
+              originalWidth: <image_width>
+              originalHeight: <image_height>
+              sha256: <image_sha256>
+              importedOnDevice: <import_device_name>
+              importedBy: <import_account_id>
+              importTimestamp: <import_time>
+            video:
+              frameRate:
+              - <video_frame_rate_numerator>
+              - <video_frame_rate_denominator>
+              duration:
+              - <video_duration_numerator>
+              - <video_duration_denominator>
+              displayAspectRatio:
+              - <video_aspect_ratio_numerator>
+              - <video_aspect_ratio_denominator>
+              storageWidth: <video_storage_width>
+              storageHeight: <video_storage_height>
+            <key>: <value>
+            develop:
+              <dev_key>: <dev_value>
+        links:
+          prev:
+            href: albums/<album_id>/assets?captured_after=<first_captured_date>
+          next:
+            href: albums/<album_id>/assets?captured_before=<last_captured_date>
+          /rels/asset:
+            href: "assets/{asset_id}"
+            templated: true
+    SuccessQueryParamExample:
+      summary: Success - Asset_ids query param present
+      value:
+        base: <base_url>
+        resources:
+        - id: <asset_id>
+          type: asset
+          subtype: image
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: assets/<asset_id>
+            /rels/master_create:
+              href: assets/<asset_id>/master
+            /rels/xmp_develop_create:
+              href: assets/<asset_id>/xmp/develop
+            /rels/rendition_type/<rendition_type>:
+              href: assets/<asset_id>/renditions/<rendition_type>
+            /rels/xmp/develop:
+              href: assets/<asset_id>/xmp/develop
+              invalid: "true"
+              fileSize: <external_xmp_develop_setting_file_size>
+          payload:
+            captureDate: <image_capture_date>
+            importSource:
+              fileName: <file_name>
+              fileSize: <image_file_size>
+              originalWidth: <image_width>
+              originalHeight: <image_height>
+              sha256: <image_sha256>
+              importedOnDevice: <import_device_name>
+              importedBy: <import_account_id>
+              importTimestamp: <import_time>
+            <key>: <value>
+            develop:
+              <dev_key>: <dev_value>
+        - id: <asset_id>
+          type: asset
+          subtype: video
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: assets/<asset_id>
+            /rels/master_create:
+              href: assets/<asset_id>/master
+            /rels/xmp_develop_create:
+              href: assets/<asset_id>/xmp/develop
+            /rels/rendition_type/<rendition_type>:
+              href: assets/<asset_id>/renditions/<rendition_type>
+            /rels/xmp/develop:
+              href: assets/<asset_id>/xmp/develop
+              invalid: "true"
+              fileSize: <external_xmp_develop_setting_file_size>
+          unshareable: <unshareable>
+          payload:
+            captureDate: <image_capture_date>
+            importSource:
+              fileName: <file_name>
+              fileSize: <image_file_size>
+              originalWidth: <image_width>
+              originalHeight: <image_height>
+              sha256: <image_sha256>
+              importedOnDevice: <import_device_name>
+              importedBy: <import_account_id>
+              importTimestamp: <import_time>
+            video:
+              frameRate:
+              - <video_frame_rate_numerator>
+              - <video_frame_rate_denominator>
+              duration:
+              - <video_duration_numerator>
+              - <video_duration_denominator>
+              displayAspectRatio:
+              - <video_aspect_ratio_numerator>
+              - <video_aspect_ratio_denominator>
+              storageWidth: <video_storage_width>
+              storageHeight: <video_storage_height>
+            <key>: <value>
+            develop:
+              <dev_key>: <dev_value>
+        errors:
+        - id: <asset_id>
+          code: 1000
+          description: Resource not found
+        links:
+          /rels/asset:
+            href: "assets/{asset_id}"
+            templated: true
+    ForbiddenExistsExample:
+      summary: ForbiddenExistsError
+      value:
+        errors:
+          <resource_type>:
+          - already exists
+        code: 1002
+        description: Resource already exists
+    ForbiddenKeyExample:
+      summary: Invalid API Key
+      value:
+        code: 403003
+        description: API Key is invalid
+    AccessForbiddenExample:
+      summary: Access Forbidden
+      value:
+        code: 4300
+        description: Access is forbidden
+    AccessForbiddenAccountStateExample:
+      summary: Access Forbidden Account State
+      value:
+        code: 4301
+        description: Access forbidden due to account state of resource owner
+    OperationNotPermittedExample:
+      summary: Operation Not Permitted
+      value:
+        code: 1016
+        description: Requested operation not permitted
+    ForbiddenClientErrorExample:
+      summary: Forbidden Client
+      value:
+        links:
+          /rels/client_app:
+            href: <app_url> (Link to the where to find a new version of the client
+              application)
+        code: 4999
+        description: Upgrade required
+    AssetInvaildRequestGUIDExample:
+      summary: InvalidRequestGUID
+      value:
+        errors:
+          asset_id:
+          - Must be a valid GUID
+        code: 1005
+        description: Input Validation Error
+    CatalogInvaildRequestGUIDExample:
+      summary: InvalidRequestGUID
+      value:
+        errors:
+          catalog_id:
+          - Must be a valid GUID
+        code: 1005
+        description: Input Validation Error
+    AlbumInvaildRequestGUIDExample:
+      summary: InvalidRequestGUID
+      value:
+        errors:
+          album_id:
+          - Must be a valid GUID
+        code: 1005
+        description: Input Validation Error
+    RenditionInvaildRequestGUIDExample:
+      summary: InvalidRequestGUID
+      value:
+        errors:
+          rendition_id:
+          - Must be a valid GUID
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestJSONExample:
+      summary: InvalidRequestJSON
+      value:
+        errors:
+          body:
+          - Must be a valid JSON
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestSubtypeExample:
+      summary: InvalidRequestSubtype
+      value:
+        errors:
+          subtype:
+          - is invalid
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestPayloadExample:
+      summary: InvalidRequestPayload
+      value:
+        errors:
+          payload.importSource.importTimestamp:
+          - invalid
+        code: 1030
+        description: Payload Validation Error
+    InvaildRequestAssetIdsExample:
+      summary: ParamsWithAssetIds
+      value:
+        errors:
+          <param_name>:
+          - not allowed with asset_ids parameter
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestGroupExample:
+      summary: InvalidRequestGroup
+      value:
+        errors:
+          group:
+          - group not expected for each given subtype
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestNameExample:
+      summary: InvalidRequestName
+      value:
+        errors:
+          name:
+          - name not expected for each given subtype
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestFavoriteExample:
+      summary: InvalidRequestFavorite
+      value:
+        errors:
+          favorite:
+          - favorite query param can only be true. favorite=false not supported
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestMissingParameterExample:
+      summary: MissingParameter
+      value:
+        errors:
+          parameter:
+          - must be specified
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestMissingSubtypeWithGroupOrNameExample:
+      summary: MissingSubtypeWithGroupOrName
+      value:
+        errors:
+          subtype:
+          - subtype value expected with group or name
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestMissingSubtypeWithFavoriteExample:
+      summary: MissingSubtypeWithFavorite
+      value:
+        errors:
+          subtype:
+          - subtype value expected with favorite
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestInvalidDateTimeExample:
+      summary: InvalidDateTime
+      value:
+        errors:
+          updated_since:
+          - must be a valid XML Schema dateTime
+        code: 1005
+        description: Input Validation Error
+    InvaildRequestRenditionTypeExample:
+      summary: RenditionTypeNotSupported
+      value:
+        errors:
+          rendition_type:
+          - not supported
+        code: 1005
+        description: Input Validation Error
+    ResourceExistsErrorExample:
+      summary: ResourceExistsError
+      value:
+        errors:
+          asset:
+          - already exists
+        code: 1002
+        description: Resource already exists
+    AlbumResourceExistsErrorExample:
+      summary: ResourceExistsError
+      value:
+        errors:
+          album:
+          - already exists
+        code: 1002
+        description: Resource already exists
+    ForbiddenAccountExample:
+      summary: Forbidden Account
+      value:
+        code: 4301
+        description: Access forbidden due to account state of resource owner
+    AssetQuotaExceededErrorExample:
+      summary: QuotaExceededError
+      value:
+        errors:
+          <asset_id>:
+          - quota exceeded
+        code: 1043
+        description: Too many assets
+    AccountNotFoundExample:
+      summary: ResourceNotFoundError
+      value:
+        errors:
+          account:
+          - does not exist
+        code: 1000
+        description: Resource not found
+    CatalogNotFoundExample:
+      summary: ResourceNotFoundError
+      value:
+        errors:
+          catalog:
+          - does not exist
+        code: 1000
+        description: Resource not found
+    AssetNotFoundExample:
+      summary: ResourceNotFoundError
+      value:
+        errors:
+          asset:
+          - does not exist
+        code: 1000
+        description: Resource not found
+    RenditionNotFoundExample:
+      summary: ResourceNotFoundError
+      value:
+        errors:
+          rendition:
+          - does not exist
+        code: 1000
+        description: Resource not found
+    AlbumNotFoundExample:
+      summary: ResourceNotFoundError
+      value:
+        errors:
+          album:
+          - does not exist
+        code: 1000
+        description: Resource not found
+    ServiceUnavailableExample:
+      summary: ServiceUnavailable
+      value:
+        code: 9999
+        description: Service is temporarily unavailable
+    MaintenanceErrorExample:
+      summary: MaintenanceError
+      value:
+        code: MaintenanceError
+        description: Service is unavailable
+  responses:
+    InvaildRequestGUID:
+      content:
+        application/json:
+          examples:
+            InvaildRequestGUID:
+              $ref: '#/components/examples/AssetInvaildRequestGUIDExample'
+          schema:
+            properties:
+              errors:
+                properties:
+                  <param_name>:
+                    items:
+                      enum:
+                      - Must be a valid GUID
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to an invalid resource identifier.
+    InvaildRequestJSON:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deleteAlbum_400_response'
+      description: The request failed due to an invalid JSON.
+    InvaildRequestSubtype:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <subtype>:
+                    items:
+                      enum:
+                      - is invalid
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to an invalid subtype.
+    InvaildRequestPayload:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  payload.<key>.<subkey>:
+                    items:
+                      enum:
+                      - invalid
+                      - disallowed
+                      - required
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1030
+                type: integer
+              description:
+                enum:
+                - Payload Validation Error
+                type: string
+            type: object
+      description: "The request failed due to an invalid payload. The errors hash\
+        \ returned will specify which payload keys had issues and whether the value\
+        \ was invalid, whether the key is required and missing, or whether the key\
+        \ is not allowed."
+    InvaildRequestAssetIds:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <param_name>:
+                    items:
+                      enum:
+                      - not allowed with asset_ids parameter
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed as no other parameter is allowed with asset_ids
+        parameter.
+    InvaildRequestGroup:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  group:
+                    items:
+                      enum:
+                      - group not expected for each given subtype
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due one of the subtype does not supported group.
+        Only preset or profile supports group parameter.
+    InvaildRequestName:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  name:
+                    items:
+                      enum:
+                      - name not expected for each given subtype
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to one of the subtype does not supported
+        group. Only preset or profile supports name parameter.
+    InvaildRequestFavorite:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  favorite:
+                    items:
+                      enum:
+                      - favorite query param can only be true. favorite=false not
+                        supported
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to invalid favorite status. Currently only
+        true is supported.
+    InvaildRequestMissingParameter:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  parameter:
+                    items:
+                      enum:
+                      - must be specified
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to missing parameter.
+    InvaildRequestMissingSubtypeWithGroupOrName:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  subtype:
+                    items:
+                      enum:
+                      - subtype value expected with group or name
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to missing subtype. This error can occur
+        if group or name parameter is included in the request.
+    InvaildRequestMissingSubtypeWithFavorite:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  subtype:
+                    items:
+                      enum:
+                      - subtype value expected with favorite
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to missing subtype. This error can occur
+        if favorite is included in the request.
+    InvaildRequestInvalidDateTime:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <param_name>:
+                    items:
+                      enum:
+                      - must be a valid XML Schema dateTime
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1005
+                type: integer
+              description:
+                enum:
+                - Input Validation Error
+                type: string
+            type: object
+      description: The request failed due to invalid date/time.
+    Unauthorized:
+      description: The request failed due to missing or invalid authentication token.
+    ForbiddenKey:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/getHealth_403_response'
+      description: The request failed because the API Key is not valid.
+    ForbiddenAccount:
+      content:
+        application/json:
+          schema:
+            properties:
+              code:
+                enum:
+                - 4301
+                type: integer
+              description:
+                enum:
+                - Access forbidden due to account state of resource owner
+                type: string
+            type: object
+      description: The request failed due to the account state.
+    ForbiddenExists:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <resource_type>:
+                    items:
+                      enum:
+                      - already exists
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1002
+                type: integer
+              description:
+                enum:
+                - Resource already exists
+                type: string
+            type: object
+      description: The request failed due to the account state.
+    ForbiddenQuota:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <asset_id>:
+                    items:
+                      enum:
+                      - quota exceeded
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1043
+                type: integer
+              description:
+                enum:
+                - Too many assets
+                type: string
+            type: object
+      description: The request failed due to insufficient storage under the entitlement.
+    Forbidden:
+      content:
+        application/json:
+          schema:
+            properties:
+              code:
+                enum:
+                - 4300
+                type: integer
+              description:
+                enum:
+                - Access is forbidden
+                type: string
+            type: object
+      description: The request failed due to insufficient permissions.
+    ForbiddenClient:
+      content:
+        application/json:
+          schema:
+            properties:
+              code:
+                enum:
+                - 4999
+                type: integer
+              description:
+                enum:
+                - Upgrade required
+                type: string
+              links:
+                properties:
+                  /rels/client_app:
+                    properties:
+                      href:
+                        enum:
+                        - <app_url> (Link to the where to find a new version of the
+                          client application)
+                        type: string
+                    type: object
+                type: object
+            type: object
+      description: The request failed because the client application must be upgraded.
+    ForbiddenOperation:
+      content:
+        application/json:
+          schema:
+            properties:
+              code:
+                enum:
+                - 1016
+                type: integer
+              description:
+                enum:
+                - Requested operation not permitted
+                type: string
+            type: object
+      description: The request failed because the request operation is not permitted
+    NotFound:
+      content:
+        application/json:
+          schema:
+            properties:
+              errors:
+                properties:
+                  <resource_type>:
+                    items:
+                      enum:
+                      - does not exist
+                      type: string
+                    type: array
+                type: object
+              code:
+                enum:
+                - 1000
+                type: integer
+              description:
+                enum:
+                - Resource not found
+                type: string
+            type: object
+      description: The request failed because the resource being requested does not
+        exist.
+    PreconditionFailed:
+      content:
+        application/json:
+          schema:
+            example:
+              base: <base_url>
+              resources:
+              - id: <asset_id>
+                created: <created_date>
+                created_by: <account_id>
+                updated: <updated_date>
+                links:
+                  self:
+                    href: assets/<asset_id>
+                  /rels/master_create:
+                    href: assets/<asset_id>/master
+                  /rels/xmp_develop_create:
+                    href: assets/<asset_id>/xmp/develop
+                  /rels/rendition_type/<rendition_type>:
+                    href: assets/<asset_id>/renditions/<rendition_type>
+                  /rels/xmp/develop:
+                    href: assets/<asset_id>/xmp/develop
+                    invalid: "true"
+                    fileSize: <external_xmp_develop_setting_file_size>
+                payload:
+                  captureDate: <image_capture_date>
+                  importSource:
+                    fileName: <file_name>
+                    fileSize: <image_file_size>
+                    originalWidth: <image_width>
+                    originalHeight: <image_height>
+                    sha256: <image_sha256>
+                    importedOnDevice: <import_device_name>
+                    importedBy: <import_account_id>
+                    importTimestamp: <import_time>
+                  <key>: <value>
+                  develop:
+                    <dev_key>: <dev_value>
+            properties:
+              base:
+                description: Base URL that can be prepended to the 'href' values in
+                  the 'links' to produce fully qualified URLs for future queries.
+                type: string
+              revisions:
+                items:
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/uuid'
+                    created:
+                      $ref: '#/components/schemas/utcDateTime'
+                    created_by:
+                      $ref: '#/components/schemas/uuid'
+                    updated:
+                      $ref: '#/components/schemas/utcDateTime'
+                    links:
+                      type: object
+                    payload:
+                      type: object
+                  type: object
+                type: array
+            type: object
+      description: The request failed because one or more orginal files matching the
+        provided SHA-256 hash already exists. The response body lists the matching
+        original files.
+    TooLarge:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/createAssetOriginal_413_response'
+      description: The request failed because it is too large.
+    UnsupportedMediaType:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/createAsset_415_response'
+      description: The request failed because the Content-Type did not match the request.
+  schemas:
+    SuccessImageAsset:
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        type:
+          enum:
+          - asset
+          type: string
+        subtype:
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        links:
+          type: object
+        payload:
+          type: object
+      type: object
+    SuccessVideoAsset:
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        type:
+          enum:
+          - asset
+          type: string
+        subtype:
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        links:
+          type: object
+        payload:
+          type: object
+        favorites:
+          $ref: '#/components/schemas/SuccessVideoAsset_favorites'
+        fingerprint:
+          type: object
+      type: object
+    Success:
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        resources:
+          items:
+            $ref: '#/components/schemas/Success_resources_inner'
+          type: array
+      type: object
+    SuccessAssetIdsQueryParam:
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        resources:
+          items:
+            $ref: '#/components/schemas/Success_resources_inner'
+          type: array
+        errors:
+          items:
+            $ref: '#/components/schemas/SuccessAssetIdsQueryParam_errors_inner'
+          type: array
+        links:
+          type: object
+      type: object
+    InvaildRequestGUID:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestGUID_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestJSON:
+      properties:
+        errors:
+          $ref: '#/components/schemas/deleteAlbum_400_response_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestSubtype:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestSubtype_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestPayload:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestPayload_errors'
+        code:
+          enum:
+          - 1030
+          type: integer
+        description:
+          enum:
+          - Payload Validation Error
+          type: string
+      type: object
+    InvaildRequestAssetIds:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestAssetIds_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestGroup:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestGroup_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestName:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestName_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestFavorite:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestFavorite_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestMissingParameter:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestMissingParameter_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestMissingSubtypeWithGroupOrName:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestMissingSubtypeWithGroupOrName_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestMissingSubtypeWithFavorite:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestMissingSubtypeWithFavorite_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestInvalidDateTime:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestInvalidDateTime_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    InvaildRequestRenditionType:
+      properties:
+        errors:
+          $ref: '#/components/schemas/InvaildRequestRenditionType_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    NotFound:
+      properties:
+        errors:
+          $ref: '#/components/schemas/NotFound_errors'
+        code:
+          enum:
+          - 1000
+          type: integer
+        description:
+          enum:
+          - Resource not found
+          type: string
+      type: object
+    InvalidAPIKeyError:
+      properties:
+        code:
+          enum:
+          - 403003
+          type: integer
+        description:
+          enum:
+          - API Key is invalid
+          type: string
+      type: object
+    AccessForbiddenError:
+      properties:
+        code:
+          enum:
+          - 4300
+          type: integer
+        description:
+          enum:
+          - Access is forbidden
+          type: string
+      type: object
+    AccessForbiddenAccountStateError:
+      properties:
+        code:
+          enum:
+          - 4301
+          type: integer
+        description:
+          enum:
+          - Access forbidden due to account state of resource owner
+          type: string
+      type: object
+    OperationNotPermittedError:
+      properties:
+        code:
+          enum:
+          - 1016
+          type: integer
+        description:
+          enum:
+          - Requested operation not permitted
+          type: string
+      type: object
+    ForbiddenExistsError:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ForbiddenExistsError_errors'
+        code:
+          enum:
+          - 1002
+          type: integer
+        description:
+          enum:
+          - Resource already exists
+          type: string
+      type: object
+    ForbiddenClientError:
+      properties:
+        code:
+          enum:
+          - 4999
+          type: integer
+        description:
+          enum:
+          - Upgrade required
+          type: string
+        links:
+          $ref: '#/components/schemas/ForbiddenClientError_links'
+      type: object
+    ForbiddenKeyError:
+      properties:
+        code:
+          enum:
+          - 403003
+          type: integer
+        description:
+          enum:
+          - API Key is invalid
+          type: string
+      type: object
+    ForbiddenAccountError:
+      properties:
+        code:
+          enum:
+          - 4301
+          type: integer
+        description:
+          enum:
+          - Access forbidden due to account state of resource owner
+          type: string
+      type: object
+    ForbiddenError:
+      properties:
+        code:
+          enum:
+          - 4300
+          type: integer
+        description:
+          enum:
+          - Access is forbidden
+          type: string
+      type: object
+    Error:
+      properties:
+        code:
+          type: integer
+        description:
+          type: string
+      type: object
+    ResourceExistsError:
+      properties:
+        errors:
+          $ref: '#/components/schemas/ForbiddenExistsError_errors'
+        code:
+          enum:
+          - 1002
+          type: integer
+        description:
+          enum:
+          - Resource already exists
+          type: string
+      type: object
+    QuotaExceededError:
+      properties:
+        errors:
+          $ref: '#/components/schemas/QuotaExceededError_errors'
+        code:
+          enum:
+          - 1043
+          type: integer
+        description:
+          enum:
+          - Too many assets
+          type: string
+      type: object
+    ServiceUnavailable:
+      properties:
+        code:
+          enum:
+          - 9999
+          type: integer
+        description:
+          enum:
+          - Service is temporarily unavailable
+          type: string
+      type: object
+    MaintenanceError:
+      properties:
+        code:
+          enum:
+          - MaintenanceError
+          type: string
+        description:
+          enum:
+          - Service is unavailable
+          type: string
+        subtype:
+          enum:
+          - MaintenanceError
+          type: string
+      type: object
+    iso8601DateTime:
+      description: "datetime in ISO-8601 format (e.g. 2016-01-15T16:18:00-05:00) with\
+        \ both date and time required, including seconds, but timezone optional. Also\
+        \ flexible on allowing some nonstandard timezone formats like 2016-01-15T12:10:32+0000\
+        \ or 2016-01-15T12:10:32-05."
+      pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+        .[0-9]+)?(((\\+|-)(2[0-3]|[0-1][0-9])(:?[0-5][0-9])?)|Z)?$"
+      type: string
+    utcDateTime:
+      description: "datetime in RFC-3339 format (subset of ISO-8601) requiring a UTC\
+        \ time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The datetime\
+        \ must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+      pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+        .[0-9]+)?Z$"
+      type: string
+    max1024CharacterString:
+      maxLength: 1024
+      minLength: 1
+      type: string
+    uuid:
+      pattern: "^[a-f0-9]{32}$"
+      type: string
+    lex64SortOrderString:
+      maxLength: 1024
+      minLength: 1
+      pattern: "^[-_0-9a-zA-Z]*[_0-9a-zA-Z]$"
+      type: string
+    albumPayload:
+      example:
+        cover:
+          id: id
+        parent:
+          id: id
+        publishInfo:
+          remoteLinks:
+            view:
+              href: href
+            edit:
+              href: href
+          servicePayload: servicePayload
+          deleted: true
+          created: created
+          updated: updated
+          remoteId: remoteId
+        userUpdated: userUpdated
+        name: name
+        userCreated: userCreated
+      properties:
+        userCreated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        userUpdated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        name:
+          type: string
+        cover:
+          $ref: '#/components/schemas/albumPayload_cover'
+        parent:
+          $ref: '#/components/schemas/albumPayload_cover'
+        publishInfo:
+          $ref: '#/components/schemas/albumPayload_publishInfo'
+      type: object
+    getHealth_200_response:
+      example:
+        version: version
+      properties:
+        version:
+          type: string
+      type: object
+    getHealth_403_response:
+      properties:
+        code:
+          enum:
+          - 403003
+          type: integer
+        description:
+          enum:
+          - API Key is invalid
+          type: string
+      type: object
+    getHealth_503_response:
+      oneOf:
+      - $ref: '#/components/schemas/ServiceUnavailable'
+      - $ref: '#/components/schemas/MaintenanceError'
+    getAccount_200_response_entitlement_storage:
+      properties:
+        used:
+          description: The size in bytes of content this account that count against
+            the storage limit.
+          type: integer
+        warn:
+          description: Value of used at which the client applications should start
+            warning the user. Absence indicates no warning should be given.
+          type: integer
+        limit:
+          description: Specifies the storage limit in bytes that should be enforced
+            for this account. It will always be greater than or equal to the display_limit.
+          type: integer
+        display_limit:
+          description: Specifies the storage limit in bytes that is displayed to the
+            user for this account.
+          type: integer
+      type: object
+    getAccount_200_response_entitlement:
+      properties:
+        status:
+          description: "The status can take on one of five values from created, trial,\
+            \ trial_expired, subscriber, and subscriber_expired. The created status\
+            \ indicates the user has not yet stepped into any Creative Cloud offering,\
+            \ whether trial or subscription. It is a minimally-entitled Adobe ID."
+          enum:
+          - created
+          - trial
+          - trial_expired
+          - subscriber
+          - subscriber_expired
+          type: string
+        trial:
+          type: object
+        current_subs:
+          type: object
+        storage:
+          $ref: '#/components/schemas/getAccount_200_response_entitlement_storage'
+        deletion_date:
+          type: string
+      type: object
+    getAccount_200_response:
+      example:
+        base: https://lr.adobe.io/
+        id: 96e656e3812b4c2fb670fa74b6a7ad74
+        type: account
+        created: 2017-09-12T17:22:41.751746Z
+        updated: 2019-02-02T17:17:39.663862Z
+        email: customer@domain.com
+        full_name: Adobe Customer
+        first_name: Adobe
+        last_name: Customer
+        wcd_guid: 6CEE5CFE464CC743992017B8
+        country: US
+        config:
+          nimbus_show_different_ui: true
+          search_index: true
+          purge_assets_after: 5184000
+        entitlement:
+          status: subscriber
+          trial:
+            start: 2017-09-12T17:22:41.751746Z
+            end: 2018-02-16T10:35:24.593005Z
+          current_subs:
+            product_id: lightroom
+            store: adobe
+            purchase_date: 2019-02-04T07:25:59.121277Z
+            sao:
+              inpkg_CCLE: "0"
+              inpkg_CCSN: "0"
+              inpkg_LRMP: "1"
+              inpkg_PHLT: "0"
+          storage:
+            used: 11998409416
+            warn: 85899345920
+            limit: 112742891520
+            display_limit: 107374182400
+          deletion_date: 2020-05-06T15:17:51.216255Z
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        type:
+          enum:
+          - account
+          type: string
+        email:
+          type: string
+        full_name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        wcd_guid:
+          type: string
+        country:
+          type: string
+        config:
+          type: object
+        entitlement:
+          $ref: '#/components/schemas/getAccount_200_response_entitlement'
+      type: object
+    Catalog_Payload_Schema_presets:
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        favorites:
+          additionalProperties: false
+          minProperties: 1
+          type: object
+      type: object
+    Catalog_Payload_Schema_settings_universal:
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        connections:
+          additionalProperties: false
+          minProperties: 1
+          type: object
+      type: object
+    Catalog_Payload_Schema_settings:
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        universal:
+          $ref: '#/components/schemas/Catalog_Payload_Schema_settings_universal'
+        desktop:
+          additionalProperties: true
+          minProperties: 1
+          type: object
+        web:
+          additionalProperties: true
+          minProperties: 1
+          type: object
+        mobile:
+          additionalProperties: true
+          minProperties: 1
+          type: object
+        photosdk:
+          additionalProperties: true
+          minProperties: 1
+          type: object
+      type: object
+    Catalog_Payload_Schema:
+      additionalProperties: false
+      properties:
+        userCreated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        userUpdated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        name:
+          maxLength: 1024
+          minLength: 1
+          type: string
+        assetSortOrder:
+          enum:
+          - captureDateAsc
+          - captureDateDesc
+          - importTimestampAsc
+          - importTimestampDesc
+          - fileNameAsc
+          - fileNameDesc
+          - ratingAsc
+          - ratingDesc
+          - userUpdatedAsc
+          - userUpdatedDesc
+          type: string
+        presets:
+          $ref: '#/components/schemas/Catalog_Payload_Schema_presets'
+        profiles:
+          $ref: '#/components/schemas/Catalog_Payload_Schema_presets'
+        settings:
+          $ref: '#/components/schemas/Catalog_Payload_Schema_settings'
+      required:
+      - name
+      title: Catalog Payload Schema
+      type: object
+    getCatalog_200_response:
+      example:
+        created: 2019-07-02T15:16:13.556610Z
+        updated: 2019-07-02T15:26:42.838366Z
+        base: https://lr.adobe.io/v2/
+        id: bf7337d9355c41b7875c9392f918362a
+        type: catalog
+        subtype: lightroom
+        payload:
+          userCreated: 2019-07-02T15:38:14Z
+          userUpdated: 2019-08-16T16:05:13Z
+          name: Lightroom Classic Catalog Name
+          presets:
+            favorites:
+              "09E4A533BEFC4AC582FCF1EF953EB150": true
+              "30E266DB24AE09B97DC3DD687AC298B1": false
+              "5C9AF6F007B96EF1E0DED43E77BE87C3": true
+          profiles:
+            favorites:
+              "53A4A533BAFB4AB582FBF1AF353AB155": true
+              "35A266DB24AA53B37DB3DD687AB238B1": true
+              "5B3AF6F557B36AF1A5DAD43A77BA87B3": false
+          settings:
+            universal:
+              connections:
+                connection_api_key:
+                  created: 2019-07-02T15:26:42.838366Z
+            desktop:
+              desktop_key: desktop_setting
+            web:
+              web_key: web_setting
+            mobile:
+              mobile_key: mobile_setting
+            photosdk:
+              sdk_key: sdk_setting
+        links:
+          self:
+            href: catalogs/bf7337d9355c41b7875c9392f918362a
+          /rels/subtyped_albums:
+            href: "catalogs/bf7337d9355c41b7875c9392f918362a/albums?subtype={subtype}"
+            templated: true
+          /rels/subtyped_assets:
+            href: "catalogs/bf7337d9355c41b7875c9392f918362a/assets?subtype={subtype}"
+            templated: true
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        type:
+          enum:
+          - catalog
+          type: string
+        subtype:
+          enum:
+          - lightroom
+          type: string
+        payload:
+          $ref: '#/components/schemas/Catalog_Payload_Schema'
+        links:
+          type: object
+      type: object
+    getCatalog_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvalidAPIKeyError'
+      - $ref: '#/components/schemas/AccessForbiddenError'
+      - $ref: '#/components/schemas/AccessForbiddenAccountStateError'
+    getAsset_200_response:
+      oneOf:
+      - $ref: '#/components/schemas/SuccessImageAsset'
+      - $ref: '#/components/schemas/SuccessVideoAsset'
+    getAsset_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestGUID'
+      - $ref: '#/components/schemas/InvaildRequestAssetIds'
+      - $ref: '#/components/schemas/InvaildRequestGroup'
+      - $ref: '#/components/schemas/InvaildRequestName'
+      - $ref: '#/components/schemas/InvaildRequestFavorite'
+      - $ref: '#/components/schemas/InvaildRequestMissingSubtypeWithGroupOrName'
+      - $ref: '#/components/schemas/InvaildRequestMissingSubtypeWithFavorite'
+      - $ref: '#/components/schemas/InvaildRequestInvalidDateTime'
+    getAsset_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/ForbiddenKeyError'
+      - $ref: '#/components/schemas/ForbiddenClientError'
+    createAsset_request_payload_importSource:
+      properties:
+        fileName:
+          type: string
+        importedOnDevice:
+          description: Name of the device that imported the image.
+          type: string
+        importedBy:
+          description: Account ID of the user who imported the asset.
+          type: string
+        importTimestamp:
+          description: "datetime in ISO-8601 format (e.g. 2016-01-15T16:18:00-05:00)\
+            \ with both date and time required, including seconds, but timezone optional.\
+            \ Also flexible on allowing some nonstandard timezone formats like 2016-01-15T12:10:32+0000\
+            \ or 2016-01-15T12:10:32-05."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?(((\\+|-)(2[0-3]|[0-1][0-9])(:?[0-5][0-9])?)|Z)?$"
+          type: string
+      required:
+      - fileName
+      - importTimestamp
+      - importedBy
+      - importedOnDevice
+      type: object
+    createAsset_request_payload:
+      properties:
+        userCreated:
+          description: "datetime in ISO-8601 format (e.g. 2016-01-15T16:18:00-05:00)\
+            \ with both date and time required, including seconds, but timezone optional.\
+            \ Also flexible on allowing some nonstandard timezone formats like 2016-01-15T12:10:32+0000\
+            \ or 2016-01-15T12:10:32-05."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?(((\\+|-)(2[0-3]|[0-1][0-9])(:?[0-5][0-9])?)|Z)?$"
+          type: string
+        userUpdated:
+          description: "datetime in ISO-8601 format (e.g. 2016-01-15T16:18:00-05:00)\
+            \ with both date and time required, including seconds, but timezone optional.\
+            \ Also flexible on allowing some nonstandard timezone formats like 2016-01-15T12:10:32+0000\
+            \ or 2016-01-15T12:10:32-05."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?(((\\+|-)(2[0-3]|[0-1][0-9])(:?[0-5][0-9])?)|Z)?$"
+          type: string
+        captureDate:
+          description: Capture date of the asset in ISO-8601 format. Will be populated
+            by the server automatically from the master if set to '0000-00-00T00:00:00'
+          enum:
+          - 0000-00-00T00:00:00
+          - iso8601DateTime
+          type: string
+        importSource:
+          $ref: '#/components/schemas/createAsset_request_payload_importSource'
+      type: object
+    createAsset_request:
+      properties:
+        subtype:
+          enum:
+          - image
+          - video
+          type: string
+        payload:
+          $ref: '#/components/schemas/createAsset_request_payload'
+      required:
+      - captureDate
+      type: object
+    createAsset_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestGUID'
+      - $ref: '#/components/schemas/InvaildRequestJSON'
+      - $ref: '#/components/schemas/InvaildRequestSubtype'
+      - $ref: '#/components/schemas/InvaildRequestPayload'
+    createAsset_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/ForbiddenKeyError'
+      - $ref: '#/components/schemas/ResourceExistsError'
+      - $ref: '#/components/schemas/QuotaExceededError'
+    createAsset_415_response_errors:
+      properties:
+        content_type:
+          items:
+            enum:
+            - should be json
+            - should match the subtype of the asset
+            type: string
+          type: array
+      type: object
+    createAsset_415_response:
+      properties:
+        errors:
+          $ref: '#/components/schemas/createAsset_415_response_errors'
+        code:
+          enum:
+          - 1003
+          type: integer
+        description:
+          enum:
+          - Invalid content type
+          type: string
+      type: object
+    getAssets_200_response:
+      oneOf:
+      - $ref: '#/components/schemas/Success'
+      - $ref: '#/components/schemas/SuccessAssetIdsQueryParam'
+    createAssetOriginal_413_response:
+      properties:
+        code:
+          enum:
+          - 1007
+          type: integer
+        description:
+          enum:
+          - The resource is too big
+          type: string
+      type: object
+    generateRenditions_202_response:
+      example:
+        base: <base_url>
+        links:
+          /rels/rendition_type/<rendition_type>:
+            href: assets/<asset_id>/renditions/<rendition_type>
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        links:
+          type: object
+      type: object
+    generateRenditions_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestGUID'
+      - $ref: '#/components/schemas/InvaildRequestSubtype'
+      - $ref: '#/components/schemas/InvaildRequestMissingParameter'
+      - $ref: '#/components/schemas/InvaildRequestRenditionType'
+    getAssetRendition_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestGUID'
+      - $ref: '#/components/schemas/InvaildRequestRenditionType'
+    getAssetExternalXmpDevelopSetting_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvalidAPIKeyError'
+      - $ref: '#/components/schemas/AccessForbiddenError'
+    putAssetExternalXmpDevelopSetting_request:
+      example:
+        file_href: "/v2/catalogs/{catalog_id}/assets/{source_asset_id}/xmp/develop"
+      properties:
+        file_href:
+          description: External xmp/develop link of source asset.
+          type: string
+      type: object
+    putAssetExternalXmpDevelopSetting_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestGUID'
+      - $ref: '#/components/schemas/InvaildRequestSubtype'
+      - $ref: '#/components/schemas/InvaildRequestJSON'
+      - $ref: '#/components/schemas/InvaildRequestPayload'
+    readAlbum_200_response:
+      example:
+        base: <base_url>/v2/catalogs/<catalog_id>/
+        id: <album_id>
+        type: album
+        subtype: <album_subtype>
+        created: <created_date>
+        updated: <updated_date>
+        payload:
+          name: <album_name>
+          cover:
+            id: <cover_asset_id>
+          parent:
+            id: <parent_album_id>
+        links:
+          self:
+            href: albums/<album_id>
+          /rels/album_assets:
+            href: albums/<album_id>/assets?embed=asset
+          /rels/parent_album:
+            href: albums/<parent_album_id>
+          /rels/cover_asset:
+            href: assets/<cover_asset_id>
+          /rels/rendition_type/320:
+            href: assets/<cover_asset_id>/renditions/320
+          /rels/rendition_type/640:
+            href: assets/<cover_asset_id>/renditions/640
+          /rels/rendition_type/1280:
+            href: assets/<cover_asset_id>/renditions/1280
+          /rels/rendition_type/2048:
+            href: assets/<cover_asset_id>/renditions/2048
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        type:
+          enum:
+          - album
+          type: string
+        subtype:
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        links:
+          type: object
+        payload:
+          type: object
+      type: object
+    readAlbum_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvalidAPIKeyError'
+      - $ref: '#/components/schemas/AccessForbiddenError'
+      - $ref: '#/components/schemas/OperationNotPermittedError'
+    createAlbum_request:
+      properties:
+        subtype:
+          enum:
+          - project
+          - project_set
+          type: string
+        serviceId:
+          description: The API Key (client identifier) of the service creating the
+            album.
+          type: string
+        payload:
+          $ref: '#/components/schemas/albumPayload'
+      type: object
+    createAlbum_400_response:
+      oneOf:
+      - $ref: '#/components/schemas/InvaildRequestJSON'
+      - $ref: '#/components/schemas/InvaildRequestPayload'
+    createAlbum_403_response:
+      oneOf:
+      - $ref: '#/components/schemas/ForbiddenKeyError'
+      - $ref: '#/components/schemas/ResourceExistsError'
+    updateAlbum_request:
+      properties:
+        payload:
+          $ref: '#/components/schemas/albumPayload'
+      type: object
+    deleteAlbum_400_response_errors:
+      properties:
+        body:
+          items:
+            enum:
+            - Must be valid JSON
+            type: string
+          type: array
+      type: object
+    deleteAlbum_400_response:
+      properties:
+        errors:
+          $ref: '#/components/schemas/deleteAlbum_400_response_errors'
+        code:
+          enum:
+          - 1005
+          type: integer
+        description:
+          enum:
+          - Input Validation Error
+          type: string
+      type: object
+    getAlbums_200_response_resources_inner:
+      example:
+        subtype: project
+        payload:
+          cover:
+            id: id
+          parent:
+            id: id
+          publishInfo:
+            remoteLinks:
+              view:
+                href: href
+              edit:
+                href: href
+            servicePayload: servicePayload
+            deleted: true
+            created: created
+            updated: updated
+            remoteId: remoteId
+          userUpdated: userUpdated
+          name: name
+          userCreated: userCreated
+        created: created
+        links: "{}"
+        id: id
+        type: album
+        serviceId: serviceId
+        updated: updated
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        type:
+          enum:
+          - album
+          type: string
+        subtype:
+          enum:
+          - project
+          - project_set
+          type: string
+        serviceId:
+          description: The API Key (client identifier) of the service affiliated with
+            the album.
+          type: string
+        payload:
+          $ref: '#/components/schemas/albumPayload'
+        links:
+          type: object
+      type: object
+    getAlbums_200_response:
+      example:
+        resources:
+        - subtype: project
+          payload:
+            cover:
+              id: id
+            parent:
+              id: id
+            publishInfo:
+              remoteLinks:
+                view:
+                  href: href
+                edit:
+                  href: href
+              servicePayload: servicePayload
+              deleted: true
+              created: created
+              updated: updated
+              remoteId: remoteId
+            userUpdated: userUpdated
+            name: name
+            userCreated: userCreated
+          created: created
+          links: "{}"
+          id: id
+          type: album
+          serviceId: serviceId
+          updated: updated
+        - subtype: project
+          payload:
+            cover:
+              id: id
+            parent:
+              id: id
+            publishInfo:
+              remoteLinks:
+                view:
+                  href: href
+                edit:
+                  href: href
+              servicePayload: servicePayload
+              deleted: true
+              created: created
+              updated: updated
+              remoteId: remoteId
+            userUpdated: userUpdated
+            name: name
+            userCreated: userCreated
+          created: created
+          links: "{}"
+          id: id
+          type: album
+          serviceId: serviceId
+          updated: updated
+        base: base
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        resources:
+          items:
+            $ref: '#/components/schemas/getAlbums_200_response_resources_inner'
+          type: array
+      type: object
+    listAssetsOfAlbum_200_response_album:
+      description: Contains details of the album whose assets are being fetched
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        links:
+          type: object
+      type: object
+    listAssetsOfAlbum_200_response_resources_inner_asset:
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        links:
+          type: object
+        payload:
+          type: object
+      type: object
+    listAssetsOfAlbum_200_response_resources_inner:
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        type:
+          enum:
+          - album_asset
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        links:
+          type: object
+        asset:
+          $ref: '#/components/schemas/listAssetsOfAlbum_200_response_resources_inner_asset'
+      type: object
+    listAssetsOfAlbum_200_response:
+      example:
+        base: <base_url>
+        album:
+          id: <album_id>
+          links:
+            self:
+              href: albums/<album_id>
+        resources:
+        - id: <album_asset_id>
+          type: album_asset
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: albums/<album_id>/assets/<asset_id>
+          asset:
+            id: <asset_id>
+            type: asset
+            subtype: image
+            created: <created_date>
+            updated: <updated_date>
+            links:
+              self:
+                href: assets/<asset_id>
+              /rels/master_create:
+                href: assets/<asset_id>/master
+              /rels/xmp_develop_create:
+                href: assets/<asset_id>/xmp/develop
+              /rels/rendition_type/<rendition_type>:
+                href: assets/<asset_id>/renditions/<rendition_type>
+              /rels/xmp/develop:
+                href: assets/<asset_id>/xmp/develop
+                invalid: "true"
+                fileSize: <external_xmp_develop_setting_file_size>
+            payload:
+              captureDate: <image_capture_date>
+              importSource:
+                fileName: <file_name>
+                fileSize: <image_file_size>
+                originalWidth: <image_width>
+                originalHeight: <image_height>
+                sha256: <image_sha256>
+                importedOnDevice: <import_device_name>
+                importedBy: <import_account_id>
+                importTimestamp: <import_time>
+              <key>: <value>
+              develop:
+                <dev_key>: <dev_value>
+          payload:
+            order: <order>
+            cover: true
+            <key>: <value>
+        - id: <album_asset_id>
+          type: album_asset
+          created: <created_date>
+          updated: <updated_date>
+          links:
+            self:
+              href: albums/<album_id>/assets/<asset_id>
+          asset:
+            id: <asset_id>
+            type: asset
+            subtype: video
+            created: <created_date>
+            updated: <updated_date>
+            links:
+              self:
+                href: assets/<asset_id>
+              /rels/master_create:
+                href: assets/<asset_id>/master
+              /rels/xmp_develop_create:
+                href: assets/<asset_id>/xmp/develop
+              /rels/rendition_type/<rendition_type>:
+                href: assets/<asset_id>/renditions/<rendition_type>
+              /rels/xmp/develop:
+                href: assets/<asset_id>/xmp/develop
+                invalid: "true"
+                fileSize: <external_xmp_develop_setting_file_size>
+            payload:
+              captureDate: <image_capture_date>
+              importSource:
+                fileName: <file_name>
+                fileSize: <image_file_size>
+                originalWidth: <image_width>
+                originalHeight: <image_height>
+                sha256: <image_sha256>
+                importedOnDevice: <import_device_name>
+                importedBy: <import_account_id>
+                importTimestamp: <import_time>
+              video:
+                frameRate:
+                - <video_frame_rate_numerator>
+                - <video_frame_rate_denominator>
+                duration:
+                - <video_duration_numerator>
+                - <video_duration_denominator>
+                displayAspectRatio:
+                - <video_aspect_ratio_numerator>
+                - <video_aspect_ratio_denominator>
+                storageWidth: <video_storage_width>
+                storageHeight: <video_storage_height>
+              <key>: <value>
+              develop:
+                <dev_key>: <dev_value>
+        links:
+          prev:
+            href: albums/<album_id>/assets?captured_after=<first_captured_date>
+          next:
+            href: albums/<album_id>/assets?captured_before=<last_captured_date>
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        album:
+          $ref: '#/components/schemas/listAssetsOfAlbum_200_response_album'
+        resources:
+          items:
+            $ref: '#/components/schemas/listAssetsOfAlbum_200_response_resources_inner'
+          type: array
+        links:
+          type: object
+      type: object
+    addAssetsToAlbum_request_resources_inner_payload_publishInfo:
+      properties:
+        servicePayload:
+          description: "Album asset metadata, unique to the service, encapsulated\
+            \ as a single string with a maximum length of 1024 characters."
+          type: string
+        remoteId:
+          description: Identifier for the album asset that is unique to the publishing
+            service.
+          type: string
+      type: object
+    addAssetsToAlbum_request_resources_inner_payload:
+      properties:
+        cover:
+          description: Whether this asset should be used as the album cover.
+          type: boolean
+        order:
+          maxLength: 1024
+          minLength: 1
+          pattern: "^[-_0-9a-zA-Z]*[_0-9a-zA-Z]$"
+          type: string
+        publishInfo:
+          $ref: '#/components/schemas/addAssetsToAlbum_request_resources_inner_payload_publishInfo'
+      type: object
+    addAssetsToAlbum_request_resources_inner:
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        payload:
+          $ref: '#/components/schemas/addAssetsToAlbum_request_resources_inner_payload'
+      type: object
+    addAssetsToAlbum_request:
+      properties:
+        resources:
+          items:
+            $ref: '#/components/schemas/addAssetsToAlbum_request_resources_inner'
+          type: array
+      type: object
+    addAssetsToAlbum_201_response_resources_inner:
+      example:
+        id: id
+        href: href
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        href:
+          type: string
+      type: object
+    addAssetsToAlbum_201_response_errors_inner_errors:
+      example:
+        asset:
+        - asset
+        - asset
+      properties:
+        asset:
+          items:
+            type: string
+          type: array
+      type: object
+    addAssetsToAlbum_201_response_errors_inner:
+      example:
+        code: 6
+        subtype: subtype
+        description: description
+        http_status: 0
+        id: id
+        errors:
+          asset:
+          - asset
+          - asset
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        http_status:
+          type: integer
+        code:
+          type: integer
+        description:
+          type: string
+        subtype:
+          type: string
+        errors:
+          $ref: '#/components/schemas/addAssetsToAlbum_201_response_errors_inner_errors'
+      type: object
+    addAssetsToAlbum_201_response:
+      example:
+        resources:
+        - id: id
+          href: href
+        - id: id
+          href: href
+        errors:
+        - code: 6
+          subtype: subtype
+          description: description
+          http_status: 0
+          id: id
+          errors:
+            asset:
+            - asset
+            - asset
+        - code: 6
+          subtype: subtype
+          description: description
+          http_status: 0
+          id: id
+          errors:
+            asset:
+            - asset
+            - asset
+        base: base
+      properties:
+        base:
+          description: Base URL that can be prepended to the 'href' values in the
+            'links' to produce fully qualified URLs for future queries.
+          type: string
+        resources:
+          items:
+            $ref: '#/components/schemas/addAssetsToAlbum_201_response_resources_inner'
+          type: array
+        errors:
+          items:
+            $ref: '#/components/schemas/addAssetsToAlbum_201_response_errors_inner'
+          type: array
+      type: object
+    SuccessVideoAsset_favorites:
+      properties:
+        account_id:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+      type: object
+    Success_resources_inner:
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        type:
+          enum:
+          - asset
+          type: string
+        subtype:
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        links:
+          type: object
+        payload:
+          type: object
+      type: object
+    SuccessAssetIdsQueryParam_errors_inner:
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+        code:
+          type: integer
+        description:
+          type: string
+      type: object
+    InvaildRequestGUID_errors:
+      properties:
+        <param_name>:
+          items:
+            enum:
+            - Must be a valid GUID
+            type: string
+          type: array
+      type: object
+    InvaildRequestSubtype_errors:
+      properties:
+        <subtype>:
+          items:
+            enum:
+            - is invalid
+            type: string
+          type: array
+      type: object
+    InvaildRequestPayload_errors:
+      properties:
+        payload.<key>.<subkey>:
+          items:
+            enum:
+            - invalid
+            - disallowed
+            - required
+            type: string
+          type: array
+      type: object
+    InvaildRequestAssetIds_errors:
+      properties:
+        <param_name>:
+          items:
+            enum:
+            - not allowed with asset_ids parameter
+            type: string
+          type: array
+      type: object
+    InvaildRequestGroup_errors:
+      properties:
+        group:
+          items:
+            enum:
+            - group not expected for each given subtype
+            type: string
+          type: array
+      type: object
+    InvaildRequestName_errors:
+      properties:
+        name:
+          items:
+            enum:
+            - name not expected for each given subtype
+            type: string
+          type: array
+      type: object
+    InvaildRequestFavorite_errors:
+      properties:
+        favorite:
+          items:
+            enum:
+            - favorite query param can only be true. favorite=false not supported
+            type: string
+          type: array
+      type: object
+    InvaildRequestMissingParameter_errors:
+      properties:
+        parameter:
+          items:
+            enum:
+            - must be specified
+            type: string
+          type: array
+      type: object
+    InvaildRequestMissingSubtypeWithGroupOrName_errors:
+      properties:
+        subtype:
+          items:
+            enum:
+            - subtype value expected with group or name
+            type: string
+          type: array
+      type: object
+    InvaildRequestMissingSubtypeWithFavorite_errors:
+      properties:
+        subtype:
+          items:
+            enum:
+            - subtype value expected with favorite
+            type: string
+          type: array
+      type: object
+    InvaildRequestInvalidDateTime_errors:
+      properties:
+        <param_name>:
+          items:
+            enum:
+            - must be a valid XML Schema dateTime
+            type: string
+          type: array
+      type: object
+    InvaildRequestRenditionType_errors:
+      properties:
+        rendition_type:
+          items:
+            enum:
+            - not supported
+            type: string
+          type: array
+      type: object
+    NotFound_errors:
+      properties:
+        <resource_type>:
+          items:
+            enum:
+            - does not exist
+            type: string
+          type: array
+      type: object
+    ForbiddenExistsError_errors:
+      properties:
+        <resource_type>:
+          items:
+            enum:
+            - already exists
+            type: string
+          type: array
+      type: object
+    ForbiddenClientError_links__rels_client_app:
+      properties:
+        href:
+          enum:
+          - <app_url> (Link to the where to find a new version of the client application)
+          type: string
+      type: object
+    ForbiddenClientError_links:
+      properties:
+        /rels/client_app:
+          $ref: '#/components/schemas/ForbiddenClientError_links__rels_client_app'
+      type: object
+    QuotaExceededError_errors:
+      properties:
+        <asset_id>:
+          items:
+            enum:
+            - quota exceeded
+            type: string
+          type: array
+      type: object
+    albumPayload_cover:
+      example:
+        id: id
+      properties:
+        id:
+          pattern: "^[a-f0-9]{32}$"
+          type: string
+      type: object
+    albumPayload_publishInfo_remoteLinks_edit:
+      example:
+        href: href
+      properties:
+        href:
+          description: Fully-formed URL to a location to edit affiliated content (identified
+            by remoteId) on the external service.
+          type: string
+      type: object
+    albumPayload_publishInfo_remoteLinks_view:
+      example:
+        href: href
+      properties:
+        href:
+          description: Fully-formed URL to a location to view affiliated content (identified
+            by remoteId) on the external service.
+          type: string
+      type: object
+    albumPayload_publishInfo_remoteLinks:
+      description: Links to affiliated URLs on the publishing service.
+      example:
+        view:
+          href: href
+        edit:
+          href: href
+      properties:
+        edit:
+          $ref: '#/components/schemas/albumPayload_publishInfo_remoteLinks_edit'
+        view:
+          $ref: '#/components/schemas/albumPayload_publishInfo_remoteLinks_view'
+      type: object
+    albumPayload_publishInfo:
+      example:
+        remoteLinks:
+          view:
+            href: href
+          edit:
+            href: href
+        servicePayload: servicePayload
+        deleted: true
+        created: created
+        updated: updated
+        remoteId: remoteId
+      properties:
+        servicePayload:
+          description: "Album metadata, unique to the service, encapsulated as a single\
+            \ string with a maximum length of 1024 characters."
+          type: string
+        remoteId:
+          description: Identifier for the album that is unique to the publishing service.
+          type: string
+        created:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        updated:
+          description: "datetime in RFC-3339 format (subset of ISO-8601) requiring\
+            \ a UTC time ending with Z (so -00:00 or +00-00 suffix NOT allowed). The\
+            \ datetime must have date and time, including seconds, e.g. 2016-01-15T09:23:34Z."
+          pattern: "^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-((02-([1-2][0-9]|0[1-9]))|((01|03|05|07|08|10|12)-(3[0-1]|[1-2][0-9]|0[1-9]))|((04|06|09|11)-(30|[1-2][0-9]|0[1-9])))T(2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9](\\\
+            .[0-9]+)?Z$"
+          type: string
+        deleted:
+          description: True if the externally affiliated content (identified by remoteId)
+            was deleted; acts as a tombstone.
+          type: boolean
+        remoteLinks:
+          $ref: '#/components/schemas/albumPayload_publishInfo_remoteLinks'
+      type: object

@@ -17,7 +17,7 @@ var albumsCmd = &cobra.Command{
 		albums, err := api.Albums()
 		cobra.CheckErr(err)
 		albums.Print()
-		albums.EnsureAlbumUnder(config.ScansAlbumID, "2023")
+		//albums.EnsureAlbumUnder(config.ScansAlbumID, "2023")
 	},
 }
 

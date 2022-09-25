@@ -1,147 +1,56 @@
 package lightroom
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"net/http"
+	"context"
 
-	"github.com/oklog/ulid/v2"
+	"github.com/ys/rolls/openapi"
 )
 
 type API struct {
 	token    string
 	clientID string
-}
-
-type Catalog struct {
-	ID string `json:"id"`
-}
-
-type AlbumsResponse struct {
-	Base      string     `json:"base"`
-	Resources []Resource `json:"resources"`
-}
-
-type Resource struct {
-	ID        string
-	Type      string
-	Subtype   string
-	ServiceID string
-	Payload   struct {
-		Name        string `json:"name"`
-		UserCreated string `json:"userCreated"`
-		Cover       struct {
-			ID string
-		}
-		Parent struct {
-			ID string
-		}
-	} `json:"payload"`
+	client   openapi.APIClient
 }
 
 func New(clientID, token string) *API {
+	cfg := openapi.NewConfiguration()
+	client := openapi.NewAPIClient(cfg)
+
 	return &API{
 		token:    token,
 		clientID: clientID,
+		client:   *client,
 	}
 }
 
 func (a *API) Albums() (*Albums, error) {
-	catalog := Catalog{}
-	err := a.Get("/v2/catalog", &catalog)
+	catalog, err := a.Catalog()
 	if err != nil {
 		return nil, err
 	}
-	albumsResponse := AlbumsResponse{}
-	err = a.Get("/v2/catalogs/"+catalog.ID+"/albums?limit=1000", &albumsResponse)
+	req := a.client.AlbumsApi.GetAlbums(context.Background(), *catalog.Id)
+	albums, _, err := req.Limit(1000).XAPIKey(a.clientID).Authorization("Bearer " + a.token).Execute()
 	if err != nil {
 		return nil, err
 	}
-	return &Albums{api: *a, resources: albumsResponse.Resources}, nil
+	return &Albums{api: *a, resources: albums.Resources}, nil
 }
 
-func (a *API) Catalog() (*Catalog, error) {
-	catalog := Catalog{}
-	err := a.Get("/v2/catalog", &catalog)
+func (a *API) Catalog() (*openapi.GetCatalog200Response, error) {
+	req := a.client.CatalogsApi.GetCatalog(context.Background())
+	catalog, _, err := req.XAPIKey(a.clientID).Authorization("Bearer " + a.token).Execute()
 	if err != nil {
 		panic(err)
 	}
-	return &catalog, err
+	return catalog, err
 }
 
-type CreateAlbumPayload struct {
-	subtype string
-	payload struct {
-		userCreated string
-		userUpdated string
-		name        string
-		parent      struct {
-			ID string `json:"id"`
-		}
-	}
-}
-
-func (a *API) CreateAlbum(name, parentID string) (*Resource, error) {
-	id := ulid.Make()
-	catalog := Catalog{}
-	err := a.Get("/v2/catalog", &catalog)
+func (a *API) CreateAlbum(name, parentID string) error {
+	_, err := a.Catalog()
 	if err != nil {
-		return nil, err
-	}
-	var payload io.Reader
-	var response AlbumsResponse
-	err = a.Put("/v2/catalogs/"+catalog.ID+"/albums/"+id.String(), payload, response)
-
-	return nil, nil
-
-}
-
-func (a *API) Get(path string, object interface{}) error {
-	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "https://lr.adobe.io"+path, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("X-API-Key", a.clientID)
-	req.Header.Add("Authorization", "Bearer "+a.token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	whilePart := []byte("while (1) {}")
-	if err = json.Unmarshal(bytes.TrimPrefix(body, whilePart), object); err != nil {
 		return err
 	}
 
 	return nil
-}
 
-func (a *API) Put(path string, data io.Reader, object interface{}) error {
-	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, "https://lr.adobe.io"+path, data)
-	req.Header.Add("X-API-Key", a.clientID)
-	req.Header.Add("Authorization", "Bearer "+a.token)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	whilePart := []byte("while (1) {}")
-	if err = json.Unmarshal(bytes.TrimPrefix(body, whilePart), object); err != nil {
-		return err
-	}
-
-	return nil
 }
