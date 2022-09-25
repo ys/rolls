@@ -14,7 +14,10 @@ var albumsCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		api := lightroom.New(config.ClientID, config.AccessToken)
-		api.Albums()
+		albums, err := api.Albums()
+		cobra.CheckErr(err)
+		albums.Print()
+		albums.EnsureAlbumUnder(config.ScansAlbumID, "2023")
 	},
 }
 

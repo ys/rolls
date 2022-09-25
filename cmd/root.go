@@ -18,6 +18,7 @@ type Config struct {
 	ClientID     string `mapstructure:"client_id"`
 	ClientSecret string `mapstructure:"client_secret"`
 	AccessToken  string `mapstructure:"access_token"`
+	ScansAlbumID string `mapstructure:"scans_album_id"`
 }
 
 var config Config

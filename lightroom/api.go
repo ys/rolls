@@ -3,10 +3,10 @@ package lightroom
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
+
+	"github.com/oklog/ulid/v2"
 )
 
 type API struct {
@@ -19,10 +19,11 @@ type Catalog struct {
 }
 
 type AlbumsResponse struct {
-	Base      string  `json:"base"`
-	Resources []Album `json:"resources"`
+	Base      string     `json:"base"`
+	Resources []Resource `json:"resources"`
 }
-type Album struct {
+
+type Resource struct {
 	ID        string
 	Type      string
 	Subtype   string
@@ -46,38 +47,18 @@ func New(clientID, token string) *API {
 	}
 }
 
-func (a *API) Albums() error {
+func (a *API) Albums() (*Albums, error) {
 	catalog := Catalog{}
 	err := a.Get("/v2/catalog", &catalog)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	albumsResponse := AlbumsResponse{}
 	err = a.Get("/v2/catalogs/"+catalog.ID+"/albums?limit=1000", &albumsResponse)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	kids := map[string][]Album{}
-	parents := []Album{}
-	for _, album := range albumsResponse.Resources {
-		if album.Payload.Parent.ID != "" {
-			kids[album.Payload.Parent.ID] = append(kids[album.Payload.Parent.ID], album)
-		} else {
-			parents = append(parents, album)
-		}
-	}
-	for _, root := range parents {
-		fmt.Println(root.Payload.Name)
-		printKids(root, kids, 0)
-	}
-	return nil
-}
-
-func printKids(parent Album, kids map[string][]Album, level int) {
-	for _, album := range kids[parent.ID] {
-		fmt.Println(strings.Repeat(" ", level+2), album.Payload.Name)
-		printKids(album, kids, level+2)
-	}
+	return &Albums{api: a, resources: albumsResponse.Resources}, nil
 }
 
 func (a *API) Catalog() (*Catalog, error) {
@@ -89,12 +70,60 @@ func (a *API) Catalog() (*Catalog, error) {
 	return &catalog, err
 }
 
+type CreateAlbumPayload struct {
+	subtype string
+	payload struct {
+		userCreated string
+		userUpdated string
+		name        string
+		parent      struct {
+			ID string `json:"id"`
+		}
+	}
+}
+
+func (a *API) CreateAlbum(name, parentID string) (*Resource, error) {
+	id := ulid.Make()
+	catalog := Catalog{}
+	err := a.Get("/v2/catalog", &catalog)
+	if err != nil {
+		return nil, err
+	}
+	err = a.Put("/v2/catalogs/"+catalog.ID+"/albums/"+id, payload, response)
+
+	return nil, nil
+
+}
+
 func (a *API) Get(path string, object interface{}) error {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://lr.adobe.io"+path, nil)
+	req, err := http.NewRequest(http.MethodGet, "https://lr.adobe.io"+path, nil)
 	if err != nil {
 		return err
 	}
+	req.Header.Add("X-API-Key", a.clientID)
+	req.Header.Add("Authorization", "Bearer "+a.token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	whilePart := []byte("while (1) {}")
+	if err = json.Unmarshal(bytes.TrimPrefix(body, whilePart), object); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *API) Put(path string, data io.Reader, object interface{}) error {
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, "https://lr.adobe.io"+path, data)
 	req.Header.Add("X-API-Key", a.clientID)
 	req.Header.Add("Authorization", "Bearer "+a.token)
 
