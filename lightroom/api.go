@@ -58,7 +58,7 @@ func (a *API) Albums() (*Albums, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Albums{api: a, resources: albumsResponse.Resources}, nil
+	return &Albums{api: *a, resources: albumsResponse.Resources}, nil
 }
 
 func (a *API) Catalog() (*Catalog, error) {
@@ -89,7 +89,9 @@ func (a *API) CreateAlbum(name, parentID string) (*Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = a.Put("/v2/catalogs/"+catalog.ID+"/albums/"+id, payload, response)
+	var payload io.Reader
+	var response AlbumsResponse
+	err = a.Put("/v2/catalogs/"+catalog.ID+"/albums/"+id.String(), payload, response)
 
 	return nil, nil
 
