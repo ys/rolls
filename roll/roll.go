@@ -33,9 +33,39 @@ type Rolls []Roll
 type Cameras map[string]*Camera
 type Films map[string]*Film
 
+func (r *Rolls) Items() []list.Item {
+	items := []list.Item{}
+	for _, roll := range *r {
+		items = append(items, roll)
+	}
+	return items
+}
+func (r *Cameras) Items() []list.Item {
+	items := []list.Item{}
+	for _, camera := range *r {
+		items = append(items, *camera)
+	}
+	return items
+}
+func (r *Films) Items() []list.Item {
+	items := []list.Item{}
+	for _, film := range *r {
+		items = append(items, *film)
+	}
+	return items
+}
+
 func (i Roll) Title() string       { return i.Metadata.RollNumber }
 func (i Roll) Description() string { return i.Metadata.CameraID + " - " + i.Metadata.FilmID }
 func (i Roll) FilterValue() string { return i.Metadata.RollNumber }
+
+func (i Camera) Title() string       { return i.Name() }
+func (i Camera) Description() string { return "" }
+func (i Camera) FilterValue() string { return i.Name() }
+
+func (i Film) Title() string       { return i.NameWithBrand() }
+func (i Film) Description() string { return fmt.Sprintf("%d", i.Iso) }
+func (i Film) FilterValue() string { return i.NameWithBrand() }
 
 type Camera struct {
 	ID       string `yaml:"-"`

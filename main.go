@@ -35,18 +35,26 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
-		// h, v := docStyle.GetFrameSize()
-		//m.list.SetSize(msg.Width-h, msg.Height-v)
+		h, v := docStyle.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
 	// Is it a key press?
 	case tea.KeyMsg:
 
 		// Cool, what was the actual key pressed?
 		switch msg.String() {
 
+		case "r":
+			m.CurrentView = "rolls"
+			m.list.SetItems(m.Rolls.Items())
+			m.list.Title = "📷 - Rolls"
 		case "c":
 			m.CurrentView = "cameras"
+			m.list.SetItems(m.Cameras.Items())
+			m.list.Title = "📷 - Cameras"
 		case "f":
 			m.CurrentView = "films"
+			m.list.SetItems(m.Films.Items())
+			m.list.Title = "📷 - Films"
 		// These keys should exit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -60,19 +68,12 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	//m.list, cmd = m.list.Update(msg)
+	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
 
 func (m Rolls) View() string {
-	switch m.CurrentView {
-	case "films":
-		return m.Films.View()
-	case "cameras":
-		return m.Cameras.View()
-	default:
-		return m.Rolls.View()
-	}
+	return m.list.View()
 }
 
 func main() {
@@ -99,6 +100,9 @@ func main() {
 		panic(err)
 	}
 	r := New(cfg, &rolls, &cameras, &films)
+	r.CurrentView = "rolls"
+	r.list = list.New(r.Rolls.Items(), list.NewDefaultDelegate(), 0, 0)
+	r.list.Title = "📷 - Rolls"
 	p := tea.NewProgram(r, tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
