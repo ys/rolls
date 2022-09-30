@@ -74,6 +74,8 @@ func (m tabs) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.active = "Cameras"
 		case "f":
 			m.active = "Films"
+		case "a":
+			m.active = "Albums"
 		}
 	case tea.MouseMsg:
 		if msg.Type != tea.MouseLeft {
