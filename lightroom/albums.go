@@ -13,17 +13,17 @@ import (
 type Albums struct {
 	cfg       *config.Config
 	api       API
-	resources []openapi.GetAlbums200ResponseResourcesInner
+	Resources []openapi.GetAlbums200ResponseResourcesInner
 }
 
 func (a *Albums) getChildrenAlbums(ID string) (*Albums, error) {
 	children := []openapi.GetAlbums200ResponseResourcesInner{}
-	for _, album := range a.resources {
+	for _, album := range a.Resources {
 		if album.Payload.Parent != nil && *album.Payload.Parent.Id == ID {
 			children = append(children, album)
 		}
 	}
-	return &Albums{resources: children}, nil
+	return &Albums{Resources: children}, nil
 }
 
 func (a *Albums) EnsureAlbumUnder(ID, name string) error {
@@ -32,7 +32,7 @@ func (a *Albums) EnsureAlbumUnder(ID, name string) error {
 		return err
 	}
 	var parent *openapi.GetAlbums200ResponseResourcesInner
-	for _, album := range a.resources {
+	for _, album := range a.Resources {
 		if *album.Id == ID {
 			parent = &album
 			break
@@ -46,7 +46,7 @@ func (a *Albums) EnsureAlbumUnder(ID, name string) error {
 		return err
 	}
 	var currentAlbum *openapi.GetAlbums200ResponseResourcesInner
-	for _, album := range children.resources {
+	for _, album := range children.Resources {
 		if *album.Payload.Name == name {
 			currentAlbum = &album
 			break
@@ -68,7 +68,7 @@ func (a *Albums) EnsureAlbumUnder(ID, name string) error {
 func (a *Albums) Print() {
 	kids := map[string][]openapi.GetAlbums200ResponseResourcesInner{}
 	parents := []openapi.GetAlbums200ResponseResourcesInner{}
-	for _, album := range a.resources {
+	for _, album := range a.Resources {
 		if album.Payload.Parent != nil && *album.Payload.Parent.Id != "" {
 			kids[*album.Payload.Parent.Id] = append(kids[*album.Payload.Parent.Id], album)
 		} else {

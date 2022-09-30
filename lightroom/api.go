@@ -34,7 +34,7 @@ func (a *API) Albums(cfg *config.Config) (*Albums, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Albums{api: *a, resources: albums.Resources, cfg: cfg}, nil
+	return &Albums{api: *a, Resources: albums.Resources, cfg: cfg}, nil
 }
 
 func (a *API) Catalog() (*openapi.GetCatalog200Response, error) {
