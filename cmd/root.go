@@ -1,27 +1,14 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/ys/rolls/config"
 )
 
 var cfgFile string
-
-type Config struct {
-	ScansPath    string `mapstructure:"scans_path"`
-	AuthorizeURL string `mapstructure:"authorize_url"`
-	TokenURL     string `mapstructure:"token_url"`
-	Scopes       string `mapstructure:"scopes"`
-	ClientID     string `mapstructure:"client_id"`
-	ClientSecret string `mapstructure:"client_secret"`
-	AccessToken  string `mapstructure:"access_token"`
-	ScansAlbumID string `mapstructure:"scans_album_id"`
-}
-
-var config Config
+var cfg *config.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -59,30 +46,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".rolls" (without extension).
-		path := home + "/.config/rolls"
-		err = os.MkdirAll(path, os.ModePerm)
-		cobra.CheckErr(err)
-		viper.AddConfigPath(home + "/.config/rolls")
-		viper.SetConfigType("yaml")
-		viper.SetConfigName("config.yml")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
-	err := viper.Unmarshal(&config)
-
+	var err error
+	cfg, err = config.New(cfgFile)
 	cobra.CheckErr(err)
 }

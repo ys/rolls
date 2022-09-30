@@ -19,7 +19,7 @@ It will also filter down by year or camera or film
 		year, err := cmd.Flags().GetInt("year")
 		cobra.CheckErr(err)
 
-		root := config.ScansPath
+		root := cfg.ScansPath
 		fmt.Printf("Reading rolls from: %s\n", root)
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
@@ -32,8 +32,8 @@ It will also filter down by year or camera or film
 		table.Wrap = true // wrap columns
 		for _, roll := range rolls {
 			table.AddRow("roll:", roll.Metadata.RollNumber)
-			table.AddRow("camera:", roll.Camera())
-			table.AddRow("film:", roll.Film())
+			table.AddRow("camera:", roll.Metadata.CameraID)
+			table.AddRow("film:", roll.Metadata.FilmID)
 			table.AddRow("shot at:", roll.Metadata.ShotAt)
 			table.AddRow("---") // blank
 		}

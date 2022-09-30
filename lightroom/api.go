@@ -3,6 +3,7 @@ package lightroom
 import (
 	"context"
 
+	"github.com/ys/rolls/config"
 	"github.com/ys/rolls/openapi"
 )
 
@@ -23,7 +24,7 @@ func New(clientID, token string) *API {
 	}
 }
 
-func (a *API) Albums() (*Albums, error) {
+func (a *API) Albums(cfg *config.Config) (*Albums, error) {
 	catalog, err := a.Catalog()
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func (a *API) Albums() (*Albums, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Albums{api: *a, resources: albums.Resources}, nil
+	return &Albums{api: *a, resources: albums.Resources, cfg: cfg}, nil
 }
 
 func (a *API) Catalog() (*openapi.GetCatalog200Response, error) {

@@ -1,14 +1,17 @@
 package lightroom
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/ys/rolls/config"
 	"github.com/ys/rolls/openapi"
 )
 
 type Albums struct {
+	cfg       *config.Config
 	api       API
 	resources []openapi.GetAlbums200ResponseResourcesInner
 }
@@ -16,14 +19,18 @@ type Albums struct {
 func (a *Albums) getChildrenAlbums(ID string) (*Albums, error) {
 	children := []openapi.GetAlbums200ResponseResourcesInner{}
 	for _, album := range a.resources {
-		if *album.Payload.Parent.Id == ID {
+		if album.Payload.Parent != nil && *album.Payload.Parent.Id == ID {
 			children = append(children, album)
 		}
 	}
 	return &Albums{resources: children}, nil
 }
 
-func (a *Albums) EnsureAlbumUnder(ID, name string) (*openapi.GetAlbums200ResponseResourcesInner, error) {
+func (a *Albums) EnsureAlbumUnder(ID, name string) error {
+	catalog, err := a.api.Catalog()
+	if err != nil {
+		return err
+	}
 	var parent *openapi.GetAlbums200ResponseResourcesInner
 	for _, album := range a.resources {
 		if *album.Id == ID {
@@ -32,11 +39,11 @@ func (a *Albums) EnsureAlbumUnder(ID, name string) (*openapi.GetAlbums200Respons
 		}
 	}
 	if parent == nil {
-		return nil, errors.New(fmt.Sprintf("Parent not found with ID: %s", ID))
+		return errors.New(fmt.Sprintf("Parent not found with ID: %s", ID))
 	}
 	children, err := a.getChildrenAlbums(ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	var currentAlbum *openapi.GetAlbums200ResponseResourcesInner
 	for _, album := range children.resources {
@@ -46,11 +53,16 @@ func (a *Albums) EnsureAlbumUnder(ID, name string) (*openapi.GetAlbums200Respons
 		}
 	}
 	if currentAlbum == nil {
-		if err = a.api.CreateAlbum(name, ID); err != nil {
-			return nil, err
+		album := openapi.NewCreateAlbumRequest()
+		album.Payload.SetName(name)
+		album.Payload.SetParent(openapi.AlbumPayloadCover{Id: &a.cfg.ScansAlbumID})
+		req := a.api.client.AlbumsApi.CreateAlbum(context.Background(), *catalog.Id, ID).
+			Authorization("Bearer " + a.api.token).XAPIKey(a.api.clientID).CreateAlbumRequest(*album)
+		if _, err = req.Execute(); err != nil {
+			return err
 		}
 	}
-	return currentAlbum, nil
+	return nil
 }
 
 func (a *Albums) Print() {
@@ -64,7 +76,7 @@ func (a *Albums) Print() {
 		}
 	}
 	for _, root := range parents {
-		fmt.Println(root.Payload.Name)
+		fmt.Println(*root.Payload.Name)
 		printKids(root, kids, 0)
 	}
 }

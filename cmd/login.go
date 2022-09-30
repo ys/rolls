@@ -23,22 +23,22 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to Adobe",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(config)
+		fmt.Println(cfg)
 		pkce, err := oauth2params.NewPKCE()
 		if err != nil {
 			log.Fatalf("error: %s", err)
 		}
 		ready := make(chan string, 1)
 		defer close(ready)
-		cfg := oauth2cli.Config{
+		oauthCfg := oauth2cli.Config{
 			OAuth2Config: oauth2.Config{
-				ClientID:     config.ClientID,
-				ClientSecret: config.ClientSecret,
+				ClientID:     cfg.ClientID,
+				ClientSecret: cfg.ClientSecret,
 				Endpoint: oauth2.Endpoint{
-					AuthURL:  config.AuthorizeURL,
-					TokenURL: config.TokenURL,
+					AuthURL:  cfg.AuthorizeURL,
+					TokenURL: cfg.TokenURL,
 				},
-				Scopes: strings.Split(config.Scopes, ","),
+				Scopes: strings.Split(cfg.Scopes, ","),
 			},
 			AuthCodeOptions:      pkce.AuthCodeOptions(),
 			RedirectURLHostname:  "rolls.localhost",
@@ -62,13 +62,13 @@ var loginCmd = &cobra.Command{
 			}
 		})
 		eg.Go(func() error {
-			token, err := oauth2cli.GetToken(ctx, cfg)
+			token, err := oauth2cli.GetToken(ctx, oauthCfg)
 			if err != nil {
 				return fmt.Errorf("could not get a token: %w", err)
 			}
 			log.Printf("You got a valid token until %s", token.Expiry)
-			config.AccessToken = token.AccessToken
-			viper.Set("access_token", config.AccessToken)
+			cfg.AccessToken = token.AccessToken
+			viper.Set("access_token", cfg.AccessToken)
 			viper.WriteConfig()
 			return nil
 		})
