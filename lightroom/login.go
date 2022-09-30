@@ -3,7 +3,6 @@ package lightroom
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/int128/oauth2cli"
 	"github.com/int128/oauth2cli/oauth2params"
@@ -11,6 +10,12 @@ import (
 	"github.com/ys/rolls/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
+)
+
+var (
+	authorizeURL = "https://ims-na1.adobelogin.com/ims/authorize/v2"
+	tokenURL     = "https://ims-na1.adobelogin.com/ims/token/v3"
+	scopes       = []string{"offline_access", "openid", "lr_partner_apis"}
 )
 
 func Login(cfg *config.Config) (string, error) {
@@ -25,10 +30,10 @@ func Login(cfg *config.Config) (string, error) {
 			ClientID:     cfg.ClientID,
 			ClientSecret: cfg.ClientSecret,
 			Endpoint: oauth2.Endpoint{
-				AuthURL:  cfg.AuthorizeURL,
-				TokenURL: cfg.TokenURL,
+				AuthURL:  authorizeURL,
+				TokenURL: tokenURL,
 			},
-			Scopes: strings.Split(cfg.Scopes, ","),
+			Scopes: scopes,
 		},
 		AuthCodeOptions:      pkce.AuthCodeOptions(),
 		RedirectURLHostname:  "localhost",

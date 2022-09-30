@@ -57,6 +57,10 @@ type tabs struct {
 	items  []string
 }
 
+type activeTabMsg struct {
+	tab string
+}
+
 func (m tabs) Init() tea.Cmd {
 	return nil
 }
@@ -65,18 +69,9 @@ func (m tabs) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
-	case tea.KeyMsg:
-		switch msg.String() {
+	case activeTabMsg:
+		m.active = msg.tab
 
-		case "r":
-			m.active = "Rolls"
-		case "c":
-			m.active = "Cameras"
-		case "f":
-			m.active = "Films"
-		case "a":
-			m.active = "Albums"
-		}
 	case tea.MouseMsg:
 		if msg.Type != tea.MouseLeft {
 			return m, nil
