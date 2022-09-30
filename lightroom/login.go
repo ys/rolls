@@ -45,6 +45,7 @@ func Login(cfg *config.Config) (string, error) {
 			if err := browser.OpenURL(url); err != nil {
 				return err
 			}
+			fmt.Println("Opened browser for " + url)
 			return nil
 		case <-ctx.Done():
 			return fmt.Errorf("context done while waiting for authorization: %w", ctx.Err())
