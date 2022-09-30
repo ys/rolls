@@ -41,30 +41,19 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		msg.Width -= 4
 		m.list.SetSize(msg.Width-4, msg.Height-8)
 
+	case tea.MouseMsg:
+		m.tabs, cmd = m.tabs.Update(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 
 		case "r":
-			m.CurrentView = "Rolls"
-			m.list.SetItems(m.Rolls.Items())
-			m.showSpinner = false
-			m.tabs.Update(activeTabMsg{tab: m.CurrentView})
+			return m, activeTabFn("Rolls")
 		case "c":
-			m.CurrentView = "Cameras"
-			m.list.SetItems(m.Cameras.Items())
-			m.showSpinner = false
-			m.tabs.Update(activeTabMsg{tab: m.CurrentView})
+			return m, activeTabFn("Cameras")
 		case "f":
-			m.CurrentView = "Films"
-			m.list.SetItems(m.Films.Items())
-			m.showSpinner = false
-			m.tabs.Update(activeTabMsg{tab: m.CurrentView})
+			return m, activeTabFn("Films")
 		case "a":
-			m.CurrentView = "Albums"
-			m.showSpinner = true
-			m.tabs.Update(activeTabMsg{tab: m.CurrentView})
-			m.tabs, _ = m.tabs.Update(msg)
-			return m, tea.Batch(AlbumsFn(m.Cfg, m.lightroom), m.spinner.Tick)
+			return m, activeTabFn("Albums")
 		case "ctrl+l":
 			return m, loginFn(m.Cfg)
 		// These keys should exit the program.
@@ -86,6 +75,22 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case errMsg:
 		m.err = msg
 		return m, tea.Quit
+	case activeTabMsg:
+		m.CurrentView = msg.tab
+		switch msg.tab {
+		case "Films":
+			m.showSpinner = false
+			m.list.SetItems(m.Films.Items())
+		case "Cameras":
+			m.showSpinner = false
+			m.list.SetItems(m.Cameras.Items())
+		case "Rolls":
+			m.showSpinner = false
+			m.list.SetItems(m.Rolls.Items())
+		case "Albums":
+			m.showSpinner = true
+			cmd = tea.Batch(AlbumsFn(m.Cfg, m.lightroom), m.spinner.Tick)
+		}
 	case albumsMsg:
 		m.CurrentView = "Albums"
 		parents := []list.Item{}
@@ -112,9 +117,10 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	var listUpdateCmd tea.Cmd
 	m.tabs, _ = m.tabs.Update(msg)
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	m.list, listUpdateCmd = m.list.Update(msg)
+	return m, tea.Batch(listUpdateCmd, cmd)
 }
 
 func (m Rolls) View() string {

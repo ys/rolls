@@ -66,11 +66,10 @@ func (m tabs) Init() tea.Cmd {
 }
 
 func (m tabs) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
-	case activeTabMsg:
-		m.active = msg.tab
 
 	case tea.MouseMsg:
 		if msg.Type != tea.MouseLeft {
@@ -81,13 +80,16 @@ func (m tabs) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check each item to see if it's in bounds.
 			if zone.Get(m.id + item).InBounds(msg) {
 				m.active = item
-				break
+				cmd = activeTabFn(item)
+				return m, cmd
 			}
 		}
 
-		return m, nil
+		return m, cmd
+	case activeTabMsg:
+		m.active = msg.tab
 	}
-	return m, nil
+	return m, cmd
 }
 
 func (m tabs) View() string {

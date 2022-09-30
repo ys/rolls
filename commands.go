@@ -6,6 +6,11 @@ import (
 	"github.com/ys/rolls/lightroom"
 )
 
+func activeTabFn(tab string) func() tea.Msg {
+	return func() tea.Msg {
+		return activeTabMsg{tab: tab}
+	}
+}
 func loginFn(cfg *config.Config) func() tea.Msg {
 	return func() tea.Msg {
 		token, err := lightroom.Login(cfg)
