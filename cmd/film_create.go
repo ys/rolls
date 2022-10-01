@@ -33,7 +33,8 @@ var filmCreateCmd = &cobra.Command{
 			Color: color,
 			Iso:   iso,
 		}
-		films := roll.GetFilms()
+		films, err := roll.GetFilms(cfg.Dir())
+		cobra.CheckErr(err)
 		films[args[0]] = &film
 		data, err := yaml.Marshal(&films)
 		cobra.CheckErr(err)

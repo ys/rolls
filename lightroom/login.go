@@ -18,10 +18,10 @@ var (
 	scopes       = []string{"offline_access", "openid", "lr_partner_apis"}
 )
 
-func Login(cfg *config.Config) (string, error) {
+func Login(cfg *config.Config) (*oauth2.Token, error) {
 	pkce, err := oauth2params.NewPKCE()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	ready := make(chan string, 1)
 	defer close(ready)
@@ -43,7 +43,7 @@ func Login(cfg *config.Config) (string, error) {
 
 	ctx := context.Background()
 	eg, ctx := errgroup.WithContext(ctx)
-	var token string
+	var token *oauth2.Token
 	eg.Go(func() error {
 		select {
 		case url := <-ready:
@@ -57,15 +57,15 @@ func Login(cfg *config.Config) (string, error) {
 		}
 	})
 	eg.Go(func() error {
-		cliToken, err := oauth2cli.GetToken(ctx, oauthCfg)
+		var err error
+		token, err = oauth2cli.GetToken(ctx, oauthCfg)
 		if err != nil {
 			return err
 		}
-		token = cliToken.AccessToken
 		return nil
 	})
 	if err := eg.Wait(); err != nil {
-		return "", err
+		return nil, err
 	}
 	return token, nil
 }

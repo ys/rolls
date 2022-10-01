@@ -33,7 +33,8 @@ var cameraCreateCmd = &cobra.Command{
 			Format:   format,
 			Nickname: nickname,
 		}
-		cameras := roll.GetCameras()
+		cameras, err := roll.GetCameras(cfg.Dir())
+		cobra.CheckErr(err)
 		cameras[args[0]] = &camera
 		data, err := yaml.Marshal(&cameras)
 		cobra.CheckErr(err)

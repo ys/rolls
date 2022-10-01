@@ -4,18 +4,11 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
-	"fmt"
 	"log"
-	"strings"
 
-	"github.com/int128/oauth2cli"
-	"github.com/int128/oauth2cli/oauth2params"
-	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
-	"golang.org/x/sync/errgroup"
+	"github.com/ys/rolls/lightroom"
 )
 
 // loginCmd represents the login command
@@ -23,58 +16,13 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to Adobe",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(cfg)
-		pkce, err := oauth2params.NewPKCE()
-		if err != nil {
-			log.Fatalf("error: %s", err)
-		}
-		ready := make(chan string, 1)
-		defer close(ready)
-		oauthCfg := oauth2cli.Config{
-			OAuth2Config: oauth2.Config{
-				ClientID:     cfg.ClientID,
-				ClientSecret: cfg.ClientSecret,
-				Endpoint: oauth2.Endpoint{
-					AuthURL:  cfg.AuthorizeURL,
-					TokenURL: cfg.TokenURL,
-				},
-				Scopes: strings.Split(cfg.Scopes, ","),
-			},
-			AuthCodeOptions:      pkce.AuthCodeOptions(),
-			RedirectURLHostname:  "rolls.localhost",
-			TokenRequestOptions:  pkce.TokenRequestOptions(),
-			LocalServerReadyChan: ready,
-			Logf:                 log.Printf,
-		}
+		token, err := lightroom.Login(cfg)
+		cobra.CheckErr(err)
 
-		ctx := context.Background()
-		eg, ctx := errgroup.WithContext(ctx)
-		eg.Go(func() error {
-			select {
-			case url := <-ready:
-				log.Printf("Open %s", url)
-				if err := browser.OpenURL(url); err != nil {
-					log.Printf("could not open the browser: %s", err)
-				}
-				return nil
-			case <-ctx.Done():
-				return fmt.Errorf("context done while waiting for authorization: %w", ctx.Err())
-			}
-		})
-		eg.Go(func() error {
-			token, err := oauth2cli.GetToken(ctx, oauthCfg)
-			if err != nil {
-				return fmt.Errorf("could not get a token: %w", err)
-			}
-			log.Printf("You got a valid token until %s", token.Expiry)
-			cfg.AccessToken = token.AccessToken
-			viper.Set("access_token", cfg.AccessToken)
-			viper.WriteConfig()
-			return nil
-		})
-		if err := eg.Wait(); err != nil {
-			log.Fatalf("authorization error: %s", err)
-		}
+		log.Printf("You got a valid token until %s", token.Expiry)
+		cfg.AccessToken = token.AccessToken
+		viper.Set("access_token", cfg.AccessToken)
+		viper.WriteConfig()
 	},
 }
 

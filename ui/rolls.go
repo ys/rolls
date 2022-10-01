@@ -1,10 +1,6 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
-package main
+package ui
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -12,6 +8,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
+	"github.com/ys/rolls/config"
+	"github.com/ys/rolls/lightroom"
+	"github.com/ys/rolls/roll"
 )
 
 var (
@@ -26,8 +25,80 @@ var (
 		String()
 )
 
+type Rolls struct {
+	height      int
+	width       int
+	Cfg         *config.Config
+	CurrentView string
+	Cameras     *roll.Cameras
+	Films       *roll.Films
+	Rolls       *roll.Rolls
+	Albums      *AlbumsTree
+	list        list.Model
+	tabs        tea.Model
+	lightroom   *lightroom.API
+	showSpinner bool
+	spinner     spinner.Model
+	err         error
+}
+
+type AlbumsTree struct {
+	Parents []list.Item
+	Kids    map[string][]list.Item
+}
+
+func NewRolls() *Rolls {
+	//	cmd.Execute()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	configPath := home + "/.config/rolls"
+	cfg, err := config.New(configPath + "/config.yml")
+	if err != nil {
+		panic(err)
+	}
+	cameras, err := roll.GetCameras(configPath)
+	if err != nil {
+		panic(err)
+	}
+	films, err := roll.GetFilms(configPath)
+	if err != nil {
+		panic(err)
+	}
+	rolls, err := roll.GetRolls(cfg.ScansPath)
+	if err != nil {
+		panic(err)
+	}
+
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	r := Rolls{
+		Cfg:         cfg,
+		CurrentView: "Rolls",
+		Cameras:     &cameras,
+		Films:       &films,
+		Rolls:       &rolls,
+		lightroom:   lightroom.New(cfg.ClientID, cfg.AccessToken),
+		showSpinner: false,
+		spinner:     s,
+	}
+	r.CurrentView = "rolls"
+	r.list = list.New(r.Rolls.Items(), list.NewDefaultDelegate(), 0, 0)
+	r.list.SetShowTitle(false)
+	r.tabs = &tabs{
+		id:     "tabs",
+		height: 3,
+		active: "Rolls",
+		items:  []string{"Rolls", "Cameras", "Films", "Albums"},
+	}
+	return &r
+}
+
 func (m Rolls) Init() tea.Cmd {
 	return nil
+
 }
 
 func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -42,7 +113,16 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width-4, msg.Height-8)
 
 	case tea.MouseMsg:
+		cmds := make([]tea.Cmd, 0)
 		m.tabs, cmd = m.tabs.Update(msg)
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+		m.list, cmd = m.list.Update(msg)
+		if cmd != nil {
+			cmds = append(cmds, cmd)
+		}
+		cmd = tea.Batch(cmds...)
 	case tea.KeyMsg:
 		switch msg.String() {
 
@@ -107,7 +187,7 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.showSpinner = false
 	case tokenMsg:
 		cmd = func() tea.Msg {
-			m.Cfg.AccessToken = msg.token
+			m.Cfg.AccessToken = msg.token.AccessToken
 			err := m.Cfg.Write()
 			if err != nil {
 				m.err = err
@@ -132,14 +212,4 @@ func (m Rolls) View() string {
 		window = m.list.View()
 	}
 	return zone.Scan(s.Render(lipgloss.JoinVertical(lipgloss.Left, m.tabs.View(), window)))
-}
-
-func main() {
-	zone.NewGlobal()
-	r := NewRolls()
-	p := tea.NewProgram(r, tea.WithAltScreen(), tea.WithMouseCellMotion())
-	if err := p.Start(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
 }

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
@@ -17,6 +19,10 @@ type Config struct {
 	ScansAlbumID string `mapstructure:"scans_album_id" yaml:"scans_album_id"`
 	CatalogID    string `mapstructure:"catalog_id" yaml:"catalog_id"`
 	FilePath     string `mapstructure:"-" yaml:"-"`
+}
+
+func (cfg *Config) Dir() string {
+	return filepath.Dir(cfg.FilePath)
 }
 
 func (cfg *Config) Write() error {
@@ -39,7 +45,7 @@ func New(path string) (*Config, error) {
 		}
 
 		// Search config in home directory with name ".rolls" (without extension).
-		path := home + "/.config/rolls"
+		path = home + "/.config/rolls"
 		err = os.MkdirAll(path, os.ModePerm)
 		if err != nil {
 			return nil, err
@@ -52,10 +58,12 @@ func New(path string) (*Config, error) {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	err := viper.ReadInConfig()
+	if err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
-	err := viper.Unmarshal(&cfg)
+	cobra.CheckErr(err)
+	err = viper.Unmarshal(&cfg)
 	cfg.FilePath = path
 
 	return &cfg, err
