@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/adrg/frontmatter"
+	"github.com/barasher/go-exiftool"
 	"github.com/charmbracelet/bubbles/list"
 )
 
@@ -26,6 +27,34 @@ type Roll struct {
 	Content  string
 	Metadata Metadata
 	list.Item
+}
+
+func (roll *Roll) WriteExif(file string, camera *Camera, film *Film) error {
+	e, err := exiftool.NewExiftool()
+	defer e.Close()
+	if err != nil {
+		return err
+	}
+	originals := e.ExtractMetadata(file)
+
+	originals[0].SetString("Make", camera.Brand)
+	originals[0].SetString("Model", camera.Model)
+	originals[0].SetInt("Iso", int64(film.Iso))
+	description := fmt.Sprintf("%s - %s", camera.Name(), film.NameWithBrand())
+	originals[0].SetString("captionabstract", description)
+	originals[0].SetString("imagedescription", description)
+	originals[0].SetString("description", description)
+	at := roll.Metadata.ShotAt.Format("2006:01:02 15:04:05")
+	originals[0].SetString("DateTimeOriginal", at)
+	originals[0].SetString("FileCreateDate", at)
+	originals[0].SetString("ModifyDate", at)
+	originals[0].SetString("CreateDate", at)
+	kw := make([]string, len(roll.Metadata.Tags))
+	copy(kw, roll.Metadata.Tags)
+	kw = append(kw, camera.Name(), film.NameWithBrand())
+	originals[0].SetStrings("Keywords", kw)
+	e.WriteMetadata(originals)
+	return nil
 }
 
 func (roll *Roll) FilesPrefix() string {
