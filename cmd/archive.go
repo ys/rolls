@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
+	"golang.org/x/exp/slices"
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
@@ -17,25 +18,21 @@ import (
 var archiveCmd = &cobra.Command{
 	Use:   "archive",
 	Short: "Rename folder and files and add exif",
-	Args:  cobra.MatchAll(cobra.MaximumNArgs(1), cobra.OnlyValidArgs),
+	Args:  cobra.MatchAll(cobra.OnlyValidArgs),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		imagick.Initialize()
 		defer imagick.Terminate()
 		year, err := cmd.PersistentFlags().GetInt("year")
 		cobra.CheckErr(err)
-		var rollNumber string
-		if len(args) == 1 {
-			rollNumber = args[0]
-		}
-		if rollNumber != "" && year != 0 {
-			return errors.New("You can only set year or the roll not both")
+		if len(args) > 0 && year != 0 {
+			return errors.New("You can only set year or the rolls not both")
 		}
 		root := cfg.ScansPath
 		fmt.Printf("Reading rolls from: %s\n", root)
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
-			if rollNumber != "" {
-				return roll.Metadata.RollNumber == rollNumber
+			if len(args) > 0 {
+				return slices.Contains(args, roll.Metadata.RollNumber)
 			}
 			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
 				(roll.Metadata.ScannedAt.Year() == year)
