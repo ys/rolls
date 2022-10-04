@@ -111,6 +111,10 @@ var archiveCmd = &cobra.Command{
 					originals[0].SetString("Make", camera.Brand)
 					originals[0].SetString("Model", camera.Model)
 					originals[0].SetInt("Iso", int64(film.Iso))
+					description := fmt.Sprintf("%s - %s", camera.Name(), film.NameWithBrand())
+					originals[0].SetString("captionabstract", description)
+					originals[0].SetString("imagedescription", description)
+					originals[0].SetString("description", description)
 					// exif["make"] = camera.brand
 					// exif["model"] = camera.model
 					// exif["iso"] = iso || film.iso

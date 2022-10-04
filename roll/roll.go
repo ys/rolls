@@ -5,13 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/adrg/frontmatter"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/spf13/viper"
 )
 
 type Metadata struct {
@@ -30,8 +28,6 @@ type Roll struct {
 }
 
 type Rolls []Roll
-type Cameras map[string]*Camera
-type Films map[string]*Film
 
 func (r *Rolls) Items() []list.Item {
 	items := []list.Item{}
@@ -40,89 +36,10 @@ func (r *Rolls) Items() []list.Item {
 	}
 	return items
 }
-func (r *Cameras) Items() []list.Item {
-	items := []list.Item{}
-	for _, camera := range *r {
-		items = append(items, *camera)
-	}
-	return items
-}
-func (r *Films) Items() []list.Item {
-	items := []list.Item{}
-	for _, film := range *r {
-		items = append(items, *film)
-	}
-	return items
-}
 
 func (i Roll) Title() string       { return i.Metadata.RollNumber }
 func (i Roll) Description() string { return i.Metadata.CameraID + " - " + i.Metadata.FilmID }
 func (i Roll) FilterValue() string { return i.Metadata.RollNumber }
-
-func (i Camera) Title() string       { return i.Name() }
-func (i Camera) Description() string { return "" }
-func (i Camera) FilterValue() string { return i.Name() }
-
-func (i Film) Title() string       { return i.NameWithBrand() }
-func (i Film) Description() string { return fmt.Sprintf("%d", i.Iso) }
-func (i Film) FilterValue() string { return i.NameWithBrand() }
-
-type Camera struct {
-	ID       string `yaml:"-"`
-	Brand    string `yaml:"brand" mapstructure:"brand"`
-	Model    string `yaml:"model" mapstructure:"model"`
-	Nickname string `yaml:"nickname" mapstructure:"nickname"`
-	Format   int    `yaml:"format" mapstructure:"format"`
-}
-
-func (c *Camera) Name() string {
-	if c.Nickname != "" {
-		return c.Nickname
-	}
-	return c.Brand + " " + c.Model
-}
-
-type Film struct {
-	ID    string `yaml:"-"`
-	Brand string `yaml:"brand" mapstructure:"brand"`
-	Name  string `yaml:"name" mapstructure:"name"`
-	Color bool   `yaml:"color" mapstructure:"color"`
-	Iso   int    `yaml:"iso" mapstructure:"iso"`
-}
-
-func (f *Film) NameWithBrand() string {
-	return f.Brand + " " + f.Name + " " + strconv.Itoa(f.Iso)
-}
-
-func GetCameras(path string) (Cameras, error) {
-	camerasCfg := viper.New()
-	camerasCfg.AddConfigPath(path)
-	camerasCfg.SetConfigType("yaml")
-	camerasCfg.SetConfigName("cameras.yml")
-	camerasCfg.ReadInConfig()
-
-	var cameras Cameras
-	err := camerasCfg.Unmarshal(&cameras)
-	if err != nil {
-		return nil, err
-	}
-	return cameras, nil
-}
-
-func GetFilms(path string) (Films, error) {
-	filmsCfg := viper.New()
-	filmsCfg.AddConfigPath(path)
-	filmsCfg.SetConfigType("yaml")
-	filmsCfg.SetConfigName("films.yml")
-	filmsCfg.ReadInConfig()
-
-	var films Films
-	err := filmsCfg.Unmarshal(&films)
-	if err != nil {
-		return nil, err
-	}
-	return films, nil
-}
 
 func GetRolls(root string) (Rolls, error) {
 	rolls := Rolls{}
