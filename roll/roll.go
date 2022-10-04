@@ -18,6 +18,7 @@ type Metadata struct {
 	ShotAt     time.Time `yaml:"shot_at"`
 	ScannedAt  time.Time `yaml:"scanned_at"`
 	RollNumber string    `yaml:"roll_number"`
+	Tags       []string  `yaml:"tags"`
 }
 
 type Roll struct {
@@ -25,6 +26,10 @@ type Roll struct {
 	Content  string
 	Metadata Metadata
 	list.Item
+}
+
+func (roll *Roll) FilesPrefix() string {
+	return fmt.Sprintf("%s-%s", roll.Metadata.RollNumber, roll.Metadata.ShotAt.Format("0102"))
 }
 
 type Rolls []Roll

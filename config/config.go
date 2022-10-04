@@ -12,13 +12,14 @@ import (
 )
 
 type Config struct {
-	ScansPath    string `mapstructure:"scans_path" yaml:"scans_path"`
-	ClientID     string `mapstructure:"client_id" yaml:"client_id"`
-	ClientSecret string `mapstructure:"client_secret" yaml:"client_secret"`
-	AccessToken  string `mapstructure:"access_token" yaml:"access_token"`
-	ScansAlbumID string `mapstructure:"scans_album_id" yaml:"scans_album_id"`
-	CatalogID    string `mapstructure:"catalog_id" yaml:"catalog_id"`
-	FilePath     string `mapstructure:"-" yaml:"-"`
+	ScansPath        string `mapstructure:"scans_path" yaml:"scans_path"`
+	ContactSheetPath string `mapstructure:"contact_sheet_path" yaml:"contact_sheet_path"`
+	ClientID         string `mapstructure:"client_id" yaml:"client_id"`
+	ClientSecret     string `mapstructure:"client_secret" yaml:"client_secret"`
+	AccessToken      string `mapstructure:"access_token" yaml:"access_token"`
+	ScansAlbumID     string `mapstructure:"scans_album_id" yaml:"scans_album_id"`
+	CatalogID        string `mapstructure:"catalog_id" yaml:"catalog_id"`
+	FilePath         string `mapstructure:"-" yaml:"-"`
 }
 
 func (cfg *Config) Dir() string {
