@@ -10,6 +10,35 @@ import (
 	"strconv"
 )
 
+func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
+	files, err := ioutil.ReadDir(roll.Folder)
+
+	if err != nil {
+		return err
+	}
+
+	contactSheet := NewContactSheet()
+	defer contactSheet.Destroy()
+
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ".md" {
+			continue
+		}
+		err = contactSheet.AddImage(path.Join(roll.Folder, file.Name()))
+		if err != nil {
+			return err
+		}
+	}
+	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
+	destination := path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year()), fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
+	fmt.Println("Contact Sheet to", destination)
+	err = contactSheet.WriteImage(destination)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /*
 * Needed: contact sheet destination, cameras, films
  */
@@ -48,6 +77,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 
 		os.Rename(path.Join(roll.Folder, file.Name()), path.Join(roll.Folder, newName))
 	}
+	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
 	destination := path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year()), fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
 	fmt.Println("Contact Sheet to", destination)
 	err = contactSheet.WriteImage(destination)
