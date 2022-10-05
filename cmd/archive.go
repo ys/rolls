@@ -37,17 +37,12 @@ var archiveCmd = &cobra.Command{
 			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
 				(roll.Metadata.ScannedAt.Year() == year)
 		})
-		cobra.CheckErr(err)
-		cameras, err := roll.GetCameras(cfg.Dir())
-		cobra.CheckErr(err)
-		films, err := roll.GetFilms(cfg.Dir())
-		cobra.CheckErr(err)
 		var wg sync.WaitGroup
 		wg.Add(len(rolls))
 
 		for _, r := range rolls {
 			go func(roll roll.Roll) {
-				err := roll.Archive(cfg, cameras, films)
+				err := roll.Archive(cfg)
 				if err != nil {
 					cobra.CheckErr(err)
 				}

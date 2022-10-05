@@ -7,7 +7,7 @@ import (
 	"github.com/int128/oauth2cli"
 	"github.com/int128/oauth2cli/oauth2params"
 	"github.com/pkg/browser"
-	"github.com/ys/rolls/config"
+	"github.com/ys/rolls/roll"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
@@ -18,7 +18,7 @@ var (
 	scopes       = []string{"offline_access", "openid", "lr_partner_apis"}
 )
 
-func Login(cfg *config.Config) (*oauth2.Token, error) {
+func Login(cfg *roll.Config) (*oauth2.Token, error) {
 	pkce, err := oauth2params.NewPKCE()
 	if err != nil {
 		return nil, err

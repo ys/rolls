@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"github.com/ys/rolls/config"
 	"github.com/ys/rolls/lightroom"
 	"github.com/ys/rolls/roll"
 )
@@ -28,7 +27,7 @@ var (
 type Rolls struct {
 	height      int
 	width       int
-	Cfg         *config.Config
+	Cfg         *roll.Config
 	CurrentView string
 	Cameras     *roll.Cameras
 	Films       *roll.Films
@@ -54,7 +53,7 @@ func NewRolls() *Rolls {
 		panic(err)
 	}
 	configPath := home + "/.config/rolls"
-	cfg, err := config.New(configPath + "/config.yml")
+	cfg, err := roll.New(configPath + "/config.yml")
 	if err != nil {
 		panic(err)
 	}

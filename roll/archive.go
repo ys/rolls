@@ -8,22 +8,20 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-
-	"github.com/ys/rolls/config"
 )
 
 /*
 * Needed: contact sheet destination, cameras, films
  */
-func (roll *Roll) Archive(cfg *config.Config, cameras Cameras, films Films) error {
+func (roll *Roll) Archive(cfg *Config) error {
 	files, err := ioutil.ReadDir(roll.Folder)
 
 	if err != nil {
 		return err
 	}
 
-	camera := cameras[roll.Metadata.CameraID]
-	film := films[roll.Metadata.FilmID]
+	camera := cfg.Cameras[roll.Metadata.CameraID]
+	film := cfg.Films[roll.Metadata.FilmID]
 
 	if camera == nil {
 		return errors.New(fmt.Sprintf("No camera found for '%s'\n", roll.Metadata.CameraID))

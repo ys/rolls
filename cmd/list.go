@@ -31,9 +31,19 @@ It will also filter down by year or camera or film
 		table.MaxColWidth = 80
 		table.Wrap = true // wrap columns
 		for _, roll := range rolls {
+			camera := cfg.Cameras[roll.Metadata.CameraID]
+			film := cfg.Films[roll.Metadata.FilmID]
+			if camera == nil {
+				fmt.Printf("No camera found for '%s'\n", roll.Metadata.CameraID)
+				return
+			}
+			if film == nil {
+				fmt.Printf("No film found for '%s'\n", roll.Metadata.FilmID)
+				return
+			}
 			table.AddRow("roll:", roll.Metadata.RollNumber)
-			table.AddRow("camera:", roll.Metadata.CameraID)
-			table.AddRow("film:", roll.Metadata.FilmID)
+			table.AddRow("camera:", camera.Name())
+			table.AddRow("film:", film.NameWithBrand())
 			table.AddRow("shot at:", roll.Metadata.ShotAt)
 			table.AddRow("---") // blank
 		}

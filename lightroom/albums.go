@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ys/rolls/config"
 	"github.com/ys/rolls/openapi"
+	"github.com/ys/rolls/roll"
 )
 
 type Albums struct {
-	cfg       *config.Config
+	cfg       *roll.Config
 	api       API
 	Resources []openapi.GetAlbums200ResponseResourcesInner
 }

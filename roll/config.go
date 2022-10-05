@@ -1,4 +1,4 @@
-package config
+package roll
 
 import (
 	"fmt"
@@ -12,14 +12,16 @@ import (
 )
 
 type Config struct {
-	ScansPath        string `mapstructure:"scans_path" yaml:"scans_path"`
-	ContactSheetPath string `mapstructure:"contact_sheet_path" yaml:"contact_sheet_path"`
-	ClientID         string `mapstructure:"client_id" yaml:"client_id"`
-	ClientSecret     string `mapstructure:"client_secret" yaml:"client_secret"`
-	AccessToken      string `mapstructure:"access_token" yaml:"access_token"`
-	ScansAlbumID     string `mapstructure:"scans_album_id" yaml:"scans_album_id"`
-	CatalogID        string `mapstructure:"catalog_id" yaml:"catalog_id"`
-	FilePath         string `mapstructure:"-" yaml:"-"`
+	ScansPath        string  `mapstructure:"scans_path" yaml:"scans_path"`
+	ContactSheetPath string  `mapstructure:"contact_sheet_path" yaml:"contact_sheet_path"`
+	ClientID         string  `mapstructure:"client_id" yaml:"client_id"`
+	ClientSecret     string  `mapstructure:"client_secret" yaml:"client_secret"`
+	AccessToken      string  `mapstructure:"access_token" yaml:"access_token"`
+	ScansAlbumID     string  `mapstructure:"scans_album_id" yaml:"scans_album_id"`
+	CatalogID        string  `mapstructure:"catalog_id" yaml:"catalog_id"`
+	FilePath         string  `mapstructure:"-" yaml:"-"`
+	Cameras          Cameras `mapstructure:"-" yaml:"-"`
+	Films            Films   `mapstructure:"-" yaml:"-"`
 }
 
 func (cfg *Config) Dir() string {
@@ -66,6 +68,11 @@ func New(path string) (*Config, error) {
 	cobra.CheckErr(err)
 	err = viper.Unmarshal(&cfg)
 	cfg.FilePath = path
+	cobra.CheckErr(err)
+	cfg.Cameras, err = GetCameras(cfg.Dir())
+	cobra.CheckErr(err)
+	cfg.Films, err = GetFilms(cfg.Dir())
+	cobra.CheckErr(err)
 
 	return &cfg, err
 }

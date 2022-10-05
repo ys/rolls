@@ -3,8 +3,8 @@ package lightroom
 import (
 	"context"
 
-	"github.com/ys/rolls/config"
 	"github.com/ys/rolls/openapi"
+	"github.com/ys/rolls/roll"
 )
 
 type API struct {
@@ -24,7 +24,7 @@ func New(clientID, token string) *API {
 	}
 }
 
-func (a *API) Albums(cfg *config.Config) (*Albums, error) {
+func (a *API) Albums(cfg *roll.Config) (*Albums, error) {
 	catalog, err := a.Catalog()
 	if err != nil {
 		return nil, err

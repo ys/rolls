@@ -4,11 +4,11 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/config"
+	"github.com/ys/rolls/roll"
 )
 
 var cfgFile string
-var cfg *config.Config
+var cfg *roll.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -47,6 +47,6 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	var err error
-	cfg, err = config.New(cfgFile)
+	cfg, err = roll.New(cfgFile)
 	cobra.CheckErr(err)
 }
