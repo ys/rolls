@@ -15,6 +15,7 @@ type API struct {
 
 func New(clientID, token string) *API {
 	cfg := openapi.NewConfiguration()
+	cfg.Debug = true
 	client := openapi.NewAPIClient(cfg)
 
 	return &API{

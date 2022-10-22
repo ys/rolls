@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
@@ -22,6 +23,9 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".md" {
+			continue
+		}
+		if filepath.Base(file.Name()) == ".DS_Store" {
 			continue
 		}
 		err = contactSheet.AddImage(path.Join(roll.Folder, file.Name()))
@@ -66,7 +70,10 @@ func (roll *Roll) Archive(cfg *Config) error {
 		if filepath.Ext(file.Name()) == ".md" {
 			continue
 		}
-		newName := fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), i+1, filepath.Ext(file.Name()))
+		if filepath.Base(file.Name()) == ".DS_Store" {
+			continue
+		}
+		newName := fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), i+1, strings.ToLower(filepath.Ext(file.Name())))
 
 		roll.WriteExif(path.Join(roll.Folder, file.Name()), camera, film)
 

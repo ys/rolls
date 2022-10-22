@@ -178,7 +178,7 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if a.Payload.Parent != nil && *a.Payload.Parent.Id != "" {
 				kids[*a.Payload.Parent.Id] = append(kids[*a.Payload.Parent.Id], album{ID: *a.Id, Name: *a.Payload.Name})
 			} else {
-				parents = append(parents, album{ID: *a.Id, Name: *a.Payload.Name})
+				parents = append(parents, album{ID: *a.Id, Name: *a.Payload.Name, Subtype: a.GetSubtype()})
 			}
 		}
 		m.Albums = &AlbumsTree{Parents: parents, Kids: kids}

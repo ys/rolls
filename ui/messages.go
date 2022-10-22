@@ -14,10 +14,11 @@ type tokenMsg struct{ token *oauth2.Token }
 func (e errMsg) Error() string { return e.err.Error() }
 
 type album struct {
-	ID   string
-	Name string
+	ID      string
+	Name    string
+	Subtype string
 }
 
 func (i album) Title() string       { return i.Name }
-func (i album) Description() string { return " " }
+func (i album) Description() string { return i.Subtype }
 func (i album) FilterValue() string { return i.ID }
