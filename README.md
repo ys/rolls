@@ -11,13 +11,17 @@ Usage:
   rolls [command]
 
 Available Commands:
-  archive     A brief description of your command
-  completion  Generate the autocompletion script for the specified shell
-  help        Help about any command
-  list        List all the rolls
+  archive      Rename folder and files and add exif
+  cameras      Manage and list your cameras
+  completion   Generate the autocompletion script for the specified shell
+  contactsheet Generate Contact Sheet
+  films        Manage and list your films
+  help         Help about any command
+  list         List all the rolls
 
 Flags:
-  -h, --help   help for rolls
+      --config string   config file (default is $HOME/.config/rolls/config.yml)
+  -h, --help            help for rolls
 
 Use "rolls [command] --help" for more information about a command.
 ```

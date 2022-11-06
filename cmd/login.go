@@ -13,8 +13,9 @@ import (
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Login to Adobe",
+	Use:    "login",
+	Short:  "Login to Adobe",
+	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		token, err := lightroom.Login(cfg)
 		cobra.CheckErr(err)

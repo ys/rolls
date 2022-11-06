@@ -10,8 +10,9 @@ import (
 
 // albumsCmd represents the albums command
 var albumsCmd = &cobra.Command{
-	Use:   "albums",
-	Short: "A brief description of your command",
+	Use:    "albums",
+	Short:  "A brief description of your command",
+	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		api := lightroom.New(cfg.ClientID, cfg.AccessToken)
 		albums, err := api.Albums(cfg)
