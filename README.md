@@ -25,3 +25,13 @@ Flags:
 
 Use "rolls [command] --help" for more information about a command.
 ```
+
+## What it does?
+
+It adds exif, rename your files and folders.
+Based on a markdown file per folder.
+
+![](https://user-images.githubusercontent.com/483012/200196756-3d2f85fe-ec62-42f7-8240-01d4de845e2f.png)
+
+![](https://user-images.githubusercontent.com/483012/200196761-16409f37-c6dd-4b26-b45b-97310bdca05c.png)
+
