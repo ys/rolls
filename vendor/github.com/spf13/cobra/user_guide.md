@@ -70,7 +70,7 @@ You will additionally define flags and handle configuration in your init() funct
 For example cmd/root.go:
 
 ```go
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -166,7 +166,7 @@ If you wanted to create a version command you would create cmd/version.go and
 populate it with the following:
 
 ```go
-package cmd
+package cli
 
 import (
   "fmt"
@@ -193,7 +193,7 @@ var versionCmd = &cobra.Command{
 If you wish to return an error to the caller of a command, `RunE` can be used.
 
 ```go
-package cmd
+package cli
 
 import (
   "fmt"
@@ -302,15 +302,15 @@ rootCmd.MarkPersistentFlagRequired("region")
 
 ### Flag Groups
 
-If you have different flags that must be provided together (e.g. if they provide the `--username` flag they MUST provide the `--password` flag as well) then 
+If you have different flags that must be provided together (e.g. if they provide the `--username` flag they MUST provide the `--password` flag as well) then
 Cobra can enforce that requirement:
 ```go
 rootCmd.Flags().StringVarP(&u, "username", "u", "", "Username (required if password is set)")
 rootCmd.Flags().StringVarP(&pw, "password", "p", "", "Password (required if username is set)")
 rootCmd.MarkFlagsRequiredTogether("username", "password")
-``` 
+```
 
-You can also prevent different flags from being provided together if they represent mutually 
+You can also prevent different flags from being provided together if they represent mutually
 exclusive options such as specifying an output format as either `--json` or `--yaml` but never both:
 ```go
 rootCmd.Flags().BoolVar(&u, "json", false, "Output in JSON")
