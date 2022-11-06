@@ -1,0 +1,126 @@
+portra-400:
+  brand: Kodak
+  name: Portra
+  color: true
+  iso: 400
+  formats:
+    - 135
+    - 120
+fuji-c200:
+  brand: Fuji
+  name: c200
+  color: true
+  iso: 200
+gold-200:
+  brand: Kodak
+  name: Gold
+  color: true
+  iso: 200
+  formats:
+    - 135
+berlin-400:
+  brand: Lomography
+  name: Berlin
+  color: false
+  iso: 400
+foma-400:
+  brand: Fomapan
+  name: Action
+  iso: 400
+lomo-800:
+  brand: Lomography
+  name: Color Negative
+  color: true
+  iso: 800
+  formats:
+    - 135
+    - 120
+lomo-400:
+  brand: Lomography
+  name: Color Negative
+  color: true
+  iso: 400
+  formats:
+    - 135
+    - 120
+xpro-200:
+  brand: Lomography
+  name: X-pro
+  color: true
+  iso: 200
+  formats:
+    - 135
+portra-800:
+  brand: Kodak
+  name: Portra
+  color: true
+  iso: 800
+  formats:
+    - 135
+    - 120
+trix-400:
+  brand: Kodak
+  name: tri-x
+  color: false
+  iso: 400
+  formats:
+    - 135
+    - 120
+kiro-400:
+  brand: Film never die
+  name: Kiro
+  color: true
+  iso: 400
+  formats:
+    - 135
+ilford-hp5:
+  brand: Ilford
+  name: HP5
+  color: false
+  iso: 400
+  formats:
+    - 135
+redscale-50:
+  brand: Lomography
+  name: redscale
+  color: true
+  iso: 50
+  formats:
+    - 120
+unknown:
+  brand: Unknown
+  name: film
+sensia-50:
+  brand: Fuji
+  name: Sensia
+  color: true
+  iso: 50
+  formats:
+    - 135
+adox-color-mission-200:
+  brand: Adox
+  name: Color Mission
+  iso: 200
+sora-200:
+  brand: Film never die
+  name: Sora
+  color: true
+  iso: 200
+  formats:
+    - 135
+color-plus:
+  brand: Kodak
+  name: Color Plus
+  color: true
+  iso: 200
+  formats:
+    - 135
+    - 120
+ultramax:
+  brand: Kodak
+  name: Ultramax
+  color: true
+  iso: 400
+  formats:
+    - 135
+    - 120

@@ -1,0 +1,46 @@
+disposable:
+  brand: Disposable
+  model: Camera
+leica-m6:
+  brand: Leica
+  model: M6
+  format: 135
+yashica-t4:
+  brand: Yashica
+  model: T4
+  format: 135
+nikonos-III:
+  brand: Nikon
+  model: nikonos III
+  nickname: Nikonos III
+  format: 135
+nikonos-iii:
+  brand: Nikon
+  model: nikonos III
+  nickname: Nikonos III
+  format: 135
+nikonos-v:
+  brand: Nikon
+  model: nikonos V
+  nickname: Nikonos V
+  format: 135
+olympus-xa:
+  brand: Olympus
+  model: XA
+  format: 135
+lubitel-166:
+  brand: Lubitel
+  model: 166b
+  format: 120
+canonet:
+  brand: Canon
+  model: Canonet
+  format: 135
+lca-plus:
+  brand: Lomography
+  model: LCA +
+  format: 135
+canon-as1:
+  brand: Canon
+  model: Prima AS1
+  format: 135

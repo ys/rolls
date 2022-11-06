@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ys/rolls/openapi"
+	"github.com/ys/rolls/roll"
 )
 
 type API struct {
@@ -14,6 +15,7 @@ type API struct {
 
 func New(clientID, token string) *API {
 	cfg := openapi.NewConfiguration()
+	cfg.Debug = true
 	client := openapi.NewAPIClient(cfg)
 
 	return &API{
@@ -23,7 +25,7 @@ func New(clientID, token string) *API {
 	}
 }
 
-func (a *API) Albums() (*Albums, error) {
+func (a *API) Albums(cfg *roll.Config) (*Albums, error) {
 	catalog, err := a.Catalog()
 	if err != nil {
 		return nil, err
@@ -33,7 +35,7 @@ func (a *API) Albums() (*Albums, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Albums{api: *a, resources: albums.Resources}, nil
+	return &Albums{api: *a, Resources: albums.Resources, cfg: cfg}, nil
 }
 
 func (a *API) Catalog() (*openapi.GetCatalog200Response, error) {
