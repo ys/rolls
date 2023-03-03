@@ -72,7 +72,8 @@ func (roll *Roll) Archive(cfg *Config) error {
 	contactSheet := NewContactSheet()
 	defer contactSheet.Destroy()
 
-	for i, file := range files {
+	i := 0
+	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".md" {
 			continue
 		}
@@ -89,6 +90,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 		}
 
 		os.Rename(path.Join(roll.Folder, file.Name()), path.Join(roll.Folder, newName))
+		i = i + 1
 	}
 	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
 	destination := path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year()), fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
