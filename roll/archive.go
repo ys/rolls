@@ -1,7 +1,6 @@
 package roll
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -57,10 +56,17 @@ func (roll *Roll) Archive(cfg *Config) error {
 	film := cfg.Films[roll.Metadata.FilmID]
 
 	if camera == nil {
-		return errors.New(fmt.Sprintf("No camera found for '%s'\n", roll.Metadata.CameraID))
+		splitted := strings.SplitN(roll.Metadata.CameraID, " ", 2)
+		camera = &Camera{
+			Brand: splitted[0],
+			Model: splitted[1],
+		}
 	}
 	if film == nil {
-		return errors.New(fmt.Sprintf("No film found for '%s'\n", roll.Metadata.FilmID))
+		film = &Film{
+			Nickname: roll.Metadata.FilmID,
+			ShowIso:  false,
+		}
 	}
 
 	contactSheet := NewContactSheet()

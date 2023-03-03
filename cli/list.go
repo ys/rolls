@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
@@ -27,28 +28,56 @@ It will also filter down by year or camera or film
 				(roll.Metadata.ScannedAt.Year() == year)
 		})
 		cobra.CheckErr(err)
-		table := uitable.New()
-		table.MaxColWidth = 80
-		table.Wrap = true // wrap columns
-		for _, roll := range rolls {
-			camera := cfg.Cameras[roll.Metadata.CameraID]
-			film := cfg.Films[roll.Metadata.FilmID]
-			if camera == nil {
-				fmt.Printf("No camera found for '%s'\n", roll.Metadata.CameraID)
-				return
+		compact, err := cmd.Flags().GetBool("compact")
+		cobra.CheckErr(err)
+		if compact {
+			for _, r := range rolls {
+				camera := cfg.Cameras[r.Metadata.CameraID]
+				film := cfg.Films[r.Metadata.FilmID]
+				if camera == nil {
+					splitted := strings.SplitN(r.Metadata.CameraID, " ", 2)
+					camera = &roll.Camera{
+						Brand: splitted[0],
+						Model: splitted[1],
+					}
+				}
+				if film == nil {
+					film = &roll.Film{
+						Nickname: r.Metadata.FilmID,
+						ShowIso:  false,
+					}
+				}
+			fmt.Printf("%s - %s - %s\n", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())
 			}
-			if film == nil {
-				fmt.Printf("No film found for '%s'\n", roll.Metadata.FilmID)
-				return
+		} else {
+			table := uitable.New()
+			table.MaxColWidth = 80
+			table.Wrap = true // wrap columns
+			for _, r := range rolls {
+				camera := cfg.Cameras[r.Metadata.CameraID]
+				film := cfg.Films[r.Metadata.FilmID]
+				if camera == nil {
+					splitted := strings.SplitN(r.Metadata.CameraID, " ", 2)
+					camera = &roll.Camera{
+						Brand: splitted[0],
+						Model: splitted[1],
+					}
+				}
+				if film == nil {
+					film = &roll.Film{
+						Nickname: r.Metadata.FilmID,
+						ShowIso:  false,
+					}
+				}
+				table.AddRow("roll:", r.Metadata.RollNumber)
+				table.AddRow("camera:", camera.Name())
+				table.AddRow("film:", film.NameWithBrand())
+				table.AddRow("shot at:", r.Metadata.ShotAt)
+				table.AddRow("---") // blank
 			}
-			table.AddRow("roll:", roll.Metadata.RollNumber)
-			table.AddRow("camera:", camera.Name())
-			table.AddRow("film:", film.NameWithBrand())
-			table.AddRow("shot at:", roll.Metadata.ShotAt)
-			table.AddRow("---") // blank
-		}
 
-		fmt.Println(table)
+			fmt.Println(table)
+		}
 	},
 }
 
@@ -64,4 +93,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	listCmd.Flags().Int("year", 0, "Filter by year")
+	listCmd.Flags().Bool("compact", false, "One per line")
 }

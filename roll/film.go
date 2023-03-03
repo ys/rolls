@@ -9,15 +9,19 @@ import (
 )
 
 type Film struct {
-	ID      string `yaml:"-"`
-	Brand   string `yaml:"brand" mapstructure:"brand"`
-	Name    string `yaml:"name" mapstructure:"name"`
-	Color   bool   `yaml:"color" mapstructure:"color"`
-	Iso     int    `yaml:"iso" mapstructure:"iso"`
-	ShowIso bool   `yaml:"showiso" mapstructure:"showiso" default:"true"`
+	ID       string `yaml:"-"`
+	Brand    string `yaml:"brand" mapstructure:"brand"`
+	Name     string `yaml:"name" mapstructure:"name"`
+	Nickname string `yaml:"nickname" mapstructure:"nickname"`
+	Color    bool   `yaml:"color" mapstructure:"color"`
+	Iso      int    `yaml:"iso" mapstructure:"iso"`
+	ShowIso  bool   `yaml:"showiso" mapstructure:"showiso" default:"true"`
 }
 
 func (f *Film) NameWithBrand() string {
+	if f.Nickname != "" {
+		return f.Nickname
+	}
 	if f.ShowIso {
 		return f.Brand + " " + f.Name + " " + strconv.Itoa(f.Iso)
 	}
