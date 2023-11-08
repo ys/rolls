@@ -27,13 +27,14 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 		if filepath.Base(file.Name()) == ".DS_Store" {
 			continue
 		}
+		fmt.Println("Add file ", file.Name())
 		err = contactSheet.AddImage(path.Join(roll.Folder, file.Name()))
 		if err != nil {
 			return err
 		}
 	}
 	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
-	destination := path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year()), fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
+	destination := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
 	fmt.Println("Contact Sheet to", destination)
 	err = contactSheet.WriteImage(destination)
 	if err != nil {
@@ -93,7 +94,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 		i = i + 1
 	}
 	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
-	destination := path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year()), fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
+	destination := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
 	fmt.Println("Contact Sheet to", destination)
 	err = contactSheet.WriteImage(destination)
 	if err != nil {
