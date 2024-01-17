@@ -47,7 +47,7 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 * Needed: contact sheet destination, cameras, films
  */
 func (roll *Roll) Archive(cfg *Config) error {
-	files, err := ioutil.ReadDir(roll.Folder)
+	files, err := os.ReadDir(roll.Folder)
 
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 		if filepath.Base(file.Name()) == ".DS_Store" {
 			continue
 		}
-		newName := fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), i+1, strings.ToLower(filepath.Ext(file.Name())))
+		newName := strings.ToLower(fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), i+1, filepath.Ext(file.Name())))
 
 		roll.WriteExif(path.Join(roll.Folder, file.Name()), camera, film)
 
@@ -100,7 +100,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	newFolder := fmt.Sprintf("%s-%s-%s", roll.FilesPrefix(), roll.Metadata.CameraID, roll.Metadata.FilmID)
+	newFolder := strings.ToLower(fmt.Sprintf("%s-%s-%s", roll.FilesPrefix(), roll.Metadata.CameraID, roll.Metadata.FilmID))
 	os.Rename(roll.Folder, path.Join(filepath.Dir(roll.Folder), newFolder))
 	return nil
 }
