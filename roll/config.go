@@ -2,7 +2,6 @@ package roll
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -19,6 +18,7 @@ type Config struct {
 	AccessToken      string  `mapstructure:"access_token" yaml:"access_token"`
 	ScansAlbumID     string  `mapstructure:"scans_album_id" yaml:"scans_album_id"`
 	CatalogID        string  `mapstructure:"catalog_id" yaml:"catalog_id"`
+	Copyright        string  `mapstructure:"copyright" yaml:"copyright"`
 	FilePath         string  `mapstructure:"-" yaml:"-"`
 	Cameras          Cameras `mapstructure:"-" yaml:"-"`
 	Films            Films   `mapstructure:"-" yaml:"-"`
@@ -33,7 +33,7 @@ func (cfg *Config) Write() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(cfg.FilePath, data, 0)
+	err = os.WriteFile(cfg.FilePath, data, 0)
 	return err
 }
 

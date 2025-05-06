@@ -337,6 +337,16 @@ func Charset(charset string) func(*Exiftool) error {
 	}
 }
 
+// Api defines an -api value to pass to Exiftool, see https://www.exiftool.org/exiftool_pod.html#Advanced-options
+// Sample :
+//   e, err := NewExiftool(Api("QuickTimeUTC"))
+func Api(apiValue string) func(*Exiftool) error {
+	return func(e *Exiftool) error {
+		e.extraInitArgs = append(e.extraInitArgs, "-api", apiValue)
+		return nil
+	}
+}
+
 // NoPrintConversion enables 'No print conversion' mode, see https://exiftool.org/exiftool_pod.html.
 // Sample :
 //   e, err := NewExiftool(NoPrintConversion())
@@ -383,6 +393,16 @@ func DateFormant(format string) func(*Exiftool) error {
 func CoordFormant(format string) func(*Exiftool) error {
 	return func(e *Exiftool) error {
 		e.extraInitArgs = append(e.extraInitArgs, "-coordFormat", format)
+		return nil
+	}
+}
+
+// PrintGroupNames prints the group names for each tag based on the pass group number(s), (activates Exiftool's '-G' paramater)
+// Sample :
+//	e, err := NewExiftool(PrintGroupNames("0"))
+func PrintGroupNames(groupNumbers string) func(*Exiftool) error {
+	return func(e *Exiftool) error {
+		e.extraInitArgs = append(e.extraInitArgs, "-G"+groupNumbers)
 		return nil
 	}
 }

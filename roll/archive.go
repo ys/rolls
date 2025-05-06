@@ -55,6 +55,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 
 	camera := cfg.Cameras[roll.Metadata.CameraID]
 	film := cfg.Films[roll.Metadata.FilmID]
+	author := cfg.Copyright
 
 	if camera == nil {
 		splitted := strings.SplitN(roll.Metadata.CameraID, " ", 2)
@@ -83,7 +84,7 @@ func (roll *Roll) Archive(cfg *Config) error {
 		}
 		newName := strings.ToLower(fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), i+1, filepath.Ext(file.Name())))
 
-		roll.WriteExif(path.Join(roll.Folder, file.Name()), camera, film)
+		roll.WriteExif(path.Join(roll.Folder, file.Name()), camera, film, author)
 
 		err = contactSheet.AddImage(path.Join(roll.Folder, file.Name()))
 		if err != nil {

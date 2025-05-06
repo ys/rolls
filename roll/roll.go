@@ -20,6 +20,7 @@ type Metadata struct {
 	ScannedAt  time.Time `yaml:"scanned_at"`
 	RollNumber string    `yaml:"roll_number"`
 	Tags       []string  `yaml:"tags"`
+	Copyright  string
 }
 
 type Roll struct {
@@ -29,7 +30,7 @@ type Roll struct {
 	list.Item
 }
 
-func (roll *Roll) WriteExif(file string, camera *Camera, film *Film) error {
+func (roll *Roll) WriteExif(file string, camera *Camera, film *Film, author string) error {
 	e, err := exiftool.NewExiftool()
 	defer e.Close()
 	if err != nil {
@@ -37,6 +38,7 @@ func (roll *Roll) WriteExif(file string, camera *Camera, film *Film) error {
 	}
 	originals := e.ExtractMetadata(file)
 
+	originals[0].SetString("Copyright", author)
 	originals[0].SetString("Make", camera.Brand)
 	originals[0].SetString("Model", camera.Model)
 	originals[0].SetInt("Iso", int64(film.Iso))
@@ -51,7 +53,7 @@ func (roll *Roll) WriteExif(file string, camera *Camera, film *Film) error {
 	originals[0].SetString("CreateDate", at)
 	kw := make([]string, len(roll.Metadata.Tags))
 	copy(kw, roll.Metadata.Tags)
-	kw = append(kw, camera.Name(), film.NameWithBrand())
+	kw = append(kw, "Analog", camera.Name(), film.NameWithBrand(), roll.Metadata.FilmID, roll.Metadata.RollNumber)
 	originals[0].SetStrings("Keywords", kw)
 	e.WriteMetadata(originals)
 	return nil
@@ -96,6 +98,7 @@ func GetRolls(root string) (Rolls, error) {
 			Metadata: matter,
 			Content:  string(content),
 		}
+		r.Metadata.Copyright = "Yannick Schutz"
 
 		rolls = append(rolls, r)
 		return nil

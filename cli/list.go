@@ -47,7 +47,7 @@ It will also filter down by year or camera or film
 						ShowIso:  false,
 					}
 				}
-			fmt.Printf("%s - %s - %s\n", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())
+				fmt.Printf("%s - %s - %s\n", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())
 			}
 		} else {
 			table := uitable.New()
@@ -58,9 +58,16 @@ It will also filter down by year or camera or film
 				film := cfg.Films[r.Metadata.FilmID]
 				if camera == nil {
 					splitted := strings.SplitN(r.Metadata.CameraID, " ", 2)
-					camera = &roll.Camera{
-						Brand: splitted[0],
-						Model: splitted[1],
+					if len(splitted) == 2 {
+						camera = &roll.Camera{
+							Brand: splitted[0],
+							Model: splitted[1],
+						}
+					} else {
+						camera = &roll.Camera{
+							Brand: splitted[0],
+							Model: "Unknown",
+						}
 					}
 				}
 				if film == nil {

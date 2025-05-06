@@ -1,11 +1,51 @@
 package tea
 
-// Convenience commands. Not part of the Bubble Tea core, but potentially
-// handy.
-
 import (
 	"time"
 )
+
+// Batch performs a bunch of commands concurrently with no ordering guarantees
+// about the results. Use a Batch to return several commands.
+//
+// Example:
+//
+//	    func (m model) Init() Cmd {
+//		       return tea.Batch(someCommand, someOtherCommand)
+//	    }
+func Batch(cmds ...Cmd) Cmd {
+	var validCmds []Cmd //nolint:prealloc
+	for _, c := range cmds {
+		if c == nil {
+			continue
+		}
+		validCmds = append(validCmds, c)
+	}
+	switch len(validCmds) {
+	case 0:
+		return nil
+	case 1:
+		return validCmds[0]
+	default:
+		return func() Msg {
+			return BatchMsg(validCmds)
+		}
+	}
+}
+
+// BatchMsg is a message used to perform a bunch of commands concurrently with
+// no ordering guarantees. You can send a BatchMsg with Batch.
+type BatchMsg []Cmd
+
+// Sequence runs the given commands one at a time, in order. Contrast this with
+// Batch, which runs commands concurrently.
+func Sequence(cmds ...Cmd) Cmd {
+	return func() Msg {
+		return sequenceMsg(cmds)
+	}
+}
+
+// sequenceMsg is used internally to run the given commands in order.
+type sequenceMsg []Cmd
 
 // Every is a command that ticks in sync with the system clock. So, if you
 // wanted to tick with the system clock every second, minute or hour you
@@ -54,16 +94,21 @@ import (
 //
 // Every is analogous to Tick in the Elm Architecture.
 func Every(duration time.Duration, fn func(time.Time) Msg) Cmd {
+	n := time.Now()
+	d := n.Truncate(duration).Add(duration).Sub(n)
+	t := time.NewTimer(d)
 	return func() Msg {
-		n := time.Now()
-		d := n.Truncate(duration).Add(duration).Sub(n)
-		t := time.NewTimer(d)
-		return fn(<-t.C)
+		ts := <-t.C
+		t.Stop()
+		for len(t.C) > 0 {
+			<-t.C
+		}
+		return fn(ts)
 	}
 }
 
 // Tick produces a command at an interval independent of the system clock at
-// the given duration. That is, the timer begins when precisely when invoked,
+// the given duration. That is, the timer begins precisely when invoked,
 // and runs for its entire duration.
 //
 // To produce the command, pass a duration and a function which returns
@@ -101,9 +146,14 @@ func Every(duration time.Duration, fn func(time.Time) Msg) Cmd {
 //	    return m, nil
 //	}
 func Tick(d time.Duration, fn func(time.Time) Msg) Cmd {
+	t := time.NewTimer(d)
 	return func() Msg {
-		t := time.NewTimer(d)
-		return fn(<-t.C)
+		ts := <-t.C
+		t.Stop()
+		for len(t.C) > 0 {
+			<-t.C
+		}
+		return fn(ts)
 	}
 }
 
@@ -119,6 +169,8 @@ func Tick(d time.Duration, fn func(time.Time) Msg) Cmd {
 //	}
 //
 //	cmd := Sequentially(saveStateCmd, Quit)
+//
+// Deprecated: use Sequence instead.
 func Sequentially(cmds ...Cmd) Cmd {
 	return func() Msg {
 		for _, cmd := range cmds {
@@ -130,5 +182,35 @@ func Sequentially(cmds ...Cmd) Cmd {
 			}
 		}
 		return nil
+	}
+}
+
+// setWindowTitleMsg is an internal message used to set the window title.
+type setWindowTitleMsg string
+
+// SetWindowTitle produces a command that sets the terminal title.
+//
+// For example:
+//
+//	func (m model) Init() Cmd {
+//	    // Set title.
+//	    return tea.SetWindowTitle("My App")
+//	}
+func SetWindowTitle(title string) Cmd {
+	return func() Msg {
+		return setWindowTitleMsg(title)
+	}
+}
+
+type windowSizeMsg struct{}
+
+// WindowSize is a command that queries the terminal for its current size. It
+// delivers the results to Update via a [WindowSizeMsg]. Keep in mind that
+// WindowSizeMsgs will automatically be delivered to Update when the [Program]
+// starts and when the window dimensions change so in many cases you will not
+// need to explicitly invoke this command.
+func WindowSize() Cmd {
+	return func() Msg {
+		return windowSizeMsg{}
 	}
 }

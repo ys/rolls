@@ -1,5 +1,5 @@
-// Copyright (c) Liam Stanley <me@liamstanley.io>. All rights reserved. Use
-// of this source code is governed by the MIT license that can be found in
+// Copyright (c) Liam Stanley <liam@liam.sh>. All rights reserved. Use of
+// this source code is governed by the MIT license that can be found in
 // the LICENSE file.
 
 package zone
@@ -18,6 +18,7 @@ type stateFn func(*scanner) stateFn
 
 type scanner struct {
 	manager   *Manager
+	enabled   bool
 	iteration int
 
 	input string // Source input.
@@ -36,6 +37,7 @@ type scanner struct {
 func newScanner(m *Manager, input string, iteration int) *scanner {
 	return &scanner{
 		manager:   m,
+		enabled:   m.Enabled(),
 		iteration: iteration,
 		input:     input,
 		tracked:   make(map[string]*ZoneInfo),
@@ -52,6 +54,14 @@ func (s *scanner) run() {
 // emit adds the current marker to the tracked map. If two markers are received,
 // it is sent back to the manager.
 func (s *scanner) emit() {
+	if !s.enabled {
+		// If the manager is disabled, we don't need to track anything, just strip
+		// the markers from the resulting output.
+		s.input = s.input[:s.start] + s.input[s.pos:]
+		s.pos = s.start
+		return
+	}
+
 	rid := s.input[s.start:s.pos]
 	if item, ok := s.tracked[rid]; ok {
 		// The end should be - 1, because it's the end of the encapsulation of the

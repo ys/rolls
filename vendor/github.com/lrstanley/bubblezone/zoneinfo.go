@@ -1,5 +1,5 @@
-// Copyright (c) Liam Stanley <me@liamstanley.io>. All rights reserved. Use
-// of this source code is governed by the MIT license that can be found in
+// Copyright (c) Liam Stanley <liam@liam.sh>. All rights reserved. Use of
+// this source code is governed by the MIT license that can be found in
 // the LICENSE file.
 
 package zone
@@ -7,7 +7,7 @@ package zone
 import tea "github.com/charmbracelet/bubbletea"
 
 // ZoneInfo holds information about the start and end positions of a zone.
-type ZoneInfo struct {
+type ZoneInfo struct { // nolint:revive
 	id        string // rid of the zone.
 	iteration int    // The iteration of the zone, used for cleaning up old zones.
 

@@ -5,10 +5,23 @@
 package imagick
 
 /*
+#include <MagickCore/MagickCore.h>
 #include <MagickWand/MagickWand.h>
 */
 import "C"
 import "unsafe"
+
+// Returns the ImageMagick delegates as a string constant.
+func GetDelegates() string {
+	cstr := C.GetMagickDelegates()
+	return C.GoString(cstr)
+}
+
+// Returns the ImageMagick features as a string constant.
+func GetFeatures() string {
+	cstr := C.GetMagickFeatures()
+	return C.GoString(cstr)
+}
 
 // Returns the ImageMagick API copyright as a string constant.
 func GetCopyright() string {
@@ -67,4 +80,10 @@ func GetVersion() (version string, nversion uint) {
 	version = C.GoString(csver)
 	nversion = uint(cnver)
 	return
+}
+
+// Specify resource limit at package level.
+func SetResourceLimit(rtype ResourceType, limit uint64) bool {
+	ok := C.MagickSetResourceLimit(C.ResourceType(rtype), C.MagickSizeType(limit))
+	return C.int(ok) == 1
 }
