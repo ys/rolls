@@ -187,8 +187,8 @@ func FromMarkdown(path string) (Roll, error) {
 }
 
 // GetRolls returns all rolls in the scans directory
-func GetRolls(scansPath string) ([]Roll, error) {
-	var rolls []Roll
+func GetRolls(scansPath string) (Rolls, error) {
+	var rolls Rolls
 
 	// Walk through the scans directory
 	err := filepath.Walk(scansPath, func(path string, info os.FileInfo, err error) error {
@@ -242,7 +242,7 @@ func GetRolls(scansPath string) ([]Roll, error) {
 	return rolls, nil
 }
 
-func Filter(vs Rolls, f func(Roll) bool) []Roll {
+func Filter(vs Rolls, f func(Roll) bool) Rolls {
 	filtered := make(Rolls, 0)
 	for _, v := range vs {
 		if f(v) {
