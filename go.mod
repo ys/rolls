@@ -13,7 +13,6 @@ require (
 	github.com/gosuri/uitable v0.0.4
 	github.com/int128/oauth2cli v1.14.0
 	github.com/lrstanley/bubblezone v1.0.0
-	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
