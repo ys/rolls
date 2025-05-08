@@ -2,45 +2,21 @@ package roll
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
+	"github.com/ys/rolls/style"
 )
 
-var (
-	// Flexoki color scheme
-	subtle    = lipgloss.AdaptiveColor{Light: "#0B7285", Dark: "#0B7285"}    // Flexoki cyan
-	highlight = lipgloss.AdaptiveColor{Light: "#8B7EC8", Dark: "#8B7EC8"}    // Flexoki purple
-	special   = lipgloss.AdaptiveColor{Light: "#AD3FA4", Dark: "#AD3FA4"}    // Flexoki magenta
-	accent    = lipgloss.AdaptiveColor{Light: "#B47109", Dark: "#B47109"}    // Flexoki yellow
-
-	titleStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(highlight)
-
-	progressStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			MarginRight(2).
-			Padding(0, 1).
-			Foreground(subtle)
-
-	fileStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(special)
-
-	accentStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(accent)
-)
+// Styling is defined in styling.go
 
 func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
-	files, err := ioutil.ReadDir(roll.Folder)
+	files, err := os.ReadDir(roll.Folder)
 
 	if err != nil {
 		return err
@@ -49,6 +25,17 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 	contactSheet := NewContactSheet()
 	defer contactSheet.Destroy()
 
+	fmt.Println(style.RenderTitle("🔄", fmt.Sprintf("Creating contact sheet for roll %s", roll.Metadata.RollNumber)))
+
+	// Count valid files
+	validFiles := 0
+	for _, file := range files {
+		if filepath.Ext(file.Name()) != ".md" && filepath.Base(file.Name()) != ".DS_Store" {
+			validFiles++
+		}
+	}
+
+	processed := 0
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".md" {
 			continue
@@ -56,15 +43,21 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 		if filepath.Base(file.Name()) == ".DS_Store" {
 			continue
 		}
-		fmt.Println("Add file ", file.Name())
+
+		processed++
+		fmt.Print(style.ProgressStyle.Render(fmt.Sprintf("Adding %s %s", file.Name(), style.RenderProgressBar(processed, validFiles))))
+
 		err = contactSheet.AddImage(path.Join(roll.Folder, file.Name()))
 		if err != nil {
 			return err
 		}
+		fmt.Print("\r")
 	}
+	fmt.Println()
+
 	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
 	destination := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
-	fmt.Println("Contact Sheet to", destination)
+	fmt.Println(style.RenderFile(fmt.Sprintf("💾 Saving contact sheet to %s", destination)))
 	err = contactSheet.WriteImage(destination)
 	if err != nil {
 		return err
@@ -74,7 +67,7 @@ func (roll *Roll) GenerateNewContactSheet(cfg *Config) error {
 
 // processFiles handles Phase 1: EXIF updates and file renaming
 func (roll *Roll) processFiles(files []os.DirEntry, camera *Camera, film *Film, author string, forceExif bool) (bool, error) {
-	fmt.Println(titleStyle.Render("\n📝 Processing files..."))
+	fmt.Println(style.RenderTitle("📝", "Processing files..."))
 
 	// Count valid files for progress bar
 	validFiles := 0
@@ -84,45 +77,80 @@ func (roll *Roll) processFiles(files []os.DirEntry, camera *Camera, film *Film, 
 		}
 	}
 
-	processed := 0
-	needsExifUpdate := false
+	// Create a channel for work items
+	type workItem struct {
+		file     os.DirEntry
+		index    int
+		filePath string
+	}
+	workChan := make(chan workItem, validFiles)
+	results := make(chan error, validFiles)
 
+	// Start worker pool
+	numWorkers := 4 // Adjust based on your system's capabilities
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for work := range workChan {
+				// Check if file needs renaming
+				fileName := strings.ToLower(work.file.Name())
+				expectedPrefix := strings.ToLower(roll.FilesPrefix())
+				needsRenaming := !strings.HasPrefix(fileName, expectedPrefix)
+
+				// Check if file needs EXIF update
+				if forceExif || needsRenaming {
+					err := roll.WriteExif(work.filePath, camera, film, author)
+					if err != nil {
+						results <- fmt.Errorf("failed to update EXIF for %s: %w", work.file.Name(), err)
+						continue
+					}
+				}
+
+				// Only rename if needed
+				if needsRenaming {
+					newName := strings.ToLower(fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), work.index+1, filepath.Ext(work.file.Name())))
+					newPath := path.Join(roll.Folder, newName)
+					err := os.Rename(work.filePath, newPath)
+					if err != nil {
+						results <- fmt.Errorf("failed to rename %s to %s: %w", work.file.Name(), newName, err)
+						continue
+					}
+				}
+				results <- nil
+			}
+		}()
+	}
+
+	// Send work items
+	processed := 0
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".md" || filepath.Base(file.Name()) == ".DS_Store" {
 			continue
 		}
 
 		filePath := path.Join(roll.Folder, file.Name())
-		progress := float64(processed) / float64(validFiles)
-		bar := fmt.Sprintf("[%s%s] %d/%d",
-			strings.Repeat("=", int(progress*20)),
-			strings.Repeat(" ", 20-int(progress*20)),
-			processed+1,
-			validFiles)
-		fmt.Print(progressStyle.Render(fmt.Sprintf("Processing %s %s", file.Name(), bar)))
-
-		// Check if file needs renaming
-		fileName := strings.ToLower(file.Name())
-		expectedPrefix := strings.ToLower(roll.FilesPrefix())
-		needsRenaming := !strings.HasPrefix(fileName, expectedPrefix)
-
-		// Check if file needs EXIF update
-		if forceExif || needsRenaming {
-			roll.WriteExif(filePath, camera, film, author)
-			needsExifUpdate = true
-		}
-
-		// Only rename if needed
-		if needsRenaming {
-			newName := strings.ToLower(fmt.Sprintf("%s-%02d%s", roll.FilesPrefix(), processed+1, filepath.Ext(file.Name())))
-			newPath := path.Join(roll.Folder, newName)
-			os.Rename(filePath, newPath)
-		}
-
+		fmt.Print(style.ProgressStyle.Render(fmt.Sprintf("Processing %s %s", file.Name(), style.RenderProgressBar(processed+1, validFiles))))
+		workChan <- workItem{file: file, index: processed, filePath: filePath}
 		processed++
-		fmt.Print("\r")
 		time.Sleep(50 * time.Millisecond)
 	}
+	close(workChan)
+
+	// Wait for all workers to finish
+	wg.Wait()
+	close(results)
+
+	// Check for any errors
+	needsExifUpdate := false
+	for err := range results {
+		if err != nil {
+			return false, err
+		}
+		needsExifUpdate = true
+	}
+
 	fmt.Println()
 	return needsExifUpdate, nil
 }
@@ -131,11 +159,11 @@ func (roll *Roll) processFiles(files []os.DirEntry, camera *Camera, film *Film, 
 func (roll *Roll) createContactSheet(cfg *Config, validFiles int) error {
 	contactSheetPath := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
 	if _, err := os.Stat(contactSheetPath); err == nil {
-		fmt.Println(accentStyle.Render("\n✨ Contact sheet already exists, skipping"))
+		fmt.Println(style.RenderAccent("\n✨ Contact sheet already exists, skipping"))
 		return nil
 	}
 
-	fmt.Println(titleStyle.Render("\n🔄 Creating contact sheet..."))
+	fmt.Println(style.RenderTitle("🔄", "Creating contact sheet..."))
 	contactSheet := NewContactSheet()
 	defer contactSheet.Destroy()
 
@@ -152,13 +180,7 @@ func (roll *Roll) createContactSheet(cfg *Config, validFiles int) error {
 		}
 
 		filePath := path.Join(roll.Folder, file.Name())
-		progress := float64(processed) / float64(validFiles)
-		bar := fmt.Sprintf("[%s%s] %d/%d",
-			strings.Repeat("=", int(progress*20)),
-			strings.Repeat(" ", 20-int(progress*20)),
-			processed+1,
-			validFiles)
-		fmt.Print(progressStyle.Render(fmt.Sprintf("Adding %s %s", file.Name(), bar)))
+		fmt.Print(style.ProgressStyle.Render(fmt.Sprintf("Adding %s %s", file.Name(), style.RenderProgressBar(processed+1, validFiles))))
 
 		err = contactSheet.AddImage(filePath)
 		if err != nil {
@@ -172,7 +194,7 @@ func (roll *Roll) createContactSheet(cfg *Config, validFiles int) error {
 
 	os.MkdirAll(path.Join(cfg.ContactSheetPath, strconv.Itoa(roll.Metadata.ShotAt.Year())), 0755)
 	destination := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
-	fmt.Println(fileStyle.Render(fmt.Sprintf("\n💾 Saving contact sheet to %s", destination)))
+	fmt.Println(style.RenderFile(fmt.Sprintf("\n💾 Saving contact sheet to %s", destination)))
 	return contactSheet.WriteImage(destination)
 }
 
@@ -197,7 +219,7 @@ func (roll *Roll) renameFolder() error {
 	if markdownFile != "" {
 		oldPath := filepath.Join(roll.Folder, markdownFile)
 		newPath := filepath.Join(roll.Folder, "roll.md")
-		fmt.Println(fileStyle.Render(fmt.Sprintf("📝 Renaming markdown file from %s to roll.md", markdownFile)))
+		fmt.Println(style.RenderFile(fmt.Sprintf("📝 Renaming markdown file from %s to roll.md", markdownFile)))
 		err = os.Rename(oldPath, newPath)
 		if err != nil {
 			return fmt.Errorf("failed to rename markdown file from %s to %s: %w", oldPath, newPath, err)
@@ -207,7 +229,7 @@ func (roll *Roll) renameFolder() error {
 	// Rename the folder if needed
 	newFolder := strings.ToLower(fmt.Sprintf("%s-%s-%s", roll.FilesPrefix(), roll.Metadata.CameraID, roll.Metadata.FilmID))
 	if filepath.Base(roll.Folder) != newFolder {
-		fmt.Println(fileStyle.Render(fmt.Sprintf("📁 Renaming folder to %s", newFolder)))
+		fmt.Println(style.RenderFile(fmt.Sprintf("📁 Renaming folder to %s", newFolder)))
 		newFolderPath := path.Join(filepath.Dir(roll.Folder), newFolder)
 		err = os.Rename(roll.Folder, newFolderPath)
 		if err != nil {
@@ -215,7 +237,7 @@ func (roll *Roll) renameFolder() error {
 		}
 		// Update the roll's folder path
 		roll.Folder = newFolderPath
-		fmt.Println(fileStyle.Render(fmt.Sprintf("   Updated folder path to: %s", roll.Folder)))
+		fmt.Println(style.RenderFile(fmt.Sprintf("   Updated folder path to: %s", roll.Folder)))
 	}
 
 	// Update the processed timestamp
@@ -226,11 +248,39 @@ func (roll *Roll) renameFolder() error {
 	return nil
 }
 
+// updateProcessedTime handles Phase 4: Update processed timestamp
+func (roll *Roll) updateProcessedTime() error {
+	fmt.Println(style.RenderTitle("⏰", "Updating processed timestamp..."))
+	roll.Metadata.ProcessedAt = time.Now()
+	markdownPath := filepath.Join(roll.Folder, "roll.md")
+
+	// Check if the file exists
+	if _, err := os.Stat(markdownPath); os.IsNotExist(err) {
+		return fmt.Errorf("markdown file not found at %s: %w", markdownPath, err)
+	}
+
+	content := fmt.Sprintf("---\nroll_number: %s\ncamera: %s\nfilm: %s\nshot_at: %s\nscanned_at: %s\nprocessed_at: %s\ntags: %v\n---\n\n%s",
+		roll.Metadata.RollNumber,
+		roll.Metadata.CameraID,
+		roll.Metadata.FilmID,
+		roll.Metadata.ShotAt.Format("2006-01-02"),
+		roll.Metadata.ScannedAt.Format("2006-01-02"),
+		roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"),
+		roll.Metadata.Tags,
+		roll.Content)
+
+	err := os.WriteFile(markdownPath, []byte(content), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write to markdown file at %s: %w", markdownPath, err)
+	}
+	return nil
+}
+
 func (roll *Roll) Archive(cfg *Config, forceExif bool) error {
-	fmt.Println(titleStyle.Render(fmt.Sprintf("📦 Processing roll %s", roll.Metadata.RollNumber)))
-	fmt.Println(fileStyle.Render(fmt.Sprintf("   Camera: %s", roll.Metadata.CameraID)))
-	fmt.Println(fileStyle.Render(fmt.Sprintf("   Film: %s", roll.Metadata.FilmID)))
-	fmt.Println(fileStyle.Render(fmt.Sprintf("   Shot at: %s", roll.Metadata.ShotAt.Format("2006-01-02"))))
+	fmt.Println(style.RenderTitle("📦", fmt.Sprintf("Processing roll %s", roll.Metadata.RollNumber)))
+	fmt.Println(style.RenderFile(fmt.Sprintf("   Camera: %s", roll.Metadata.CameraID)))
+	fmt.Println(style.RenderFile(fmt.Sprintf("   Film: %s", roll.Metadata.FilmID)))
+	fmt.Println(style.RenderFile(fmt.Sprintf("   Shot at: %s", roll.Metadata.ShotAt.Format("2006-01-02"))))
 
 	files, err := os.ReadDir(roll.Folder)
 	if err != nil {
@@ -275,18 +325,24 @@ func (roll *Roll) Archive(cfg *Config, forceExif bool) error {
 		return err
 	}
 
-	// Phase 3: Rename folder and update metadata
+	// Phase 3: Rename folder
 	err = roll.renameFolder()
+	if err != nil {
+		return fmt.Errorf("failed to rename folder: %w", err)
+	}
+
+	// Phase 4: Update processed timestamp
+	err = roll.updateProcessedTime()
 	if err != nil {
 		return fmt.Errorf("failed to update processed time: %w", err)
 	}
 
 	if forceExif {
-		fmt.Println(titleStyle.Render(fmt.Sprintf("\n✅ EXIF data updated for roll %s\n", roll.Metadata.RollNumber)))
+		fmt.Println(style.RenderSuccess(fmt.Sprintf("\nEXIF data updated for roll %s\n", roll.Metadata.RollNumber)))
 	} else if needsExifUpdate {
-		fmt.Println(titleStyle.Render(fmt.Sprintf("\n✅ Roll %s updated with new EXIF data\n", roll.Metadata.RollNumber)))
+		fmt.Println(style.RenderSuccess(fmt.Sprintf("\nRoll %s updated with new EXIF data\n", roll.Metadata.RollNumber)))
 	} else {
-		fmt.Println(titleStyle.Render(fmt.Sprintf("\n✅ Roll %s archived successfully!\n", roll.Metadata.RollNumber)))
+		fmt.Println(style.RenderSuccess(fmt.Sprintf("\nRoll %s archived successfully!\n", roll.Metadata.RollNumber)))
 	}
 	return nil
 }
@@ -300,20 +356,20 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 	// Check if roll has been processed before
 	wasProcessed := !roll.Metadata.ProcessedAt.IsZero()
 	if wasProcessed {
-		fmt.Printf("✨ Roll %s was last processed at %s\n", roll.Metadata.RollNumber, roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"))
+		fmt.Println(style.RenderSummary(fmt.Sprintf("✨ Roll %s was last processed at %s", roll.Metadata.RollNumber, roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"))))
 	}
 
 	// Check folder name
 	expectedFolder := strings.ToLower(fmt.Sprintf("%s-%s-%s", roll.FilesPrefix(), roll.Metadata.CameraID, roll.Metadata.FilmID))
 	if filepath.Base(roll.Folder) != expectedFolder {
-		fmt.Printf("📁 Folder name mismatch: %s (expected: %s)\n", filepath.Base(roll.Folder), expectedFolder)
+		fmt.Println(style.RenderFile(fmt.Sprintf("📁 Folder name mismatch: %s (expected: %s)", filepath.Base(roll.Folder), expectedFolder)))
 		return false, nil
 	}
 
 	// Check contact sheet
 	contactSheetPath := path.Join(cfg.ContactSheetPath, "images", fmt.Sprintf("%s.webp", roll.Metadata.RollNumber))
 	if _, err := os.Stat(contactSheetPath); os.IsNotExist(err) {
-		fmt.Printf("🖼️  Missing contact sheet: %s\n", contactSheetPath)
+		fmt.Println(style.RenderFile(fmt.Sprintf("🖼️  Missing contact sheet: %s", contactSheetPath)))
 		return false, nil
 	}
 
@@ -333,10 +389,10 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 		fileName := strings.ToLower(file.Name())
 		if !strings.HasPrefix(fileName, expectedPrefix) {
 			if !hasMismatch {
-				fmt.Printf("📝 Files with incorrect prefix in %s:\n", roll.Metadata.RollNumber)
+				fmt.Println(style.RenderTitle("📝", fmt.Sprintf("Files with incorrect prefix in %s:", roll.Metadata.RollNumber)))
 				hasMismatch = true
 			}
-			fmt.Printf("   - %s (expected prefix: %s)\n", file.Name(), expectedPrefix)
+			fmt.Println(style.RenderFile(fmt.Sprintf("   - %s (expected prefix: %s)", file.Name(), expectedPrefix)))
 		}
 	}
 	if hasMismatch {
@@ -349,10 +405,20 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 		if filepath.Ext(file.Name()) == ".md" {
 			if file.Name() == "roll.md" {
 				hasRollMd = true
-			} else {
-				// Remove any other markdown files
+			} else if !hasRollMd {
+				// Rename the first markdown file to roll.md if we don't have one
 				oldMdPath := filepath.Join(roll.Folder, file.Name())
-				fmt.Println(fileStyle.Render(fmt.Sprintf("🗑️  Removing old markdown file: %s", file.Name())))
+				newMdPath := filepath.Join(roll.Folder, "roll.md")
+				fmt.Println(style.RenderFile(fmt.Sprintf("📝 Renaming %s to roll.md", file.Name())))
+				err = os.Rename(oldMdPath, newMdPath)
+				if err != nil {
+					return false, fmt.Errorf("failed to rename markdown file %s to roll.md: %w", file.Name(), err)
+				}
+				hasRollMd = true
+			} else {
+				// Remove any other markdown files if we already have roll.md
+				oldMdPath := filepath.Join(roll.Folder, file.Name())
+				fmt.Println(style.RenderFile(fmt.Sprintf("🗑️  Removing old markdown file: %s", file.Name())))
 				err = os.Remove(oldMdPath)
 				if err != nil {
 					return false, fmt.Errorf("failed to remove old markdown file %s: %w", file.Name(), err)
@@ -377,10 +443,10 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 		if err != nil {
 			return false, fmt.Errorf("failed to create roll.md: %w", err)
 		}
-		fmt.Println(fileStyle.Render("📝 Created roll.md with current metadata"))
+		fmt.Println(style.RenderFile("📝 Created roll.md with current metadata"))
 	}
 
-	fmt.Printf("✨ Roll %s is already properly archived\n", roll.Metadata.RollNumber)
+	fmt.Println(style.RenderSummary(fmt.Sprintf("✨ Roll %s is already properly archived", roll.Metadata.RollNumber)))
 	return true, nil
 }
 

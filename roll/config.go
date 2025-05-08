@@ -17,6 +17,7 @@ type Config struct {
 	ClientSecret     string  `mapstructure:"client_secret" yaml:"client_secret"`
 	AccessToken      string  `mapstructure:"access_token" yaml:"access_token"`
 	ScansAlbumID     string  `mapstructure:"scans_album_id" yaml:"scans_album_id"`
+	UserID           string  `mapstructure:"catalog_id" yaml:"catalog_id"`
 	CatalogID        string  `mapstructure:"catalog_id" yaml:"catalog_id"`
 	Copyright        string  `mapstructure:"copyright" yaml:"copyright"`
 	FilePath         string  `mapstructure:"-" yaml:"-"`

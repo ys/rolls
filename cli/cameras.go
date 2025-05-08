@@ -15,16 +15,16 @@ var camerasCmd = &cobra.Command{
 	Use:   "cameras",
 	Short: "Manage and list your cameras",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(RenderTitle("📷", "Your Cameras"))
 
 		table := uitable.New()
 		table.MaxColWidth = 80
 		table.Wrap = true // wrap columns
 		for _, camera := range cfg.Cameras {
-
 			table.AddRow("camera:", camera.Name())
 		}
 
-		fmt.Println(table)
+		fmt.Println(AccentStyle.Render(table.String()))
 	},
 }
 

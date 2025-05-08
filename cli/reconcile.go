@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
+	"github.com/ys/rolls/style"
 )
 
 // reconcileCmd represents the reconcile command
@@ -66,7 +67,7 @@ var reconcileCmd = &cobra.Command{
 				return yearRolls[i].Metadata.RollNumber < yearRolls[j].Metadata.RollNumber
 			})
 
-			fmt.Println(titleStyle.Render(fmt.Sprintf("\n📝 Processing rolls from %d", year)))
+			fmt.Println(style.RenderTitle("📝", fmt.Sprintf("Processing rolls from %d", year)))
 
 			// Process each roll
 			for _, r := range yearRolls {
@@ -121,7 +122,7 @@ var reconcileCmd = &cobra.Command{
 					return fmt.Errorf("failed to write roll.md for %s: %w", r.Metadata.RollNumber, err)
 				}
 
-				fmt.Println(fileStyle.Render(fmt.Sprintf("   ✨ Updated roll.md for %s", r.Metadata.RollNumber)))
+				fmt.Println(style.RenderFile(fmt.Sprintf("   ✨ Updated roll.md for %s", r.Metadata.RollNumber)))
 			}
 		}
 

@@ -15,14 +15,16 @@ import (
 )
 
 type Metadata struct {
-	CameraID   string    `yaml:"camera"`
-	FilmID     string    `yaml:"film"`
-	ShotAt     time.Time `yaml:"shot_at"`
-	ScannedAt  time.Time `yaml:"scanned_at"`
-	RollNumber string    `yaml:"roll_number"`
-	Tags       []string  `yaml:"tags"`
-	Copyright  string
+	CameraID    string    `yaml:"camera"`
+	FilmID      string    `yaml:"film"`
+	ShotAt      time.Time `yaml:"shot_at"`
+	ScannedAt   time.Time `yaml:"scanned_at"`
+	RollNumber  string    `yaml:"roll_number"`
+	Tags        []string  `yaml:"tags"`
+	Copyright   string
 	ProcessedAt time.Time `yaml:"processed_at,omitempty"`
+	UploadedAt  time.Time `yaml:"uploaded_at,omitempty"`
+	AlbumName   string    `yaml:"album_name,omitempty"`
 }
 
 type Roll struct {
@@ -206,11 +208,6 @@ func GetRolls(scansPath string) (Rolls, error) {
 			return nil
 		}
 
-		// Skip roll.md files
-		if filepath.Base(path) == "roll.md" {
-			return nil
-		}
-
 		// Read the markdown file
 		roll, err := FromMarkdown(path)
 		if err != nil {
@@ -257,3 +254,80 @@ type ByRollNumber Rolls
 func (a ByRollNumber) Len() int           { return len(a) }
 func (a ByRollNumber) Less(i, j int) bool { return a[i].Metadata.RollNumber < a[j].Metadata.RollNumber }
 func (a ByRollNumber) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+// UpdateMetadata updates the roll's metadata in the markdown file
+func (roll *Roll) UpdateMetadata() error {
+	// Read the current content
+	content, err := os.ReadFile(filepath.Join(roll.Folder, "roll.md"))
+	if err != nil {
+		return fmt.Errorf("failed to read roll.md: %w", err)
+	}
+
+	// Split frontmatter and content
+	parts := strings.Split(string(content), "---")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid markdown file: missing frontmatter")
+	}
+
+	// Parse and update frontmatter
+	frontmatter := parts[1]
+	lines := strings.Split(frontmatter, "\n")
+	var updatedLines []string
+
+	// Track which fields we've updated
+	updated := make(map[string]bool)
+
+	// Process existing lines
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			updatedLines = append(updatedLines, line)
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+
+		// Update fields if they exist in metadata
+		switch key {
+		case "uploaded_at":
+			if !roll.Metadata.UploadedAt.IsZero() {
+				updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", roll.Metadata.UploadedAt.Format("2006-01-02 15:04:05")))
+				updated["uploaded_at"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
+		case "album_name":
+			if roll.Metadata.AlbumName != "" {
+				updatedLines = append(updatedLines, fmt.Sprintf("album_name: %s", roll.Metadata.AlbumName))
+				updated["album_name"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
+		default:
+			updatedLines = append(updatedLines, line)
+		}
+	}
+
+	// Add new fields if they weren't updated
+	if !updated["uploaded_at"] && !roll.Metadata.UploadedAt.IsZero() {
+		updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", roll.Metadata.UploadedAt.Format("2006-01-02 15:04:05")))
+	}
+	if !updated["album_name"] && roll.Metadata.AlbumName != "" {
+		updatedLines = append(updatedLines, fmt.Sprintf("album_name: %s", roll.Metadata.AlbumName))
+	}
+
+	// Reconstruct the file content
+	newContent := fmt.Sprintf("---\n%s\n---\n%s", strings.Join(updatedLines, "\n"), parts[2])
+
+	// Write back to file
+	err = os.WriteFile(filepath.Join(roll.Folder, "roll.md"), []byte(newContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write roll.md: %w", err)
+	}
+
+	return nil
+}

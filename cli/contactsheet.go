@@ -28,7 +28,7 @@ var contactSheetCmd = &cobra.Command{
 			return errors.New("You can only set year or the rolls not both")
 		}
 		root := cfg.ScansPath
-		fmt.Printf("Reading rolls from: %s\n", root)
+		fmt.Println(RenderTitle("📚", fmt.Sprintf("Reading rolls from: %s", root)))
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
 			if len(args) > 0 {
@@ -42,10 +42,12 @@ var contactSheetCmd = &cobra.Command{
 
 		for _, r := range rolls {
 			go func(roll roll.Roll) {
+				fmt.Println(RenderTitle("🖼️", fmt.Sprintf("Generating contact sheet for %s", roll.Metadata.RollNumber)))
 				err := roll.GenerateNewContactSheet(cfg)
 				if err != nil {
 					cobra.CheckErr(err)
 				}
+				fmt.Println(RenderSuccess(fmt.Sprintf("Contact sheet generated for %s", roll.Metadata.RollNumber)))
 				wg.Done()
 			}(r)
 		}

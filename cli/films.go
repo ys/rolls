@@ -15,15 +15,16 @@ var filmsCmd = &cobra.Command{
 	Use:   "films",
 	Short: "Manage and list your films",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(RenderTitle("🎞️", "Your Films"))
+		
 		table := uitable.New()
 		table.MaxColWidth = 80
 		table.Wrap = true // wrap columns
 		for _, film := range cfg.Films {
-
 			table.AddRow("film:", film.NameWithBrand())
 		}
 
-		fmt.Println(table)
+		fmt.Println(AccentStyle.Render(table.String()))
 	},
 }
 

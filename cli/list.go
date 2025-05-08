@@ -21,7 +21,7 @@ It will also filter down by year or camera or film
 		cobra.CheckErr(err)
 
 		root := cfg.ScansPath
-		fmt.Printf("Reading rolls from: %s\n", root)
+		fmt.Println(RenderTitle("📚", fmt.Sprintf("Reading rolls from: %s", root)))
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
 			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
@@ -47,7 +47,7 @@ It will also filter down by year or camera or film
 						ShowIso:  false,
 					}
 				}
-				fmt.Printf("%s - %s - %s\n", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())
+				fmt.Println(RenderSummary(fmt.Sprintf("%s - %s - %s", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())))
 			}
 		} else {
 			table := uitable.New()
@@ -83,7 +83,7 @@ It will also filter down by year or camera or film
 				table.AddRow("---") // blank
 			}
 
-			fmt.Println(table)
+			fmt.Println(AccentStyle.Render(table.String()))
 		}
 	},
 }

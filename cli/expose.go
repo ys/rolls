@@ -58,7 +58,7 @@ var exposeCmd = &cobra.Command{
 		for _, year := range years {
 			yearRolls := rollsByYear[year]
 			if len(yearRolls) == 0 {
-				fmt.Printf("No rolls found from year %d\n", year)
+				fmt.Println(RenderSummary(fmt.Sprintf("No rolls found from year %d", year)))
 				continue
 			}
 
@@ -89,7 +89,7 @@ var exposeCmd = &cobra.Command{
 				return fmt.Errorf("failed to write yearly markdown file for %d: %w", year, err)
 			}
 
-			fmt.Println(titleStyle.Render(fmt.Sprintf("📝 Generated yearly markdown file for %d with %d rolls", year, len(yearRolls))))
+			fmt.Println(RenderTitle("📝", fmt.Sprintf("Generated yearly markdown file for %d with %d rolls", year, len(yearRolls))))
 		}
 
 		return nil

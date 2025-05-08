@@ -7,47 +7,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
-)
-
-var (
-	// Flexoki color scheme
-	subtle    = lipgloss.AdaptiveColor{Light: "#0B7285", Dark: "#0B7285"}    // Flexoki cyan
-	highlight = lipgloss.AdaptiveColor{Light: "#8B7EC8", Dark: "#8B7EC8"}    // Flexoki purple
-	special   = lipgloss.AdaptiveColor{Light: "#AD3FA4", Dark: "#AD3FA4"}    // Flexoki magenta
-	accent    = lipgloss.AdaptiveColor{Light: "#B47109", Dark: "#B47109"}    // Flexoki yellow
-
-	titleStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(highlight)
-
-	progressStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			MarginRight(2).
-			Padding(0, 1).
-			Foreground(subtle)
-
-	fileStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(special)
-
-	accentStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(accent)
-
-	summaryStyle = lipgloss.NewStyle().
-			MarginLeft(2).
-			Foreground(subtle)
+	"github.com/ys/rolls/style"
 )
 
 // clearPreviousRoll clears the output of the previous roll
 func clearPreviousRoll() {
-	// Move cursor up 10 lines (adjust this number based on your output)
-	fmt.Print("\033[10A")
-	// Clear from cursor to end of screen
-	fmt.Print("\033[J")
+	// Clear 10 lines of previous output
+	ClearPreviousOutput(10)
 }
 
 // archiveCmd represents the archive command
@@ -109,7 +77,7 @@ var archiveCmd = &cobra.Command{
 		}
 
 		// Show global progress
-		fmt.Println(titleStyle.Render(fmt.Sprintf("📦 Processing %d rolls", len(rollsToProcess))))
+		fmt.Println(style.RenderTitle("📦", fmt.Sprintf("Processing %d rolls", len(rollsToProcess))))
 
 		// Process each roll
 		for i, r := range rollsToProcess {
@@ -120,7 +88,7 @@ var archiveCmd = &cobra.Command{
 				strings.Repeat(" ", 20-int(progress*20)),
 				i+1,
 				len(rollsToProcess))
-			fmt.Println(progressStyle.Render(fmt.Sprintf("Processing roll %s %s", r.Metadata.RollNumber, bar)))
+			fmt.Println(style.ProgressStyle.Render(fmt.Sprintf("Processing roll %s %s", r.Metadata.RollNumber, bar)))
 
 			// Check if already archived
 			isArchived, err := r.IsArchived(cfg)
@@ -130,7 +98,7 @@ var archiveCmd = &cobra.Command{
 
 			// If exif-only mode, only process archived rolls
 			if exifOnly && !isArchived {
-				fmt.Println(summaryStyle.Render(fmt.Sprintf("   ✨ Roll %s: Skipped (not archived)", r.Metadata.RollNumber)))
+				fmt.Println(style.RenderSummary(fmt.Sprintf("   ✨ Roll %s: Skipped (not archived)", r.Metadata.RollNumber)))
 				continue
 			}
 
@@ -145,10 +113,10 @@ var archiveCmd = &cobra.Command{
 			if exifOnly {
 				status = "EXIF updated"
 			}
-			fmt.Println(summaryStyle.Render(fmt.Sprintf("   ✨ Roll %s: %s", r.Metadata.RollNumber, status)))
+			fmt.Println(style.RenderSummary(fmt.Sprintf("   ✨ Roll %s: %s", r.Metadata.RollNumber, status)))
 		}
 
-		fmt.Println(titleStyle.Render(fmt.Sprintf("\n✅ Successfully processed %d rolls\n", len(rollsToProcess))))
+		fmt.Println(style.RenderSuccess(fmt.Sprintf("\nSuccessfully processed %d rolls\n", len(rollsToProcess))))
 		return nil
 	},
 }

@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -13,9 +15,24 @@ import (
 )
 
 var (
-	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
-	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
+	subtle    = lipgloss.AdaptiveColor{Light: "#0B7285", Dark: "#0B7285"} // cyan
+	highlight = lipgloss.AdaptiveColor{Light: "#8B7EC8", Dark: "#8B7EC8"} // purple
+	special   = lipgloss.AdaptiveColor{Light: "#AD3FA4", Dark: "#AD3FA4"} // magenta
+	accent    = lipgloss.AdaptiveColor{Light: "#B47109", Dark: "#B47109"} // yellow
+
+	titleStyle = lipgloss.NewStyle().
+			Foreground(highlight).
+			Bold(true).
+			Padding(0, 1).
+			MarginBottom(1)
+
+	sideWindowStyle = lipgloss.NewStyle().
+			BorderStyle(lipgloss.RoundedBorder()).
+			BorderForeground(subtle).
+			Padding(1, 2).
+			MarginLeft(2).
+			Width(40).
+			Height(20)
 
 	divider = lipgloss.NewStyle().
 		SetString("•").
@@ -39,11 +56,49 @@ type Rolls struct {
 	showSpinner bool
 	spinner     spinner.Model
 	err         error
+	Kids        map[string][]list.Item
 }
 
 type AlbumsTree struct {
 	Parents []list.Item
 	Kids    map[string][]list.Item
+}
+
+type RollItem struct {
+	roll.Roll
+}
+
+func (i RollItem) Title() string       { return i.Metadata.RollNumber }
+func (i RollItem) Description() string {
+	var desc strings.Builder
+	desc.WriteString(fmt.Sprintf("📷 %s\n", i.Metadata.CameraID))
+	desc.WriteString(fmt.Sprintf("🎞️  %s\n", i.Metadata.FilmID))
+
+	if !i.Metadata.ShotAt.IsZero() {
+		desc.WriteString(fmt.Sprintf("📅 Shot: %s\n", i.Metadata.ShotAt.Format("2006-01-02")))
+	}
+	if !i.Metadata.ScannedAt.IsZero() {
+		desc.WriteString(fmt.Sprintf("🖨️  Scanned: %s\n", i.Metadata.ScannedAt.Format("2006-01-02")))
+	}
+	if !i.Metadata.ProcessedAt.IsZero() {
+		desc.WriteString(fmt.Sprintf("⚡ Processed: %s\n", i.Metadata.ProcessedAt.Format("2006-01-02 15:04:05")))
+	}
+	if len(i.Metadata.Tags) > 0 {
+		desc.WriteString(fmt.Sprintf("🏷️  Tags: %s\n", strings.Join(i.Metadata.Tags, ", ")))
+	}
+	desc.WriteString(fmt.Sprintf("📁 %s", i.Folder))
+	return desc.String()
+}
+func (i RollItem) FilterValue() string { return i.Metadata.RollNumber }
+
+func (r *Rolls) Items() []list.Item {
+	items := []list.Item{}
+	if r.Rolls != nil {
+		for _, roll := range *r.Rolls {
+			items = append(items, RollItem{roll})
+		}
+	}
+	return items
 }
 
 func NewRolls() *Rolls {
@@ -73,6 +128,20 @@ func NewRolls() *Rolls {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+	// Create a custom delegate with Flexoki colors
+	delegate := list.NewDefaultDelegate()
+	delegate.Styles.NormalTitle = lipgloss.NewStyle().
+		Foreground(highlight).
+		Bold(true)
+	delegate.Styles.NormalDesc = lipgloss.NewStyle().
+		Foreground(subtle)
+	delegate.Styles.SelectedTitle = lipgloss.NewStyle().
+		Foreground(special).
+		Bold(true)
+	delegate.Styles.SelectedDesc = lipgloss.NewStyle().
+		Foreground(accent)
+
 	r := Rolls{
 		Cfg:         cfg,
 		CurrentView: "Rolls",
@@ -84,7 +153,7 @@ func NewRolls() *Rolls {
 		spinner:     s,
 	}
 	r.CurrentView = "rolls"
-	r.list = list.New(r.Rolls.Items(), list.NewDefaultDelegate(), 0, 0)
+	r.list = list.New(r.Items(), delegate, 0, 0)
 	r.list.SetShowTitle(false)
 	r.tabs = &tabs{
 		id:     "tabs",
@@ -203,12 +272,74 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Rolls) View() string {
-	s := lipgloss.NewStyle().MaxHeight(m.height).MaxWidth(m.width).Padding(1, 2, 1, 2)
-	var window string
 	if m.showSpinner {
-		window = lipgloss.NewStyle().Padding(2, 2, 2, 2).Render(lipgloss.JoinHorizontal(lipgloss.Center, m.spinner.View(), "Loading"))
-	} else {
-		window = m.list.View()
+		return m.spinner.View()
 	}
-	return zone.Scan(s.Render(lipgloss.JoinVertical(lipgloss.Left, m.tabs.View(), window)))
+
+	if m.err != nil {
+		return lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FF0000")).
+			Render(m.err.Error())
+	}
+
+	var s strings.Builder
+
+	// Add tabs at the top
+	s.WriteString(m.tabs.View())
+	s.WriteString("\n\n")
+
+	// Add dynamic title based on current view
+	var title string
+	switch m.CurrentView {
+	case "Rolls":
+		title = "📸 Film Rolls"
+	case "Cameras":
+		title = "📷 Cameras"
+	case "Films":
+		title = "🎞️ Films"
+	case "Albums":
+		title = "📚 Albums"
+	default:
+		title = "📸 Film Rolls"
+	}
+	s.WriteString(titleStyle.Render(title))
+	s.WriteString("\n\n")
+
+	// Always create side window content
+	var sideContent strings.Builder
+	selectedItem, ok := m.list.SelectedItem().(RollItem)
+	if ok {
+		sideContent.WriteString(lipgloss.NewStyle().Foreground(special).Render("📝 Content\n"))
+		sideContent.WriteString(selectedItem.Content)
+		sideContent.WriteString("\n\n")
+		if len(selectedItem.Metadata.Tags) > 0 {
+			sideContent.WriteString(lipgloss.NewStyle().Foreground(accent).Render("🏷️  Tags\n"))
+			for _, tag := range selectedItem.Metadata.Tags {
+				sideContent.WriteString(lipgloss.NewStyle().
+					Foreground(subtle).
+					PaddingLeft(2).
+					Render("• " + tag))
+				sideContent.WriteString("\n")
+			}
+		}
+	} else {
+		sideContent.WriteString(lipgloss.NewStyle().Foreground(accent).Render("[No roll selected or cast failed]"))
+	}
+
+	sideWindow := sideWindowStyle.Render(sideContent.String())
+	m.list.SetWidth(m.width - 50)
+	mainContent := m.list.View()
+
+	s.WriteString(lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		mainContent,
+		sideWindow,
+	))
+
+	// Wrap everything in a zone scan
+	return zone.Scan(lipgloss.NewStyle().
+		MaxHeight(m.height).
+		MaxWidth(m.width).
+		Padding(1, 2).
+		Render(s.String()))
 }
