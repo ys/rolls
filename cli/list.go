@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 	"strings"
+	"time"
 
-	"github.com/gosuri/uitable"
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
 )
@@ -50,10 +50,8 @@ It will also filter down by year or camera or film
 				fmt.Println(RenderSummary(fmt.Sprintf("%s - %s - %s", r.Metadata.RollNumber, camera.Name(), film.NameWithBrand())))
 			}
 		} else {
-			table := uitable.New()
-			table.MaxColWidth = 80
-			table.Wrap = true // wrap columns
-			for _, r := range rolls {
+			// Display rolls in a nice card format
+			for i, r := range rolls {
 				camera := cfg.Cameras[r.Metadata.CameraID]
 				film := cfg.Films[r.Metadata.FilmID]
 				if camera == nil {
@@ -76,16 +74,84 @@ It will also filter down by year or camera or film
 						ShowIso:  false,
 					}
 				}
-				table.AddRow("roll:", r.Metadata.RollNumber)
-				table.AddRow("camera:", camera.Name())
-				table.AddRow("film:", film.NameWithBrand())
-				table.AddRow("shot at:", r.Metadata.ShotAt)
-				table.AddRow("---") // blank
-			}
 
-			fmt.Println(AccentStyle.Render(table.String()))
+				// Create a nice card for each roll
+				renderRollCard(r, camera, film, i+1, len(rolls))
+			}
 		}
 	},
+}
+
+// renderRollCard creates a beautiful card display for a roll
+func renderRollCard(r roll.Roll, camera *roll.Camera, film *roll.Film, index, total int) {
+	// Card header with roll number and status
+	status := "📸"
+	statusText := "Ready"
+	if !r.Metadata.ProcessedAt.IsZero() {
+		status = "✨"
+		statusText = "Processed"
+	}
+	if !r.Metadata.ArchivedAt.IsZero() {
+		status = "📦"
+		statusText = "Archived"
+	}
+
+	// Main card content
+	fmt.Printf("\n%s %s\n",
+		TitleStyle.Render(fmt.Sprintf("📷 Roll %s", r.Metadata.RollNumber)),
+		SummaryStyle.Render(fmt.Sprintf("%s %s", status, statusText)))
+
+	// Equipment info
+	fmt.Printf("  %s %s\n",
+		AccentStyle.Render("📷 Camera:"),
+		SummaryStyle.Render(camera.Name()))
+	fmt.Printf("  %s %s\n",
+		AccentStyle.Render("🎞️  Film:"),
+		SummaryStyle.Render(film.NameWithBrand()))
+
+	// Dates
+	fmt.Printf("  %s %s\n",
+		AccentStyle.Render("📅 Shot:"),
+		SummaryStyle.Render(formatDate(r.Metadata.ShotAt)))
+	fmt.Printf("  %s %s\n",
+		AccentStyle.Render("🔄 Scanned:"),
+		SummaryStyle.Render(formatDate(r.Metadata.ScannedAt)))
+
+	// Tags if any (only show if there are actual tags)
+	if len(r.Metadata.Tags) > 0 && r.Metadata.Tags[0] != "" {
+		// Filter out empty tags
+		nonEmptyTags := make([]string, 0)
+		for _, tag := range r.Metadata.Tags {
+			if strings.TrimSpace(tag) != "" {
+				nonEmptyTags = append(nonEmptyTags, strings.TrimSpace(tag))
+			}
+		}
+		if len(nonEmptyTags) > 0 {
+			fmt.Printf("  %s %s\n",
+				AccentStyle.Render("🏷️  Tags:"),
+				SummaryStyle.Render(strings.Join(nonEmptyTags, ", ")))
+		}
+	}
+
+	// Album info if uploaded
+	if r.Metadata.AlbumName != "" {
+		fmt.Printf("  %s %s\n",
+			AccentStyle.Render("☁️  Album:"),
+			SummaryStyle.Render(r.Metadata.AlbumName))
+	}
+
+	// Separator line (except for last item)
+	if index < total {
+		fmt.Println(AccentStyle.Render("  ─────────────────────────────────────────"))
+	}
+}
+
+// formatDate formats a date in a nice readable format
+func formatDate(t time.Time) string {
+	if t.IsZero() {
+		return "Not set"
+	}
+	return t.Format("Jan 2, 2006")
 }
 
 func init() {

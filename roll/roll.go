@@ -25,6 +25,7 @@ type Metadata struct {
 	ProcessedAt time.Time `yaml:"processed_at,omitempty"`
 	UploadedAt  time.Time `yaml:"uploaded_at,omitempty"`
 	AlbumName   string    `yaml:"album_name,omitempty"`
+	ArchivedAt  time.Time `yaml:"archived_at,omitempty"`
 }
 
 type Roll struct {
@@ -173,6 +174,10 @@ func FromMarkdown(path string) (Roll, error) {
 			if t, err := time.Parse("2006-01-02 15:04:05", value); err == nil {
 				metadata.ProcessedAt = t
 			}
+		case "archived_at":
+			if t, err := time.Parse("2006-01-02 15:04:05", value); err == nil {
+				metadata.ArchivedAt = t
+			}
 		case "tags":
 			metadata.Tags = strings.Split(value, ",")
 			for i, tag := range metadata.Tags {
@@ -307,6 +312,13 @@ func (roll *Roll) UpdateMetadata() error {
 			} else {
 				updatedLines = append(updatedLines, line)
 			}
+		case "archived_at":
+			if !roll.Metadata.ArchivedAt.IsZero() {
+				updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", roll.Metadata.ArchivedAt.Format("2006-01-02 15:04:05")))
+				updated["archived_at"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
 		default:
 			updatedLines = append(updatedLines, line)
 		}
@@ -319,6 +331,9 @@ func (roll *Roll) UpdateMetadata() error {
 	if !updated["album_name"] && roll.Metadata.AlbumName != "" {
 		updatedLines = append(updatedLines, fmt.Sprintf("album_name: %s", roll.Metadata.AlbumName))
 	}
+	if !updated["archived_at"] && !roll.Metadata.ArchivedAt.IsZero() {
+		updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", roll.Metadata.ArchivedAt.Format("2006-01-02 15:04:05")))
+	}
 
 	// Reconstruct the file content
 	newContent := fmt.Sprintf("---\n%s\n---\n%s", strings.Join(updatedLines, "\n"), parts[2])
@@ -330,4 +345,15 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 
 	return nil
+}
+
+// SetArchived sets the archived timestamp for a roll
+func (roll *Roll) SetArchived() error {
+	roll.Metadata.ArchivedAt = time.Now()
+	return roll.UpdateMetadata()
+}
+
+// IsArchivedLocally checks if the roll has been archived locally (has archived_at timestamp)
+func (roll *Roll) IsArchivedLocally() bool {
+	return !roll.Metadata.ArchivedAt.IsZero()
 }

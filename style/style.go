@@ -25,6 +25,9 @@ var (
 
 	// SuccessStyle is used for success messages
 	SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("46"))
+
+	// ErrorStyle is used for error messages
+	ErrorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 )
 
 // RenderTitle renders a title with an emoji
@@ -50,6 +53,11 @@ func RenderSummary(text string) string {
 // RenderSuccess renders success text
 func RenderSuccess(text string) string {
 	return SuccessStyle.Render(text)
+}
+
+// RenderError renders error text
+func RenderError(text string) string {
+	return ErrorStyle.Render(text)
 }
 
 // RenderProgressBar renders a progress bar
