@@ -98,8 +98,14 @@ var uploadCmd = &cobra.Command{
 			}
 
 			if yearAlbum == nil {
-				fmt.Println(style.RenderAccent(fmt.Sprintf("⚠️  No year album found for %s", year)))
-				continue
+				fmt.Println(style.RenderAccent(fmt.Sprintf("📁 Creating year album for %s", year)))
+				// Create the year album
+				createdYearAlbum, err := albums.EnsureAlbumUnder(&cfg.ScansAlbumID, year, "collection")
+				if err != nil {
+					return fmt.Errorf("failed to create year album %s: %w", year, err)
+				}
+				yearAlbum = createdYearAlbum
+				fmt.Println(style.RenderSuccess(fmt.Sprintf("✅ Created year album: %s", year)))
 			}
 
 			// Get roll albums for this year
@@ -119,8 +125,14 @@ var uploadCmd = &cobra.Command{
 			}
 
 			if rollAlbum == nil {
-				fmt.Println(style.RenderAccent(fmt.Sprintf("⚠️  No album found for roll %s", targetRoll.Metadata.RollNumber)))
-				continue
+				fmt.Println(style.RenderAccent(fmt.Sprintf("📁 Creating album for roll %s", targetRoll.Metadata.RollNumber)))
+				// Create the roll album
+				createdRollAlbum, err := albums.EnsureAlbumUnder(yearAlbum.Id, albumName, "collection")
+				if err != nil {
+					return fmt.Errorf("failed to create roll album %s: %w", albumName, err)
+				}
+				rollAlbum = createdRollAlbum
+				fmt.Println(style.RenderSuccess(fmt.Sprintf("✅ Created roll album: %s", albumName)))
 			}
 
 			// Get files in the roll folder

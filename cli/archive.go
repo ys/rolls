@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
 	"github.com/ys/rolls/style"
@@ -157,7 +158,9 @@ var listMissingCmd = &cobra.Command{
 			fmt.Println(style.RenderAccent(fmt.Sprintf("\n📅 %d (%d rolls)", year, len(yearRolls))))
 
 			for _, r := range yearRolls {
-				fmt.Println(style.RenderFile(fmt.Sprintf("   • %s (%s - %s) - Shot: %s",
+				// Use darker text with emoji for missing rolls
+				darkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+				fmt.Println(darkStyle.Render(fmt.Sprintf("   📸 %s (%s - %s) - Shot: %s",
 					r.Metadata.RollNumber,
 					r.Metadata.CameraID,
 					r.Metadata.FilmID,

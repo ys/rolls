@@ -96,9 +96,16 @@ func renderRollCard(r roll.Roll, camera *roll.Camera, film *roll.Film, index, to
 		statusText = "Archived"
 	}
 
+	// Use different emojis for non-archived rolls
+	isArchived := !r.Metadata.ArchivedAt.IsZero()
+	rollEmoji := "📷"
+	if !isArchived {
+		rollEmoji = "📸" // Different emoji for non-archived rolls
+	}
+
 	// Main card content
 	fmt.Printf("\n%s %s\n",
-		TitleStyle.Render(fmt.Sprintf("📷 Roll %s", r.Metadata.RollNumber)),
+		TitleStyle.Render(fmt.Sprintf("%s Roll %s", rollEmoji, r.Metadata.RollNumber)),
 		SummaryStyle.Render(fmt.Sprintf("%s %s", status, statusText)))
 
 	// Equipment info
@@ -109,13 +116,10 @@ func renderRollCard(r roll.Roll, camera *roll.Camera, film *roll.Film, index, to
 		AccentStyle.Render("🎞️  Film:"),
 		SummaryStyle.Render(film.NameWithBrand()))
 
-	// Dates
+	// Shot date only
 	fmt.Printf("  %s %s\n",
 		AccentStyle.Render("📅 Shot:"),
 		SummaryStyle.Render(formatDate(r.Metadata.ShotAt)))
-	fmt.Printf("  %s %s\n",
-		AccentStyle.Render("🔄 Scanned:"),
-		SummaryStyle.Render(formatDate(r.Metadata.ScannedAt)))
 
 	// Tags if any (only show if there are actual tags)
 	if len(r.Metadata.Tags) > 0 && r.Metadata.Tags[0] != "" {
