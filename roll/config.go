@@ -11,18 +11,21 @@ import (
 )
 
 type Config struct {
-	ScansPath        string  `mapstructure:"scans_path" yaml:"scans_path"`
-	ContactSheetPath string  `mapstructure:"contact_sheet_path" yaml:"contact_sheet_path"`
-	ClientID         string  `mapstructure:"client_id" yaml:"client_id"`
-	ClientSecret     string  `mapstructure:"client_secret" yaml:"client_secret"`
-	AccessToken      string  `mapstructure:"access_token" yaml:"access_token"`
-	ScansAlbumID     string  `mapstructure:"scans_album_id" yaml:"scans_album_id"`
-	UserID           string  `mapstructure:"catalog_id" yaml:"catalog_id"`
-	CatalogID        string  `mapstructure:"catalog_id" yaml:"catalog_id"`
-	Copyright        string  `mapstructure:"copyright" yaml:"copyright"`
-	FilePath         string  `mapstructure:"-" yaml:"-"`
-	Cameras          Cameras `mapstructure:"-" yaml:"-"`
-	Films            Films   `mapstructure:"-" yaml:"-"`
+	ScansPath         string  `mapstructure:"scans_path" yaml:"scans_path"`
+	ContactSheetPath  string  `mapstructure:"contact_sheet_path" yaml:"contact_sheet_path"`
+	ObsidianRollsPath string  `mapstructure:"obsidian_rolls_path" yaml:"obsidian_rolls_path"`
+	ClientID          string  `mapstructure:"client_id" yaml:"client_id"`
+	ClientSecret      string  `mapstructure:"client_secret" yaml:"client_secret"`
+	AccessToken       string  `mapstructure:"access_token" yaml:"access_token"`
+	ScansAlbumID      string  `mapstructure:"scans_album_id" yaml:"scans_album_id"`
+	UserID            string  `mapstructure:"catalog_id" yaml:"catalog_id"`
+	CatalogID         string  `mapstructure:"catalog_id" yaml:"catalog_id"`
+	Copyright         string  `mapstructure:"copyright" yaml:"copyright"`
+	BrandName         string  `mapstructure:"brand_name" yaml:"brand_name"`
+	AuthorName        string  `mapstructure:"author_name" yaml:"author_name"`
+	FilePath          string  `mapstructure:"-" yaml:"-"`
+	Cameras           Cameras `mapstructure:"-" yaml:"-"`
+	Films             Films   `mapstructure:"-" yaml:"-"`
 }
 
 func (cfg *Config) Dir() string {
