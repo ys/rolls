@@ -43,9 +43,9 @@ func (cs *ContactSheet) AddImage(image string) error {
 	if err != nil {
 		return err
 	}
-	// Assume Mori scans of about 5300x3600
-	width := tmw.GetImageWidth() / 20
-	height := tmw.GetImageHeight() / 20
+	// Scale down images (assumes Mori scans of about 5300x3600)
+	width := tmw.GetImageWidth() / ContactSheetScale
+	height := tmw.GetImageHeight() / ContactSheetScale
 	err = tmw.ScaleImage(width, height)
 	if err != nil {
 		return err

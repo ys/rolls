@@ -87,9 +87,8 @@ func (roll *Roll) processFiles(files []os.DirEntry, camera *Camera, film *Film, 
 	results := make(chan error, validFiles)
 
 	// Start worker pool
-	numWorkers := 4 // Adjust based on your system's capabilities
 	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
+	for i := 0; i < NumWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -263,9 +262,9 @@ func (roll *Roll) updateProcessedTime() error {
 		roll.Metadata.RollNumber,
 		roll.Metadata.CameraID,
 		roll.Metadata.FilmID,
-		roll.Metadata.ShotAt.Format("2006-01-02"),
-		roll.Metadata.ScannedAt.Format("2006-01-02"),
-		roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"),
+		FormatDate(roll.Metadata.ShotAt),
+		FormatDate(roll.Metadata.ScannedAt),
+		FormatDateTime(roll.Metadata.ProcessedAt),
 		roll.Metadata.Tags,
 		roll.Content)
 
@@ -280,7 +279,7 @@ func (roll *Roll) Archive(cfg *Config, forceExif bool) error {
 	fmt.Println(style.RenderTitle("📦", fmt.Sprintf("Processing roll %s", roll.Metadata.RollNumber)))
 	fmt.Println(style.RenderFile(fmt.Sprintf("   Camera: %s", roll.Metadata.CameraID)))
 	fmt.Println(style.RenderFile(fmt.Sprintf("   Film: %s", roll.Metadata.FilmID)))
-	fmt.Println(style.RenderFile(fmt.Sprintf("   Shot at: %s", roll.Metadata.ShotAt.Format("2006-01-02"))))
+	fmt.Println(style.RenderFile(fmt.Sprintf("   Shot at: %s", FormatDate(roll.Metadata.ShotAt))))
 
 	files, err := os.ReadDir(roll.Folder)
 	if err != nil {
@@ -356,7 +355,7 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 	// Check if roll has been processed before
 	wasProcessed := !roll.Metadata.ProcessedAt.IsZero()
 	if wasProcessed {
-		fmt.Println(style.RenderSummary(fmt.Sprintf("✨ Roll %s was last processed at %s", roll.Metadata.RollNumber, roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"))))
+		fmt.Println(style.RenderSummary(fmt.Sprintf("✨ Roll %s was last processed at %s", roll.Metadata.RollNumber, FormatDateTime(roll.Metadata.ProcessedAt))))
 	}
 
 	// Check folder name
@@ -429,14 +428,14 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 
 	// If roll.md doesn't exist but we have processed_at, create it
 	if !hasRollMd && wasProcessed {
-		markdownPath := filepath.Join(roll.Folder, "roll.md")
+		markdownPath := filepath.Join(roll.Folder, RollMarkdownFile)
 		content := fmt.Sprintf("---\nroll_number: %s\ncamera: %s\nfilm: %s\nshot_at: %s\nscanned_at: %s\nprocessed_at: %s\ntags: %v\n---\n\n%s",
 			roll.Metadata.RollNumber,
 			roll.Metadata.CameraID,
 			roll.Metadata.FilmID,
-			roll.Metadata.ShotAt.Format("2006-01-02"),
-			roll.Metadata.ScannedAt.Format("2006-01-02"),
-			roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"),
+			FormatDate(roll.Metadata.ShotAt),
+			FormatDate(roll.Metadata.ScannedAt),
+			FormatDateTime(roll.Metadata.ProcessedAt),
 			roll.Metadata.Tags,
 			roll.Content)
 		err = os.WriteFile(markdownPath, []byte(content), 0644)
@@ -453,7 +452,7 @@ func (roll *Roll) IsArchived(cfg *Config) (bool, error) {
 // UpdateProcessedTime updates the processed time for a roll
 func (roll *Roll) UpdateProcessedTime() error {
 	roll.Metadata.ProcessedAt = time.Now()
-	markdownPath := filepath.Join(roll.Folder, "roll.md")
+	markdownPath := filepath.Join(roll.Folder, RollMarkdownFile)
 
 	// Check if the file exists
 	if _, err := os.Stat(markdownPath); os.IsNotExist(err) {
@@ -464,9 +463,9 @@ func (roll *Roll) UpdateProcessedTime() error {
 		roll.Metadata.RollNumber,
 		roll.Metadata.CameraID,
 		roll.Metadata.FilmID,
-		roll.Metadata.ShotAt.Format("2006-01-02"),
-		roll.Metadata.ScannedAt.Format("2006-01-02"),
-		roll.Metadata.ProcessedAt.Format("2006-01-02 15:04:05"),
+		FormatDate(roll.Metadata.ShotAt),
+		FormatDate(roll.Metadata.ScannedAt),
+		FormatDateTime(roll.Metadata.ProcessedAt),
 		roll.Metadata.Tags,
 		roll.Content)
 

@@ -76,7 +76,7 @@ func (roll *Roll) WriteExif(file string, camera *Camera, film *Film, author stri
 	originals[0].SetString("captionabstract", description)
 	originals[0].SetString("imagedescription", description)
 	originals[0].SetString("description", description)
-	at := roll.Metadata.ShotAt.Format("2006:01:02 15:04:05")
+	at := FormatExifDateTime(roll.Metadata.ShotAt)
 	originals[0].SetString("DateTimeOriginal", at)
 	originals[0].SetString("FileCreateDate", at)
 	originals[0].SetString("ModifyDate", at)
@@ -98,7 +98,7 @@ func (roll *Roll) WriteExif(file string, camera *Camera, film *Film, author stri
 }
 
 func (roll *Roll) FilesPrefix() string {
-	return fmt.Sprintf("%s-%s", roll.Metadata.RollNumber, roll.Metadata.ShotAt.Format("0102"))
+	return fmt.Sprintf("%s-%s", roll.Metadata.RollNumber, FormatFilePrefixDate(roll.Metadata.ShotAt))
 }
 
 type Rolls []Roll
@@ -163,19 +163,19 @@ func FromMarkdown(path string) (Roll, error) {
 		case "film":
 			metadata.FilmID = value
 		case "shot_at":
-			if t, err := time.Parse("2006-01-02", value); err == nil {
+			if t, err := ParseDate(value); err == nil {
 				metadata.ShotAt = t
 			}
 		case "scanned_at":
-			if t, err := time.Parse("2006-01-02", value); err == nil {
+			if t, err := ParseDate(value); err == nil {
 				metadata.ScannedAt = t
 			}
 		case "processed_at":
-			if t, err := time.Parse("2006-01-02 15:04:05", value); err == nil {
+			if t, err := ParseDateTime(value); err == nil {
 				metadata.ProcessedAt = t
 			}
 		case "archived_at":
-			if t, err := time.Parse("2006-01-02 15:04:05", value); err == nil {
+			if t, err := ParseDateTime(value); err == nil {
 				metadata.ArchivedAt = t
 			}
 		case "tags":
@@ -300,7 +300,7 @@ func (roll *Roll) UpdateMetadata() error {
 		switch key {
 		case "uploaded_at":
 			if !roll.Metadata.UploadedAt.IsZero() {
-				updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", roll.Metadata.UploadedAt.Format("2006-01-02 15:04:05")))
+				updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", FormatDateTime(roll.Metadata.UploadedAt)))
 				updated["uploaded_at"] = true
 			} else {
 				updatedLines = append(updatedLines, line)
@@ -314,7 +314,7 @@ func (roll *Roll) UpdateMetadata() error {
 			}
 		case "archived_at":
 			if !roll.Metadata.ArchivedAt.IsZero() {
-				updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", roll.Metadata.ArchivedAt.Format("2006-01-02 15:04:05")))
+				updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", FormatDateTime(roll.Metadata.ArchivedAt)))
 				updated["archived_at"] = true
 			} else {
 				updatedLines = append(updatedLines, line)
@@ -326,13 +326,13 @@ func (roll *Roll) UpdateMetadata() error {
 
 	// Add new fields if they weren't updated
 	if !updated["uploaded_at"] && !roll.Metadata.UploadedAt.IsZero() {
-		updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", roll.Metadata.UploadedAt.Format("2006-01-02 15:04:05")))
+		updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", FormatDateTime(roll.Metadata.UploadedAt)))
 	}
 	if !updated["album_name"] && roll.Metadata.AlbumName != "" {
 		updatedLines = append(updatedLines, fmt.Sprintf("album_name: %s", roll.Metadata.AlbumName))
 	}
 	if !updated["archived_at"] && !roll.Metadata.ArchivedAt.IsZero() {
-		updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", roll.Metadata.ArchivedAt.Format("2006-01-02 15:04:05")))
+		updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", FormatDateTime(roll.Metadata.ArchivedAt)))
 	}
 
 	// Reconstruct the file content
