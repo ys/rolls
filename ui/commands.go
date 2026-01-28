@@ -31,3 +31,21 @@ func AlbumsFn(cfg *roll.Config, client *lightroom.API) func() tea.Msg {
 		return albumsMsg{albums}
 	}
 }
+
+// RefreshRollsCmd reloads rolls from disk
+func RefreshRollsCmd(scansPath string) tea.Cmd {
+	return func() tea.Msg {
+		rolls, err := roll.GetRolls(scansPath)
+		if err != nil {
+			return errMsg{err}
+		}
+		return rollsUpdatedMsg{rolls: &rolls}
+	}
+}
+
+// SetProcessingCmd shows/hides processing indicator
+func SetProcessingCmd(message string, done bool) tea.Cmd {
+	return func() tea.Msg {
+		return processingMsg{message: message, done: done}
+	}
+}

@@ -20,6 +20,11 @@ var (
 	special   = lipgloss.AdaptiveColor{Light: "#AD3FA4", Dark: "#AD3FA4"} // magenta
 	accent    = lipgloss.AdaptiveColor{Light: "#B47109", Dark: "#B47109"} // yellow
 
+	// Status badge colors
+	success = lipgloss.AdaptiveColor{Light: "#66A80F", Dark: "#66A80F"} // green
+	warning = lipgloss.AdaptiveColor{Light: "#E8590C", Dark: "#E8590C"} // orange
+	muted   = lipgloss.AdaptiveColor{Light: "#6E6E6E", Dark: "#878787"} // gray
+
 	titleStyle = lipgloss.NewStyle().
 			Foreground(highlight).
 			Bold(true).
@@ -31,7 +36,7 @@ var (
 			BorderForeground(subtle).
 			Padding(1, 2).
 			MarginLeft(2).
-			Width(40).
+			Width(50).
 			Height(20)
 
 	divider = lipgloss.NewStyle().
@@ -39,7 +44,49 @@ var (
 		Padding(0, 1).
 		Foreground(subtle).
 		String()
+
+	helpBarStyle = lipgloss.NewStyle().
+			Foreground(muted).
+			Padding(0, 1).
+			MarginTop(1)
+
+	badgeStyle = lipgloss.NewStyle().
+			Padding(0, 1).
+			Bold(true)
+
+	sectionHeaderStyle = lipgloss.NewStyle().
+				Foreground(special).
+				Bold(true).
+				MarginBottom(1)
+
+	sectionLabelStyle = lipgloss.NewStyle().
+				Foreground(muted).
+				Width(12)
+
+	sectionValueStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FFFFFF"))
 )
+
+// Badge helper functions
+func archivedBadge() string {
+	return badgeStyle.Foreground(success).Render("ARCHIVED")
+}
+
+func processedBadge() string {
+	return badgeStyle.Foreground(highlight).Render("PROCESSED")
+}
+
+func uploadedBadge() string {
+	return badgeStyle.Foreground(accent).Render("UPLOADED")
+}
+
+func pendingBadge() string {
+	return badgeStyle.Foreground(muted).Render("PENDING")
+}
+
+func contactSheetIcon() string {
+	return lipgloss.NewStyle().Foreground(accent).Render(" [CS]")
+}
 
 type Rolls struct {
 	height      int
@@ -49,6 +96,7 @@ type Rolls struct {
 	Cameras     *roll.Cameras
 	Films       *roll.Films
 	Rolls       *roll.Rolls
+	allRolls    *roll.Rolls // Keep original list for filtering
 	Albums      *AlbumsTree
 	list        list.Model
 	tabs        tea.Model
@@ -57,6 +105,11 @@ type Rolls struct {
 	spinner     spinner.Model
 	err         error
 	Kids        map[string][]list.Item
+	filter      Filter
+	filterMode  bool
+	toast       Toast
+	showHelp    bool
+	statusMsg   string
 }
 
 type AlbumsTree struct {
@@ -66,43 +119,79 @@ type AlbumsTree struct {
 
 type RollItem struct {
 	roll.Roll
+	hasContactSheet bool
 }
 
-func (i RollItem) Title() string       { return i.Metadata.RollNumber }
+func (i RollItem) Title() string {
+	title := i.Metadata.RollNumber
+	if i.hasContactSheet {
+		title += contactSheetIcon()
+	}
+	return title
+}
+
 func (i RollItem) Description() string {
-	var desc strings.Builder
-	desc.WriteString(fmt.Sprintf("📷 %s\n", i.Metadata.CameraID))
-	desc.WriteString(fmt.Sprintf("🎞️  %s\n", i.Metadata.FilmID))
+	var parts []string
 
-	if !i.Metadata.ShotAt.IsZero() {
-		desc.WriteString(fmt.Sprintf("📅 Shot: %s\n", i.Metadata.ShotAt.Format("2006-01-02")))
+	// Camera and Film on first line
+	parts = append(parts, fmt.Sprintf("%s | %s", i.Metadata.CameraID, i.Metadata.FilmID))
+
+	// Status badges
+	var badges []string
+	if !i.Metadata.ArchivedAt.IsZero() {
+		badges = append(badges, archivedBadge())
+	} else if !i.Metadata.UploadedAt.IsZero() {
+		badges = append(badges, uploadedBadge())
+	} else if !i.Metadata.ProcessedAt.IsZero() {
+		badges = append(badges, processedBadge())
+	} else {
+		badges = append(badges, pendingBadge())
 	}
-	if !i.Metadata.ScannedAt.IsZero() {
-		desc.WriteString(fmt.Sprintf("🖨️  Scanned: %s\n", i.Metadata.ScannedAt.Format("2006-01-02")))
+
+	if len(badges) > 0 {
+		parts = append(parts, strings.Join(badges, " "))
 	}
-	if !i.Metadata.ProcessedAt.IsZero() {
-		desc.WriteString(fmt.Sprintf("⚡ Processed: %s\n", i.Metadata.ProcessedAt.Format("2006-01-02 15:04:05")))
-	}
-	if len(i.Metadata.Tags) > 0 {
-		desc.WriteString(fmt.Sprintf("🏷️  Tags: %s\n", strings.Join(i.Metadata.Tags, ", ")))
-	}
-	desc.WriteString(fmt.Sprintf("📁 %s", i.Folder))
-	return desc.String()
+
+	return strings.Join(parts, "\n")
 }
-func (i RollItem) FilterValue() string { return i.Metadata.RollNumber }
+
+func (i RollItem) FilterValue() string {
+	// Include camera, film, and roll number in filter
+	return fmt.Sprintf("%s %s %s", i.Metadata.RollNumber, i.Metadata.CameraID, i.Metadata.FilmID)
+}
 
 func (r *Rolls) Items() []list.Item {
 	items := []list.Item{}
 	if r.Rolls != nil {
-		for _, roll := range *r.Rolls {
-			items = append(items, RollItem{roll})
+		for _, rl := range *r.Rolls {
+			item := RollItem{
+				Roll:            rl,
+				hasContactSheet: HasContactSheet(&rl, r.Cfg),
+			}
+			items = append(items, item)
+		}
+	}
+	return items
+}
+
+func (r *Rolls) FilteredItems() []list.Item {
+	items := []list.Item{}
+	if r.Rolls != nil {
+		for _, rl := range *r.Rolls {
+			item := RollItem{
+				Roll:            rl,
+				hasContactSheet: HasContactSheet(&rl, r.Cfg),
+			}
+			filterVal := item.FilterValue()
+			if r.filter.Matches(filterVal) {
+				items = append(items, item)
+			}
 		}
 	}
 	return items
 }
 
 func NewRolls() *Rolls {
-	//	cmd.Execute()
 	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -148,11 +237,15 @@ func NewRolls() *Rolls {
 		Cameras:     &cameras,
 		Films:       &films,
 		Rolls:       &rolls,
+		allRolls:    &rolls,
 		lightroom:   lightroom.New(cfg.ClientID, cfg.AccessToken),
 		showSpinner: false,
 		spinner:     s,
+		filter:      NewFilter(),
+		filterMode:  false,
+		showHelp:    false,
 	}
-	r.CurrentView = "rolls"
+	r.CurrentView = "Rolls"
 	r.list = list.New(r.Items(), delegate, 0, 0)
 	r.list.SetShowTitle(false)
 	r.tabs = &tabs{
@@ -166,19 +259,45 @@ func NewRolls() *Rolls {
 
 func (m Rolls) Init() tea.Cmd {
 	return nil
-
 }
 
 func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	switch msg := msg.(type) {
 
+	// Handle filter input when in filter mode
+	if m.filterMode {
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc":
+				m.filter.Clear()
+				m.filterMode = false
+				// Reset to full list
+				if m.CurrentView == "Rolls" {
+					m.list.SetItems(m.Items())
+				}
+				return m, nil
+			case "enter":
+				m.filterMode = false
+				m.filter.Blur()
+				return m, nil
+			}
+		}
+		m.filter, cmd = m.filter.Update(msg)
+		// Update list with filtered items
+		if m.CurrentView == "Rolls" {
+			m.list.SetItems(m.FilteredItems())
+		}
+		return m, cmd
+	}
+
+	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
 		m.width = msg.Width
 		msg.Height -= 2
 		msg.Width -= 4
-		m.list.SetSize(msg.Width-4, msg.Height-8)
+		m.list.SetSize(msg.Width-4, msg.Height-10) // Extra space for help bar
 
 	case tea.MouseMsg:
 		cmds := make([]tea.Cmd, 0)
@@ -191,9 +310,9 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 		cmd = tea.Batch(cmds...)
+
 	case tea.KeyMsg:
 		switch msg.String() {
-
 		case "r":
 			return m, activeTabFn("Rolls")
 		case "c":
@@ -204,9 +323,45 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, activeTabFn("Albums")
 		case "ctrl+l":
 			return m, loginFn(m.Cfg)
-		// These keys should exit the program.
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "?":
+			m.showHelp = !m.showHelp
+			return m, nil
+		case "/":
+			m.filterMode = true
+			return m, m.filter.Focus()
+		case "esc":
+			if m.filter.Query != "" {
+				m.filter.Clear()
+				if m.CurrentView == "Rolls" {
+					m.list.SetItems(m.Items())
+				}
+			}
+			return m, nil
+
+		// Action keys (only for Rolls view)
+		case "A":
+			if m.CurrentView == "Rolls" {
+				if selectedItem, ok := m.list.SelectedItem().(RollItem); ok {
+					r := selectedItem.Roll
+					return m, ArchiveRollCmd(&r)
+				}
+			}
+		case "O":
+			if m.CurrentView == "Rolls" {
+				if selectedItem, ok := m.list.SelectedItem().(RollItem); ok {
+					r := selectedItem.Roll
+					return m, OpenFolderCmd(&r)
+				}
+			}
+		case "V":
+			if m.CurrentView == "Rolls" {
+				if selectedItem, ok := m.list.SelectedItem().(RollItem); ok {
+					r := selectedItem.Roll
+					return m, ViewContactSheetCmd(&r, m.Cfg)
+				}
+			}
 
 		case "enter", " ":
 			switch m.CurrentView {
@@ -217,14 +372,19 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+
 	case spinner.TickMsg:
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
+
 	case errMsg:
 		m.err = msg
 		return m, tea.Quit
+
 	case activeTabMsg:
 		m.CurrentView = msg.tab
+		m.filter.Clear()
+		m.filterMode = false
 		switch msg.tab {
 		case "Films":
 			m.showSpinner = false
@@ -234,11 +394,12 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.list.SetItems(m.Cameras.Items())
 		case "Rolls":
 			m.showSpinner = false
-			m.list.SetItems(m.Rolls.Items())
+			m.list.SetItems(m.Items())
 		case "Albums":
 			m.showSpinner = true
 			cmd = tea.Batch(AlbumsFn(m.Cfg, m.lightroom), m.spinner.Tick)
 		}
+
 	case albumsMsg:
 		m.CurrentView = "Albums"
 		parents := []list.Item{}
@@ -253,6 +414,7 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Albums = &AlbumsTree{Parents: parents, Kids: kids}
 		m.list.SetItems(m.Albums.Parents)
 		m.showSpinner = false
+
 	case tokenMsg:
 		cmd = func() tea.Msg {
 			m.Cfg.AccessToken = msg.token.AccessToken
@@ -263,6 +425,34 @@ func (m Rolls) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return nil
 		}
+
+	case ActionResultMsg:
+		if msg.Success {
+			m.toast = NewToast(msg.Message, ToastSuccess)
+			// Refresh rolls if archived
+			if msg.Action == "Archive" {
+				rolls, _ := roll.GetRolls(m.Cfg.ScansPath)
+				m.Rolls = &rolls
+				m.allRolls = &rolls
+				m.list.SetItems(m.Items())
+			}
+		} else {
+			m.toast = NewToast(msg.Message, ToastError)
+		}
+		return m, ScheduleToastDismiss()
+
+	case ToastMsg:
+		m.toast = NewToast(msg.Message, msg.Type)
+		return m, ScheduleToastDismiss()
+
+	case ToastExpiredMsg:
+		m.toast.Visible = false
+		return m, nil
+
+	case rollsUpdatedMsg:
+		m.Rolls = msg.rolls
+		m.allRolls = msg.rolls
+		m.list.SetItems(m.Items())
 	}
 
 	var listUpdateCmd tea.Cmd
@@ -292,42 +482,30 @@ func (m Rolls) View() string {
 	var title string
 	switch m.CurrentView {
 	case "Rolls":
-		title = "📸 Film Rolls"
+		title = "Film Rolls"
 	case "Cameras":
-		title = "📷 Cameras"
+		title = "Cameras"
 	case "Films":
-		title = "🎞️ Films"
+		title = "Films"
 	case "Albums":
-		title = "📚 Albums"
+		title = "Albums"
 	default:
-		title = "📸 Film Rolls"
+		title = "Film Rolls"
 	}
 	s.WriteString(titleStyle.Render(title))
+
+	// Show filter if active
+	if m.filterMode || m.filter.Query != "" {
+		s.WriteString("  ")
+		s.WriteString(m.filter.View())
+	}
 	s.WriteString("\n\n")
 
-	// Always create side window content
-	var sideContent strings.Builder
-	selectedItem, ok := m.list.SelectedItem().(RollItem)
-	if ok {
-		sideContent.WriteString(lipgloss.NewStyle().Foreground(special).Render("📝 Content\n"))
-		sideContent.WriteString(selectedItem.Content)
-		sideContent.WriteString("\n\n")
-		if len(selectedItem.Metadata.Tags) > 0 {
-			sideContent.WriteString(lipgloss.NewStyle().Foreground(accent).Render("🏷️  Tags\n"))
-			for _, tag := range selectedItem.Metadata.Tags {
-				sideContent.WriteString(lipgloss.NewStyle().
-					Foreground(subtle).
-					PaddingLeft(2).
-					Render("• " + tag))
-				sideContent.WriteString("\n")
-			}
-		}
-	} else {
-		sideContent.WriteString(lipgloss.NewStyle().Foreground(accent).Render("[No roll selected or cast failed]"))
-	}
+	// Create side window content based on view
+	sideContent := m.renderSidePanel()
+	sideWindow := sideWindowStyle.Render(sideContent)
 
-	sideWindow := sideWindowStyle.Render(sideContent.String())
-	m.list.SetWidth(m.width - 50)
+	m.list.SetWidth(m.width - 60)
 	mainContent := m.list.View()
 
 	s.WriteString(lipgloss.JoinHorizontal(
@@ -336,10 +514,329 @@ func (m Rolls) View() string {
 		sideWindow,
 	))
 
+	// Add toast notification if visible
+	if m.toast.Visible {
+		s.WriteString("\n")
+		s.WriteString(m.toast.View())
+	}
+
+	// Add help bar at the bottom
+	s.WriteString("\n")
+	s.WriteString(m.renderHelpBar())
+
 	// Wrap everything in a zone scan
 	return zone.Scan(lipgloss.NewStyle().
 		MaxHeight(m.height).
 		MaxWidth(m.width).
 		Padding(1, 2).
 		Render(s.String()))
+}
+
+func (m Rolls) renderSidePanel() string {
+	var content strings.Builder
+
+	switch m.CurrentView {
+	case "Rolls":
+		content.WriteString(m.renderRollSidePanel())
+	case "Cameras":
+		content.WriteString(m.renderCameraSidePanel())
+	case "Films":
+		content.WriteString(m.renderFilmSidePanel())
+	default:
+		content.WriteString(lipgloss.NewStyle().Foreground(muted).Render("Select an item to view details"))
+	}
+
+	return content.String()
+}
+
+func (m Rolls) renderRollSidePanel() string {
+	var content strings.Builder
+
+	selectedItem, ok := m.list.SelectedItem().(RollItem)
+	if !ok {
+		content.WriteString(lipgloss.NewStyle().Foreground(muted).Render("No roll selected"))
+		return content.String()
+	}
+
+	// Status Section
+	content.WriteString(sectionHeaderStyle.Render("Status"))
+	content.WriteString("\n")
+
+	// Status badge
+	if !selectedItem.Metadata.ArchivedAt.IsZero() {
+		content.WriteString(archivedBadge())
+	} else if !selectedItem.Metadata.UploadedAt.IsZero() {
+		content.WriteString(uploadedBadge())
+	} else if !selectedItem.Metadata.ProcessedAt.IsZero() {
+		content.WriteString(processedBadge())
+	} else {
+		content.WriteString(pendingBadge())
+	}
+
+	// Contact sheet indicator
+	if selectedItem.hasContactSheet {
+		content.WriteString(" ")
+		content.WriteString(lipgloss.NewStyle().Foreground(accent).Render("[Contact Sheet]"))
+	}
+	content.WriteString("\n\n")
+
+	// Equipment Section
+	content.WriteString(sectionHeaderStyle.Render("Equipment"))
+	content.WriteString("\n")
+
+	// Camera details
+	content.WriteString(sectionLabelStyle.Render("Camera:"))
+	if camera, ok := (*m.Cameras)[selectedItem.Metadata.CameraID]; ok {
+		content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%s %s", camera.Brand, camera.Model)))
+	} else {
+		content.WriteString(sectionValueStyle.Render(selectedItem.Metadata.CameraID))
+	}
+	content.WriteString("\n")
+
+	// Film details
+	content.WriteString(sectionLabelStyle.Render("Film:"))
+	if film, ok := (*m.Films)[selectedItem.Metadata.FilmID]; ok {
+		colorType := "B&W"
+		if film.Color {
+			colorType = "Color"
+		}
+		content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%s %s ISO %d (%s)", film.Brand, film.Name, film.Iso, colorType)))
+	} else {
+		content.WriteString(sectionValueStyle.Render(selectedItem.Metadata.FilmID))
+	}
+	content.WriteString("\n\n")
+
+	// Dates Section
+	content.WriteString(sectionHeaderStyle.Render("Dates"))
+	content.WriteString("\n")
+
+	if !selectedItem.Metadata.ShotAt.IsZero() {
+		content.WriteString(sectionLabelStyle.Render("Shot:"))
+		content.WriteString(sectionValueStyle.Render(roll.FormatDate(selectedItem.Metadata.ShotAt)))
+		content.WriteString("\n")
+	}
+	if !selectedItem.Metadata.ScannedAt.IsZero() {
+		content.WriteString(sectionLabelStyle.Render("Scanned:"))
+		content.WriteString(sectionValueStyle.Render(roll.FormatDate(selectedItem.Metadata.ScannedAt)))
+		content.WriteString("\n")
+	}
+	if !selectedItem.Metadata.ProcessedAt.IsZero() {
+		content.WriteString(sectionLabelStyle.Render("Processed:"))
+		content.WriteString(sectionValueStyle.Render(roll.FormatDate(selectedItem.Metadata.ProcessedAt)))
+		content.WriteString("\n")
+	}
+	if !selectedItem.Metadata.ArchivedAt.IsZero() {
+		content.WriteString(sectionLabelStyle.Render("Archived:"))
+		content.WriteString(sectionValueStyle.Render(roll.FormatDate(selectedItem.Metadata.ArchivedAt)))
+		content.WriteString("\n")
+	}
+
+	// Notes Section (Content)
+	if selectedItem.Content != "" {
+		content.WriteString("\n")
+		content.WriteString(sectionHeaderStyle.Render("Notes"))
+		content.WriteString("\n")
+		// Truncate long notes
+		notes := selectedItem.Content
+		if len(notes) > 200 {
+			notes = notes[:200] + "..."
+		}
+		content.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")).Render(notes))
+		content.WriteString("\n")
+	}
+
+	// Tags Section
+	if len(selectedItem.Metadata.Tags) > 0 {
+		content.WriteString("\n")
+		content.WriteString(sectionHeaderStyle.Render("Tags"))
+		content.WriteString("\n")
+		for _, tag := range selectedItem.Metadata.Tags {
+			content.WriteString(lipgloss.NewStyle().
+				Foreground(subtle).
+				Render("  " + tag))
+			content.WriteString("\n")
+		}
+	}
+
+	return content.String()
+}
+
+func (m Rolls) renderCameraSidePanel() string {
+	var content strings.Builder
+
+	selectedItem, ok := m.list.SelectedItem().(roll.Camera)
+	if !ok {
+		content.WriteString(lipgloss.NewStyle().Foreground(muted).Render("No camera selected"))
+		return content.String()
+	}
+
+	// Camera Details
+	content.WriteString(sectionHeaderStyle.Render("Details"))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("Brand:"))
+	content.WriteString(sectionValueStyle.Render(selectedItem.Brand))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("Model:"))
+	content.WriteString(sectionValueStyle.Render(selectedItem.Model))
+	content.WriteString("\n")
+
+	if selectedItem.Nickname != "" {
+		content.WriteString(sectionLabelStyle.Render("Nickname:"))
+		content.WriteString(sectionValueStyle.Render(selectedItem.Nickname))
+		content.WriteString("\n")
+	}
+
+	content.WriteString(sectionLabelStyle.Render("Format:"))
+	content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%dmm", selectedItem.Format)))
+	content.WriteString("\n\n")
+
+	// Count rolls shot with this camera
+	if m.Rolls != nil {
+		count := 0
+		filmsUsed := make(map[string]bool)
+		for _, rl := range *m.Rolls {
+			if rl.Metadata.CameraID == selectedItem.ID || rl.Metadata.CameraID == selectedItem.Name() {
+				count++
+				filmsUsed[rl.Metadata.FilmID] = true
+			}
+		}
+
+		content.WriteString(sectionHeaderStyle.Render("Statistics"))
+		content.WriteString("\n")
+		content.WriteString(sectionLabelStyle.Render("Rolls:"))
+		content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%d", count)))
+		content.WriteString("\n")
+
+		if len(filmsUsed) > 0 {
+			content.WriteString("\n")
+			content.WriteString(sectionHeaderStyle.Render("Films Used"))
+			content.WriteString("\n")
+			for filmID := range filmsUsed {
+				content.WriteString(lipgloss.NewStyle().Foreground(subtle).Render("  " + filmID))
+				content.WriteString("\n")
+			}
+		}
+	}
+
+	return content.String()
+}
+
+func (m Rolls) renderFilmSidePanel() string {
+	var content strings.Builder
+
+	selectedItem, ok := m.list.SelectedItem().(roll.Film)
+	if !ok {
+		content.WriteString(lipgloss.NewStyle().Foreground(muted).Render("No film selected"))
+		return content.String()
+	}
+
+	// Film Details
+	content.WriteString(sectionHeaderStyle.Render("Details"))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("Brand:"))
+	content.WriteString(sectionValueStyle.Render(selectedItem.Brand))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("Name:"))
+	content.WriteString(sectionValueStyle.Render(selectedItem.Name))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("ISO:"))
+	content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%d", selectedItem.Iso)))
+	content.WriteString("\n")
+
+	content.WriteString(sectionLabelStyle.Render("Type:"))
+	if selectedItem.Color {
+		content.WriteString(sectionValueStyle.Render("Color"))
+	} else {
+		content.WriteString(sectionValueStyle.Render("Black & White"))
+	}
+	content.WriteString("\n\n")
+
+	// Count rolls shot with this film
+	if m.Rolls != nil {
+		count := 0
+		camerasUsed := make(map[string]bool)
+		for _, rl := range *m.Rolls {
+			if rl.Metadata.FilmID == selectedItem.ID || rl.Metadata.FilmID == selectedItem.NameWithBrand() {
+				count++
+				camerasUsed[rl.Metadata.CameraID] = true
+			}
+		}
+
+		content.WriteString(sectionHeaderStyle.Render("Statistics"))
+		content.WriteString("\n")
+		content.WriteString(sectionLabelStyle.Render("Rolls:"))
+		content.WriteString(sectionValueStyle.Render(fmt.Sprintf("%d", count)))
+		content.WriteString("\n")
+
+		if len(camerasUsed) > 0 {
+			content.WriteString("\n")
+			content.WriteString(sectionHeaderStyle.Render("Cameras Used"))
+			content.WriteString("\n")
+			for cameraID := range camerasUsed {
+				content.WriteString(lipgloss.NewStyle().Foreground(subtle).Render("  " + cameraID))
+				content.WriteString("\n")
+			}
+		}
+	}
+
+	return content.String()
+}
+
+func (m Rolls) renderHelpBar() string {
+	if m.showHelp {
+		return m.renderFullHelp()
+	}
+
+	// Compact help bar
+	var help strings.Builder
+
+	baseHelp := "r:Rolls | c:Cameras | f:Films | a:Albums | /:Filter"
+
+	if m.CurrentView == "Rolls" {
+		help.WriteString(baseHelp)
+		help.WriteString(" | A:Archive | V:View | O:Open")
+	} else {
+		help.WriteString(baseHelp)
+	}
+
+	help.WriteString(" | ?:Help | q:Quit")
+
+	return helpBarStyle.Render(help.String())
+}
+
+func (m Rolls) renderFullHelp() string {
+	var help strings.Builder
+
+	help.WriteString(sectionHeaderStyle.Render("Navigation"))
+	help.WriteString("\n")
+	help.WriteString("  r      Switch to Rolls\n")
+	help.WriteString("  c      Switch to Cameras\n")
+	help.WriteString("  f      Switch to Films\n")
+	help.WriteString("  a      Switch to Albums\n")
+	help.WriteString("  /      Open filter\n")
+	help.WriteString("  Esc    Clear filter\n")
+	help.WriteString("\n")
+
+	help.WriteString(sectionHeaderStyle.Render("Actions (Rolls view)"))
+	help.WriteString("\n")
+	help.WriteString("  A      Archive selected roll\n")
+	help.WriteString("  V      View contact sheet\n")
+	help.WriteString("  O      Open folder in Finder\n")
+	help.WriteString("\n")
+
+	help.WriteString(sectionHeaderStyle.Render("General"))
+	help.WriteString("\n")
+	help.WriteString("  ?      Toggle help\n")
+	help.WriteString("  q      Quit\n")
+
+	return lipgloss.NewStyle().
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(subtle).
+		Padding(1, 2).
+		Render(help.String())
 }

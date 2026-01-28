@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/ys/rolls/lightroom"
+	"github.com/ys/rolls/roll"
 	"golang.org/x/oauth2"
 )
 
@@ -22,3 +23,19 @@ type album struct {
 func (i album) Title() string       { return i.Name }
 func (i album) Description() string { return i.Subtype }
 func (i album) FilterValue() string { return i.ID }
+
+// rollsUpdatedMsg is sent when rolls need to be refreshed
+type rollsUpdatedMsg struct {
+	rolls *roll.Rolls
+}
+
+// processingMsg indicates a long-running operation is in progress
+type processingMsg struct {
+	message string
+	done    bool
+}
+
+// helpVisibleMsg toggles help visibility
+type helpVisibleMsg struct {
+	visible bool
+}
