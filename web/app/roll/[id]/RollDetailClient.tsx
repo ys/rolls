@@ -28,11 +28,11 @@ const NEXT_ACTION: Record<string, { label: string; field: TsKey; isDate?: boolea
 interface Props {
   roll: Roll;
   status: string;
-  cameras: Camera[];
-  films: Film[];
+  camera: Camera | null;
+  film: Film | null;
 }
 
-export default function RollDetailClient({ roll: initialRoll, status: initialStatus, cameras, films }: Props) {
+export default function RollDetailClient({ roll: initialRoll, status: initialStatus, camera, film }: Props) {
   const router = useRouter();
   const [roll, setRoll] = useState(initialRoll);
   const [status, setStatus] = useState(initialStatus);
@@ -42,8 +42,6 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [saved, setSaved] = useState(false);
   const [showDates, setShowDates] = useState(false);
 
-  const camera = cameras.find((c) => c.id === roll.camera_id);
-  const film = films.find((f) => f.id === roll.film_id);
   const nextAction = NEXT_ACTION[status];
 
   async function save(patch: Partial<Roll>) {
