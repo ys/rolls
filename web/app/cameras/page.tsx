@@ -125,14 +125,17 @@ export default function CamerasPage() {
           <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Format</label>
-            <select
-              value={form.format}
-              onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
-              className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none"
-            >
-              <option value="135">135</option>
-              <option value="120">120</option>
-            </select>
+            <div className="relative">
+              <select
+                value={form.format}
+                onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
+                className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+              >
+                <option value="135">135</option>
+                <option value="120">120</option>
+              </select>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+            </div>
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
