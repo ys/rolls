@@ -3,7 +3,7 @@ import { sql } from "@/lib/db";
 import type { Camera } from "@/lib/db";
 
 export async function GET() {
-  const rows = await sql<Camera[]>`SELECT * FROM cameras ORDER BY id`;
+  const rows = await sql<Camera[]>`SELECT * FROM cameras ORDER BY COALESCE(nickname, brand || ' ' || model)`;
   return NextResponse.json(rows);
 }
 
