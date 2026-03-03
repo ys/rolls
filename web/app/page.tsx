@@ -21,11 +21,20 @@ function RollRow({ roll }: { roll: Roll }) {
     <li>
       <Link
         href={`/roll/${roll.roll_number}`}
-        className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
+        className="flex items-center gap-3 p-3 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
       >
-        <div>
+        {roll.contact_sheet_url ? (
+          <img
+            src={roll.contact_sheet_url}
+            alt=""
+            className="w-16 h-16 object-cover rounded-lg shrink-0"
+          />
+        ) : (
+          <div className="w-16 h-16 bg-zinc-800 rounded-lg shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
           <div className="font-mono font-bold text-base">{roll.roll_number}</div>
-          <div className="text-sm text-zinc-400 mt-0.5">
+          <div className="text-sm text-zinc-400 mt-0.5 truncate">
             {[roll.camera_id, roll.film_id].filter(Boolean).join(" · ")}
           </div>
           {roll.shot_at && (
@@ -34,7 +43,7 @@ function RollRow({ roll }: { roll: Roll }) {
             </div>
           )}
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
+        <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_COLORS[status]}`}>
           {status}
         </span>
       </Link>
