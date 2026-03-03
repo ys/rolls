@@ -168,7 +168,6 @@ export default function FilmsPage() {
             <li key={f.id}>
               <Link
                 href={`/films/${encodeURIComponent(f.id)}`}
-                prefetch={false}
                 className="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-800 transition-colors"
               >
                 <div>

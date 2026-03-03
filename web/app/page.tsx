@@ -47,7 +47,6 @@ function RollItem({ roll }: { roll: RollRow }) {
     <li>
       <Link
         href={`/roll/${roll.roll_number}`}
-        prefetch={false}
         className="flex items-center gap-3 p-3 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
       >
         {roll.contact_sheet_url ? (
