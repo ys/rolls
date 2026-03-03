@@ -40,6 +40,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [labName, setLabName] = useState(initialRoll.lab_name ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showDates, setShowDates] = useState(false);
 
   const camera = cameras.find((c) => c.id === roll.camera_id);
   const film = films.find((f) => f.id === roll.film_id);
@@ -136,39 +137,50 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       </div>
 
       {/* Timestamps */}
-      <div className="bg-zinc-900 rounded-xl p-4 space-y-3 mb-4">
-        {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
-          <div key={key} className="flex items-center justify-between gap-4">
-            <label className="text-sm text-zinc-400 shrink-0 w-28">{label}</label>
-            <div className="flex items-center gap-2 flex-1">
-              <input
-                type={type}
-                key={roll[key] ?? "empty"}
-                defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
-                onBlur={(e) => {
-                  if (e.target.value) save({ [key]: e.target.value });
-                }}
-                className="bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-white/20"
-              />
-              {roll[key] ? (
-                <button
-                  onClick={() => save({ [key]: null })}
-                  className="text-xs text-zinc-600 hover:text-red-400 whitespace-nowrap"
-                  title="Clear"
-                >
-                  ✕
-                </button>
-              ) : (
-                <button
-                  onClick={() => save({ [key]: nowValue(type === "date") })}
-                  className="text-xs text-zinc-500 hover:text-white whitespace-nowrap"
-                >
-                  Now
-                </button>
-              )}
-            </div>
+      <div className="bg-zinc-900 rounded-xl mb-4 overflow-hidden">
+        <button
+          onClick={() => setShowDates((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm text-zinc-400 hover:text-white transition-colors"
+        >
+          <span>Dates</span>
+          <span>{showDates ? "▴" : "▾"}</span>
+        </button>
+        {showDates && (
+          <div className="px-4 pb-4 space-y-3 border-t border-zinc-800 pt-3">
+            {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
+              <div key={key} className="flex items-center justify-between gap-4">
+                <label className="text-sm text-zinc-400 shrink-0 w-28">{label}</label>
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type={type}
+                    key={roll[key] ?? "empty"}
+                    defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
+                    onBlur={(e) => {
+                      if (e.target.value) save({ [key]: e.target.value });
+                    }}
+                    className="bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-white/20"
+                  />
+                  {roll[key] ? (
+                    <button
+                      onClick={() => save({ [key]: null })}
+                      className="text-xs text-zinc-600 hover:text-red-400 whitespace-nowrap"
+                      title="Clear"
+                    >
+                      ✕
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => save({ [key]: nowValue(type === "date") })}
+                      className="text-xs text-zinc-500 hover:text-white whitespace-nowrap"
+                    >
+                      Now
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* Contact Sheet */}
