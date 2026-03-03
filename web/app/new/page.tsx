@@ -15,10 +15,23 @@ function nextRollNumber(rolls: Roll[]): string {
   return `${prefix}${String(next).padStart(2, "0")}`;
 }
 
+function cameraLabel(c: Camera): string {
+  return c.nickname ?? `${c.brand} ${c.model}`;
+}
+
+function filmLabel(f: Film): string {
+  if (f.nickname) return f.nickname;
+  const iso = f.show_iso && f.iso ? ` ${f.iso}` : "";
+  return `${f.brand} ${f.name}${iso}`;
+}
+
 export default function NewRollPage() {
   const router = useRouter();
-  const [cameras, setCameras] = useState<Camera[]>([]);
-  const [films, setFilms] = useState<Film[]>([]);
+  const [allCameras, setAllCameras] = useState<Camera[]>([]);
+  const [allFilms, setAllFilms] = useState<Film[]>([]);
+  const [cameraCount, setCameraCount] = useState<Record<string, number>>({});
+  const [filmCount, setFilmCount] = useState<Record<string, number>>({});
+  const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
   const [suggestedNumber, setSuggestedNumber] = useState("");
   const [form, setForm] = useState({
     roll_number: "",
@@ -40,19 +53,29 @@ export default function NewRollPage() {
       fetch("/api/films", { headers }).then((r) => r.json()),
       fetch("/api/rolls", { headers }).then((r) => r.json()),
     ]).then(([cams, fils, rols]: [Camera[], Film[], Roll[]]) => {
-      const cameraCount: Record<string, number> = {};
-      const filmCount: Record<string, number> = {};
+      const cc: Record<string, number> = {};
+      const fc: Record<string, number> = {};
       for (const r of rols) {
-        if (r.camera_id) cameraCount[r.camera_id] = (cameraCount[r.camera_id] ?? 0) + 1;
-        if (r.film_id)   filmCount[r.film_id]     = (filmCount[r.film_id]     ?? 0) + 1;
+        if (r.camera_id) cc[r.camera_id] = (cc[r.camera_id] ?? 0) + 1;
+        if (r.film_id)   fc[r.film_id]   = (fc[r.film_id]   ?? 0) + 1;
       }
-      setCameras([...cams].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0)));
-      setFilms([...fils].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0)));
+      setAllCameras(cams);
+      setAllFilms(fils);
+      setCameraCount(cc);
+      setFilmCount(fc);
       const suggested = nextRollNumber(rols);
       setSuggestedNumber(suggested);
       setForm((f) => ({ ...f, roll_number: suggested }));
     });
   }, []);
+
+  const cameras = sortBy === "alpha"
+    ? [...allCameras].sort((a, b) => cameraLabel(a).localeCompare(cameraLabel(b)))
+    : [...allCameras].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0));
+
+  const films = sortBy === "alpha"
+    ? [...allFilms].sort((a, b) => filmLabel(a).localeCompare(filmLabel(b)))
+    : [...allFilms].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,7 +112,25 @@ export default function NewRollPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">New Roll</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">New Roll</h1>
+        <div className="flex gap-1 text-xs bg-zinc-800 rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setSortBy("usage")}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+          >
+            By usage
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy("alpha")}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+          >
+            A–Z
+          </button>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm text-zinc-400 mb-1">Roll Number</label>
@@ -114,7 +155,8 @@ export default function NewRollPage() {
               <option value="">— select —</option>
               {cameras.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nickname ?? `${c.brand} ${c.model}`}
+                  {cameraLabel(c)}
+                  {sortBy === "usage" && cameraCount[c.id] ? ` (${cameraCount[c.id]})` : ""}
                 </option>
               ))}
             </select>
@@ -133,7 +175,8 @@ export default function NewRollPage() {
               <option value="">— select —</option>
               {films.map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.nickname ?? `${f.brand} ${f.name}${f.show_iso && f.iso ? ` ${f.iso}` : ""}`}
+                  {filmLabel(f)}
+                  {sortBy === "usage" && filmCount[f.id] ? ` (${filmCount[f.id]})` : ""}
                 </option>
               ))}
             </select>
