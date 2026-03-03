@@ -15,7 +15,7 @@ type RollRow = Roll & {
   film_show_iso: boolean | null;
 };
 
-export const revalidate = 30;
+export const revalidate = 3600;
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
@@ -78,6 +78,11 @@ function RollItem({ roll }: { roll: RollRow }) {
 }
 
 export default async function HomePage() {
+  const currentYear = new Date().getFullYear();
+  const yearPrefix = String(currentYear).slice(2); // e.g. "26"
+  const yearStart = `${currentYear}-01-01`;
+  const yearEnd   = `${currentYear + 1}-01-01`;
+
   const rolls = await sql<RollRow[]>`
     SELECT r.*,
       c.nickname  AS camera_nickname,
@@ -91,6 +96,12 @@ export default async function HomePage() {
     FROM rolls r
     LEFT JOIN cameras c ON c.id = r.camera_id
     LEFT JOIN films   f ON f.id = r.film_id
+    WHERE r.archived_at IS NULL
+      AND (
+        r.scanned_at IS NULL
+        OR r.roll_number ILIKE ${yearPrefix + "x%"}
+        OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
+      )
     ORDER BY r.roll_number DESC
   `;
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 
@@ -37,5 +38,6 @@ export async function POST(request: NextRequest) {
     VALUES (${roll_number}, ${camera_id ?? null}, ${film_id ?? null}, ${shot_at ?? null}, ${fridge_at ?? null}, ${lab_at ?? null}, ${lab_name ?? null}, ${scanned_at ?? null}, ${processed_at ?? null}, ${uploaded_at ?? null}, ${archived_at ?? null}, ${album_name ?? null}, ${tags ?? null}, ${notes ?? null})
     RETURNING *
   `;
+  revalidatePath("/");
   return NextResponse.json(rows[0], { status: 201 });
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 
 interface ImportCamera {
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
     `;
   }
 
+  revalidatePath("/");
   return NextResponse.json({
     cameras: cameras.length,
     films: films.length,
