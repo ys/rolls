@@ -6,13 +6,24 @@ import type { Roll, Camera, Film } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
 
 const TIMESTAMP_FIELDS = [
-  { key: "fridge_at",    label: "Fridge",      type: "datetime-local" },
-  { key: "lab_at",       label: "Lab",         type: "datetime-local" },
-  { key: "scanned_at",   label: "Scanned",     type: "date" },
-  { key: "processed_at", label: "Processed",   type: "datetime-local" },
-  { key: "uploaded_at",  label: "Uploaded",    type: "datetime-local" },
-  { key: "archived_at",  label: "Archived",    type: "datetime-local" },
+  { key: "fridge_at",    label: "Fridge",    type: "datetime-local" },
+  { key: "lab_at",       label: "Lab",       type: "datetime-local" },
+  { key: "scanned_at",   label: "Scanned",   type: "date" },
+  { key: "processed_at", label: "Processed", type: "datetime-local" },
+  { key: "uploaded_at",  label: "Uploaded",  type: "datetime-local" },
+  { key: "archived_at",  label: "Archived",  type: "datetime-local" },
 ] as const;
+
+type TsKey = typeof TIMESTAMP_FIELDS[number]["key"];
+
+const NEXT_ACTION: Record<string, { label: string; field: TsKey; isDate?: boolean }> = {
+  LOADED:    { label: "Move to Fridge", field: "fridge_at" },
+  FRIDGE:    { label: "Send to Lab",    field: "lab_at" },
+  LAB:       { label: "Mark Scanned",  field: "scanned_at", isDate: true },
+  SCANNED:   { label: "Mark Processed", field: "processed_at" },
+  PROCESSED: { label: "Mark Uploaded", field: "uploaded_at" },
+  UPLOADED:  { label: "Archive",       field: "archived_at" },
+};
 
 interface Props {
   roll: Roll;
@@ -21,15 +32,18 @@ interface Props {
   films: Film[];
 }
 
-export default function RollDetailClient({ roll: initialRoll, status, cameras, films }: Props) {
+export default function RollDetailClient({ roll: initialRoll, status: initialStatus, cameras, films }: Props) {
   const router = useRouter();
   const [roll, setRoll] = useState(initialRoll);
+  const [status, setStatus] = useState(initialStatus);
   const [notes, setNotes] = useState(initialRoll.notes ?? "");
+  const [labName, setLabName] = useState(initialRoll.lab_name ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const camera = cameras.find((c) => c.id === roll.camera_id);
   const film = films.find((f) => f.id === roll.film_id);
+  const nextAction = NEXT_ACTION[status];
 
   async function save(patch: Partial<Roll>) {
     setSaving(true);
@@ -47,15 +61,29 @@ export default function RollDetailClient({ roll: initialRoll, status, cameras, f
     if (resp.ok) {
       const updated = await resp.json();
       setRoll(updated);
+      // Derive status from updated roll
+      const s = updated.archived_at ? "ARCHIVED"
+        : updated.uploaded_at  ? "UPLOADED"
+        : updated.processed_at ? "PROCESSED"
+        : updated.scanned_at   ? "SCANNED"
+        : updated.lab_at       ? "LAB"
+        : updated.fridge_at    ? "FRIDGE"
+        : "LOADED";
+      setStatus(s);
       setSaved(true);
       router.refresh();
     }
     setSaving(false);
   }
 
+  function nowValue(isDate?: boolean) {
+    const now = new Date();
+    return isDate ? now.toISOString().slice(0, 10) : now.toISOString().slice(0, 16);
+  }
+
   return (
     <div>
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
           <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
@@ -64,6 +92,32 @@ export default function RollDetailClient({ roll: initialRoll, status, cameras, f
         </div>
         <a href="/" className="text-zinc-500 text-sm hover:text-white">← Back</a>
       </div>
+
+      {/* Next-step action button */}
+      {nextAction && (
+        <div className="mb-4 space-y-2">
+          {status === "FRIDGE" && (
+            <input
+              type="text"
+              value={labName}
+              onChange={(e) => setLabName(e.target.value)}
+              placeholder="Lab name (optional)"
+              className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+            />
+          )}
+          <button
+            onClick={() => {
+              const patch: Partial<Roll> = { [nextAction.field]: nowValue(nextAction.isDate) };
+              if (status === "FRIDGE" && labName) patch.lab_name = labName;
+              save(patch);
+            }}
+            disabled={saving}
+            className="w-full bg-white text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
+          >
+            {saving ? "Saving…" : nextAction.label}
+          </button>
+        </div>
+      )}
 
       {/* Metadata */}
       <div className="bg-zinc-900 rounded-xl p-4 space-y-3 mb-4">
@@ -89,22 +143,27 @@ export default function RollDetailClient({ roll: initialRoll, status, cameras, f
             <div className="flex items-center gap-2 flex-1">
               <input
                 type={type}
+                key={roll[key] ?? "empty"}
                 defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
                 onBlur={(e) => {
                   if (e.target.value) save({ [key]: e.target.value });
                 }}
                 className="bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-white/20"
               />
-              {!roll[key] && (
+              {roll[key] ? (
                 <button
-                  onClick={() => {
-                    const now = new Date();
-                    const val = type === "date" ? now.toISOString().slice(0, 10) : now.toISOString().slice(0, 16);
-                    save({ [key]: val });
-                  }}
+                  onClick={() => save({ [key]: null })}
+                  className="text-xs text-zinc-600 hover:text-red-400 whitespace-nowrap"
+                  title="Clear"
+                >
+                  ✕
+                </button>
+              ) : (
+                <button
+                  onClick={() => save({ [key]: nowValue(type === "date") })}
                   className="text-xs text-zinc-500 hover:text-white whitespace-nowrap"
                 >
-                  Set now
+                  Now
                 </button>
               )}
             </div>
