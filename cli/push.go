@@ -130,9 +130,10 @@ type rollJSON struct {
 	ProcessedAt *time.Time `json:"processed_at,omitempty"`
 	UploadedAt  *time.Time `json:"uploaded_at,omitempty"`
 	ArchivedAt  *time.Time `json:"archived_at,omitempty"`
-	AlbumName   string     `json:"album_name,omitempty"`
-	Tags        []string   `json:"tags,omitempty"`
-	Notes       string     `json:"notes,omitempty"`
+	AlbumName       string     `json:"album_name,omitempty"`
+	Tags            []string   `json:"tags,omitempty"`
+	Notes           string     `json:"notes,omitempty"`
+	ContactSheetURL string     `json:"contact_sheet_url,omitempty"`
 }
 
 var pushCmd = &cobra.Command{
@@ -186,28 +187,6 @@ var pushCmd = &cobra.Command{
 		// Collect rolls from scans path
 		rolls, err := roll.GetRolls(cfg.ScansPath)
 		cobra.CheckErr(err)
-
-		// Also collect in-progress rolls from the Obsidian vault (01 Loaded, 02 Fridge, 03 Scanned)
-		if cfg.ObsidianRollsPath != "" {
-			obsidianRolls, err := roll.GetFlatRolls(cfg.ObsidianRollsPath)
-			cobra.CheckErr(err)
-
-			// Merge: scans rolls take priority (they have more metadata)
-			seen := make(map[string]bool)
-			for _, r := range rolls {
-				seen[r.Metadata.RollNumber] = true
-			}
-			added := 0
-			for _, r := range obsidianRolls {
-				if !seen[r.Metadata.RollNumber] {
-					rolls = append(rolls, r)
-					added++
-				}
-			}
-			if added > 0 {
-				fmt.Printf("  + %d rolls from Obsidian vault\n", added)
-			}
-		}
 
 		// For unknown camera/film IDs: try fuzzy-match to a known entry first,
 		// only fall back to a stub if nothing similar is found.
@@ -318,6 +297,14 @@ var pushCmd = &cobra.Command{
 
 		// Upload contact sheets
 		if cfg.ContactSheetPath != "" {
+			// Skip rolls that already have a contact_sheet_url in the DB
+			alreadyUploaded := make(map[string]bool)
+			for _, r := range payload.Rolls {
+				if r.ContactSheetURL != "" {
+					alreadyUploaded[r.RollNumber] = true
+				}
+			}
+
 			imagesDir := filepath.Join(cfg.ContactSheetPath, "images")
 			entries, err := os.ReadDir(imagesDir)
 			if err == nil {
@@ -327,6 +314,10 @@ var pushCmd = &cobra.Command{
 						continue
 					}
 					rollNum := entry.Name()[:len(entry.Name())-5] // strip .webp
+					if alreadyUploaded[rollNum] {
+						skipped++
+						continue
+					}
 					imgPath := filepath.Join(imagesDir, entry.Name())
 
 					data, err := os.ReadFile(imgPath)

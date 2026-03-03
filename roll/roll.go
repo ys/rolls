@@ -15,20 +15,21 @@ import (
 )
 
 type Metadata struct {
-	CameraID    string    `yaml:"camera"`
-	FilmID      string    `yaml:"film"`
-	ShotAt      time.Time `yaml:"shot_at"`
-	FridgeAt    time.Time `yaml:"fridge_at,omitempty"`
-	LabAt       time.Time `yaml:"lab_at,omitempty"`
-	LabName     string    `yaml:"lab,omitempty"`
-	ScannedAt   time.Time `yaml:"scanned_at"`
-	RollNumber  string    `yaml:"roll_number"`
-	Tags        []string  `yaml:"tags"`
-	Copyright   string
-	ProcessedAt time.Time `yaml:"processed_at,omitempty"`
-	UploadedAt  time.Time `yaml:"uploaded_at,omitempty"`
-	AlbumName   string    `yaml:"album_name,omitempty"`
-	ArchivedAt  time.Time `yaml:"archived_at,omitempty"`
+	CameraID        string    `yaml:"camera"`
+	FilmID          string    `yaml:"film"`
+	ShotAt          time.Time `yaml:"shot_at"`
+	FridgeAt        time.Time `yaml:"fridge_at,omitempty"`
+	LabAt           time.Time `yaml:"lab_at,omitempty"`
+	LabName         string    `yaml:"lab,omitempty"`
+	ScannedAt       time.Time `yaml:"scanned_at"`
+	RollNumber      string    `yaml:"roll_number"`
+	Tags            []string  `yaml:"tags"`
+	Copyright       string
+	ProcessedAt     time.Time `yaml:"processed_at,omitempty"`
+	UploadedAt      time.Time `yaml:"uploaded_at,omitempty"`
+	AlbumName       string    `yaml:"album_name,omitempty"`
+	ArchivedAt      time.Time `yaml:"archived_at,omitempty"`
+	ContactSheetURL string    `yaml:"contact_sheet_url,omitempty"`
 }
 
 type Roll struct {
@@ -206,6 +207,8 @@ func FromMarkdown(path string) (Roll, error) {
 			for i, tag := range metadata.Tags {
 				metadata.Tags[i] = strings.TrimSpace(tag)
 			}
+		case "contact_sheet_url":
+			metadata.ContactSheetURL = value
 		}
 	}
 

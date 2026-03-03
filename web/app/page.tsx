@@ -4,18 +4,44 @@ import { STATUS_COLORS } from "@/lib/status";
 import type { Roll } from "@/lib/db";
 import Link from "next/link";
 
+type RollRow = Roll & {
+  camera_nickname: string | null;
+  camera_brand: string | null;
+  camera_model: string | null;
+  film_nickname: string | null;
+  film_brand: string | null;
+  film_name: string | null;
+  film_iso: number | null;
+  film_show_iso: boolean | null;
+};
+
 export const dynamic = "force-dynamic";
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
-function rollYear(roll: Roll): string {
+function cameraLabel(roll: RollRow): string {
+  if (roll.camera_nickname) return roll.camera_nickname;
+  if (roll.camera_brand && roll.camera_model) return `${roll.camera_brand} ${roll.camera_model}`;
+  return roll.camera_id ?? "";
+}
+
+function filmLabel(roll: RollRow): string {
+  if (roll.film_nickname) return roll.film_nickname;
+  if (roll.film_brand && roll.film_name) {
+    const iso = roll.film_show_iso && roll.film_iso ? ` ${roll.film_iso}` : "";
+    return `${roll.film_brand} ${roll.film_name}${iso}`;
+  }
+  return roll.film_id ?? "";
+}
+
+function rollYear(roll: RollRow): string {
   const m = roll.roll_number.match(/^(\d{2})x/i);
   if (m) return `20${m[1]}`;
   if (roll.shot_at) return roll.shot_at.slice(0, 4);
   return "—";
 }
 
-function RollRow({ roll }: { roll: Roll }) {
+function RollItem({ roll }: { roll: RollRow }) {
   const status = rollStatus(roll);
   return (
     <li>
@@ -35,7 +61,7 @@ function RollRow({ roll }: { roll: Roll }) {
         <div className="flex-1 min-w-0">
           <div className="font-mono font-bold text-base">{roll.roll_number}</div>
           <div className="text-sm text-zinc-400 mt-0.5 truncate">
-            {[roll.camera_id, roll.film_id].filter(Boolean).join(" · ")}
+            {[cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ")}
           </div>
           {roll.shot_at && (
             <div className="text-xs text-zinc-500 mt-0.5">
@@ -52,7 +78,21 @@ function RollRow({ roll }: { roll: Roll }) {
 }
 
 export default async function HomePage() {
-  const rolls = await sql<Roll[]>`SELECT * FROM rolls ORDER BY roll_number DESC`;
+  const rolls = await sql<RollRow[]>`
+    SELECT r.*,
+      c.nickname  AS camera_nickname,
+      c.brand     AS camera_brand,
+      c.model     AS camera_model,
+      f.nickname  AS film_nickname,
+      f.brand     AS film_brand,
+      f.name      AS film_name,
+      f.iso       AS film_iso,
+      f.show_iso  AS film_show_iso
+    FROM rolls r
+    LEFT JOIN cameras c ON c.id = r.camera_id
+    LEFT JOIN films   f ON f.id = r.film_id
+    ORDER BY r.roll_number DESC
+  `;
 
   const unscanned = rolls.filter((r) => !r.scanned_at);
   const inProgress = unscanned
@@ -63,7 +103,7 @@ export default async function HomePage() {
   const historical = rolls.filter((r) => r.scanned_at);
 
   // Group historical by year, preserving DESC order within each year
-  const byYear = new Map<string, Roll[]>();
+  const byYear = new Map<string, RollRow[]>();
   for (const roll of historical) {
     const year = rollYear(roll);
     if (!byYear.has(year)) byYear.set(year, []);
@@ -95,7 +135,7 @@ export default async function HomePage() {
                 <span className="text-sm text-zinc-500">{inProgress.length}</span>
               </div>
               <ul className="space-y-2">
-                {inProgress.map((roll) => <RollRow key={roll.roll_number} roll={roll} />)}
+                {inProgress.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
               </ul>
             </section>
           )}
@@ -108,7 +148,7 @@ export default async function HomePage() {
                 <span className="text-sm text-zinc-500">{atLab.length}</span>
               </div>
               <ul className="space-y-2">
-                {atLab.map((roll) => <RollRow key={roll.roll_number} roll={roll} />)}
+                {atLab.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
               </ul>
             </section>
           )}
@@ -123,7 +163,7 @@ export default async function HomePage() {
                   <span className="text-sm text-zinc-500">{yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}</span>
                 </div>
                 <ul className="space-y-2">
-                  {yearRolls.map((roll) => <RollRow key={roll.roll_number} roll={roll} />)}
+                  {yearRolls.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
                 </ul>
               </section>
             );
