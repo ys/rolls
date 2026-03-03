@@ -8,7 +8,6 @@ if (!dbUrl) {
 
 const pg = postgres(dbUrl, { ssl: dbUrl.includes("localhost") ? false : "require" });
 
-// Tagged-template helper matching the neon() call signature used in route files
 export const sql = pg;
 
 export interface Camera {
