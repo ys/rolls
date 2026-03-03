@@ -16,3 +16,4 @@ web/public/fonts/
 
 # Editor
 .claude/
+.vercel
