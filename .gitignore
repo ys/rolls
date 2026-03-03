@@ -8,8 +8,6 @@ web/.next/
 web/.env.local
 web/.env*.local
 
-# Commercial fonts — do not commit to public repo
-web/public/fonts/
 
 # macOS
 .DS_Store

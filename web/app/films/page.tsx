@@ -21,6 +21,7 @@ export default function FilmsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Merge mode state
   const [merging, setMerging] = useState(false);
@@ -38,7 +39,7 @@ export default function FilmsPage() {
   useEffect(() => {
     fetch("/api/films", { headers: headers() })
       .then((r) => r.json())
-      .then(setAllFilms);
+      .then((data) => { setAllFilms(data); setLoading(false); });
   }, []);
 
   const films = sortBy === "alpha"
@@ -178,7 +179,12 @@ export default function FilmsPage() {
             </li>
           );
         })}
-        {films.length === 0 && (
+        {loading && (
+          Array.from({ length: 6 }).map((_, i) => (
+            <li key={i} className="h-16 bg-zinc-900 rounded-xl animate-pulse" />
+          ))
+        )}
+        {!loading && films.length === 0 && (
           <li className="text-zinc-500 text-sm text-center py-8">No films yet.</li>
         )}
       </ul>

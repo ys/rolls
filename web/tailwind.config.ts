@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        mono: ["Berkeley Mono", "ui-monospace", "monospace"],
+        mono: ["iA Writer Mono", "ui-monospace", "monospace"],
       },
     },
   },

@@ -15,6 +15,7 @@ export default function CamerasPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers = (extra?: Record<string, string>): HeadersInit => ({
@@ -25,7 +26,7 @@ export default function CamerasPage() {
   useEffect(() => {
     fetch("/api/cameras", { headers: headers() })
       .then((r) => r.json())
-      .then(setAllCameras);
+      .then((data) => { setAllCameras(data); setLoading(false); });
   }, []);
 
   const cameras = sortBy === "alpha"
@@ -95,7 +96,12 @@ export default function CamerasPage() {
             </Link>
           </li>
         ))}
-        {cameras.length === 0 && (
+        {loading && (
+          Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="h-16 bg-zinc-900 rounded-xl animate-pulse" />
+          ))
+        )}
+        {!loading && cameras.length === 0 && (
           <li className="text-zinc-500 text-sm text-center py-8">No cameras yet.</li>
         )}
       </ul>
