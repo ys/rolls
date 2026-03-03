@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -210,6 +213,51 @@ var pushCmd = &cobra.Command{
 
 		fmt.Printf("Pushed %d cameras, %d films, %d rolls\n",
 			len(payload.Cameras), len(payload.Films), len(payload.Rolls))
+
+		// Upload contact sheets
+		if cfg.ContactSheetPath != "" {
+			imagesDir := filepath.Join(cfg.ContactSheetPath, "images")
+			entries, err := os.ReadDir(imagesDir)
+			if err == nil {
+				uploaded, skipped := 0, 0
+				for _, entry := range entries {
+					if entry.IsDir() || filepath.Ext(entry.Name()) != ".webp" {
+						continue
+					}
+					rollNum := entry.Name()[:len(entry.Name())-5] // strip .webp
+					imgPath := filepath.Join(imagesDir, entry.Name())
+
+					data, err := os.ReadFile(imgPath)
+					if err != nil {
+						fmt.Printf("  warn: could not read %s: %v\n", entry.Name(), err)
+						continue
+					}
+
+					url := cfg.WebAppURL + "/api/rolls/" + rollNum + "/contact-sheet"
+					req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+					if err != nil {
+						skipped++
+						continue
+					}
+					req.Header.Set("Content-Type", "image/webp")
+					req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+
+					resp, err := client.Do(req)
+					if err != nil || resp.StatusCode != http.StatusOK {
+						skipped++
+						if resp != nil {
+							io.Copy(io.Discard, resp.Body)
+							resp.Body.Close()
+						}
+						continue
+					}
+					io.Copy(io.Discard, resp.Body)
+					resp.Body.Close()
+					uploaded++
+				}
+				fmt.Printf("Uploaded %d contact sheets (%d skipped)\n", uploaded, skipped)
+			}
+		}
 	},
 }
 

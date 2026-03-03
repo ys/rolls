@@ -44,6 +44,7 @@ export interface Roll {
   album_name: string | null;
   tags: string[] | null;
   notes: string | null;
+  contact_sheet_url: string | null;
 }
 
 export type RollStatus = "LOADED" | "FRIDGE" | "LAB" | "SCANNED" | "PROCESSED" | "UPLOADED" | "ARCHIVED";

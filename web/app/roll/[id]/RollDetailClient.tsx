@@ -171,6 +171,17 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         ))}
       </div>
 
+      {/* Contact Sheet */}
+      {roll.contact_sheet_url && (
+        <div className="mb-4">
+          <img
+            src={roll.contact_sheet_url}
+            alt={`Contact sheet for ${roll.roll_number}`}
+            className="w-full rounded-xl"
+          />
+        </div>
+      )}
+
       {/* Notes */}
       <div className="bg-zinc-900 rounded-xl p-4 mb-4">
         <label className="block text-sm text-zinc-400 mb-2">Notes</label>

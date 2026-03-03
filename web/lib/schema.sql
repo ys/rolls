@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS rolls (
   processed_at TIMESTAMP WITH TIME ZONE,
   uploaded_at  TIMESTAMP WITH TIME ZONE,
   archived_at  TIMESTAMP WITH TIME ZONE,
-  album_name   TEXT,
-  tags         TEXT[],
-  notes        TEXT
+  album_name         TEXT,
+  tags               TEXT[],
+  notes              TEXT,
+  contact_sheet_url  TEXT
 );
