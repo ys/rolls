@@ -39,9 +39,15 @@ export default function NewRollPage() {
       fetch("/api/cameras", { headers }).then((r) => r.json()),
       fetch("/api/films", { headers }).then((r) => r.json()),
       fetch("/api/rolls", { headers }).then((r) => r.json()),
-    ]).then(([cams, fils, rols]) => {
-      setCameras(cams);
-      setFilms(fils);
+    ]).then(([cams, fils, rols]: [Camera[], Film[], Roll[]]) => {
+      const cameraCount: Record<string, number> = {};
+      const filmCount: Record<string, number> = {};
+      for (const r of rols) {
+        if (r.camera_id) cameraCount[r.camera_id] = (cameraCount[r.camera_id] ?? 0) + 1;
+        if (r.film_id)   filmCount[r.film_id]     = (filmCount[r.film_id]     ?? 0) + 1;
+      }
+      setCameras([...cams].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0)));
+      setFilms([...fils].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0)));
       const suggested = nextRollNumber(rols);
       setSuggestedNumber(suggested);
       setForm((f) => ({ ...f, roll_number: suggested }));
