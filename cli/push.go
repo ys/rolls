@@ -8,11 +8,91 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
 )
+
+var reNonAlnum = regexp.MustCompile(`[^a-z0-9]`)
+
+func normStr(s string) string {
+	return reNonAlnum.ReplaceAllString(strings.ToLower(s), "")
+}
+
+// matchScore returns how specifically the unknown string matches a set of candidates.
+// Higher score = more specific match. Zero means no match.
+func matchScore(nu string, candidates ...string) int {
+	best := 0
+	for _, c := range candidates {
+		nc := normStr(c)
+		if nc == "" {
+			continue
+		}
+		var score int
+		if nu == nc {
+			score = 1000 + len(nc) // exact match wins outright
+		} else if len(nc) >= 4 && strings.Contains(nu, nc) {
+			score = len(nc) // longer candidate = more specific containment
+		} else if len(nu) >= 4 && strings.Contains(nc, nu) {
+			score = len(nu)
+		}
+		if score > best {
+			best = score
+		}
+	}
+	return best
+}
+
+func findSimilarCamera(unknownID string, cameras roll.Cameras) (string, bool) {
+	nu := normStr(unknownID)
+	if len(nu) < 3 {
+		return "", false
+	}
+	bestID, bestScore := "", 0
+	for id, cam := range cameras {
+		score := matchScore(nu, id, cam.Brand+" "+cam.Model, cam.Nickname)
+		if score > bestScore {
+			bestScore = score
+			bestID = id
+		}
+	}
+	if bestScore >= 4 {
+		return bestID, true
+	}
+	return "", false
+}
+
+func findSimilarFilm(unknownID string, films roll.Films) (string, bool) {
+	nu := normStr(unknownID)
+	if len(nu) < 3 {
+		return "", false
+	}
+	bestID, bestScore := "", 0
+	for id, film := range films {
+		isoSuffix := ""
+		if film.Iso > 0 {
+			isoSuffix = fmt.Sprintf("%d", film.Iso)
+		}
+		score := matchScore(nu,
+			id,
+			film.Brand+" "+film.Name+" "+isoSuffix,
+			film.Name+" "+isoSuffix,
+			film.Brand+" "+film.Name,
+			film.Nickname,
+		)
+		if score > bestScore {
+			bestScore = score
+			bestID = id
+		}
+	}
+	if bestScore >= 4 {
+		return bestID, true
+	}
+	return "", false
+}
 
 type importPayload struct {
 	Cameras []cameraJSON `json:"cameras"`
@@ -129,34 +209,56 @@ var pushCmd = &cobra.Command{
 			}
 		}
 
-		// Synthesize stub entries for any camera/film IDs not in the YAML files
+		// For unknown camera/film IDs: try fuzzy-match to a known entry first,
+		// only fall back to a stub if nothing similar is found.
+		cameraRemap := make(map[string]string)
+		filmRemap := make(map[string]string)
+
 		for _, r := range rolls {
 			if r.Metadata.CameraID != "" && !knownCameras[r.Metadata.CameraID] {
-				fmt.Printf("  note: unknown camera %q — adding stub\n", r.Metadata.CameraID)
-				payload.Cameras = append(payload.Cameras, cameraJSON{
-					ID:    r.Metadata.CameraID,
-					Brand: r.Metadata.CameraID,
-					Model: "unknown",
-				})
+				if canonID, ok := findSimilarCamera(r.Metadata.CameraID, cfg.Cameras); ok {
+					fmt.Printf("  mapped camera %q → %q\n", r.Metadata.CameraID, canonID)
+					cameraRemap[r.Metadata.CameraID] = canonID
+				} else {
+					fmt.Printf("  note: unknown camera %q — adding stub\n", r.Metadata.CameraID)
+					payload.Cameras = append(payload.Cameras, cameraJSON{
+						ID:    r.Metadata.CameraID,
+						Brand: r.Metadata.CameraID,
+						Model: "unknown",
+					})
+				}
 				knownCameras[r.Metadata.CameraID] = true
 			}
 			if r.Metadata.FilmID != "" && !knownFilms[r.Metadata.FilmID] {
-				fmt.Printf("  note: unknown film %q — adding stub\n", r.Metadata.FilmID)
-				payload.Films = append(payload.Films, filmJSON{
-					ID:    r.Metadata.FilmID,
-					Brand: r.Metadata.FilmID,
-					Name:  "unknown",
-					Color: true,
-				})
+				if canonID, ok := findSimilarFilm(r.Metadata.FilmID, cfg.Films); ok {
+					fmt.Printf("  mapped film   %q → %q\n", r.Metadata.FilmID, canonID)
+					filmRemap[r.Metadata.FilmID] = canonID
+				} else {
+					fmt.Printf("  note: unknown film %q — adding stub\n", r.Metadata.FilmID)
+					payload.Films = append(payload.Films, filmJSON{
+						ID:    r.Metadata.FilmID,
+						Brand: r.Metadata.FilmID,
+						Name:  "unknown",
+						Color: true,
+					})
+				}
 				knownFilms[r.Metadata.FilmID] = true
 			}
 		}
 
 		for _, r := range rolls {
+			cameraID := r.Metadata.CameraID
+			if mapped, ok := cameraRemap[cameraID]; ok {
+				cameraID = mapped
+			}
+			filmID := r.Metadata.FilmID
+			if mapped, ok := filmRemap[filmID]; ok {
+				filmID = mapped
+			}
 			rj := rollJSON{
 				RollNumber: r.Metadata.RollNumber,
-				CameraID:   r.Metadata.CameraID,
-				FilmID:     r.Metadata.FilmID,
+				CameraID:   cameraID,
+				FilmID:     filmID,
 				Tags:       r.Metadata.Tags,
 				Notes:      r.Content,
 				AlbumName:  r.Metadata.AlbumName,

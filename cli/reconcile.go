@@ -1,24 +1,103 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
 	"github.com/ys/rolls/style"
 )
 
+// remapIDs rewrites camera/film frontmatter values to canonical IDs in any .md files
+// under root (including the Obsidian flat-file structure).
+func remapIDs(root string) (changed, total int) {
+	filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() || filepath.Ext(path) != ".md" {
+			return nil
+		}
+		total++
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		content := string(data)
+		if !strings.HasPrefix(content, "---") {
+			return nil
+		}
+
+		scanner := bufio.NewScanner(strings.NewReader(content))
+		var lines []string
+		modified := false
+		inFM, fmDone := false, false
+		lineNum := 0
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if lineNum == 0 && strings.TrimSpace(line) == "---" {
+				inFM = true
+				lines = append(lines, line)
+				lineNum++
+				continue
+			}
+			if inFM && !fmDone && strings.TrimSpace(line) == "---" {
+				fmDone = true
+				lines = append(lines, line)
+				lineNum++
+				continue
+			}
+			if inFM && !fmDone {
+				if strings.HasPrefix(line, "camera: ") {
+					val := strings.TrimSpace(strings.TrimPrefix(line, "camera: "))
+					if _, known := cfg.Cameras[val]; !known {
+						if canonID, ok := findSimilarCamera(val, cfg.Cameras); ok {
+							fmt.Printf("  %s: camera %q → %q\n", filepath.Base(path), val, canonID)
+							line = "camera: " + canonID
+							modified = true
+						}
+					}
+				} else if strings.HasPrefix(line, "film: ") {
+					val := strings.TrimSpace(strings.TrimPrefix(line, "film: "))
+					if _, known := cfg.Films[val]; !known {
+						if canonID, ok := findSimilarFilm(val, cfg.Films); ok {
+							fmt.Printf("  %s: film   %q → %q\n", filepath.Base(path), val, canonID)
+							line = "film: " + canonID
+							modified = true
+						}
+					}
+				}
+			}
+			lines = append(lines, line)
+			lineNum++
+		}
+
+		if modified {
+			os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
+			changed++
+		}
+		return nil
+	})
+	return
+}
+
 // reconcileCmd represents the reconcile command
 var reconcileCmd = &cobra.Command{
 	Use:   "reconcile [year]",
-	Short: "Reconcile roll.md files with missing metadata",
-	Long:  `Update roll.md files with missing metadata fields while preserving existing values. If no year is specified, processes all years.`,
+	Short: "Reconcile roll.md files with missing metadata and canonical IDs",
+	Long:  `Update roll.md files with missing metadata fields and rewrite camera/film IDs to canonical values.`,
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Remap camera/film IDs in Obsidian flat files first
+		if cfg.ObsidianRollsPath != "" {
+			fmt.Println("Remapping IDs in Obsidian vault…")
+			changed, total := remapIDs(cfg.ObsidianRollsPath)
+			fmt.Printf("  %d/%d files updated\n", changed, total)
+		}
 		// Get all rolls
 		rolls, err := roll.GetRolls(cfg.ScansPath)
 		if err != nil {
@@ -89,8 +168,20 @@ var reconcileCmd = &cobra.Command{
 				if existingMetadata.CameraID != "" {
 					reconciled.CameraID = existingMetadata.CameraID
 				}
+				if _, known := cfg.Cameras[reconciled.CameraID]; !known && reconciled.CameraID != "" {
+					if canonID, ok := findSimilarCamera(reconciled.CameraID, cfg.Cameras); ok {
+						fmt.Printf("  %s: camera %q → %q\n", r.Metadata.RollNumber, reconciled.CameraID, canonID)
+						reconciled.CameraID = canonID
+					}
+				}
 				if existingMetadata.FilmID != "" {
 					reconciled.FilmID = existingMetadata.FilmID
+				}
+				if _, known := cfg.Films[reconciled.FilmID]; !known && reconciled.FilmID != "" {
+					if canonID, ok := findSimilarFilm(reconciled.FilmID, cfg.Films); ok {
+						fmt.Printf("  %s: film   %q → %q\n", r.Metadata.RollNumber, reconciled.FilmID, canonID)
+						reconciled.FilmID = canonID
+					}
 				}
 				if !existingMetadata.ShotAt.IsZero() {
 					reconciled.ShotAt = existingMetadata.ShotAt
