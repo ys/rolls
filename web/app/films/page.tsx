@@ -3,11 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Film } from "@/lib/db";
+import type { Film, Roll } from "@/lib/db";
+
+function filmLabel(f: Film): string {
+  if (f.nickname) return f.nickname;
+  const iso = f.show_iso && f.iso ? ` ${f.iso}` : "";
+  return `${f.brand} ${f.name}${iso}`;
+}
 
 export default function FilmsPage() {
   const router = useRouter();
-  const [films, setFilms] = useState<Film[]>([]);
+  const [allFilms, setAllFilms] = useState<Film[]>([]);
+  const [filmCount, setFilmCount] = useState<Record<string, number>>({});
+  const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
   const [form, setForm] = useState({
     id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false,
   });
@@ -29,10 +37,22 @@ export default function FilmsPage() {
   });
 
   useEffect(() => {
-    fetch("/api/films", { headers: headers() })
-      .then((r) => r.json())
-      .then(setFilms);
+    Promise.all([
+      fetch("/api/films", { headers: headers() }).then((r) => r.json()),
+      fetch("/api/rolls", { headers: headers() }).then((r) => r.json()),
+    ]).then(([fils, rols]: [Film[], Roll[]]) => {
+      const fc: Record<string, number> = {};
+      for (const r of rols) {
+        if (r.film_id) fc[r.film_id] = (fc[r.film_id] ?? 0) + 1;
+      }
+      setAllFilms(fils);
+      setFilmCount(fc);
+    });
   }, []);
+
+  const films = sortBy === "alpha"
+    ? [...allFilms].sort((a, b) => filmLabel(a).localeCompare(filmLabel(b)))
+    : [...allFilms].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +73,7 @@ export default function FilmsPage() {
     }
 
     const film = await resp.json();
-    setFilms((prev) => [...prev.filter((f) => f.id !== film.id), film].sort((a, b) => a.id.localeCompare(b.id)));
+    setAllFilms((prev) => [...prev.filter((f) => f.id !== film.id), film]);
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
     setSaving(false);
     setShowForm(false);
@@ -86,9 +106,8 @@ export default function FilmsPage() {
       return;
     }
 
-    // Reload films
     const updated = await fetch("/api/films", { headers: headers() }).then((r) => r.json());
-    setFilms(updated);
+    setAllFilms(updated);
     setSelected(new Set());
     setTargetId("");
     setMerging(false);
@@ -96,24 +115,42 @@ export default function FilmsPage() {
     router.refresh();
   }
 
-  const selectedFilms = films.filter((f) => selected.has(f.id));
+  const selectedFilms = allFilms.filter((f) => selected.has(f.id));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Films</h1>
-        <button
-          onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); }}
-          className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${merging ? "bg-zinc-700 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
-        >
-          {merging ? "Cancel Merge" : "Merge"}
-        </button>
+        <div className="flex gap-2 items-center">
+          {!merging && (
+            <div className="flex gap-1 text-xs bg-zinc-800 rounded-lg p-1">
+              <button
+                onClick={() => setSortBy("usage")}
+                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+              >
+                By usage
+              </button>
+              <button
+                onClick={() => setSortBy("alpha")}
+                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+              >
+                A–Z
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); }}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${merging ? "bg-zinc-700 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
+          >
+            {merging ? "Cancel" : "Merge"}
+          </button>
+        </div>
       </div>
 
       <ul className="space-y-2 mb-4">
         {films.map((f) => {
-          const displayName = f.nickname ?? `${f.brand} ${f.name}${f.show_iso && f.iso ? ` ${f.iso}` : ""}`;
-          const meta = `${f.id} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}`;
+          const displayName = filmLabel(f);
+          const meta = `${f.id} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${filmCount[f.id] ? ` · ${filmCount[f.id]} roll${filmCount[f.id] === 1 ? "" : "s"}` : ""}`;
 
           if (merging) {
             const isSelected = selected.has(f.id);
@@ -171,7 +208,7 @@ export default function FilmsPage() {
                   className="w-4 h-4 accent-white"
                 />
                 <span className="text-sm">
-                  {f.nickname ?? `${f.brand} ${f.name}${f.show_iso && f.iso ? ` ${f.iso}` : ""}`}
+                  {filmLabel(f)}
                   <span className="text-zinc-500 ml-1">({f.id})</span>
                 </span>
               </label>

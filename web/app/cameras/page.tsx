@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { Camera } from "@/lib/db";
+import type { Camera, Roll } from "@/lib/db";
+
+function cameraLabel(c: Camera): string {
+  return c.nickname ?? `${c.brand} ${c.model}`;
+}
 
 export default function CamerasPage() {
-  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [allCameras, setAllCameras] = useState<Camera[]>([]);
+  const [cameraCount, setCameraCount] = useState<Record<string, number>>({});
+  const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
   const [form, setForm] = useState({ id: "", brand: "", model: "", nickname: "", format: "135" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -18,10 +24,22 @@ export default function CamerasPage() {
   });
 
   useEffect(() => {
-    fetch("/api/cameras", { headers: headers() })
-      .then((r) => r.json())
-      .then(setCameras);
+    Promise.all([
+      fetch("/api/cameras", { headers: headers() }).then((r) => r.json()),
+      fetch("/api/rolls", { headers: headers() }).then((r) => r.json()),
+    ]).then(([cams, rols]: [Camera[], Roll[]]) => {
+      const cc: Record<string, number> = {};
+      for (const r of rols) {
+        if (r.camera_id) cc[r.camera_id] = (cc[r.camera_id] ?? 0) + 1;
+      }
+      setAllCameras(cams);
+      setCameraCount(cc);
+    });
   }, []);
+
+  const cameras = sortBy === "alpha"
+    ? [...allCameras].sort((a, b) => cameraLabel(a).localeCompare(cameraLabel(b)))
+    : [...allCameras].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +60,7 @@ export default function CamerasPage() {
     }
 
     const camera = await resp.json();
-    setCameras((prev) => [...prev.filter((c) => c.id !== camera.id), camera].sort((a, b) => a.id.localeCompare(b.id)));
+    setAllCameras((prev) => [...prev.filter((c) => c.id !== camera.id), camera]);
     setForm({ id: "", brand: "", model: "", nickname: "", format: "135" });
     setSaving(false);
     setShowForm(false);
@@ -50,7 +68,23 @@ export default function CamerasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Cameras</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Cameras</h1>
+        <div className="flex gap-1 text-xs bg-zinc-800 rounded-lg p-1">
+          <button
+            onClick={() => setSortBy("usage")}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+          >
+            By usage
+          </button>
+          <button
+            onClick={() => setSortBy("alpha")}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+          >
+            A–Z
+          </button>
+        </div>
+      </div>
 
       <ul className="space-y-2 mb-8">
         {cameras.map((c) => (
@@ -60,8 +94,11 @@ export default function CamerasPage() {
               className="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-800 transition-colors"
             >
               <div>
-                <div className="font-medium">{c.nickname ?? `${c.brand} ${c.model}`}</div>
-                <div className="text-xs text-zinc-500 mt-0.5">{c.id} · {c.format}mm</div>
+                <div className="font-medium">{cameraLabel(c)}</div>
+                <div className="text-xs text-zinc-500 mt-0.5">
+                  {c.id} · {c.format}mm
+                  {cameraCount[c.id] ? ` · ${cameraCount[c.id]} roll${cameraCount[c.id] === 1 ? "" : "s"}` : ""}
+                </div>
               </div>
               <span className="text-xs text-zinc-600">Edit →</span>
             </Link>
