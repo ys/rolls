@@ -105,34 +105,40 @@ export default function NewRollPage() {
 
         <div>
           <label className="block text-sm text-zinc-400 mb-1">Camera</label>
-          <select
-            value={form.camera_id}
-            onChange={(e) => setForm((f) => ({ ...f, camera_id: e.target.value }))}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
-          >
-            <option value="">— select —</option>
-            {cameras.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nickname ?? `${c.brand} ${c.model}`}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={form.camera_id}
+              onChange={(e) => setForm((f) => ({ ...f, camera_id: e.target.value }))}
+              className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+            >
+              <option value="">— select —</option>
+              {cameras.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nickname ?? `${c.brand} ${c.model}`}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+          </div>
         </div>
 
         <div>
           <label className="block text-sm text-zinc-400 mb-1">Film</label>
-          <select
-            value={form.film_id}
-            onChange={(e) => setForm((f) => ({ ...f, film_id: e.target.value }))}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
-          >
-            <option value="">— select —</option>
-            {films.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.nickname ?? `${f.brand} ${f.name}${f.show_iso && f.iso ? ` ${f.iso}` : ""}`}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={form.film_id}
+              onChange={(e) => setForm((f) => ({ ...f, film_id: e.target.value }))}
+              className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+            >
+              <option value="">— select —</option>
+              {films.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.nickname ?? `${f.brand} ${f.name}${f.show_iso && f.iso ? ` ${f.iso}` : ""}`}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+          </div>
         </div>
 
         <div>
