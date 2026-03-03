@@ -4,7 +4,7 @@ import type { Film } from "@/lib/db";
 
 export async function GET() {
   const rows = await sql`SELECT * FROM films ORDER BY id`;
-  return NextResponse.json(rows as Film[]);
+  return NextResponse.json(rows as unknown as Film[]);
 }
 
 export async function POST(request: NextRequest) {
@@ -21,5 +21,5 @@ export async function POST(request: NextRequest) {
     ON CONFLICT (id) DO UPDATE SET brand = EXCLUDED.brand, name = EXCLUDED.name, nickname = EXCLUDED.nickname, iso = EXCLUDED.iso, color = EXCLUDED.color, show_iso = EXCLUDED.show_iso
     RETURNING *
   `;
-  return NextResponse.json(rows[0] as Film, { status: 201 });
+  return NextResponse.json(rows[0] as unknown as Film, { status: 201 });
 }

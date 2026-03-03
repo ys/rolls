@@ -1,15 +1,5 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-
-const berkeleyMono = localFont({
-  src: [
-    { path: "../public/fonts/BerkeleyMonoVariable-Regular.ttf", style: "normal" },
-    { path: "../public/fonts/BerkeleyMonoVariable-Italic.ttf",  style: "italic" },
-  ],
-  variable: "--font-berkeley-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Rolls",
@@ -27,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={berkeleyMono.variable}>
+    <html lang="en">
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Rolls" />

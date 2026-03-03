@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const rows = await sql`SELECT * FROM films WHERE id = ${id}`;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as Film);
+  return NextResponse.json(rows[0] as unknown as Film);
 }
 
 export async function PATCH(
@@ -31,5 +31,5 @@ export async function PATCH(
     RETURNING *
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as Film);
+  return NextResponse.json(rows[0] as unknown as Film);
 }

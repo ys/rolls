@@ -10,8 +10,8 @@ export async function GET() {
   ]);
 
   return NextResponse.json({
-    cameras: cameras as Camera[],
-    films: films as Film[],
-    rolls: rolls as Roll[],
+    cameras: cameras as unknown as Camera[],
+    films: films as unknown as Film[],
+    rolls: rolls as unknown as Roll[],
   });
 }

@@ -12,7 +12,7 @@ export async function GET(
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0] as Roll);
+  return NextResponse.json(rows[0] as unknown as Roll);
 }
 
 export async function PATCH(
@@ -51,5 +51,5 @@ export async function PATCH(
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0] as Roll);
+  return NextResponse.json(rows[0] as unknown as Roll);
 }

@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const rows = await sql`SELECT * FROM cameras WHERE id = ${id}`;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as Camera);
+  return NextResponse.json(rows[0] as unknown as Camera);
 }
 
 export async function PATCH(
@@ -30,5 +30,5 @@ export async function PATCH(
     RETURNING *
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as Camera);
+  return NextResponse.json(rows[0] as unknown as Camera);
 }

@@ -6,7 +6,7 @@ export async function GET() {
   const rows = await sql`
     SELECT * FROM rolls ORDER BY roll_number DESC
   `;
-  return NextResponse.json(rows as Roll[]);
+  return NextResponse.json(rows as unknown as Roll[]);
 }
 
 export async function POST(request: NextRequest) {
@@ -37,5 +37,5 @@ export async function POST(request: NextRequest) {
     VALUES (${roll_number}, ${camera_id ?? null}, ${film_id ?? null}, ${shot_at ?? null}, ${fridge_at ?? null}, ${lab_at ?? null}, ${lab_name ?? null}, ${scanned_at ?? null}, ${processed_at ?? null}, ${uploaded_at ?? null}, ${archived_at ?? null}, ${album_name ?? null}, ${tags ?? null}, ${notes ?? null})
     RETURNING *
   `;
-  return NextResponse.json(rows[0] as Roll, { status: 201 });
+  return NextResponse.json(rows[0] as unknown as Roll, { status: 201 });
 }
