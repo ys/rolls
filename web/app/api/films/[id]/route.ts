@@ -7,9 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const rows = await sql`SELECT * FROM films WHERE id = ${id}`;
+  const rows = await sql<Film[]>`SELECT * FROM films WHERE id = ${id}`;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as unknown as Film);
+  return NextResponse.json(rows[0]);
 }
 
 export async function PATCH(
@@ -23,7 +23,7 @@ export async function PATCH(
     return NextResponse.json({ error: "brand and name are required" }, { status: 400 });
   }
 
-  const rows = await sql`
+  const rows = await sql<Film[]>`
     UPDATE films
     SET brand = ${brand}, name = ${name}, nickname = ${nickname ?? null},
         iso = ${iso ?? null}, color = ${color ?? true}, show_iso = ${show_iso ?? false}
@@ -31,5 +31,5 @@ export async function PATCH(
     RETURNING *
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(rows[0] as unknown as Film);
+  return NextResponse.json(rows[0]);
 }

@@ -3,8 +3,8 @@ import { sql } from "@/lib/db";
 import type { Film } from "@/lib/db";
 
 export async function GET() {
-  const rows = await sql`SELECT * FROM films ORDER BY id`;
-  return NextResponse.json(rows as unknown as Film[]);
+  const rows = await sql<Film[]>`SELECT * FROM films ORDER BY id`;
+  return NextResponse.json(rows);
 }
 
 export async function POST(request: NextRequest) {
@@ -15,11 +15,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "id, brand, name are required" }, { status: 400 });
   }
 
-  const rows = await sql`
+  const rows = await sql<Film[]>`
     INSERT INTO films (id, brand, name, nickname, iso, color, show_iso)
     VALUES (${id}, ${brand}, ${name}, ${nickname ?? null}, ${iso ?? null}, ${color ?? true}, ${show_iso ?? false})
     ON CONFLICT (id) DO UPDATE SET brand = EXCLUDED.brand, name = EXCLUDED.name, nickname = EXCLUDED.nickname, iso = EXCLUDED.iso, color = EXCLUDED.color, show_iso = EXCLUDED.show_iso
     RETURNING *
   `;
-  return NextResponse.json(rows[0] as unknown as Film, { status: 201 });
+  return NextResponse.json(rows[0], { status: 201 });
 }

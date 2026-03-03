@@ -14,9 +14,9 @@ export default async function RollDetailPage({
   const { id } = await params;
 
   const [rolls, cameras, films] = await Promise.all([
-    sql`SELECT * FROM rolls WHERE roll_number = ${id}`,
-    sql`SELECT * FROM cameras ORDER BY id`,
-    sql`SELECT * FROM films ORDER BY id`,
+    sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id}`,
+    sql<Camera[]>`SELECT * FROM cameras ORDER BY id`,
+    sql<Film[]>`SELECT * FROM films ORDER BY id`,
   ]);
 
   if (rolls.length === 0) notFound();
@@ -30,8 +30,8 @@ export default async function RollDetailPage({
     <RollDetailClient
       roll={roll}
       status={status}
-      cameras={cameras as Camera[]}
-      films={films as Film[]}
+      cameras={cameras}
+      films={films}
     />
   );
 }

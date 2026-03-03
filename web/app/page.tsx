@@ -43,7 +43,7 @@ function RollRow({ roll }: { roll: Roll }) {
 }
 
 export default async function HomePage() {
-  const rolls = await sql`SELECT * FROM rolls ORDER BY roll_number DESC` as Roll[];
+  const rolls = await sql<Roll[]>`SELECT * FROM rolls ORDER BY roll_number DESC`;
 
   const unscanned = rolls.filter((r) => !r.scanned_at);
   const inProgress = unscanned

@@ -8,11 +8,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const rows = await sql`SELECT * FROM rolls WHERE roll_number = ${id}`;
+  const rows = await sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id}`;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0] as unknown as Roll);
+  return NextResponse.json(rows[0]);
 }
 
 export async function PATCH(
@@ -46,10 +46,10 @@ export async function PATCH(
 
   values.push(id);
   const query = `UPDATE rolls SET ${sets.join(", ")} WHERE roll_number = $${idx} RETURNING *`;
-  const rows = await sql.unsafe(query, values as postgres.Parameter<never>[]);
+  const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
 
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0] as unknown as Roll);
+  return NextResponse.json(rows[0]);
 }

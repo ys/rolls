@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function StatsPage() {
   const [rollsPerYear, topCameras, topFilms, statusCounts] = await Promise.all([
     // Rolls per year derived from roll_number prefix (e.g. 25x01 → 2025)
-    sql`
+    sql<{ year: string; count: number }[]>`
       SELECT
         '20' || SUBSTRING(roll_number, 1, 2) AS year,
         COUNT(*)::int AS count
@@ -16,7 +16,7 @@ export default async function StatsPage() {
       ORDER BY 1 DESC
     `,
 
-    sql`
+    sql<{ camera_id: string; count: number }[]>`
       SELECT camera_id, COUNT(*)::int AS count
       FROM rolls
       WHERE camera_id IS NOT NULL
@@ -25,7 +25,7 @@ export default async function StatsPage() {
       LIMIT 10
     `,
 
-    sql`
+    sql<{ film_id: string; count: number }[]>`
       SELECT film_id, COUNT(*)::int AS count
       FROM rolls
       WHERE film_id IS NOT NULL
@@ -34,7 +34,7 @@ export default async function StatsPage() {
       LIMIT 10
     `,
 
-    sql`
+    sql<{ status: string; count: number }[]>`
       SELECT
         CASE
           WHEN archived_at  IS NOT NULL THEN 'ARCHIVED'

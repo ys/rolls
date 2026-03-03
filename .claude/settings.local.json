@@ -1,3 +1,25 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(gofmt:*)",
+      "Bash(go test:*)",
+      "mcp__acp__Bash",
+      "mcp__acp__Edit",
+      "Bash(xargs cat:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(pg_isready:*)",
+      "Bash(createdb rolls_dev:*)",
+      "Bash(psql:*)",
+      "Bash(npm:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(go build:*)",
+      "Bash(go run:*)",
+      "Bash(vercel ls:*)"
+    ]
+  },
   "enableAllProjectMcpServers": false
 }
