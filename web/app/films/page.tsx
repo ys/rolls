@@ -13,6 +13,7 @@ export default function FilmsPage() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   // Merge mode state
   const [merging, setMerging] = useState(false);
@@ -55,6 +56,7 @@ export default function FilmsPage() {
     setFilms((prev) => [...prev.filter((f) => f.id !== film.id), film].sort((a, b) => a.id.localeCompare(b.id)));
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
     setSaving(false);
+    setShowForm(false);
   }
 
   function toggleSelect(id: string) {
@@ -188,8 +190,14 @@ export default function FilmsPage() {
 
       {!merging && (
         <>
-          <h2 className="text-lg font-semibold mb-4">Add Film</h2>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <button
+            onClick={() => { setShowForm((v) => !v); setError(""); }}
+            className="w-full flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
+          >
+            <span>Add Film</span>
+            <span className="text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
+          </button>
+          {!showForm ? null : <form onSubmit={handleSubmit} className="space-y-3">
             <Field label="ID (slug)" value={form.id}       onChange={(v) => setForm((f) => ({ ...f, id: v }))}       placeholder="portra-400" required />
             <Field label="Brand"     value={form.brand}    onChange={(v) => setForm((f) => ({ ...f, brand: v }))}    placeholder="Kodak" required />
             <Field label="Name"      value={form.name}     onChange={(v) => setForm((f) => ({ ...f, name: v }))}     placeholder="Portra" required />
@@ -225,7 +233,7 @@ export default function FilmsPage() {
             >
               {saving ? "Saving…" : "Add Film"}
             </button>
-          </form>
+          </form>}
         </>
       )}
     </div>

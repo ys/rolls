@@ -9,6 +9,7 @@ export default function CamerasPage() {
   const [form, setForm] = useState({ id: "", brand: "", model: "", nickname: "", format: "135" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers = (extra?: Record<string, string>): HeadersInit => ({
@@ -44,6 +45,7 @@ export default function CamerasPage() {
     setCameras((prev) => [...prev.filter((c) => c.id !== camera.id), camera].sort((a, b) => a.id.localeCompare(b.id)));
     setForm({ id: "", brand: "", model: "", nickname: "", format: "135" });
     setSaving(false);
+    setShowForm(false);
   }
 
   return (
@@ -70,32 +72,41 @@ export default function CamerasPage() {
         )}
       </ul>
 
-      <h2 className="text-lg font-semibold mb-4">Add Camera</h2>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <Field label="ID (slug)" value={form.id} onChange={(v) => setForm((f) => ({ ...f, id: v }))} placeholder="leica-m6" required />
-        <Field label="Brand"    value={form.brand} onChange={(v) => setForm((f) => ({ ...f, brand: v }))} placeholder="Leica" required />
-        <Field label="Model"    value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
-        <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
-        <div>
-          <label className="block text-sm text-zinc-400 mb-1">Format</label>
-          <select
-            value={form.format}
-            onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none"
+      <button
+        onClick={() => { setShowForm((v) => !v); setError(""); }}
+        className="w-full flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
+      >
+        <span>Add Camera</span>
+        <span className="text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
+      </button>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Field label="ID (slug)" value={form.id} onChange={(v) => setForm((f) => ({ ...f, id: v }))} placeholder="leica-m6" required />
+          <Field label="Brand"    value={form.brand} onChange={(v) => setForm((f) => ({ ...f, brand: v }))} placeholder="Leica" required />
+          <Field label="Model"    value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
+          <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">Format</label>
+            <select
+              value={form.format}
+              onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
+              className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none"
+            >
+              <option value="135">135</option>
+              <option value="120">120</option>
+            </select>
+          </div>
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full bg-white text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
           >
-            <option value="135">135</option>
-            <option value="120">120</option>
-          </select>
-        </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-white text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
-        >
-          {saving ? "Saving…" : "Add Camera"}
-        </button>
-      </form>
+            {saving ? "Saving…" : "Add Camera"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
