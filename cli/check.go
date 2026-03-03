@@ -19,7 +19,7 @@ var checkCmd = &cobra.Command{
 	Use:   "check [roll_number]",
 	Short: "Check if local files match the ones in Lightroom albums",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		year, err := cmd.PersistentFlags().GetInt("year")
+		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
 			return err
 		}
@@ -272,5 +272,5 @@ var checkCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(checkCmd)
-	checkCmd.PersistentFlags().Int("year", 0, "Filter by year")
+	checkCmd.Flags().Int("year", 0, "Filter by year")
 }

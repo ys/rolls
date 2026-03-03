@@ -21,7 +21,7 @@ var albumsCmd = &cobra.Command{
 	Short:  "Manage Lightroom albums for rolls",
 	Hidden: false,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		year, err := cmd.PersistentFlags().GetInt("year")
+		year, err := cmd.Flags().GetInt("year")
 		cobra.CheckErr(err)
 		if len(args) > 0 && year != 0 {
 			return errors.New("You can only set year or the rolls not both")
@@ -133,7 +133,7 @@ var compareCmd = &cobra.Command{
 	Use:   "compare",
 	Short: "Compare Lightroom albums with local rolls",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		year, err := cmd.PersistentFlags().GetInt("year")
+		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
 			return err
 		}
@@ -376,7 +376,7 @@ func formatAlbumName(r roll.Roll) string {
 
 func init() {
 	rootCmd.AddCommand(albumsCmd)
-	albumsCmd.PersistentFlags().Int("year", 0, "Filter by year")
+	albumsCmd.Flags().Int("year", 0, "Filter by year")
 	albumsCmd.AddCommand(compareCmd)
-	compareCmd.PersistentFlags().Int("year", 0, "Filter by year")
+	compareCmd.Flags().Int("year", 0, "Filter by year")
 }

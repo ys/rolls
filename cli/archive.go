@@ -4,7 +4,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -21,6 +23,11 @@ var archiveCmd = &cobra.Command{
 	Long:  `Mark a roll as archived by setting the archived_at timestamp in the metadata file.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
+		if err != nil {
+			return err
+		}
+
+		yes, err := cmd.Flags().GetBool("yes")
 		if err != nil {
 			return err
 		}
@@ -65,6 +72,22 @@ var archiveCmd = &cobra.Command{
 		if len(rollsToProcess) == 0 {
 			fmt.Println("No rolls to process")
 			return nil
+		}
+
+		// Ask for confirmation if archiving multiple rolls without --yes flag
+		if len(rollsToProcess) > 1 && !yes {
+			fmt.Printf("\n%s\n", style.RenderAccent(fmt.Sprintf("⚠️  About to archive %d rolls", len(rollsToProcess))))
+			fmt.Print("Continue? (y/N): ")
+			reader := bufio.NewReader(os.Stdin)
+			response, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			response = strings.TrimSpace(strings.ToLower(response))
+			if response != "y" && response != "yes" {
+				fmt.Println(style.RenderAccent("Cancelled"))
+				return nil
+			}
 		}
 
 		// Show global progress
@@ -176,6 +199,7 @@ var listMissingCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(archiveCmd)
 	archiveCmd.Flags().Int("year", 0, "Only process rolls from this year")
+	archiveCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompt")
 
 	rootCmd.AddCommand(listMissingCmd)
 	listMissingCmd.Flags().Int("year", 0, "Only show rolls from this year")

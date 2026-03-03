@@ -23,6 +23,8 @@ type Config struct {
 	Copyright         string  `mapstructure:"copyright" yaml:"copyright"`
 	BrandName         string  `mapstructure:"brand_name" yaml:"brand_name"`
 	AuthorName        string  `mapstructure:"author_name" yaml:"author_name"`
+	WebAppURL         string  `mapstructure:"web_app_url" yaml:"web_app_url"`
+	WebAppAPIKey      string  `mapstructure:"web_app_api_key" yaml:"web_app_api_key"`
 	FilePath          string  `mapstructure:"-" yaml:"-"`
 	Cameras           Cameras `mapstructure:"-" yaml:"-"`
 	Films             Films   `mapstructure:"-" yaml:"-"`

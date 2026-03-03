@@ -4,7 +4,6 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cli
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -38,7 +37,7 @@ var cameraCreateCmd = &cobra.Command{
 		cobra.CheckErr(err)
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-		err = ioutil.WriteFile(home+"/.config/rolls/cameras.yml", data, 0)
+		err = os.WriteFile(home+"/.config/rolls/cameras.yml", data, 0644)
 		cobra.CheckErr(err)
 	},
 }

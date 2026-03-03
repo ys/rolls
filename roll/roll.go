@@ -18,6 +18,9 @@ type Metadata struct {
 	CameraID    string    `yaml:"camera"`
 	FilmID      string    `yaml:"film"`
 	ShotAt      time.Time `yaml:"shot_at"`
+	FridgeAt    time.Time `yaml:"fridge_at,omitempty"`
+	LabAt       time.Time `yaml:"lab_at,omitempty"`
+	LabName     string    `yaml:"lab,omitempty"`
 	ScannedAt   time.Time `yaml:"scanned_at"`
 	RollNumber  string    `yaml:"roll_number"`
 	Tags        []string  `yaml:"tags"`
@@ -166,6 +169,26 @@ func FromMarkdown(path string) (Roll, error) {
 			if t, err := ParseDate(value); err == nil {
 				metadata.ShotAt = t
 			}
+		case "fridge_at":
+			if t, err := ParseDateTime(value); err == nil {
+				metadata.FridgeAt = t
+			}
+		case "finished_at":
+			// Obsidian alias: when the roll was finished shooting → fridge
+			if t, err := ParseDate(value); err == nil && metadata.FridgeAt.IsZero() {
+				metadata.FridgeAt = t
+			}
+		case "lab_at":
+			if t, err := ParseDateTime(value); err == nil {
+				metadata.LabAt = t
+			}
+		case "sent":
+			// Obsidian alias: when the roll was sent to the lab
+			if t, err := ParseDate(value); err == nil && metadata.LabAt.IsZero() {
+				metadata.LabAt = t
+			}
+		case "lab":
+			metadata.LabName = value
 		case "scanned_at":
 			if t, err := ParseDate(value); err == nil {
 				metadata.ScannedAt = t
@@ -244,6 +267,36 @@ func GetRolls(scansPath string) (Rolls, error) {
 	return rolls, nil
 }
 
+// GetFlatRolls reads all .md files directly under dir (recursively), skipping
+// any that don't contain valid roll frontmatter (e.g. year-summary files).
+func GetFlatRolls(dir string) (Rolls, error) {
+	var rolls Rolls
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() || filepath.Ext(path) != ".md" {
+			return nil
+		}
+
+		r, err := FromMarkdown(path)
+		if err != nil || r.Metadata.RollNumber == "" {
+			return nil // skip non-roll files silently
+		}
+
+		rolls = append(rolls, r)
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Sort(ByRollNumber(rolls))
+	return rolls, nil
+}
+
 func Filter(vs Rolls, f func(Roll) bool) Rolls {
 	filtered := make(Rolls, 0)
 	for _, v := range vs {
@@ -298,6 +351,27 @@ func (roll *Roll) UpdateMetadata() error {
 
 		// Update fields if they exist in metadata
 		switch key {
+		case "fridge_at":
+			if !roll.Metadata.FridgeAt.IsZero() {
+				updatedLines = append(updatedLines, fmt.Sprintf("fridge_at: %s", FormatDateTime(roll.Metadata.FridgeAt)))
+				updated["fridge_at"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
+		case "lab_name":
+			if roll.Metadata.LabName != "" {
+				updatedLines = append(updatedLines, fmt.Sprintf("lab: %s", roll.Metadata.LabName))
+				updated["lab_name"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
+		case "lab_at":
+			if !roll.Metadata.LabAt.IsZero() {
+				updatedLines = append(updatedLines, fmt.Sprintf("lab_at: %s", FormatDateTime(roll.Metadata.LabAt)))
+				updated["lab_at"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
 		case "uploaded_at":
 			if !roll.Metadata.UploadedAt.IsZero() {
 				updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", FormatDateTime(roll.Metadata.UploadedAt)))
@@ -325,6 +399,15 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 
 	// Add new fields if they weren't updated
+	if !updated["fridge_at"] && !roll.Metadata.FridgeAt.IsZero() {
+		updatedLines = append(updatedLines, fmt.Sprintf("fridge_at: %s", FormatDateTime(roll.Metadata.FridgeAt)))
+	}
+	if !updated["lab_name"] && roll.Metadata.LabName != "" {
+		updatedLines = append(updatedLines, fmt.Sprintf("lab: %s", roll.Metadata.LabName))
+	}
+	if !updated["lab_at"] && !roll.Metadata.LabAt.IsZero() {
+		updatedLines = append(updatedLines, fmt.Sprintf("lab_at: %s", FormatDateTime(roll.Metadata.LabAt)))
+	}
 	if !updated["uploaded_at"] && !roll.Metadata.UploadedAt.IsZero() {
 		updatedLines = append(updatedLines, fmt.Sprintf("uploaded_at: %s", FormatDateTime(roll.Metadata.UploadedAt)))
 	}

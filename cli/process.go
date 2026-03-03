@@ -4,7 +4,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -30,6 +32,11 @@ var processCmd = &cobra.Command{
 		}
 
 		exifOnly, err := cmd.Flags().GetBool("exif-only")
+		if err != nil {
+			return err
+		}
+
+		yes, err := cmd.Flags().GetBool("yes")
 		if err != nil {
 			return err
 		}
@@ -74,6 +81,22 @@ var processCmd = &cobra.Command{
 		if len(rollsToProcess) == 0 {
 			fmt.Println("No rolls to process")
 			return nil
+		}
+
+		// Ask for confirmation if processing multiple rolls without --yes flag
+		if len(rollsToProcess) > 1 && !yes {
+			fmt.Printf("\n%s\n", style.RenderAccent(fmt.Sprintf("⚠️  About to process %d rolls", len(rollsToProcess))))
+			fmt.Print("Continue? (y/N): ")
+			reader := bufio.NewReader(os.Stdin)
+			response, err := reader.ReadString('\n')
+			if err != nil {
+				return err
+			}
+			response = strings.TrimSpace(strings.ToLower(response))
+			if response != "y" && response != "yes" {
+				fmt.Println(style.RenderAccent("Cancelled"))
+				return nil
+			}
 		}
 
 		// Show global progress
@@ -125,4 +148,5 @@ func init() {
 	rootCmd.AddCommand(processCmd)
 	processCmd.Flags().Int("year", 0, "Only process rolls from this year")
 	processCmd.Flags().Bool("exif-only", false, "Only update EXIF data for already processed rolls")
+	processCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompt")
 }

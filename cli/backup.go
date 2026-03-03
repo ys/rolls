@@ -1,0 +1,161 @@
+package cli
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+)
+
+type exportResponse struct {
+	Cameras []cameraJSON `json:"cameras"`
+	Films   []filmJSON   `json:"films"`
+	Rolls   []rollJSON   `json:"rolls"`
+}
+
+var backupCmd = &cobra.Command{
+	Use:   "backup",
+	Short: "Backup web app data to local files",
+	Long:  `Fetches all data from the web app and writes it to local YAML/markdown files.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if cfg.WebAppURL == "" {
+			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
+		}
+		if cfg.WebAppAPIKey == "" {
+			cobra.CheckErr(fmt.Errorf("web_app_api_key is not set in config"))
+		}
+
+		url := cfg.WebAppURL + "/api/export"
+		req, err := http.NewRequest(http.MethodGet, url, nil)
+		cobra.CheckErr(err)
+		req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+
+		client := &http.Client{Timeout: 30 * time.Second}
+		resp, err := client.Do(req)
+		cobra.CheckErr(err)
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			cobra.CheckErr(fmt.Errorf("export failed with status %s", resp.Status))
+		}
+
+		var data exportResponse
+		cobra.CheckErr(json.NewDecoder(resp.Body).Decode(&data))
+
+		configDir := cfg.Dir()
+
+		// Write cameras.yml
+		camerasMap := make(map[string]map[string]interface{})
+		for _, c := range data.Cameras {
+			camerasMap[c.ID] = map[string]interface{}{
+				"brand":    c.Brand,
+				"model":    c.Model,
+				"nickname": c.Nickname,
+				"format":   c.Format,
+			}
+		}
+		writeyaml(filepath.Join(configDir, "cameras.yml"), camerasMap)
+		fmt.Printf("Wrote %d cameras to cameras.yml\n", len(data.Cameras))
+
+		// Write films.yml
+		filmsMap := make(map[string]map[string]interface{})
+		for _, f := range data.Films {
+			filmsMap[f.ID] = map[string]interface{}{
+				"brand":    f.Brand,
+				"name":     f.Name,
+				"nickname": f.Nickname,
+				"iso":      f.Iso,
+				"color":    f.Color,
+				"showiso":  f.ShowIso,
+			}
+		}
+		writeyaml(filepath.Join(configDir, "films.yml"), filmsMap)
+		fmt.Printf("Wrote %d films to films.yml\n", len(data.Films))
+
+		// Write roll.md for each roll
+		if cfg.ScansPath == "" {
+			fmt.Println("scans_path not set, skipping roll files")
+			return
+		}
+
+		written := 0
+		for _, r := range data.Rolls {
+			if r.RollNumber == "" {
+				continue
+			}
+			rollDir := filepath.Join(cfg.ScansPath, r.RollNumber)
+			if err := os.MkdirAll(rollDir, 0755); err != nil {
+				fmt.Fprintf(os.Stderr, "failed to create %s: %v\n", rollDir, err)
+				continue
+			}
+			rollFile := filepath.Join(rollDir, "roll.md")
+			if err := writeRollMarkdown(rollFile, r); err != nil {
+				fmt.Fprintf(os.Stderr, "failed to write %s: %v\n", rollFile, err)
+				continue
+			}
+			written++
+		}
+		fmt.Printf("Wrote %d roll files\n", written)
+	},
+}
+
+func writeyaml(path string, v interface{}) {
+	data, err := yaml.Marshal(v)
+	cobra.CheckErr(err)
+	cobra.CheckErr(os.WriteFile(path, data, 0644))
+}
+
+func writeRollMarkdown(path string, r rollJSON) error {
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	sb.WriteString(fmt.Sprintf("roll_number: %s\n", r.RollNumber))
+	sb.WriteString(fmt.Sprintf("camera: %s\n", r.CameraID))
+	sb.WriteString(fmt.Sprintf("film: %s\n", r.FilmID))
+	if r.ShotAt != nil {
+		sb.WriteString(fmt.Sprintf("shot_at: %s\n", r.ShotAt.Format("2006-01-02")))
+	}
+	if r.FridgeAt != nil {
+		sb.WriteString(fmt.Sprintf("fridge_at: %s\n", r.FridgeAt.Format("2006-01-02T15:04:05Z07:00")))
+	}
+	if r.LabAt != nil {
+		sb.WriteString(fmt.Sprintf("lab_at: %s\n", r.LabAt.Format("2006-01-02T15:04:05Z07:00")))
+	}
+	if r.LabName != "" {
+		sb.WriteString(fmt.Sprintf("lab: %s\n", r.LabName))
+	}
+	if r.ScannedAt != nil {
+		sb.WriteString(fmt.Sprintf("scanned_at: %s\n", r.ScannedAt.Format("2006-01-02")))
+	}
+	if r.ProcessedAt != nil {
+		sb.WriteString(fmt.Sprintf("processed_at: %s\n", r.ProcessedAt.Format("2006-01-02T15:04:05Z07:00")))
+	}
+	if r.UploadedAt != nil {
+		sb.WriteString(fmt.Sprintf("uploaded_at: %s\n", r.UploadedAt.Format("2006-01-02T15:04:05Z07:00")))
+	}
+	if r.ArchivedAt != nil {
+		sb.WriteString(fmt.Sprintf("archived_at: %s\n", r.ArchivedAt.Format("2006-01-02T15:04:05Z07:00")))
+	}
+	if r.AlbumName != "" {
+		sb.WriteString(fmt.Sprintf("album_name: %s\n", r.AlbumName))
+	}
+	if len(r.Tags) > 0 {
+		sb.WriteString(fmt.Sprintf("tags: %s\n", strings.Join(r.Tags, ", ")))
+	}
+	sb.WriteString("---\n")
+	if r.Notes != "" {
+		sb.WriteString(r.Notes)
+		sb.WriteString("\n")
+	}
+
+	return os.WriteFile(path, []byte(sb.String()), 0644)
+}
+
+func init() {
+	rootCmd.AddCommand(backupCmd)
+}

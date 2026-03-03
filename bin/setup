@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$SCRIPT_DIR/.."
+WEB="$ROOT/web"
+
+echo "==> Installing web dependencies..."
+(cd "$WEB" && npm install)
+
+echo ""
+echo "==> Setting up local database..."
+DB_NAME="rolls_dev"
+DB_URL="postgres://$(whoami)@localhost:5432/$DB_NAME"
+
+if ! pg_isready -q; then
+  echo "ERROR: Postgres is not running. Start it with: brew services start postgresql"
+  exit 1
+fi
+
+if psql -lqt | cut -d'|' -f1 | grep -qw "$DB_NAME"; then
+  echo "    Database '$DB_NAME' already exists."
+else
+  createdb "$DB_NAME"
+  echo "    Created database '$DB_NAME'."
+fi
+
+echo "    Running schema migration..."
+psql -d "$DB_NAME" -f "$WEB/lib/schema.sql"
+
+echo ""
+echo "==> Writing web/.env.local..."
+if [ -f "$WEB/.env.local" ]; then
+  echo "    Already exists, skipping."
+else
+  cat > "$WEB/.env.local" <<EOF
+DATABASE_URL=$DB_URL
+API_KEY=dev-key
+WEB_PASSWORD=
+EOF
+  echo "    Written."
+fi
+
+echo ""
+echo "Done! Start the dev server with:"
+echo "    cd web && npm run dev"
+echo ""
+echo "Or push your local rolls data into the DB:"
+echo "    Add to ~/.config/rolls/config.yml:"
+echo "      web_app_url: http://localhost:3000"
+echo "      web_app_api_key: dev-key"
+echo "    Then: rolls push"

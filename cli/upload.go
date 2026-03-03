@@ -21,7 +21,7 @@ var uploadCmd = &cobra.Command{
 	Use:   "upload [roll_number]",
 	Short: "Upload assets to Lightroom albums",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		year, err := cmd.PersistentFlags().GetInt("year")
+		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
 			return err
 		}
@@ -190,8 +190,8 @@ var uploadCmd = &cobra.Command{
 				if existingFiles[file.Name()] {
 					results <- uploadResult{
 						fileName: file.Name(),
-						err:     fmt.Errorf("file already exists in album"),
-						skipped: true,
+						err:      fmt.Errorf("file already exists in album"),
+						skipped:  true,
 					}
 					continue
 				}
@@ -287,8 +287,8 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if !isImageFile(ext) {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("skipped non-image file"),
-				skipped: true,
+				err:      fmt.Errorf("skipped non-image file"),
+				skipped:  true,
 			}
 			continue
 		}
@@ -298,7 +298,7 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if err != nil {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to generate asset ID: %v", err),
+				err:      fmt.Errorf("failed to generate asset ID: %v", err),
 			}
 			continue
 		}
@@ -308,10 +308,10 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		payload := openapi.NewCreateAssetRequestPayload()
 		payload.SetCaptureDate("0000-00-00T00:00:00") // Let Lightroom extract from EXIF
 		importSource := &openapi.CreateAssetRequestPayloadImportSource{
-			FileName:        job.file.Name(),
+			FileName:         job.file.Name(),
 			ImportedOnDevice: "rolls-cli",
-			ImportedBy:      cfg.UserID,
-			ImportTimestamp: time.Now().Format(time.RFC3339),
+			ImportedBy:       cfg.UserID,
+			ImportTimestamp:  time.Now().Format(time.RFC3339),
 		}
 		payload.SetImportSource(*importSource)
 		createAssetReq.SetPayload(*payload)
@@ -321,7 +321,7 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if err != nil {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to create asset: %v", err),
+				err:      fmt.Errorf("failed to create asset: %v", err),
 			}
 			continue
 		}
@@ -331,7 +331,7 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if err != nil {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to open file: %v", err),
+				err:      fmt.Errorf("failed to open file: %v", err),
 			}
 			continue
 		}
@@ -341,7 +341,7 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 			fileContent.Close()
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to get file info: %v", err),
+				err:      fmt.Errorf("failed to get file info: %v", err),
 			}
 			continue
 		}
@@ -356,7 +356,7 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if err != nil {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to upload file: %v", err),
+				err:      fmt.Errorf("failed to upload file: %v", err),
 			}
 			continue
 		}
@@ -371,14 +371,14 @@ func processUpload(api *lightroom.API, cfg *roll.Config, jobs <-chan uploadJob, 
 		if err != nil {
 			results <- uploadResult{
 				fileName: job.file.Name(),
-				err:     fmt.Errorf("failed to add asset to album: %v", err),
+				err:      fmt.Errorf("failed to add asset to album: %v", err),
 			}
 			continue
 		}
 
 		results <- uploadResult{
 			fileName: job.file.Name(),
-			err:     nil,
+			err:      nil,
 		}
 	}
 }
@@ -401,5 +401,5 @@ func isImageFile(ext string) bool {
 
 func init() {
 	rootCmd.AddCommand(uploadCmd)
-	uploadCmd.PersistentFlags().Int("year", 0, "Filter by year")
+	uploadCmd.Flags().Int("year", 0, "Filter by year")
 }
