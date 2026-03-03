@@ -1,3 +1,4 @@
+import "server-only";
 import postgres from "postgres";
 
 // Prefer the pooler URL (pgbouncer transaction mode, port 6543).

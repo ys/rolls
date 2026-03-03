@@ -9,11 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/bundle-analyzer": "^16.1.6",
     "@vercel/analytics": "^1.6.1",
     "next": "^16.1.6",
     "postgres": "^3.4.8",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
