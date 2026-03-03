@@ -1,14 +1,14 @@
 adox-color-mission-200:
   brand: Adox
   name: Color Mission
-  nickname: Color Mission 200
+  nickname: Adox Color Mission 200
   iso: 200
   color: true
   showiso: false
 berlin-400:
   brand: Lomography
   name: Berlin
-  nickname: Berlin 400
+  nickname: Lomography Berlin 400
   color: false
   iso: 400
   showiso: true
@@ -22,28 +22,28 @@ cinestill-400d:
 color-plus:
   brand: Kodak
   name: Color Plus
-  nickname: Color Plus 200
+  nickname: Kodak Color Plus 200
   color: true
   iso: 200
   showiso: false
 earl-grey:
   brand: Lomography
   name: Earl Grey
-  nickname: Earl Grey 100
+  nickname: Lomography Earl Grey 100
   color: false
   iso: 100
   showiso: true
 ektar-100:
   brand: Kodak
   name: Ektar
-  nickname: Ektar 100
+  nickname: Kodak Ektar 100
   color: true
   iso: 100
   showiso: false
 foma-400:
   brand: Fomapan
   name: Action
-  nickname: Fomapan 400
+  nickname: Fomapan Action 400
   iso: 400
   color: false
   showiso: true
@@ -57,84 +57,84 @@ fuji-c200:
 fuji-superia-200:
   brand: Fuji
   name: Superia
-  nickname: Superia 200
+  nickname: Fuji Superia 200
   color: true
   iso: 200
   showiso: true
 fuji-superia-400:
   brand: Fuji
   name: Superia
-  nickname: Superia 400
+  nickname: Fuji Superia 400
   color: true
   iso: 400
   showiso: true
 gold-200:
   brand: Kodak
   name: Gold
-  nickname: Gold 200
+  nickname: Kodak Gold 200
   color: true
   iso: 200
   showiso: false
 ilford-hp5:
   brand: Ilford
   name: HP5
-  nickname: HP5+
+  nickname: Ilford HP5+
   color: false
   iso: 400
   showiso: false
 kentmere-100:
   brand: Kentmere
   name: Pan
-  nickname: Kentmere 100
+  nickname: Kentmere Pan 100
   color: false
   iso: 100
   showiso: true
 kentmere-400:
   brand: Kentmere
   name: Pan
-  nickname: Kentmere 400
+  nickname: Kentmere Pan 400
   color: false
   iso: 400
   showiso: true
 kiro-400:
   brand: Film Never Die
   name: Kiro
-  nickname: Kiro 400
+  nickname: Film Never Die Kiro 400
   color: true
   iso: 400
   showiso: true
 lomo-400:
   brand: Lomography
   name: Color Negative
-  nickname: Lomo CN 400
+  nickname: Lomography Color Negative 400
   color: true
   iso: 400
   showiso: true
 lomo-800:
   brand: Lomography
   name: Color Negative
-  nickname: Lomo CN 800
+  nickname: Lomography Color Negative 800
   color: true
   iso: 800
   showiso: true
 portra-160:
   brand: Kodak
   name: Portra
-  nickname: Portra 160
+  nickname: Kodak Portra 160
   color: true
   iso: 160
   showiso: true
 portra-400:
   brand: Kodak
   name: Portra
-  nickname: Portra 400
+  nickname: Kodak Portra 400
   color: true
   iso: 400
   showiso: true
 portra-800:
   brand: Kodak
   name: Portra
-  nickname: Portra 800
+  nickname: Kodak Portra 800
   color: true
   iso: 800
   showiso: true
@@ -147,49 +147,49 @@ psych-blue:
 redscale-50:
   brand: Lomography
   name: Redscale
-  nickname: Redscale 50
+  nickname: Lomography Redscale 50
   color: true
   iso: 50
   showiso: true
 rollei-400s:
   brand: Rollei
   name: Retro 400S
-  nickname: Rollei 400S
+  nickname: Rollei Retro 400S
   color: false
   iso: 400
   showiso: false
 rollei-superpan-200:
   brand: Rollei
   name: Superpan 200
-  nickname: Superpan 200
+  nickname: Rollei Superpan 200
   color: false
   iso: 200
   showiso: false
 sensia-50:
   brand: Fuji
   name: Sensia
-  nickname: Sensia 50
+  nickname: Fuji Sensia 50
   color: true
   iso: 50
   showiso: true
 sora-200:
   brand: Film Never Die
   name: Sora
-  nickname: Sora 200
+  nickname: Film Never Die Sora 200
   color: true
   iso: 200
   showiso: true
 trix-400:
   brand: Kodak
   name: Tri-X
-  nickname: Tri-X 400
+  nickname: Kodak Tri-X 400
   color: false
   iso: 400
   showiso: false
 ultramax:
   brand: Kodak
   name: Ultramax
-  nickname: Ultramax 400
+  nickname: Kodak Ultramax 400
   color: true
   iso: 400
   showiso: false
@@ -200,14 +200,14 @@ unknown:
 vision3-250d:
   brand: Kodak
   name: Vision3 250D
-  nickname: Vision 250D
+  nickname: Kodak Vision3 250D
   color: true
   iso: 250
   showiso: false
 xpro-200:
   brand: Lomography
   name: X-Pro
-  nickname: X-Pro 200
+  nickname: Lomography X-Pro 200
   color: true
   iso: 200
   showiso: true
