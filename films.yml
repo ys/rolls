@@ -1,126 +1,213 @@
-portra-400:
-  brand: Kodak
-  name: Portra
-  color: true
-  iso: 400
-  formats:
-    - 135
-    - 120
-fuji-c200:
-  brand: Fuji
-  name: c200
-  color: true
-  iso: 200
-gold-200:
-  brand: Kodak
-  name: Gold
-  color: true
-  iso: 200
-  formats:
-    - 135
-berlin-400:
-  brand: Lomography
-  name: Berlin
-  color: false
-  iso: 400
-foma-400:
-  brand: Fomapan
-  name: Action
-  iso: 400
-lomo-800:
-  brand: Lomography
-  name: Color Negative
-  color: true
-  iso: 800
-  formats:
-    - 135
-    - 120
-lomo-400:
-  brand: Lomography
-  name: Color Negative
-  color: true
-  iso: 400
-  formats:
-    - 135
-    - 120
-xpro-200:
-  brand: Lomography
-  name: X-pro
-  color: true
-  iso: 200
-  formats:
-    - 135
-portra-800:
-  brand: Kodak
-  name: Portra
-  color: true
-  iso: 800
-  formats:
-    - 135
-    - 120
-trix-400:
-  brand: Kodak
-  name: tri-x
-  color: false
-  iso: 400
-  formats:
-    - 135
-    - 120
-kiro-400:
-  brand: Film never die
-  name: Kiro
-  color: true
-  iso: 400
-  formats:
-    - 135
-ilford-hp5:
-  brand: Ilford
-  name: HP5
-  color: false
-  iso: 400
-  formats:
-    - 135
-redscale-50:
-  brand: Lomography
-  name: redscale
-  color: true
-  iso: 50
-  formats:
-    - 120
-unknown:
-  brand: Unknown
-  name: film
-sensia-50:
-  brand: Fuji
-  name: Sensia
-  color: true
-  iso: 50
-  formats:
-    - 135
 adox-color-mission-200:
   brand: Adox
   name: Color Mission
+  nickname: Color Mission 200
   iso: 200
-sora-200:
-  brand: Film never die
-  name: Sora
   color: true
-  iso: 200
-  formats:
-    - 135
+  showiso: false
+berlin-400:
+  brand: Lomography
+  name: Berlin
+  nickname: Berlin 400
+  color: false
+  iso: 400
+  showiso: true
+cinestill-400d:
+  brand: Cinestill
+  name: 400D
+  nickname: CineStill 400D
+  iso: 400
+  color: true
+  showiso: false
 color-plus:
   brand: Kodak
   name: Color Plus
+  nickname: Color Plus 200
   color: true
   iso: 200
-  formats:
-    - 135
-    - 120
+  showiso: false
+earl-grey:
+  brand: Lomography
+  name: Earl Grey
+  nickname: Earl Grey 100
+  color: false
+  iso: 100
+  showiso: true
+ektar-100:
+  brand: Kodak
+  name: Ektar
+  nickname: Ektar 100
+  color: true
+  iso: 100
+  showiso: false
+foma-400:
+  brand: Fomapan
+  name: Action
+  nickname: Fomapan 400
+  iso: 400
+  color: false
+  showiso: true
+fuji-c200:
+  brand: Fuji
+  name: C200
+  nickname: Fuji C200
+  color: true
+  iso: 200
+  showiso: false
+fuji-superia-200:
+  brand: Fuji
+  name: Superia
+  nickname: Superia 200
+  color: true
+  iso: 200
+  showiso: true
+fuji-superia-400:
+  brand: Fuji
+  name: Superia
+  nickname: Superia 400
+  color: true
+  iso: 400
+  showiso: true
+gold-200:
+  brand: Kodak
+  name: Gold
+  nickname: Gold 200
+  color: true
+  iso: 200
+  showiso: false
+ilford-hp5:
+  brand: Ilford
+  name: HP5
+  nickname: HP5+
+  color: false
+  iso: 400
+  showiso: false
+kentmere-100:
+  brand: Kentmere
+  name: Pan
+  nickname: Kentmere 100
+  color: false
+  iso: 100
+  showiso: true
+kentmere-400:
+  brand: Kentmere
+  name: Pan
+  nickname: Kentmere 400
+  color: false
+  iso: 400
+  showiso: true
+kiro-400:
+  brand: Film Never Die
+  name: Kiro
+  nickname: Kiro 400
+  color: true
+  iso: 400
+  showiso: true
+lomo-400:
+  brand: Lomography
+  name: Color Negative
+  nickname: Lomo CN 400
+  color: true
+  iso: 400
+  showiso: true
+lomo-800:
+  brand: Lomography
+  name: Color Negative
+  nickname: Lomo CN 800
+  color: true
+  iso: 800
+  showiso: true
+portra-160:
+  brand: Kodak
+  name: Portra
+  nickname: Portra 160
+  color: true
+  iso: 160
+  showiso: true
+portra-400:
+  brand: Kodak
+  name: Portra
+  nickname: Portra 400
+  color: true
+  iso: 400
+  showiso: true
+portra-800:
+  brand: Kodak
+  name: Portra
+  nickname: Portra 800
+  color: true
+  iso: 800
+  showiso: true
+psych-blue:
+  brand: Psych
+  name: Blue
+  nickname: Psych Blue
+  color: true
+  showiso: false
+redscale-50:
+  brand: Lomography
+  name: Redscale
+  nickname: Redscale 50
+  color: true
+  iso: 50
+  showiso: true
+rollei-400s:
+  brand: Rollei
+  name: Retro 400S
+  nickname: Rollei 400S
+  color: false
+  iso: 400
+  showiso: false
+rollei-superpan-200:
+  brand: Rollei
+  name: Superpan 200
+  nickname: Superpan 200
+  color: false
+  iso: 200
+  showiso: false
+sensia-50:
+  brand: Fuji
+  name: Sensia
+  nickname: Sensia 50
+  color: true
+  iso: 50
+  showiso: true
+sora-200:
+  brand: Film Never Die
+  name: Sora
+  nickname: Sora 200
+  color: true
+  iso: 200
+  showiso: true
+trix-400:
+  brand: Kodak
+  name: Tri-X
+  nickname: Tri-X 400
+  color: false
+  iso: 400
+  showiso: false
 ultramax:
   brand: Kodak
   name: Ultramax
+  nickname: Ultramax 400
   color: true
   iso: 400
-  formats:
-    - 135
-    - 120
+  showiso: false
+unknown:
+  brand: Unknown
+  name: film
+  nickname: Unknown
+vision3-250d:
+  brand: Kodak
+  name: Vision3 250D
+  nickname: Vision 250D
+  color: true
+  iso: 250
+  showiso: false
+xpro-200:
+  brand: Lomography
+  name: X-Pro
+  nickname: X-Pro 200
+  color: true
+  iso: 200
+  showiso: true
