@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 import type postgres from "postgres";
@@ -54,5 +54,6 @@ export async function PATCH(
   }
   revalidatePath("/");
   revalidatePath(`/roll/${id}`);
+  revalidateTag("rolls", "max");
   return NextResponse.json(rows[0]);
 }

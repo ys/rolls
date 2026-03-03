@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { sql } from "@/lib/db";
 import { rollStatus } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
@@ -15,7 +16,41 @@ type RollRow = Roll & {
   film_show_iso: boolean | null;
 };
 
-export const revalidate = 3600;
+// force-dynamic: no DB access at build time, page rendered per-request
+// unstable_cache: DB query cached at runtime, busted by revalidateTag("rolls")
+export const dynamic = "force-dynamic";
+
+const getHomeRolls = unstable_cache(
+  async () => {
+    const currentYear = new Date().getFullYear();
+    const yearPrefix = String(currentYear).slice(2);
+    const yearStart = `${currentYear}-01-01`;
+    const yearEnd   = `${currentYear + 1}-01-01`;
+    return sql<RollRow[]>`
+      SELECT r.*,
+        c.nickname  AS camera_nickname,
+        c.brand     AS camera_brand,
+        c.model     AS camera_model,
+        f.nickname  AS film_nickname,
+        f.brand     AS film_brand,
+        f.name      AS film_name,
+        f.iso       AS film_iso,
+        f.show_iso  AS film_show_iso
+      FROM rolls r
+      LEFT JOIN cameras c ON c.id = r.camera_id
+      LEFT JOIN films   f ON f.id = r.film_id
+      WHERE r.archived_at IS NULL
+        AND (
+          r.scanned_at IS NULL
+          OR r.roll_number ILIKE ${yearPrefix + "x%"}
+          OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
+        )
+      ORDER BY r.roll_number DESC
+    `;
+  },
+  ["home-rolls"],
+  { tags: ["rolls"] },
+);
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
@@ -78,32 +113,7 @@ function RollItem({ roll }: { roll: RollRow }) {
 }
 
 export default async function HomePage() {
-  const currentYear = new Date().getFullYear();
-  const yearPrefix = String(currentYear).slice(2); // e.g. "26"
-  const yearStart = `${currentYear}-01-01`;
-  const yearEnd   = `${currentYear + 1}-01-01`;
-
-  const rolls = await sql<RollRow[]>`
-    SELECT r.*,
-      c.nickname  AS camera_nickname,
-      c.brand     AS camera_brand,
-      c.model     AS camera_model,
-      f.nickname  AS film_nickname,
-      f.brand     AS film_brand,
-      f.name      AS film_name,
-      f.iso       AS film_iso,
-      f.show_iso  AS film_show_iso
-    FROM rolls r
-    LEFT JOIN cameras c ON c.id = r.camera_id
-    LEFT JOIN films   f ON f.id = r.film_id
-    WHERE r.archived_at IS NULL
-      AND (
-        r.scanned_at IS NULL
-        OR r.roll_number ILIKE ${yearPrefix + "x%"}
-        OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
-      )
-    ORDER BY r.roll_number DESC
-  `;
+  const rolls = await getHomeRolls();
 
   const unscanned = rolls.filter((r) => !r.scanned_at);
   const inProgress = unscanned
