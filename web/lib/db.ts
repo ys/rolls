@@ -1,10 +1,12 @@
 import postgres from "postgres";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set");
+const dbUrl = process.env.DATABASE_URL ?? process.env.DATABASE_POSTGRES_URL;
+
+if (!dbUrl) {
+  throw new Error("DATABASE_URL or DATABASE_POSTGRES_URL environment variable is not set");
 }
 
-const pg = postgres(process.env.DATABASE_URL, { ssl: process.env.DATABASE_URL.includes("localhost") ? false : "require" });
+const pg = postgres(dbUrl, { ssl: dbUrl.includes("localhost") ? false : "require" });
 
 // Tagged-template helper matching the neon() call signature used in route files
 export const sql = pg;
