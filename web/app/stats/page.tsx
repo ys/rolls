@@ -1,7 +1,7 @@
 import { sql } from "@/lib/db";
 import { STATUS_COLORS, STATUS_ORDER } from "@/lib/status";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function StatsPage() {
   const [rollsPerYear, topCameras, topFilms, statusCounts] = await Promise.all([

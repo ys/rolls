@@ -15,7 +15,7 @@ type RollRow = Roll & {
   film_show_iso: boolean | null;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
