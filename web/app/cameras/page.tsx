@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { Camera, Roll } from "@/lib/db";
+import type { Camera } from "@/lib/db";
 
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
@@ -10,7 +10,6 @@ function cameraLabel(c: Camera): string {
 
 export default function CamerasPage() {
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
-  const [cameraCount, setCameraCount] = useState<Record<string, number>>({});
   const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
   const [form, setForm] = useState({ id: "", brand: "", model: "", nickname: "", format: "135" });
   const [saving, setSaving] = useState(false);
@@ -24,22 +23,14 @@ export default function CamerasPage() {
   });
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/cameras", { headers: headers() }).then((r) => r.json()),
-      fetch("/api/rolls", { headers: headers() }).then((r) => r.json()),
-    ]).then(([cams, rols]: [Camera[], Roll[]]) => {
-      const cc: Record<string, number> = {};
-      for (const r of rols) {
-        if (r.camera_id) cc[r.camera_id] = (cc[r.camera_id] ?? 0) + 1;
-      }
-      setAllCameras(cams);
-      setCameraCount(cc);
-    });
+    fetch("/api/cameras", { headers: headers() })
+      .then((r) => r.json())
+      .then(setAllCameras);
   }, []);
 
   const cameras = sortBy === "alpha"
     ? [...allCameras].sort((a, b) => cameraLabel(a).localeCompare(cameraLabel(b)))
-    : [...allCameras].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0));
+    : [...allCameras].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -97,7 +88,7 @@ export default function CamerasPage() {
                 <div className="font-medium">{cameraLabel(c)}</div>
                 <div className="text-xs text-zinc-500 mt-0.5">
                   {c.id} · {c.format}mm
-                  {cameraCount[c.id] ? ` · ${cameraCount[c.id]} roll${cameraCount[c.id] === 1 ? "" : "s"}` : ""}
+                  {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
                 </div>
               </div>
               <span className="text-xs text-zinc-600">Edit →</span>

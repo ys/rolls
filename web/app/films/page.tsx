@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Film, Roll } from "@/lib/db";
+import type { Film } from "@/lib/db";
 
 function filmLabel(f: Film): string {
   if (f.nickname) return f.nickname;
@@ -14,7 +14,6 @@ function filmLabel(f: Film): string {
 export default function FilmsPage() {
   const router = useRouter();
   const [allFilms, setAllFilms] = useState<Film[]>([]);
-  const [filmCount, setFilmCount] = useState<Record<string, number>>({});
   const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
   const [form, setForm] = useState({
     id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false,
@@ -37,22 +36,14 @@ export default function FilmsPage() {
   });
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/films", { headers: headers() }).then((r) => r.json()),
-      fetch("/api/rolls", { headers: headers() }).then((r) => r.json()),
-    ]).then(([fils, rols]: [Film[], Roll[]]) => {
-      const fc: Record<string, number> = {};
-      for (const r of rols) {
-        if (r.film_id) fc[r.film_id] = (fc[r.film_id] ?? 0) + 1;
-      }
-      setAllFilms(fils);
-      setFilmCount(fc);
-    });
+    fetch("/api/films", { headers: headers() })
+      .then((r) => r.json())
+      .then(setAllFilms);
   }, []);
 
   const films = sortBy === "alpha"
     ? [...allFilms].sort((a, b) => filmLabel(a).localeCompare(filmLabel(b)))
-    : [...allFilms].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0));
+    : [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -150,7 +141,7 @@ export default function FilmsPage() {
       <ul className="space-y-2 mb-4">
         {films.map((f) => {
           const displayName = filmLabel(f);
-          const meta = `${f.id} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${filmCount[f.id] ? ` · ${filmCount[f.id]} roll${filmCount[f.id] === 1 ? "" : "s"}` : ""}`;
+          const meta = `${f.id} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${f.roll_count ? ` · ${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}` : ""}`;
 
           if (merging) {
             const isSelected = selected.has(f.id);

@@ -2,18 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Camera, Film, Roll } from "@/lib/db";
-
-function nextRollNumber(rolls: Roll[]): string {
-  const year = new Date().getFullYear().toString().slice(-2);
-  const prefix = `${year}x`;
-  const nums = rolls
-    .filter((r) => r.roll_number.toLowerCase().startsWith(prefix.toLowerCase()))
-    .map((r) => parseInt(r.roll_number.slice(prefix.length), 10))
-    .filter((n) => !isNaN(n));
-  const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
-  return `${prefix}${String(next).padStart(2, "0")}`;
-}
+import type { Camera, Film } from "@/lib/db";
 
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
@@ -29,8 +18,6 @@ export default function NewRollPage() {
   const router = useRouter();
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
   const [allFilms, setAllFilms] = useState<Film[]>([]);
-  const [cameraCount, setCameraCount] = useState<Record<string, number>>({});
-  const [filmCount, setFilmCount] = useState<Record<string, number>>({});
   const [suggestedNumber, setSuggestedNumber] = useState("");
   const [form, setForm] = useState({
     roll_number: "",
@@ -50,26 +37,17 @@ export default function NewRollPage() {
     Promise.all([
       fetch("/api/cameras", { headers }).then((r) => r.json()),
       fetch("/api/films", { headers }).then((r) => r.json()),
-      fetch("/api/rolls", { headers }).then((r) => r.json()),
-    ]).then(([cams, fils, rols]: [Camera[], Film[], Roll[]]) => {
-      const cc: Record<string, number> = {};
-      const fc: Record<string, number> = {};
-      for (const r of rols) {
-        if (r.camera_id) cc[r.camera_id] = (cc[r.camera_id] ?? 0) + 1;
-        if (r.film_id)   fc[r.film_id]   = (fc[r.film_id]   ?? 0) + 1;
-      }
+      fetch("/api/rolls/next", { headers }).then((r) => r.json()),
+    ]).then(([cams, fils, next]: [Camera[], Film[], { roll_number: string }]) => {
       setAllCameras(cams);
       setAllFilms(fils);
-      setCameraCount(cc);
-      setFilmCount(fc);
-      const suggested = nextRollNumber(rols);
-      setSuggestedNumber(suggested);
-      setForm((f) => ({ ...f, roll_number: suggested }));
+      setSuggestedNumber(next.roll_number);
+      setForm((f) => ({ ...f, roll_number: next.roll_number }));
     });
   }, []);
 
-  const cameras = [...allCameras].sort((a, b) => (cameraCount[b.id] ?? 0) - (cameraCount[a.id] ?? 0));
-  const films = [...allFilms].sort((a, b) => (filmCount[b.id] ?? 0) - (filmCount[a.id] ?? 0));
+  const cameras = [...allCameras].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
+  const films = [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

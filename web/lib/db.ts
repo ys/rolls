@@ -17,6 +17,7 @@ export interface Camera {
   model: string;
   nickname: string | null;
   format: number;
+  roll_count?: number;
 }
 
 export interface Film {
@@ -27,6 +28,7 @@ export interface Film {
   iso: number | null;
   color: boolean;
   show_iso: boolean;
+  roll_count?: number;
 }
 
 export interface Roll {

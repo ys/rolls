@@ -3,7 +3,13 @@ import { sql } from "@/lib/db";
 import type { Film } from "@/lib/db";
 
 export async function GET() {
-  const rows = await sql<Film[]>`SELECT * FROM films ORDER BY COALESCE(nickname, brand || ' ' || name)`;
+  const rows = await sql<Film[]>`
+    SELECT f.*, COUNT(r.roll_number)::int AS roll_count
+    FROM films f
+    LEFT JOIN rolls r ON r.film_id = f.id
+    GROUP BY f.id
+    ORDER BY COALESCE(f.nickname, f.brand || ' ' || f.name)
+  `;
   return NextResponse.json(rows);
 }
 
