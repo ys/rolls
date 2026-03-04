@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { marked } from "marked";
 import type { Roll, Camera, Film } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
 
@@ -41,6 +42,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showDates, setShowDates] = useState(false);
+  const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
 
   const nextAction = NEXT_ACTION[status];
 
@@ -194,20 +196,61 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
       {/* Notes */}
       <div className="bg-zinc-900 rounded-xl p-4 mb-4">
-        <label className="block text-sm text-zinc-400 mb-2">Notes</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={6}
-          className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
-        />
-        <button
-          onClick={() => save({ notes })}
-          disabled={saving}
-          className="mt-3 w-full bg-zinc-700 hover:bg-zinc-600 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-        >
-          {saving ? "Saving…" : saved ? "Saved ✓" : "Save Notes"}
-        </button>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm text-zinc-400">Notes</label>
+          <div className="flex rounded-lg overflow-hidden border border-zinc-700 text-xs">
+            <button
+              onClick={() => setNotesMode("edit")}
+              className={`px-3 py-1 transition-colors ${notesMode === "edit" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setNotesMode("preview")}
+              className={`px-3 py-1 transition-colors ${notesMode === "preview" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+            >
+              Preview
+            </button>
+          </div>
+        </div>
+
+        {notesMode === "edit" ? (
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={8}
+            placeholder="Write notes in markdown…"
+            className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none font-mono"
+          />
+        ) : (
+          <div
+            className="min-h-[120px] text-sm text-zinc-100
+              [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
+              [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2
+              [&_h3]:font-bold [&_h3]:mt-3 [&_h3]:mb-1
+              [&_p]:mb-3 [&_p]:leading-relaxed
+              [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul_li]:mb-1
+              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol_li]:mb-1
+              [&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+              [&_pre]:bg-zinc-800 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:mb-3 [&_pre]:overflow-x-auto
+              [&_pre_code]:bg-transparent [&_pre_code]:p-0
+              [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-600 [&_blockquote]:pl-3 [&_blockquote]:text-zinc-400 [&_blockquote]:mb-3
+              [&_a]:text-blue-400 [&_a]:underline
+              [&_hr]:border-zinc-700 [&_hr]:my-4
+              [&_strong]:font-semibold [&_em]:italic"
+            dangerouslySetInnerHTML={{ __html: notes ? marked.parse(notes) as string : "<span class='text-zinc-600'>No notes yet.</span>" }}
+          />
+        )}
+
+        {notesMode === "edit" && (
+          <button
+            onClick={() => save({ notes })}
+            disabled={saving}
+            className="mt-3 w-full bg-zinc-700 hover:bg-zinc-600 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {saving ? "Saving…" : saved ? "Saved ✓" : "Save Notes"}
+          </button>
+        )}
       </div>
     </div>
   );
