@@ -1,9 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { r2, R2_BUCKET } from "@/lib/r2";
 import { sql } from "@/lib/db";
 
-const SUPABASE_URL = process.env.DATABASE_SUPABASE_URL;
-const SERVICE_KEY  = process.env.DATABASE_SUPABASE_SERVICE_ROLE_KEY;
-const BUCKET       = "contact-sheets";
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const obj = await r2.send(new GetObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: `${id}.webp`,
+    }));
+
+    const stream = obj.Body?.transformToWebStream();
+    if (!stream) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "image/webp",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+}
 
 export async function PUT(
   request: NextRequest,
@@ -11,36 +35,20 @@ export async function PUT(
 ) {
   const { id } = await params;
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
-    return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
-  }
-
   const body = await request.arrayBuffer();
   if (!body.byteLength) {
     return NextResponse.json({ error: "Empty body" }, { status: 400 });
   }
 
-  const filename = `${id}.webp`;
-  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filename}`;
+  await r2.send(new PutObjectCommand({
+    Bucket: R2_BUCKET,
+    Key: `${id}.webp`,
+    Body: new Uint8Array(body),
+    ContentType: "image/webp",
+  }));
 
-  const upload = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "image/webp",
-      "x-upsert": "true",
-    },
-    body,
-  });
+  const contactSheetUrl = `/api/rolls/${id}/contact-sheet`;
+  await sql`UPDATE rolls SET contact_sheet_url = ${contactSheetUrl} WHERE roll_number = ${id}`;
 
-  if (!upload.ok) {
-    const err = await upload.text();
-    return NextResponse.json({ error: `Upload failed: ${err}` }, { status: 500 });
-  }
-
-  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${filename}`;
-
-  await sql`UPDATE rolls SET contact_sheet_url = ${publicUrl} WHERE roll_number = ${id}`;
-
-  return NextResponse.json({ contact_sheet_url: publicUrl });
+  return NextResponse.json({ contact_sheet_url: contactSheetUrl });
 }
