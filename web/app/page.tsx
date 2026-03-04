@@ -161,14 +161,14 @@ export default async function HomePage({
       <div>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            {showPrev ? (
-              <Link href={`/?year=${prevYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">←</Link>
+            {showNext ? (
+              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">←</Link>
             ) : (
               <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">←</span>
             )}
             <h1 className="text-2xl font-bold">{viewYear}</h1>
-            {showNext ? (
-              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">→</Link>
+            {showPrev ? (
+              <Link href={`/?year=${prevYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">→</Link>
             ) : (
               <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">→</span>
             )}
