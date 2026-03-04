@@ -1,6 +1,6 @@
 import { sql } from "@/lib/db";
 import { rollStatus } from "@/lib/db";
-import { STATUS_COLORS } from "@/lib/status";
+import { STATUS_COLORS, STATUS_BORDER } from "@/lib/status";
 import type { Roll } from "@/lib/db";
 import Link from "next/link";
 
@@ -105,7 +105,7 @@ function RollItem({ roll }: { roll: RollRow }) {
     <li>
       <Link
         href={`/roll/${roll.roll_number}`}
-        className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        className={`flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${STATUS_BORDER[status]}`}
       >
         {roll.contact_sheet_url ? (
           <img

@@ -8,6 +8,16 @@ export const STATUS_COLORS: Record<string, string> = {
   ARCHIVED:  "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
 };
 
+export const STATUS_BORDER: Record<string, string> = {
+  LOADED:    "border-l-4 border-l-amber-400",
+  FRIDGE:    "border-l-4 border-l-cyan-400",
+  LAB:       "border-l-4 border-l-orange-400",
+  SCANNED:   "border-l-4 border-l-green-400",
+  PROCESSED: "border-l-4 border-l-purple-400",
+  UPLOADED:  "border-l-4 border-l-blue-400",
+  ARCHIVED:  "border-l-4 border-l-zinc-300 dark:border-l-zinc-600",
+};
+
 export const STATUS_ORDER = [
   "LOADED", "FRIDGE", "LAB", "SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED",
 ] as const;
