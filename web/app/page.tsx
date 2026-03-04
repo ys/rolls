@@ -16,10 +16,9 @@ type RollRow = Roll & {
   film_show_iso: boolean | null;
 };
 
-// force-dynamic: no DB access at build time, page rendered per-request
-// unstable_cache: DB query cached at runtime, busted by revalidateTag("rolls")
 export const dynamic = "force-dynamic";
 
+// Current year: unscanned rolls (any year) + current-year historical
 const getHomeRolls = unstable_cache(
   async () => {
     const currentYear = new Date().getFullYear();
@@ -52,6 +51,53 @@ const getHomeRolls = unstable_cache(
   { tags: ["rolls"] },
 );
 
+// Specific past year: all non-archived rolls for that year
+const getYearRolls = unstable_cache(
+  async (year: number) => {
+    const yearPrefix = String(year).slice(2);
+    const yearStart = `${year}-01-01`;
+    const yearEnd   = `${year + 1}-01-01`;
+    return sql<RollRow[]>`
+      SELECT r.*,
+        c.nickname  AS camera_nickname,
+        c.brand     AS camera_brand,
+        c.model     AS camera_model,
+        f.nickname  AS film_nickname,
+        f.brand     AS film_brand,
+        f.name      AS film_name,
+        f.iso       AS film_iso,
+        f.show_iso  AS film_show_iso
+      FROM rolls r
+      LEFT JOIN cameras c ON c.id = r.camera_id
+      LEFT JOIN films   f ON f.id = r.film_id
+      WHERE r.archived_at IS NULL
+        AND (
+          r.roll_number ILIKE ${yearPrefix + "x%"}
+          OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
+        )
+      ORDER BY r.roll_number DESC
+    `;
+  },
+  ["year-rolls"],
+  { tags: ["rolls"] },
+);
+
+// Earliest year that has any roll
+const getFirstYear = unstable_cache(
+  async () => {
+    const rows = await sql<{ year: string }[]>`
+      SELECT '20' || SUBSTRING(roll_number, 1, 2) AS year
+      FROM rolls
+      WHERE roll_number ~ '^[0-9]{2}x'
+      ORDER BY 1 ASC
+      LIMIT 1
+    `;
+    return rows[0] ? parseInt(rows[0].year, 10) : new Date().getFullYear();
+  },
+  ["first-year"],
+  { tags: ["rolls"] },
+);
+
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
 function cameraLabel(roll: RollRow): string {
@@ -67,13 +113,6 @@ function filmLabel(roll: RollRow): string {
     return `${roll.film_brand} ${roll.film_name}${iso}`;
   }
   return roll.film_id ?? "";
-}
-
-function rollYear(roll: RollRow): string {
-  const m = roll.roll_number.match(/^(\d{2})x/i);
-  if (m) return `20${m[1]}`;
-  if (roll.shot_at) return roll.shot_at.slice(0, 4);
-  return "—";
 }
 
 function RollItem({ roll }: { roll: RollRow }) {
@@ -112,25 +151,74 @@ function RollItem({ roll }: { roll: RollRow }) {
   );
 }
 
-export default async function HomePage() {
-  const rolls = await getHomeRolls();
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string }>;
+}) {
+  const { year: yearParam } = await searchParams;
+  const currentYear = new Date().getFullYear();
+  const viewYear = yearParam ? parseInt(yearParam, 10) : null;
+  const isPastYear = viewYear !== null && viewYear < currentYear;
 
+  const [rolls, firstYear] = await Promise.all([
+    isPastYear ? getYearRolls(viewYear) : getHomeRolls(),
+    getFirstYear(),
+  ]);
+
+  if (isPastYear) {
+    // Past year view: just list all rolls for that year with year navigation
+    const prevYear = viewYear - 1;
+    const nextYear = viewYear + 1;
+    const showPrev = prevYear >= firstYear;
+    const showNext = nextYear <= currentYear;
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            {showPrev ? (
+              <Link href={`/?year=${prevYear}`} className="text-zinc-400 hover:text-white text-xl leading-none">←</Link>
+            ) : (
+              <span className="text-zinc-700 text-xl leading-none">←</span>
+            )}
+            <h1 className="text-2xl font-bold">{viewYear}</h1>
+            {showNext ? (
+              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-400 hover:text-white text-xl leading-none">→</Link>
+            ) : (
+              <span className="text-zinc-700 text-xl leading-none">→</span>
+            )}
+          </div>
+          <Link
+            href="/new"
+            className="bg-white text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
+          >
+            New Roll
+          </Link>
+        </div>
+
+        {rolls.length === 0 ? (
+          <p className="text-zinc-500 text-center py-16">No rolls in {viewYear}.</p>
+        ) : (
+          <ul className="space-y-2">
+            {rolls.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
+          </ul>
+        )}
+
+        <div className="mt-8 text-sm text-zinc-500 text-center">
+          {rolls.length > 0 && <span>{rolls.length} roll{rolls.length !== 1 ? "s" : ""}</span>}
+        </div>
+      </div>
+    );
+  }
+
+  // Default: current year view
   const unscanned = rolls.filter((r) => !r.scanned_at);
   const inProgress = unscanned
     .filter((r) => !r.lab_at)
     .sort((a, b) => (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) - (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9));
   const atLab = unscanned.filter((r) => r.lab_at);
-
   const historical = rolls.filter((r) => r.scanned_at);
-
-  // Group historical by year, preserving DESC order within each year
-  const byYear = new Map<string, RollRow[]>();
-  for (const roll of historical) {
-    const year = rollYear(roll);
-    if (!byYear.has(year)) byYear.set(year, []);
-    byYear.get(year)!.push(roll);
-  }
-  const years = [...byYear.keys()].sort((a, b) => b.localeCompare(a));
 
   return (
     <div>
@@ -148,7 +236,6 @@ export default async function HomePage() {
         <p className="text-zinc-500 text-center py-16">No rolls yet. Create one!</p>
       ) : (
         <div className="space-y-8">
-          {/* In-progress: LOADED + FRIDGE */}
           {inProgress.length > 0 && (
             <section>
               <div className="flex items-baseline gap-2 mb-3">
@@ -161,7 +248,6 @@ export default async function HomePage() {
             </section>
           )}
 
-          {/* At the lab */}
           {atLab.length > 0 && (
             <section>
               <div className="flex items-baseline gap-2 mb-3">
@@ -174,21 +260,33 @@ export default async function HomePage() {
             </section>
           )}
 
-          {/* Historical rolls grouped by year */}
-          {years.map((year) => {
-            const yearRolls = byYear.get(year)!;
-            return (
-              <section key={year}>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <h2 className="text-lg font-bold">{year}</h2>
-                  <span className="text-sm text-zinc-500">{yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}</span>
-                </div>
-                <ul className="space-y-2">
-                  {yearRolls.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
-                </ul>
-              </section>
-            );
-          })}
+          {historical.length > 0 && (
+            <section>
+              <div className="flex items-baseline gap-2 mb-3">
+                <h2 className="text-lg font-bold">{currentYear}</h2>
+                <span className="text-sm text-zinc-500">{historical.length} roll{historical.length !== 1 ? "s" : ""}</span>
+              </div>
+              <ul className="space-y-2">
+                {historical.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
+              </ul>
+            </section>
+          )}
+        </div>
+      )}
+
+      {/* Previous years navigation */}
+      {currentYear - 1 >= firstYear && (
+        <div className="mt-10 pt-6 border-t border-zinc-800">
+          <div className="flex items-center justify-between text-sm text-zinc-500">
+            <span>Previous years</span>
+            <div className="flex gap-3">
+              {Array.from({ length: currentYear - firstYear }, (_, i) => currentYear - 1 - i).map((y) => (
+                <Link key={y} href={`/?year=${y}`} className="hover:text-white transition-colors">
+                  {y}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
