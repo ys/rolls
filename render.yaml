@@ -5,7 +5,6 @@ services:
     rootDir: web
     buildCommand: npm install && npm run build
     startCommand: npm start -- -p $PORT
-    nodeVersion: 22
     envVars:
       - key: DATABASE_URL
         sync: false
