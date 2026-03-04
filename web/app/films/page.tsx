@@ -2,7 +2,7 @@ import { sql } from "@/lib/db";
 import type { Film } from "@/lib/db";
 import FilmsClient from "./FilmsClient";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function FilmsPage() {
   const films = await sql<Film[]>`

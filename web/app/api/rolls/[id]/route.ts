@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 import type postgres from "postgres";
@@ -52,8 +51,5 @@ export async function PATCH(
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  revalidatePath("/");
-  revalidatePath(`/roll/${id}`);
-  revalidateTag("rolls", "max");
   return NextResponse.json(rows[0]);
 }

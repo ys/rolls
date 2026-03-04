@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { sql } from "@/lib/db";
 
 interface ImportCamera {
@@ -118,8 +117,6 @@ export async function POST(request: NextRequest) {
     `;
   }
 
-  revalidatePath("/");
-  revalidateTag("rolls", "max");
   return NextResponse.json({
     cameras: cameras.length,
     films: films.length,

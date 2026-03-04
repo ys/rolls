@@ -2,7 +2,7 @@ import { sql } from "@/lib/db";
 import type { Camera } from "@/lib/db";
 import CamerasClient from "./CamerasClient";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export default async function CamerasPage() {
   const cameras = await sql<Camera[]>`

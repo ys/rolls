@@ -4,7 +4,7 @@ import type { Roll, Camera, Film } from "@/lib/db";
 import { notFound } from "next/navigation";
 import RollDetailClient from "./RollDetailClient";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 type RollRow = Roll & {
   camera_brand: string | null;

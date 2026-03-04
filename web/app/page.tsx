@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { sql } from "@/lib/db";
 import { rollStatus } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
@@ -18,85 +17,70 @@ type RollRow = Roll & {
 
 export const dynamic = "force-dynamic";
 
-// Current year: unscanned rolls (any year) + current-year historical
-const getHomeRolls = unstable_cache(
-  async () => {
-    const currentYear = new Date().getFullYear();
-    const yearPrefix = String(currentYear).slice(2);
-    const yearStart = `${currentYear}-01-01`;
-    const yearEnd   = `${currentYear + 1}-01-01`;
-    return sql<RollRow[]>`
-      SELECT r.*,
-        c.nickname  AS camera_nickname,
-        c.brand     AS camera_brand,
-        c.model     AS camera_model,
-        f.nickname  AS film_nickname,
-        f.brand     AS film_brand,
-        f.name      AS film_name,
-        f.iso       AS film_iso,
-        f.show_iso  AS film_show_iso
-      FROM rolls r
-      LEFT JOIN cameras c ON c.id = r.camera_id
-      LEFT JOIN films   f ON f.id = r.film_id
-      WHERE r.archived_at IS NULL
-        AND (
-          r.scanned_at IS NULL
-          OR r.roll_number ILIKE ${yearPrefix + "x%"}
-          OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
-        )
-      ORDER BY r.roll_number DESC
-    `;
-  },
-  ["home-rolls"],
-  { tags: ["rolls"] },
-);
+async function getHomeRolls() {
+  const currentYear = new Date().getFullYear();
+  const yearPrefix = String(currentYear).slice(2);
+  const yearStart = `${currentYear}-01-01`;
+  const yearEnd   = `${currentYear + 1}-01-01`;
+  return sql<RollRow[]>`
+    SELECT r.*,
+      c.nickname  AS camera_nickname,
+      c.brand     AS camera_brand,
+      c.model     AS camera_model,
+      f.nickname  AS film_nickname,
+      f.brand     AS film_brand,
+      f.name      AS film_name,
+      f.iso       AS film_iso,
+      f.show_iso  AS film_show_iso
+    FROM rolls r
+    LEFT JOIN cameras c ON c.id = r.camera_id
+    LEFT JOIN films   f ON f.id = r.film_id
+    WHERE r.archived_at IS NULL
+      AND (
+        r.scanned_at IS NULL
+        OR r.roll_number ILIKE ${yearPrefix + "x%"}
+        OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
+      )
+    ORDER BY r.roll_number DESC
+  `;
+}
 
-// Specific past year: all non-archived rolls for that year
-const getYearRolls = unstable_cache(
-  async (year: number) => {
-    const yearPrefix = String(year).slice(2);
-    const yearStart = `${year}-01-01`;
-    const yearEnd   = `${year + 1}-01-01`;
-    return sql<RollRow[]>`
-      SELECT r.*,
-        c.nickname  AS camera_nickname,
-        c.brand     AS camera_brand,
-        c.model     AS camera_model,
-        f.nickname  AS film_nickname,
-        f.brand     AS film_brand,
-        f.name      AS film_name,
-        f.iso       AS film_iso,
-        f.show_iso  AS film_show_iso
-      FROM rolls r
-      LEFT JOIN cameras c ON c.id = r.camera_id
-      LEFT JOIN films   f ON f.id = r.film_id
-      WHERE r.archived_at IS NULL
-        AND (
-          r.roll_number ILIKE ${yearPrefix + "x%"}
-          OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
-        )
-      ORDER BY r.roll_number DESC
-    `;
-  },
-  ["year-rolls"],
-  { tags: ["rolls"] },
-);
+async function getYearRolls(year: number) {
+  const yearPrefix = String(year).slice(2);
+  const yearStart = `${year}-01-01`;
+  const yearEnd   = `${year + 1}-01-01`;
+  return sql<RollRow[]>`
+    SELECT r.*,
+      c.nickname  AS camera_nickname,
+      c.brand     AS camera_brand,
+      c.model     AS camera_model,
+      f.nickname  AS film_nickname,
+      f.brand     AS film_brand,
+      f.name      AS film_name,
+      f.iso       AS film_iso,
+      f.show_iso  AS film_show_iso
+    FROM rolls r
+    LEFT JOIN cameras c ON c.id = r.camera_id
+    LEFT JOIN films   f ON f.id = r.film_id
+    WHERE r.archived_at IS NULL
+      AND (
+        r.roll_number ILIKE ${yearPrefix + "x%"}
+        OR (r.shot_at >= ${yearStart} AND r.shot_at < ${yearEnd})
+      )
+    ORDER BY r.roll_number DESC
+  `;
+}
 
-// Earliest year that has any roll
-const getFirstYear = unstable_cache(
-  async () => {
-    const rows = await sql<{ year: string }[]>`
-      SELECT '20' || SUBSTRING(roll_number, 1, 2) AS year
-      FROM rolls
-      WHERE roll_number ~ '^[0-9]{2}x'
-      ORDER BY 1 ASC
-      LIMIT 1
-    `;
-    return rows[0] ? parseInt(rows[0].year, 10) : new Date().getFullYear();
-  },
-  ["first-year"],
-  { tags: ["rolls"] },
-);
+async function getFirstYear() {
+  const rows = await sql<{ year: string }[]>`
+    SELECT '20' || SUBSTRING(roll_number, 1, 2) AS year
+    FROM rolls
+    WHERE roll_number ~ '^[0-9]{2}x'
+    ORDER BY 1 ASC
+    LIMIT 1
+  `;
+  return rows[0] ? parseInt(rows[0].year, 10) : new Date().getFullYear();
+}
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
