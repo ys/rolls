@@ -8,7 +8,7 @@ if (!dbUrl) {
 }
 
 const pg = postgres(dbUrl, {
-  ssl: dbUrl.includes("localhost") ? false : "require",
+  ssl: dbUrl.includes("localhost") ? false : { rejectUnauthorized: false },
   max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
