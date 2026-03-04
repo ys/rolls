@@ -4,6 +4,23 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Camera, Film } from "@/lib/db";
 
+declare module "react" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "markdown-toolbar": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { for: string }, HTMLElement>;
+      "md-bold": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-italic": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-strikethrough": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-link": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-unordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-ordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-task-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-code": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-quote": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
+  }
+}
+
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
 }
@@ -29,6 +46,10 @@ export default function NewRollPage() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    import("@github/markdown-toolbar-element");
+  }, []);
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
@@ -86,16 +107,29 @@ export default function NewRollPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">New Roll</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Roll Number</label>
-          <input
-            type="text"
-            required
-            value={form.roll_number}
-            onChange={(e) => setForm((f) => ({ ...f, roll_number: e.target.value }))}
-            placeholder={suggestedNumber}
-            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-          />
+
+        {/* Roll number + Shot at on one row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Roll #</label>
+            <input
+              type="text"
+              required
+              value={form.roll_number}
+              onChange={(e) => setForm((f) => ({ ...f, roll_number: e.target.value }))}
+              placeholder={suggestedNumber}
+              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Shot at</label>
+            <input
+              type="date"
+              value={form.shot_at}
+              onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
+              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+            />
+          </div>
         </div>
 
         <div>
@@ -108,9 +142,7 @@ export default function NewRollPage() {
             >
               <option value="">— select —</option>
               {cameras.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {cameraLabel(c)}
-                </option>
+                <option key={c.id} value={c.id}>{cameraLabel(c)}</option>
               ))}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
@@ -127,9 +159,7 @@ export default function NewRollPage() {
             >
               <option value="">— select —</option>
               {films.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {filmLabel(f)}
-                </option>
+                <option key={f.id} value={f.id}>{filmLabel(f)}</option>
               ))}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
@@ -137,17 +167,7 @@ export default function NewRollPage() {
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Shot At</label>
-          <input
-            type="date"
-            value={form.shot_at}
-            onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
-            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Tags (comma-separated)</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Tags</label>
           <input
             type="text"
             value={form.tags}
@@ -159,11 +179,24 @@ export default function NewRollPage() {
 
         <div>
           <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Notes</label>
+          <markdown-toolbar for="new-notes-textarea" className="flex flex-wrap gap-1 mb-2">
+            <md-bold><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-bold transition-colors">B</button></md-bold>
+            <md-italic><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm italic transition-colors">I</button></md-italic>
+            <md-strikethrough><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors line-through">S</button></md-strikethrough>
+            <md-link><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">Link</button></md-link>
+            <md-unordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">• List</button></md-unordered-list>
+            <md-ordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">1. List</button></md-ordered-list>
+            <md-task-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">☐ Task</button></md-task-list>
+            <md-code><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-mono transition-colors">&lt;/&gt;</button></md-code>
+            <md-quote><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">❝</button></md-quote>
+          </markdown-toolbar>
           <textarea
+            id="new-notes-textarea"
             value={form.notes}
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             rows={4}
-            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20 resize-none"
+            placeholder="Write notes in markdown…"
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20 resize-none font-mono"
           />
         </div>
 
