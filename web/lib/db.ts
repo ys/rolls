@@ -1,27 +1,17 @@
 import "server-only";
 import postgres from "postgres";
 
-// On Render (persistent server): set DATABASE_URL to the direct Supabase connection string.
-// On Vercel (serverless): set DATABASE_URL to the pgbouncer pooler URL (port 6543).
-const dbUrl =
-  process.env.DATABASE_URL ??
-  process.env.DATABASE_POSTGRES_PRISMA_URL ??
-  process.env.DATABASE_POSTGRES_URL;
+const dbUrl = process.env.DATABASE_URL;
 
 if (!dbUrl) {
-  throw new Error("DATABASE_URL, DATABASE_POSTGRES_PRISMA_URL, or DATABASE_POSTGRES_URL must be set");
+  throw new Error("DATABASE_URL must be set");
 }
-
-// pgbouncer transaction mode requires prepare:false and limits max connections.
-// Direct connections can use prepared statements and a larger pool.
-const isPgbouncer = dbUrl.includes("pgbouncer") || dbUrl.includes(":6543");
 
 const pg = postgres(dbUrl, {
   ssl: dbUrl.includes("localhost") ? false : "require",
-  max: isPgbouncer ? 1 : 10,
+  max: 10,
   idle_timeout: 20,
   connect_timeout: 10,
-  prepare: !isPgbouncer,
 });
 
 export const sql = pg;
