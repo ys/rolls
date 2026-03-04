@@ -1,10 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { marked } from "marked";
 import type { Roll, Camera, Film } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
+
+declare module "react" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "markdown-toolbar": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { for: string }, HTMLElement>;
+      "md-bold": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-italic": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-strikethrough": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-link": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-image": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-unordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-ordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-task-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-code": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-quote": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-header": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { level?: string }, HTMLElement>;
+    }
+  }
+}
 
 const TIMESTAMP_FIELDS = [
   { key: "fridge_at",    label: "Fridge",    type: "datetime-local" },
@@ -43,6 +62,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [saved, setSaved] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
+
+  useEffect(() => {
+    import("@github/markdown-toolbar-element");
+  }, []);
 
   const nextAction = NEXT_ACTION[status];
 
@@ -215,13 +238,27 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         </div>
 
         {notesMode === "edit" ? (
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={8}
-            placeholder="Write notes in markdown…"
-            className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none font-mono"
-          />
+          <>
+            <markdown-toolbar for="notes-textarea" className="flex flex-wrap gap-1 mb-2">
+              <md-bold><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm font-bold transition-colors">B</button></md-bold>
+              <md-italic><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm italic transition-colors">I</button></md-italic>
+              <md-strikethrough><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors line-through">S</button></md-strikethrough>
+              <md-link><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">Link</button></md-link>
+              <md-unordered-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">• List</button></md-unordered-list>
+              <md-ordered-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">1. List</button></md-ordered-list>
+              <md-task-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">☐ Task</button></md-task-list>
+              <md-code><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm font-mono transition-colors">&lt;/&gt;</button></md-code>
+              <md-quote><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">❝ Quote</button></md-quote>
+            </markdown-toolbar>
+            <textarea
+              id="notes-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={8}
+              placeholder="Write notes in markdown…"
+              className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none font-mono"
+            />
+          </>
         ) : (
           <div
             className="min-h-[120px] text-sm text-zinc-100
