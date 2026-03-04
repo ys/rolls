@@ -105,7 +105,7 @@ function RollItem({ roll }: { roll: RollRow }) {
     <li>
       <Link
         href={`/roll/${roll.roll_number}`}
-        className="flex items-center gap-3 p-3 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition-colors"
+        className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       >
         {roll.contact_sheet_url ? (
           <img
@@ -114,15 +114,15 @@ function RollItem({ roll }: { roll: RollRow }) {
             className="w-16 h-16 object-cover rounded-lg shrink-0"
           />
         ) : (
-          <div className="w-16 h-16 bg-zinc-800 rounded-lg shrink-0" />
+          <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-lg shrink-0" />
         )}
         <div className="flex-1 min-w-0">
           <div className="font-mono font-bold text-base">{roll.roll_number}</div>
-          <div className="text-sm text-zinc-400 mt-0.5 truncate">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
             {[cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ")}
           </div>
           {roll.shot_at && (
-            <div className="text-xs text-zinc-500 mt-0.5">
+            <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
               {new Date(roll.shot_at).toLocaleDateString()}
             </div>
           )}
@@ -162,20 +162,20 @@ export default async function HomePage({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             {showPrev ? (
-              <Link href={`/?year=${prevYear}`} className="text-zinc-400 hover:text-white text-xl leading-none">←</Link>
+              <Link href={`/?year=${prevYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">←</Link>
             ) : (
-              <span className="text-zinc-700 text-xl leading-none">←</span>
+              <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">←</span>
             )}
             <h1 className="text-2xl font-bold">{viewYear}</h1>
             {showNext ? (
-              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-400 hover:text-white text-xl leading-none">→</Link>
+              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">→</Link>
             ) : (
-              <span className="text-zinc-700 text-xl leading-none">→</span>
+              <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">→</span>
             )}
           </div>
           <Link
             href="/new"
-            className="bg-white text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
+            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
           >
             New Roll
           </Link>
@@ -210,7 +210,7 @@ export default async function HomePage({
         <h1 className="text-2xl font-bold">Rolls</h1>
         <Link
           href="/new"
-          className="bg-white text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
+          className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
         >
           New Roll
         </Link>
@@ -260,12 +260,12 @@ export default async function HomePage({
 
       {/* Previous years navigation */}
       {currentYear - 1 >= firstYear && (
-        <div className="mt-10 pt-6 border-t border-zinc-800">
+        <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between text-sm text-zinc-500">
             <span>Previous years</span>
             <div className="flex gap-3">
               {Array.from({ length: currentYear - firstYear }, (_, i) => currentYear - 1 - i).map((y) => (
-                <Link key={y} href={`/?year=${y}`} className="hover:text-white transition-colors">
+                <Link key={y} href={`/?year=${y}`} className="hover:text-zinc-900 dark:hover:text-white transition-colors">
                   {y}
                 </Link>
               ))}

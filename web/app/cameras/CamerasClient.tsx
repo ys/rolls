@@ -58,16 +58,16 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Cameras</h1>
-        <div className="flex gap-1 text-xs bg-zinc-800 rounded-lg p-1">
+        <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
           <button
             onClick={() => setSortBy("usage")}
-            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
           >
             By usage
           </button>
           <button
             onClick={() => setSortBy("alpha")}
-            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+            className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
           >
             A–Z
           </button>
@@ -79,16 +79,16 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
           <li key={c.id}>
             <Link
               href={`/cameras/${encodeURIComponent(c.id)}`}
-              className="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-800 transition-colors"
+              className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <div>
                 <div className="font-medium">{cameraLabel(c)}</div>
-                <div className="text-xs text-zinc-500 mt-0.5">
+                <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
                   {c.id} · {c.format}mm
                   {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
                 </div>
               </div>
-              <span className="text-xs text-zinc-600">Edit →</span>
+              <span className="text-xs text-zinc-400 dark:text-zinc-600">Edit →</span>
             </Link>
           </li>
         ))}
@@ -99,10 +99,10 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
 
       <button
         onClick={() => { setShowForm((v) => !v); setError(""); }}
-        className="w-full flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
+        className="w-full flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
       >
         <span>Add Camera</span>
-        <span className="text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
+        <span className="text-zinc-500 dark:text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
       </button>
 
       {showForm && (
@@ -112,24 +112,24 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
           <Field label="Model"    value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
           <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
           <div>
-            <label className="block text-sm text-zinc-400 mb-1">Format</label>
+            <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Format</label>
             <div className="relative">
               <select
                 value={form.format}
                 onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
-                className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+                className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20 pr-10"
               >
                 <option value="135">135</option>
                 <option value="120">120</option>
               </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
             </div>
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-white text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
+            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
           >
             {saving ? "Saving…" : "Add Camera"}
           </button>
@@ -150,14 +150,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-zinc-400 mb-1">{label}</label>
+      <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
       />
     </div>
   );

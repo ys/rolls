@@ -65,11 +65,11 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Edit Film</h1>
-        <a href="/films" className="text-zinc-500 text-sm hover:text-white">← Films</a>
+        <a href="/films" className="text-zinc-500 text-sm hover:text-zinc-900 dark:hover:text-white">← Films</a>
       </div>
 
-      <div className="bg-zinc-900 rounded-xl px-4 py-2 mb-6">
-        <p className="text-xs text-zinc-500 py-2">ID: <span className="font-mono text-zinc-300">{id}</span></p>
+      <div className="bg-white dark:bg-zinc-900 rounded-xl px-4 py-2 mb-6 border border-zinc-100 dark:border-transparent">
+        <p className="text-xs text-zinc-500 py-2">ID: <span className="font-mono text-zinc-700 dark:text-zinc-700 dark:text-zinc-300">{id}</span></p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -103,7 +103,7 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-white text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
+          className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
         >
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save Changes"}
         </button>
@@ -123,14 +123,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-zinc-400 mb-1">{label}</label>
+      <label className="block text-sm text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
       />
     </div>
   );

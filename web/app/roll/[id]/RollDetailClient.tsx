@@ -114,7 +114,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             {status}
           </span>
         </div>
-        <a href="/" className="text-zinc-500 text-sm hover:text-white">← Back</a>
+        <a href="/" className="text-zinc-500 text-sm hover:text-zinc-900 dark:hover:text-white">← Back</a>
       </div>
 
       {/* Next-step action button */}
@@ -126,7 +126,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               value={labName}
               onChange={(e) => setLabName(e.target.value)}
               placeholder="Lab name (optional)"
-              className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
             />
           )}
           <button
@@ -136,7 +136,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               save(patch);
             }}
             disabled={saving}
-            className="w-full bg-white text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
+            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
           >
             {saving ? "Saving…" : nextAction.label}
           </button>
@@ -144,7 +144,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       )}
 
       {/* Metadata */}
-      <div className="bg-zinc-900 rounded-xl p-4 space-y-3 mb-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 space-y-3 mb-4 border border-zinc-100 dark:border-transparent">
         <Row label="Camera" value={camera ? (camera.nickname ?? `${camera.brand} ${camera.model}`) : roll.camera_id ?? "—"} />
         <Row label="Film"   value={film ? (film.nickname ?? `${film.brand} ${film.name}${film.show_iso && film.iso ? ` ${film.iso}` : ""}`) : roll.film_id ?? "—"} />
         <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
@@ -153,26 +153,26 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         {roll.tags && roll.tags.length > 0 && (
           <div className="flex gap-2 flex-wrap pt-1">
             {roll.tags.map((tag) => (
-              <span key={tag} className="text-xs bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
+              <span key={tag} className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
             ))}
           </div>
         )}
       </div>
 
       {/* Timestamps */}
-      <div className="bg-zinc-900 rounded-xl mb-4 overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 overflow-hidden border border-zinc-100 dark:border-transparent">
         <button
           onClick={() => setShowDates((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm text-zinc-400 hover:text-white transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
         >
           <span>Dates</span>
           <span>{showDates ? "▴" : "▾"}</span>
         </button>
         {showDates && (
-          <div className="px-4 pb-4 space-y-3 border-t border-zinc-800 pt-3">
+          <div className="px-4 pb-4 space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
             {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
               <div key={key} className="flex items-center justify-between gap-4">
-                <label className="text-sm text-zinc-400 shrink-0 w-28">{label}</label>
+                <label className="text-sm text-zinc-600 dark:text-zinc-400 shrink-0 w-28">{label}</label>
                 <div className="flex items-center gap-2 flex-1">
                   <input
                     type={type}
@@ -181,12 +181,12 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                     onBlur={(e) => {
                       if (e.target.value) save({ [key]: e.target.value });
                     }}
-                    className="bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-white/20"
+                    className="bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
                   />
                   {roll[key] ? (
                     <button
                       onClick={() => save({ [key]: null })}
-                      className="text-xs text-zinc-600 hover:text-red-400 whitespace-nowrap"
+                      className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 whitespace-nowrap"
                       title="Clear"
                     >
                       ✕
@@ -194,7 +194,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                   ) : (
                     <button
                       onClick={() => save({ [key]: nowValue(type === "date") })}
-                      className="text-xs text-zinc-500 hover:text-white whitespace-nowrap"
+                      className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white whitespace-nowrap"
                     >
                       Now
                     </button>
@@ -218,19 +218,19 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       )}
 
       {/* Notes */}
-      <div className="bg-zinc-900 rounded-xl p-4 mb-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 mb-4 border border-zinc-100 dark:border-transparent">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm text-zinc-400">Notes</label>
-          <div className="flex rounded-lg overflow-hidden border border-zinc-700 text-xs">
+          <label className="text-sm text-zinc-600 dark:text-zinc-400">Notes</label>
+          <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 text-xs">
             <button
               onClick={() => setNotesMode("edit")}
-              className={`px-3 py-1 transition-colors ${notesMode === "edit" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+              className={`px-3 py-1 transition-colors ${notesMode === "edit" ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"}`}
             >
               Edit
             </button>
             <button
               onClick={() => setNotesMode("preview")}
-              className={`px-3 py-1 transition-colors ${notesMode === "preview" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+              className={`px-3 py-1 transition-colors ${notesMode === "preview" ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"}`}
             >
               Preview
             </button>
@@ -240,15 +240,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         {notesMode === "edit" ? (
           <>
             <markdown-toolbar for="notes-textarea" className="flex flex-wrap gap-1 mb-2">
-              <md-bold><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm font-bold transition-colors">B</button></md-bold>
-              <md-italic><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm italic transition-colors">I</button></md-italic>
-              <md-strikethrough><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors line-through">S</button></md-strikethrough>
-              <md-link><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">Link</button></md-link>
-              <md-unordered-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">• List</button></md-unordered-list>
-              <md-ordered-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">1. List</button></md-ordered-list>
-              <md-task-list><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">☐ Task</button></md-task-list>
-              <md-code><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm font-mono transition-colors">&lt;/&gt;</button></md-code>
-              <md-quote><button type="button" className="px-2 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-700 text-sm transition-colors">❝ Quote</button></md-quote>
+              <md-bold><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-bold transition-colors">B</button></md-bold>
+              <md-italic><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm italic transition-colors">I</button></md-italic>
+              <md-strikethrough><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors line-through">S</button></md-strikethrough>
+              <md-link><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">Link</button></md-link>
+              <md-unordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">• List</button></md-unordered-list>
+              <md-ordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">1. List</button></md-ordered-list>
+              <md-task-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">☐ Task</button></md-task-list>
+              <md-code><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-mono transition-colors">&lt;/&gt;</button></md-code>
+              <md-quote><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">❝ Quote</button></md-quote>
             </markdown-toolbar>
             <textarea
               id="notes-textarea"
@@ -256,26 +256,26 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               onChange={(e) => setNotes(e.target.value)}
               rows={8}
               placeholder="Write notes in markdown…"
-              className="w-full bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none font-mono"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 resize-none font-mono"
             />
           </>
         ) : (
           <div
-            className="min-h-[120px] text-sm text-zinc-100
+            className="min-h-[120px] text-sm text-zinc-900 dark:text-zinc-100
               [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
               [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2
               [&_h3]:font-bold [&_h3]:mt-3 [&_h3]:mb-1
               [&_p]:mb-3 [&_p]:leading-relaxed
               [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul_li]:mb-1
               [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol_li]:mb-1
-              [&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
-              [&_pre]:bg-zinc-800 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:mb-3 [&_pre]:overflow-x-auto
+              [&_code]:bg-zinc-100 dark:[&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+              [&_pre]:bg-zinc-100 dark:[&_pre]:bg-zinc-800 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:mb-3 [&_pre]:overflow-x-auto
               [&_pre_code]:bg-transparent [&_pre_code]:p-0
-              [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-600 [&_blockquote]:pl-3 [&_blockquote]:text-zinc-400 [&_blockquote]:mb-3
-              [&_a]:text-blue-400 [&_a]:underline
-              [&_hr]:border-zinc-700 [&_hr]:my-4
+              [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-300 dark:[&_blockquote]:border-zinc-600 [&_blockquote]:pl-3 [&_blockquote]:text-zinc-600 dark:[&_blockquote]:text-zinc-400 [&_blockquote]:mb-3
+              [&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:underline
+              [&_hr]:border-zinc-200 dark:[&_hr]:border-zinc-700 [&_hr]:my-4
               [&_strong]:font-semibold [&_em]:italic"
-            dangerouslySetInnerHTML={{ __html: notes ? marked.parse(notes) as string : "<span class='text-zinc-600'>No notes yet.</span>" }}
+            dangerouslySetInnerHTML={{ __html: notes ? marked.parse(notes) as string : "<span class='text-zinc-400 dark:text-zinc-600'>No notes yet.</span>" }}
           />
         )}
 
@@ -283,7 +283,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           <button
             onClick={() => save({ notes })}
             disabled={saving}
-            className="mt-3 w-full bg-zinc-700 hover:bg-zinc-600 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="mt-3 w-full bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           >
             {saving ? "Saving…" : saved ? "Saved ✓" : "Save Notes"}
           </button>
@@ -296,7 +296,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <span className="text-sm text-zinc-400">{label}</span>
+      <span className="text-sm text-zinc-500 dark:text-zinc-400">{label}</span>
       <span className="text-sm font-medium">{value}</span>
     </div>
   );

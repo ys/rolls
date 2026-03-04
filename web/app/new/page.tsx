@@ -87,24 +87,24 @@ export default function NewRollPage() {
       <h1 className="text-2xl font-bold mb-6">New Roll</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Roll Number</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Roll Number</label>
           <input
             type="text"
             required
             value={form.roll_number}
             onChange={(e) => setForm((f) => ({ ...f, roll_number: e.target.value }))}
             placeholder={suggestedNumber}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Camera</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Camera</label>
           <div className="relative">
             <select
               value={form.camera_id}
               onChange={(e) => setForm((f) => ({ ...f, camera_id: e.target.value }))}
-              className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+              className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20 pr-10"
             >
               <option value="">— select —</option>
               {cameras.map((c) => (
@@ -113,17 +113,17 @@ export default function NewRollPage() {
                 </option>
               ))}
             </select>
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Film</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Film</label>
           <div className="relative">
             <select
               value={form.film_id}
               onChange={(e) => setForm((f) => ({ ...f, film_id: e.target.value }))}
-              className="w-full appearance-none bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20 pr-10"
+              className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20 pr-10"
             >
               <option value="">— select —</option>
               {films.map((f) => (
@@ -132,33 +132,33 @@ export default function NewRollPage() {
                 </option>
               ))}
             </select>
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Shot At</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Shot At</label>
           <input
             type="date"
             value={form.shot_at}
             onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Tags (comma-separated)</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Tags (comma-separated)</label>
           <input
             type="text"
             value={form.tags}
             onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
             placeholder="travel, street, portrait"
-            className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400 mb-1">Notes</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Notes</label>
           <textarea
             value={form.notes}
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -172,7 +172,7 @@ export default function NewRollPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-white text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
+          className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
         >
           {saving ? "Creating…" : "Create Roll"}
         </button>

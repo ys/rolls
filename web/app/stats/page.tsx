@@ -76,14 +76,14 @@ export default async function StatsPage() {
 
       {/* Rolls per year */}
       <section>
-        <h2 className="text-base font-semibold text-zinc-400 uppercase tracking-wider mb-3">By Year</h2>
+        <h2 className="text-base font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">By Year</h2>
         <div className="space-y-2">
           {(rollsPerYear as { year: string; count: number }[]).map((r) => (
             <div key={r.year} className="flex items-center gap-3">
-              <span className="font-mono text-sm w-10 shrink-0 text-zinc-400">{r.year}</span>
-              <div className="flex-1 bg-zinc-800 rounded-full h-5 overflow-hidden">
+              <span className="font-mono text-sm w-10 shrink-0 text-zinc-500 dark:text-zinc-400">{r.year}</span>
+              <div className="flex-1 bg-zinc-200 dark:bg-zinc-800 rounded-full h-5 overflow-hidden">
                 <div
-                  className="bg-zinc-400 h-full rounded-full"
+                  className="bg-zinc-500 dark:bg-zinc-400 h-full rounded-full"
                   style={{ width: `${(r.count / maxPerYear) * 100}%` }}
                 />
               </div>
@@ -95,7 +95,7 @@ export default async function StatsPage() {
 
       {/* Status breakdown */}
       <section>
-        <h2 className="text-base font-semibold text-zinc-400 uppercase tracking-wider mb-3">By Status</h2>
+        <h2 className="text-base font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">By Status</h2>
         <div className="space-y-1.5">
           {STATUS_ORDER.filter((s) => statusMap[s]).map((status) => {
             const count = statusMap[status] ?? 0;
@@ -104,9 +104,9 @@ export default async function StatsPage() {
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium w-24 text-center shrink-0 ${STATUS_COLORS[status]}`}>
                   {status}
                 </span>
-                <div className="flex-1 bg-zinc-800 rounded-full h-4 overflow-hidden">
+                <div className="flex-1 bg-zinc-200 dark:bg-zinc-800 rounded-full h-4 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-zinc-400"
+                    className="h-full rounded-full bg-zinc-500 dark:bg-zinc-400"
                     style={{ width: `${(count / totalRolls) * 100}%` }}
                   />
                 </div>
@@ -119,14 +119,14 @@ export default async function StatsPage() {
 
       {/* Top cameras */}
       <section>
-        <h2 className="text-base font-semibold text-zinc-400 uppercase tracking-wider mb-3">Top Cameras</h2>
+        <h2 className="text-base font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Top Cameras</h2>
         <div className="space-y-2">
           {(topCameras as { camera_id: string; count: number }[]).map((r) => (
             <div key={r.camera_id} className="flex items-center gap-3">
               <span className="text-sm w-40 truncate shrink-0">{r.camera_id}</span>
-              <div className="flex-1 bg-zinc-800 rounded-full h-4 overflow-hidden">
+              <div className="flex-1 bg-zinc-200 dark:bg-zinc-800 rounded-full h-4 overflow-hidden">
                 <div
-                  className="bg-zinc-400 h-full rounded-full"
+                  className="bg-zinc-500 dark:bg-zinc-400 h-full rounded-full"
                   style={{ width: `${(r.count / maxCamera) * 100}%` }}
                 />
               </div>
@@ -138,14 +138,14 @@ export default async function StatsPage() {
 
       {/* Top films */}
       <section>
-        <h2 className="text-base font-semibold text-zinc-400 uppercase tracking-wider mb-3">Top Films</h2>
+        <h2 className="text-base font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Top Films</h2>
         <div className="space-y-2">
           {(topFilms as { film_id: string; count: number }[]).map((r) => (
             <div key={r.film_id} className="flex items-center gap-3">
               <span className="text-sm w-40 truncate shrink-0">{r.film_id}</span>
-              <div className="flex-1 bg-zinc-800 rounded-full h-4 overflow-hidden">
+              <div className="flex-1 bg-zinc-200 dark:bg-zinc-800 rounded-full h-4 overflow-hidden">
                 <div
-                  className="bg-zinc-400 h-full rounded-full"
+                  className="bg-zinc-500 dark:bg-zinc-400 h-full rounded-full"
                   style={{ width: `${(r.count / maxFilm) * 100}%` }}
                 />
               </div>
@@ -160,7 +160,7 @@ export default async function StatsPage() {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-zinc-900 rounded-xl p-4 text-center">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 text-center border border-zinc-100 dark:border-transparent">
       <div className="text-2xl font-bold">{value}</div>
       <div className="text-xs text-zinc-500 mt-1">{label}</div>
     </div>

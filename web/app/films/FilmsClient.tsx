@@ -109,16 +109,16 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
         <h1 className="text-2xl font-bold">Films</h1>
         <div className="flex gap-2 items-center">
           {!merging && (
-            <div className="flex gap-1 text-xs bg-zinc-800 rounded-lg p-1">
+            <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
               <button
                 onClick={() => setSortBy("usage")}
-                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
               >
                 By usage
               </button>
               <button
                 onClick={() => setSortBy("alpha")}
-                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white text-black font-medium" : "text-zinc-400"}`}
+                className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
               >
                 A–Z
               </button>
@@ -126,7 +126,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
           )}
           <button
             onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); }}
-            className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${merging ? "bg-zinc-700 text-white" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${merging ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"}`}
           >
             {merging ? "Cancel" : "Merge"}
           </button>
@@ -144,14 +144,14 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
               <li key={f.id}>
                 <button
                   onClick={() => toggleSelect(f.id)}
-                  className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-900/50 ring-1 ring-blue-500" : "bg-zinc-900 hover:bg-zinc-800"}`}
+                  className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-500" : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
                 >
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-600"}`}>
+                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-400 dark:border-zinc-600"}`}>
                     {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                   </div>
                   <div>
                     <div className="font-medium">{displayName}</div>
-                    <div className="text-xs text-zinc-500 mt-0.5">{meta}</div>
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{meta}</div>
                   </div>
                 </button>
               </li>
@@ -162,13 +162,13 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             <li key={f.id}>
               <Link
                 href={`/films/${encodeURIComponent(f.id)}`}
-                className="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-800 transition-colors"
+                className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <div>
                   <div className="font-medium">{displayName}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">{meta}</div>
+                  <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{meta}</div>
                 </div>
-                <span className="text-xs text-zinc-600">Edit →</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-600">Edit →</span>
               </Link>
             </li>
           );
@@ -180,7 +180,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
 
       {/* Merge panel */}
       {merging && selected.size >= 2 && (
-        <div className="bg-zinc-900 rounded-xl p-4 mb-6 space-y-3">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 mb-6 space-y-3 border border-zinc-200 dark:border-transparent">
           <p className="text-sm font-medium">{selected.size} films selected — keep which one?</p>
           <div className="space-y-2">
             {selectedFilms.map((f) => (
@@ -204,7 +204,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
           <button
             onClick={handleMerge}
             disabled={!targetId || mergeSaving}
-            className="w-full bg-red-700 hover:bg-red-600 disabled:opacity-50 py-3 rounded-xl text-sm font-semibold transition-colors"
+            className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 py-3 rounded-xl text-sm font-semibold transition-colors text-white"
           >
             {mergeSaving ? "Merging…" : `Merge ${selected.size - 1} into ${targetId || "…"}`}
           </button>
@@ -215,10 +215,10 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
         <>
           <button
             onClick={() => { setShowForm((v) => !v); setError(""); }}
-            className="w-full flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
+            className="w-full flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
           >
             <span>Add Film</span>
-            <span className="text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
+            <span className="text-zinc-500 dark:text-zinc-400 text-lg leading-none">{showForm ? "−" : "+"}</span>
           </button>
           {!showForm ? null : <form onSubmit={handleSubmit} className="space-y-3">
             <Field label="ID (slug)" value={form.id}       onChange={(v) => setForm((f) => ({ ...f, id: v }))}       placeholder="portra-400" required />
@@ -239,7 +239,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             </div>
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
-            <button type="submit" disabled={saving} className="w-full bg-white text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50">
+            <button type="submit" disabled={saving} className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50">
               {saving ? "Saving…" : "Add Film"}
             </button>
           </form>}
@@ -260,14 +260,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-zinc-400 mb-1">{label}</label>
+      <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-white/20"
+        className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
       />
     </div>
   );
