@@ -159,26 +159,18 @@ export default async function HomePage({
 
     return (
       <div>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            {showNext ? (
-              <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">←</Link>
-            ) : (
-              <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">←</span>
-            )}
-            <h1 className="text-2xl font-bold">{viewYear}</h1>
-            {showPrev ? (
-              <Link href={`/?year=${prevYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">→</Link>
-            ) : (
-              <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">→</span>
-            )}
-          </div>
-          <Link
-            href="/new"
-            className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
-          >
-            New Roll
-          </Link>
+        <div className="flex items-center gap-3 mb-6">
+          {showNext ? (
+            <Link href={nextYear === currentYear ? "/" : `/?year=${nextYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">←</Link>
+          ) : (
+            <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">←</span>
+          )}
+          <h1 className="text-2xl font-bold">{viewYear}</h1>
+          {showPrev ? (
+            <Link href={`/?year=${prevYear}`} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none">→</Link>
+          ) : (
+            <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">→</span>
+          )}
         </div>
 
         {rolls.length === 0 ? (
@@ -206,16 +198,6 @@ export default async function HomePage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Rolls</h1>
-        <Link
-          href="/new"
-          className="bg-zinc-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium text-sm active:scale-95 transition-transform"
-        >
-          New Roll
-        </Link>
-      </div>
-
       {rolls.length === 0 ? (
         <p className="text-zinc-500 text-center py-16">No rolls yet. Create one!</p>
       ) : (
