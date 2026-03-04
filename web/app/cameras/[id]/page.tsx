@@ -75,7 +75,7 @@ export default function EditCameraPage({ params }: { params: Promise<{ id: strin
         <Field label="Model" value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
         <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
         <div>
-          <label className="block text-sm text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 mb-1">Format</label>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Format</label>
           <div className="relative">
             <select
               value={form.format}
@@ -113,7 +113,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
+      <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
       <input
         type="text"
         value={value}

@@ -123,7 +123,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm text-zinc-600 dark:text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
+      <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
       <input
         type="text"
         value={value}

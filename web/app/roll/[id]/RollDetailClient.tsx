@@ -45,14 +45,24 @@ const NEXT_ACTION: Record<string, { label: string; field: TsKey; isDate?: boolea
   UPLOADED:  { label: "Archive",       field: "archived_at" },
 };
 
+function cameraLabel(c: Camera): string {
+  return c.nickname ?? `${c.brand} ${c.model}`;
+}
+
+function filmLabel(f: Film): string {
+  if (f.nickname) return f.nickname;
+  const iso = f.show_iso && f.iso ? ` ${f.iso}` : "";
+  return `${f.brand} ${f.name}${iso}`;
+}
+
 interface Props {
   roll: Roll;
   status: string;
-  camera: Camera | null;
-  film: Film | null;
+  cameras: Camera[];
+  films: Film[];
 }
 
-export default function RollDetailClient({ roll: initialRoll, status: initialStatus, camera, film }: Props) {
+export default function RollDetailClient({ roll: initialRoll, status: initialStatus, cameras, films }: Props) {
   const router = useRouter();
   const [roll, setRoll] = useState(initialRoll);
   const [status, setStatus] = useState(initialStatus);
@@ -62,14 +72,24 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [saved, setSaved] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
+  const [editMeta, setEditMeta] = useState(false);
+  const [metaForm, setMetaForm] = useState({
+    camera_id: initialRoll.camera_id ?? "",
+    film_id: initialRoll.film_id ?? "",
+    shot_at: initialRoll.shot_at ? String(initialRoll.shot_at).slice(0, 10) : "",
+    album_name: initialRoll.album_name ?? "",
+    tags: initialRoll.tags?.join(", ") ?? "",
+  });
 
   useEffect(() => {
     import("@github/markdown-toolbar-element");
   }, []);
 
   const nextAction = NEXT_ACTION[status];
+  const currentCamera = cameras.find((c) => c.id === roll.camera_id) ?? null;
+  const currentFilm = films.find((f) => f.id === roll.film_id) ?? null;
 
-  async function save(patch: Partial<Roll>) {
+  async function save(patch: Partial<Roll>): Promise<boolean> {
     setSaving(true);
     setSaved(false);
     const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
@@ -82,10 +102,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       headers,
       body: JSON.stringify(patch),
     });
+    let ok = false;
     if (resp.ok) {
       const updated = await resp.json();
       setRoll(updated);
-      // Derive status from updated roll
       const s = updated.archived_at ? "ARCHIVED"
         : updated.uploaded_at  ? "UPLOADED"
         : updated.processed_at ? "PROCESSED"
@@ -96,8 +116,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       setStatus(s);
       setSaved(true);
       router.refresh();
+      ok = true;
     }
     setSaving(false);
+    return ok;
   }
 
   function nowValue(isDate?: boolean) {
@@ -144,17 +166,125 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       )}
 
       {/* Metadata */}
-      <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 space-y-3 mb-4 border border-zinc-100 dark:border-transparent">
-        <Row label="Camera" value={camera ? (camera.nickname ?? `${camera.brand} ${camera.model}`) : roll.camera_id ?? "—"} />
-        <Row label="Film"   value={film ? (film.nickname ?? `${film.brand} ${film.name}${film.show_iso && film.iso ? ` ${film.iso}` : ""}`) : roll.film_id ?? "—"} />
-        <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
-        {roll.lab_name && <Row label="Lab" value={roll.lab_name} />}
-        {roll.album_name && <Row label="Album" value={roll.album_name} />}
-        {roll.tags && roll.tags.length > 0 && (
-          <div className="flex gap-2 flex-wrap pt-1">
-            {roll.tags.map((tag) => (
-              <span key={tag} className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
-            ))}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 border border-zinc-100 dark:border-transparent">
+        <div className="flex items-center justify-between px-4 pt-3 pb-1">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">Info</span>
+          {editMeta ? (
+            <button
+              onClick={() => setEditMeta(false)}
+              className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+          ) : (
+            <button
+              onClick={() => setEditMeta(true)}
+              className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+
+        {editMeta ? (
+          <div className="px-4 pb-4 pt-2 space-y-3">
+            <div>
+              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Camera</label>
+              <div className="relative">
+                <select
+                  value={metaForm.camera_id}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, camera_id: e.target.value }))}
+                  className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 pr-8"
+                >
+                  <option value="">— none —</option>
+                  {cameras.map((c) => (
+                    <option key={c.id} value={c.id}>{cameraLabel(c)}</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Film</label>
+              <div className="relative">
+                <select
+                  value={metaForm.film_id}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
+                  className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 pr-8"
+                >
+                  <option value="">— none —</option>
+                  {films.map((f) => (
+                    <option key={f.id} value={f.id}>{filmLabel(f)}</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Shot at</label>
+              <input
+                type="date"
+                value={metaForm.shot_at}
+                onChange={(e) => setMetaForm((f) => ({ ...f, shot_at: e.target.value }))}
+                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Album</label>
+              <input
+                type="text"
+                value={metaForm.album_name}
+                onChange={(e) => setMetaForm((f) => ({ ...f, album_name: e.target.value }))}
+                placeholder="Album name"
+                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Tags</label>
+              <input
+                type="text"
+                value={metaForm.tags}
+                onChange={(e) => setMetaForm((f) => ({ ...f, tags: e.target.value }))}
+                placeholder="travel, street"
+                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+              />
+            </div>
+
+            <button
+              onClick={async () => {
+                const ok = await save({
+                  camera_id: metaForm.camera_id || null,
+                  film_id: metaForm.film_id || null,
+                  shot_at: metaForm.shot_at || null,
+                  album_name: metaForm.album_name || null,
+                  tags: metaForm.tags ? metaForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                });
+                if (ok) setEditMeta(false);
+              }}
+              disabled={saving}
+              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-3 rounded-lg text-sm font-semibold active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+          </div>
+        ) : (
+          <div className="px-4 pb-4 pt-2 space-y-3">
+            <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : roll.camera_id ?? "—"} />
+            <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : roll.film_id ?? "—"} />
+            <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
+            {roll.lab_name && <Row label="Lab" value={roll.lab_name} />}
+            {roll.album_name && <Row label="Album" value={roll.album_name} />}
+            {roll.tags && roll.tags.length > 0 && (
+              <div className="flex gap-2 flex-wrap pt-1">
+                {roll.tags.map((tag) => (
+                  <span key={tag} className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
