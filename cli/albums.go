@@ -375,7 +375,7 @@ func formatAlbumName(r roll.Roll) string {
 }
 
 func init() {
-	rootCmd.AddCommand(albumsCmd)
+	lrCmd.AddCommand(albumsCmd)
 	albumsCmd.Flags().Int("year", 0, "Filter by year")
 	albumsCmd.AddCommand(compareCmd)
 	compareCmd.Flags().Int("year", 0, "Filter by year")

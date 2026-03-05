@@ -271,6 +271,6 @@ var checkCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(checkCmd)
+	lrCmd.AddCommand(checkCmd)
 	checkCmd.Flags().Int("year", 0, "Filter by year")
 }

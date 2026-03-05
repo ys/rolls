@@ -400,6 +400,6 @@ func isImageFile(ext string) bool {
 }
 
 func init() {
-	rootCmd.AddCommand(uploadCmd)
+	lrCmd.AddCommand(uploadCmd)
 	uploadCmd.Flags().Int("year", 0, "Filter by year")
 }

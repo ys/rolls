@@ -251,7 +251,7 @@ var linkCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(linkCmd)
+	lrCmd.AddCommand(linkCmd)
 	linkCmd.Flags().Int("year", 0, "Filter by year")
 	linkCmd.Flags().String("roll", "", "Process a single roll by its roll number")
 	linkCmd.Flags().Bool("dry-run", false, "Show what would happen without making changes")
