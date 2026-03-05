@@ -32,6 +32,10 @@ function filmLabel(f: Film): string {
   return `${f.brand} ${f.name}${iso}`;
 }
 
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function NewRollPage() {
   const router = useRouter();
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
@@ -48,38 +52,85 @@ export default function NewRollPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // Inline camera add
+  const [showAddCamera, setShowAddCamera] = useState(false);
+  const [cameraForm, setCameraForm] = useState({ brand: "", model: "", nickname: "" });
+  const [addingCamera, setAddingCamera] = useState(false);
+
+  // Inline film add
+  const [showAddFilm, setShowAddFilm] = useState(false);
+  const [filmForm, setFilmForm] = useState({ brand: "", name: "", nickname: "", iso: "" });
+  const [addingFilm, setAddingFilm] = useState(false);
+
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
+  const authHeaders: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+
   useEffect(() => {
     import("@github/markdown-toolbar-element");
   }, []);
 
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
-    const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
-
     Promise.all([
-      fetch("/api/cameras", { headers }).then((r) => r.json()),
-      fetch("/api/films", { headers }).then((r) => r.json()),
-      fetch("/api/rolls/next", { headers }).then((r) => r.json()),
+      fetch("/api/cameras", { headers: authHeaders }).then((r) => r.json()),
+      fetch("/api/films", { headers: authHeaders }).then((r) => r.json()),
+      fetch("/api/rolls/next", { headers: authHeaders }).then((r) => r.json()),
     ]).then(([cams, fils, next]: [Camera[], Film[], { roll_number: string }]) => {
       setAllCameras(cams);
       setAllFilms(fils);
       setSuggestedNumber(next.roll_number);
       setForm((f) => ({ ...f, roll_number: next.roll_number }));
     });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cameras = [...allCameras].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
   const films = [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
+
+  async function handleAddCamera(e: React.FormEvent) {
+    e.preventDefault();
+    setAddingCamera(true);
+    const id = slugify(`${cameraForm.brand}-${cameraForm.model}`);
+    const resp = await fetch("/api/cameras", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders },
+      body: JSON.stringify({ id, brand: cameraForm.brand, model: cameraForm.model, nickname: cameraForm.nickname || null, format: 135 }),
+    });
+    if (resp.ok) {
+      const camera: Camera = await resp.json();
+      setAllCameras((prev) => [...prev, camera]);
+      setForm((f) => ({ ...f, camera_id: camera.id }));
+      setShowAddCamera(false);
+      setCameraForm({ brand: "", model: "", nickname: "" });
+    }
+    setAddingCamera(false);
+  }
+
+  async function handleAddFilm(e: React.FormEvent) {
+    e.preventDefault();
+    setAddingFilm(true);
+    const id = slugify(`${filmForm.brand}-${filmForm.name}`);
+    const resp = await fetch("/api/films", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders },
+      body: JSON.stringify({ id, brand: filmForm.brand, name: filmForm.name, nickname: filmForm.nickname || null, iso: filmForm.iso ? parseInt(filmForm.iso, 10) : null, color: true, show_iso: false }),
+    });
+    if (resp.ok) {
+      const film: Film = await resp.json();
+      setAllFilms((prev) => [...prev, film]);
+      setForm((f) => ({ ...f, film_id: film.id }));
+      setShowAddFilm(false);
+      setFilmForm({ brand: "", name: "", nickname: "", iso: "" });
+    }
+    setAddingFilm(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError("");
 
-    const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      ...authHeaders,
     };
 
     const body = {
@@ -143,6 +194,7 @@ export default function NewRollPage() {
           />
         </div>
 
+        {/* Camera */}
         <div>
           <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Camera</label>
           <div className="relative">
@@ -158,8 +210,37 @@ export default function NewRollPage() {
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
           </div>
+          <button
+            type="button"
+            onClick={() => { setShowAddCamera((v) => !v); setCameraForm({ brand: "", model: "", nickname: "" }); }}
+            className="mt-1.5 text-[13px] text-amber-600 dark:text-amber-400 px-1"
+          >
+            {showAddCamera ? "− Cancel" : "+ Add new camera"}
+          </button>
+          {showAddCamera && (
+            <div className="mt-2 p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Brand *</label>
+                  <input type="text" required value={cameraForm.brand} onChange={(e) => setCameraForm((f) => ({ ...f, brand: e.target.value }))} placeholder="Nikon" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Model *</label>
+                  <input type="text" required value={cameraForm.model} onChange={(e) => setCameraForm((f) => ({ ...f, model: e.target.value }))} placeholder="F3" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-zinc-500 mb-1">Nickname</label>
+                <input type="text" value={cameraForm.nickname} onChange={(e) => setCameraForm((f) => ({ ...f, nickname: e.target.value }))} placeholder="optional" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+              </div>
+              <button type="button" disabled={!cameraForm.brand || !cameraForm.model || addingCamera} onClick={handleAddCamera} className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-2 rounded-lg text-sm font-medium active:scale-95 transition-transform disabled:opacity-40">
+                {addingCamera ? "Adding…" : "Add Camera"}
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Film */}
         <div>
           <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Film</label>
           <div className="relative">
@@ -175,6 +256,40 @@ export default function NewRollPage() {
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
           </div>
+          <button
+            type="button"
+            onClick={() => { setShowAddFilm((v) => !v); setFilmForm({ brand: "", name: "", nickname: "", iso: "" }); }}
+            className="mt-1.5 text-[13px] text-amber-600 dark:text-amber-400 px-1"
+          >
+            {showAddFilm ? "− Cancel" : "+ Add new film"}
+          </button>
+          {showAddFilm && (
+            <div className="mt-2 p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Brand *</label>
+                  <input type="text" required value={filmForm.brand} onChange={(e) => setFilmForm((f) => ({ ...f, brand: e.target.value }))} placeholder="Kodak" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Name *</label>
+                  <input type="text" required value={filmForm.name} onChange={(e) => setFilmForm((f) => ({ ...f, name: e.target.value }))} placeholder="Gold 200" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">Nickname</label>
+                  <input type="text" value={filmForm.nickname} onChange={(e) => setFilmForm((f) => ({ ...f, nickname: e.target.value }))} placeholder="optional" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+                <div>
+                  <label className="block text-xs text-zinc-500 mb-1">ISO</label>
+                  <input type="text" inputMode="numeric" value={filmForm.iso} onChange={(e) => setFilmForm((f) => ({ ...f, iso: e.target.value }))} placeholder="200" className="w-full bg-white dark:bg-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20" />
+                </div>
+              </div>
+              <button type="button" disabled={!filmForm.brand || !filmForm.name || addingFilm} onClick={handleAddFilm} className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-2 rounded-lg text-sm font-medium active:scale-95 transition-transform disabled:opacity-40">
+                {addingFilm ? "Adding…" : "Add Film"}
+              </button>
+            </div>
+          )}
         </div>
 
         <div>
