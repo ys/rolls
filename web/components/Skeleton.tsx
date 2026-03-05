@@ -1,3 +1,5 @@
+import { CSSProperties } from "react";
+
 /**
  * Skeleton Loading Components
  *
@@ -7,18 +9,20 @@
 
 interface SkeletonProps {
   className?: string;
+  style?: CSSProperties;
 }
 
 /**
  * Base Skeleton component - single loading bar
  */
-export function Skeleton({ className = "" }: SkeletonProps) {
+export function Skeleton({ className = "", style }: SkeletonProps) {
   return (
     <div
       className={`animate-pulse bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 rounded ${className}`}
       style={{
         backgroundSize: "200% 100%",
         animation: "shimmer 2s infinite linear",
+        ...style,
       }}
     />
   );
