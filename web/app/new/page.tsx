@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Camera, Film } from "@/lib/db";
+import { invalidateCache } from "@/lib/cache";
 
 declare module "react" {
   namespace JSX {
@@ -100,6 +101,10 @@ export default function NewRollPage() {
     }
 
     const roll = await resp.json();
+
+    // Invalidate rolls cache so home page refreshes
+    invalidateCache("rolls");
+
     router.push(`/roll/${roll.roll_number}`);
   }
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Camera } from "@/lib/db";
+import { invalidateCache } from "@/lib/cache";
 
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
@@ -48,6 +49,10 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
 
     const camera = await resp.json();
     setAllCameras((prev) => [...prev.filter((c) => c.id !== camera.id), camera]);
+
+    // Invalidate rolls cache since camera data changed
+    invalidateCache("rolls");
+
     setForm({ id: "", brand: "", model: "", nickname: "", format: "135" });
     setSaving(false);
     setShowForm(false);

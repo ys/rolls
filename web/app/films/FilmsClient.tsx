@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Film } from "@/lib/db";
+import { invalidateCache } from "@/lib/cache";
 
 function filmLabel(f: Film): string {
   if (f.nickname) return f.nickname;
@@ -59,6 +60,10 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
 
     const film = await resp.json();
     setAllFilms((prev) => [...prev.filter((f) => f.id !== film.id), film]);
+
+    // Invalidate rolls cache since film data changed
+    invalidateCache("rolls");
+
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
     setSaving(false);
     setShowForm(false);
@@ -94,6 +99,10 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
 
     const updated = await fetch("/api/films", { headers: headers() }).then((r) => r.json());
     setAllFilms(updated);
+
+    // Invalidate rolls cache since film data changed
+    invalidateCache("rolls");
+
     setSelected(new Set());
     setTargetId("");
     setMerging(false);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { marked } from "marked";
 import type { Roll, Camera, Film } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
+import { invalidateCache } from "@/lib/cache";
 
 declare module "react" {
   namespace JSX {
@@ -115,6 +116,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         : "LOADED";
       setStatus(s);
       setSaved(true);
+
+      // Invalidate rolls cache so home page refreshes
+      invalidateCache("rolls");
+
       router.refresh();
       ok = true;
     }
