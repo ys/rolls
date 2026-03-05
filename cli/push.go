@@ -145,6 +145,8 @@ to the web app. Also uploads any contact sheet images not yet on the web.
 Unknown camera/film IDs are fuzzy-matched to known entries, or added as stubs.
 Note: does not set processed_at. Use 'rolls process' for that.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		dryRun, _ := cmd.Flags().GetBool("dry-run")
+
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
 		}
@@ -278,26 +280,31 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			payload.Rolls = append(payload.Rolls, rj)
 		}
 
-		body, err := json.Marshal(payload)
-		cobra.CheckErr(err)
+		if dryRun {
+			fmt.Printf("[dry-run] would push %d cameras, %d films, %d rolls\n",
+				len(payload.Cameras), len(payload.Films), len(payload.Rolls))
+		} else {
+			body, err := json.Marshal(payload)
+			cobra.CheckErr(err)
 
-		url := cfg.WebAppURL + "/api/import"
-		req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
-		cobra.CheckErr(err)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+			url := cfg.WebAppURL + "/api/import"
+			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+			cobra.CheckErr(err)
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
 
-		client := &http.Client{Timeout: 60 * time.Second}
-		resp, err := client.Do(req)
-		cobra.CheckErr(err)
-		defer resp.Body.Close()
+			client := &http.Client{Timeout: 60 * time.Second}
+			resp, err := client.Do(req)
+			cobra.CheckErr(err)
+			defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			cobra.CheckErr(fmt.Errorf("import failed with status %s", resp.Status))
+			if resp.StatusCode != http.StatusOK {
+				cobra.CheckErr(fmt.Errorf("import failed with status %s", resp.Status))
+			}
+
+			fmt.Printf("Pushed %d cameras, %d films, %d rolls\n",
+				len(payload.Cameras), len(payload.Films), len(payload.Rolls))
 		}
-
-		fmt.Printf("Pushed %d cameras, %d films, %d rolls\n",
-			len(payload.Cameras), len(payload.Films), len(payload.Rolls))
 
 		// Upload contact sheets
 		if cfg.ContactSheetPath != "" {
@@ -322,8 +329,12 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 						skipped++
 						continue
 					}
+					if dryRun {
+						fmt.Printf("[dry-run] would upload contact sheet for %s\n", rollNum)
+						uploaded++
+						continue
+					}
 					imgPath := filepath.Join(imagesDir, entry.Name())
-
 					data, err := os.ReadFile(imgPath)
 					if err != nil {
 						fmt.Printf("  warn: could not read %s: %v\n", entry.Name(), err)
@@ -339,6 +350,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 					req.Header.Set("Content-Type", "image/webp")
 					req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
 
+					client := &http.Client{Timeout: 60 * time.Second}
 					resp, err := client.Do(req)
 					if err != nil || resp.StatusCode != http.StatusOK {
 						skipped++
@@ -352,7 +364,11 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 					resp.Body.Close()
 					uploaded++
 				}
-				fmt.Printf("Uploaded %d contact sheets (%d skipped)\n", uploaded, skipped)
+				if dryRun {
+					fmt.Printf("[dry-run] would upload %d contact sheets (%d already uploaded)\n", uploaded, skipped)
+				} else {
+					fmt.Printf("Uploaded %d contact sheets (%d skipped)\n", uploaded, skipped)
+				}
 			}
 		}
 	},
@@ -360,4 +376,5 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 
 func init() {
 	rootCmd.AddCommand(pushCmd)
+	pushCmd.Flags().Bool("dry-run", false, "Show what would be pushed without sending data")
 }

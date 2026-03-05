@@ -19,16 +19,20 @@ type exportResponse struct {
 	Rolls   []rollJSON   `json:"rolls"`
 }
 
-var backupCmd = &cobra.Command{
-	Use:   "backup",
-	Short: "Backup web app data to local files",
+var pullCmd = &cobra.Command{
+	Use:   "pull",
+	Short: "Pull web app data to local files",
 	Long: `Fetches all data from the web app and writes it to local files:
   - cameras.yml and films.yml → config dir (~/.config/rolls/)
   - {scans_path}/{roll_number}/roll.md → one markdown file per roll
 
+Use --dry-run to preview what would be written without touching any files.
+
 Requires web_app_url and web_app_api_key to be set in config.
 scans_path must be set to write roll files.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		dryRun, _ := cmd.Flags().GetBool("dry-run")
+
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
 		}
@@ -65,8 +69,12 @@ scans_path must be set to write roll files.`,
 				"format":   c.Format,
 			}
 		}
-		writeyaml(filepath.Join(configDir, "cameras.yml"), camerasMap)
-		fmt.Printf("Wrote %d cameras to cameras.yml\n", len(data.Cameras))
+		if dryRun {
+			fmt.Printf("[dry-run] would write cameras.yml (%d cameras)\n", len(data.Cameras))
+		} else {
+			writeyaml(filepath.Join(configDir, "cameras.yml"), camerasMap)
+			fmt.Printf("Wrote %d cameras to cameras.yml\n", len(data.Cameras))
+		}
 
 		// Write films.yml
 		filmsMap := make(map[string]map[string]interface{})
@@ -80,8 +88,12 @@ scans_path must be set to write roll files.`,
 				"showiso":  f.ShowIso,
 			}
 		}
-		writeyaml(filepath.Join(configDir, "films.yml"), filmsMap)
-		fmt.Printf("Wrote %d films to films.yml\n", len(data.Films))
+		if dryRun {
+			fmt.Printf("[dry-run] would write films.yml (%d films)\n", len(data.Films))
+		} else {
+			writeyaml(filepath.Join(configDir, "films.yml"), filmsMap)
+			fmt.Printf("Wrote %d films to films.yml\n", len(data.Films))
+		}
 
 		// Write roll.md for each roll
 		if cfg.ScansPath == "" {
@@ -94,19 +106,28 @@ scans_path must be set to write roll files.`,
 			if r.RollNumber == "" {
 				continue
 			}
+			rollFile := filepath.Join(cfg.ScansPath, r.RollNumber, "roll.md")
+			if dryRun {
+				fmt.Printf("[dry-run] would write %s\n", rollFile)
+				written++
+				continue
+			}
 			rollDir := filepath.Join(cfg.ScansPath, r.RollNumber)
 			if err := os.MkdirAll(rollDir, 0755); err != nil {
 				fmt.Fprintf(os.Stderr, "failed to create %s: %v\n", rollDir, err)
 				continue
 			}
-			rollFile := filepath.Join(rollDir, "roll.md")
 			if err := writeRollMarkdown(rollFile, r); err != nil {
 				fmt.Fprintf(os.Stderr, "failed to write %s: %v\n", rollFile, err)
 				continue
 			}
 			written++
 		}
-		fmt.Printf("Wrote %d roll files\n", written)
+		if dryRun {
+			fmt.Printf("[dry-run] would write %d roll files\n", written)
+		} else {
+			fmt.Printf("Wrote %d roll files\n", written)
+		}
 	},
 }
 
@@ -165,5 +186,6 @@ func writeRollMarkdown(path string, r rollJSON) error {
 }
 
 func init() {
-	rootCmd.AddCommand(backupCmd)
+	rootCmd.AddCommand(pullCmd)
+	pullCmd.Flags().Bool("dry-run", false, "Show what would be written without writing files")
 }
