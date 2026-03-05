@@ -16,7 +16,6 @@ function LoginForm() {
     const from = searchParams.get("from") ?? "/";
     router.push(from);
     router.refresh();
-    setError("Incorrect password");
   }
 
   return (
