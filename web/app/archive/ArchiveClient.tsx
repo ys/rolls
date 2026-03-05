@@ -175,9 +175,16 @@ function ListRow({ roll, editing, selected, onToggle }: {
         <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">{status}</div>
       </div>
       {!editing && (
-        <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <path d="M9 18l6-6-6-6" />
-        </svg>
+        <div className="flex items-center gap-2 shrink-0">
+          {roll.contact_sheet_url && (
+            <div className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 shrink-0">
+              <img src={roll.contact_sheet_url} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </div>
       )}
     </>
   );
@@ -235,7 +242,7 @@ export default function ArchiveClient() {
   );
 
   const router = useRouter();
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">("list");
   const [editing, setEditing] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
