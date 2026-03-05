@@ -366,13 +366,13 @@ export default function ArchiveClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — floating pill above the bottom nav */}
+      {/* Edit-mode action bar — overlays nav at exact same position */}
       {editing && (
         <div
-          className="fixed inset-x-0 bottom-0 z-20 flex justify-center pointer-events-none px-4"
-          style={{ paddingBottom: "calc(5.75rem + env(safe-area-inset-bottom))" }}
+          className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
+          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
+          <div className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
             <button
               onClick={exitEdit}
               className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity"
