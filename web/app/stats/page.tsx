@@ -65,7 +65,7 @@ export default async function StatsPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold mb-4">Stats</h1>
+        <h1 className="text-3xl font-bold mb-6">Stats</h1>
         {/* Top-line numbers */}
         <div className="grid grid-cols-3 gap-3">
           <Stat label="Total rolls" value={totalRolls} />

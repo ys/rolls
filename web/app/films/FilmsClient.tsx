@@ -106,7 +106,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Films</h1>
+        <h1 className="text-3xl font-bold">Films</h1>
         <div className="flex gap-2 items-center">
           {!merging && (
             <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">

@@ -57,7 +57,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Cameras</h1>
+        <h1 className="text-3xl font-bold">Cameras</h1>
         <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
           <button
             onClick={() => setSortBy("usage")}

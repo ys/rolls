@@ -11,12 +11,12 @@ export default function NewRollFab() {
     <Link
       href="/new"
       aria-label="New roll"
-      className="fixed bottom-6 right-4 z-20 w-16 h-16 rounded-full flex items-center justify-center
+      className="fixed right-4 z-20 w-16 h-16 rounded-full flex items-center justify-center
         bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500
         text-white
         shadow-2xl shadow-amber-400/60
         active:scale-95 transition-transform"
-      style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+      style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
     >
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
         {/* Short sun rays outside the film reel */}

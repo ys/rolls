@@ -1,8 +1,18 @@
 import { sql } from "@/lib/db";
 import { rollStatus } from "@/lib/db";
-import { STATUS_COLORS, STATUS_BORDER } from "@/lib/status";
+import { STATUS_COLORS } from "@/lib/status";
 import type { Roll } from "@/lib/db";
 import Link from "next/link";
+
+const STATUS_DOT: Record<string, string> = {
+  LOADED:    "bg-amber-400",
+  FRIDGE:    "bg-cyan-400",
+  LAB:       "bg-orange-400",
+  SCANNED:   "bg-green-400",
+  PROCESSED: "bg-purple-400",
+  UPLOADED:  "bg-blue-400",
+  ARCHIVED:  "bg-zinc-300 dark:bg-zinc-600",
+};
 
 type RollRow = Roll & {
   camera_nickname: string | null;
@@ -101,35 +111,28 @@ function filmLabel(roll: RollRow): string {
 
 function RollItem({ roll }: { roll: RollRow }) {
   const status = rollStatus(roll);
+  const dateStr = roll.shot_at
+    ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    : null;
+  const subtitle = [cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ");
   return (
-    <li>
+    <li className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
       <Link
         href={`/roll/${roll.roll_number}`}
-        className={`flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${STATUS_BORDER[status]}`}
+        className="flex items-start gap-3 py-3 active:bg-zinc-100 dark:active:bg-zinc-800/50 -mx-4 px-4 transition-colors"
       >
-        {roll.contact_sheet_url ? (
-          <img
-            src={roll.contact_sheet_url}
-            alt=""
-            className="w-16 h-16 object-cover rounded-lg shrink-0"
-          />
-        ) : (
-          <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-lg shrink-0" />
-        )}
+        <div className={`w-2 h-2 rounded-full shrink-0 mt-[7px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`} />
         <div className="flex-1 min-w-0">
-          <div className="font-mono font-bold text-base">{roll.roll_number}</div>
-          <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
-            {[cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ")}
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
+            {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
           </div>
-          {roll.shot_at && (
-            <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {new Date(roll.shot_at).toLocaleDateString()}
-            </div>
+          {subtitle && (
+            <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>
           )}
+          <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">{status}</div>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${STATUS_COLORS[status]}`}>
-          {status}
-        </span>
+        <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </Link>
     </li>
   );
@@ -176,7 +179,7 @@ export default async function HomePage({
         {rolls.length === 0 ? (
           <p className="text-zinc-500 text-center py-16">No rolls in {viewYear}.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul>
             {rolls.map((roll) => <RollItem key={roll.roll_number} roll={roll} />)}
           </ul>
         )}
@@ -188,7 +191,7 @@ export default async function HomePage({
     );
   }
 
-  // Default: current year view
+  // Default: current year view — large title
   const unscanned = rolls.filter((r) => !r.scanned_at);
   const inProgress = unscanned
     .filter((r) => !r.lab_at)
@@ -198,6 +201,7 @@ export default async function HomePage({
 
   return (
     <div>
+      <h1 className="text-3xl font-bold mb-6">Rolls</h1>
       {rolls.length === 0 ? (
         <p className="text-zinc-500 text-center py-16">No rolls yet. Create one!</p>
       ) : (
