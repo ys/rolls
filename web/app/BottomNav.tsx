@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { haptics } from "../lib/haptics";
 
 function RollsIcon({ active }: { active: boolean }) {
   return (
@@ -72,6 +73,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
+              onClick={() => haptics.light()}
               className={`flex flex-col items-center justify-center min-w-[68px] h-full px-3 gap-0.5 rounded-[1.5rem] transition-all duration-200 ${
                 active
                   ? "bg-zinc-900/10 dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-inner"
@@ -87,6 +89,7 @@ export default function BottomNav() {
       <Link
         href="/new"
         aria-label="New roll"
+        onClick={() => haptics.medium()}
         className="pointer-events-auto flex-shrink-0 w-14 h-14 aspect-square rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-xl shadow-amber-400/40 dark:shadow-amber-500/30 active:scale-95 transition-transform text-3xl font-light leading-none"
       >
         +
