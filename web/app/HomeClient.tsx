@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus, STATUS_COLORS } from "@/lib/status";
 import type { Roll } from "@/lib/db";
@@ -32,8 +32,6 @@ type RollRow = Roll & {
 
 interface HomeData {
   rolls: RollRow[];
-  currentYear: number;
-  viewYear: number | null;
 }
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
@@ -113,22 +111,16 @@ function RollItem({ roll }: { roll: RollRow }) {
   );
 }
 
-export default function HomeClient({ firstYear }: { firstYear: number }) {
-  const searchParams = useSearchParams();
-  const yearParam = searchParams.get("year");
-
+export default function HomeClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers: HeadersInit = apiKey
     ? { Authorization: `Bearer ${apiKey}` }
     : {};
 
   const { data, isLoading } = useCachedData<HomeData>(
-    ["rolls", "home", yearParam ?? "current"],
+    ["rolls", "home"],
     async () => {
-      const url = yearParam
-        ? `/api/rolls/home?year=${yearParam}`
-        : "/api/rolls/home";
-      const res = await fetch(url, { headers });
+      const res = await fetch("/api/rolls/home", { headers });
       if (!res.ok) throw new Error("Failed to fetch rolls");
       return res.json();
     },
@@ -160,164 +152,59 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     );
   }
 
-  const { rolls, currentYear, viewYear } = data;
-  const isPastYear = viewYear !== null && viewYear < currentYear;
+  const { rolls } = data;
 
-  if (isPastYear && viewYear) {
-    // Past year view
-    const prevYear = viewYear - 1;
-    const nextYear = viewYear + 1;
-    const showPrev = prevYear >= firstYear;
-    const showNext = nextYear <= currentYear;
-
-    return (
-      <PullToRefresh onRefresh={handleRefresh}>
-        <div>
-        <div className="flex items-center gap-3 mb-6">
-          {showNext ? (
-            <Link
-              href={nextYear === currentYear ? "/" : `/?year=${nextYear}`}
-              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none"
-            >
-              ←
-            </Link>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">
-              ←
-            </span>
-          )}
-          <h1 className="text-2xl font-bold">{viewYear}</h1>
-          {showPrev ? (
-            <Link
-              href={`/?year=${prevYear}`}
-              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-xl leading-none"
-            >
-              →
-            </Link>
-          ) : (
-            <span className="text-zinc-300 dark:text-zinc-700 text-xl leading-none">
-              →
-            </span>
-          )}
-        </div>
-
-        {rolls.length === 0 ? (
-          <p className="text-zinc-500 text-center py-16">
-            No rolls in {viewYear}.
-          </p>
-        ) : (
-          <ul>
-            {rolls.map((roll) => (
-              <RollItem key={roll.roll_number} roll={roll} />
-            ))}
-          </ul>
-        )}
-
-        <div className="mt-8 text-sm text-zinc-500 text-center">
-          {rolls.length > 0 && (
-            <span>
-              {rolls.length} roll{rolls.length !== 1 ? "s" : ""}
-            </span>
-          )}
-        </div>
-      </div>
-      </PullToRefresh>
-    );
-  }
-
-  // Current year view
-  const unscanned = rolls.filter((r) => !r.scanned_at);
-  const inProgress = unscanned
+  const inProgress = rolls
     .filter((r) => !r.lab_at)
     .sort(
       (a, b) =>
         (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) -
         (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9)
     );
-  const atLab = unscanned.filter((r) => r.lab_at);
-  const historical = rolls.filter((r) => r.scanned_at);
+  const atLab = rolls.filter((r) => r.lab_at);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div>
-      <h1 className="text-3xl font-bold mb-6">Rolls</h1>
-      {rolls.length === 0 ? (
-        <p className="text-zinc-500 text-center py-16">
-          No rolls yet. Create one!
-        </p>
-      ) : (
-        <div className="space-y-8">
-          {inProgress.length > 0 && (
-            <section>
-              <div className="flex items-baseline gap-2 mb-3">
-                <h2 className="text-lg font-bold">In Progress</h2>
-                <span className="text-sm text-zinc-500">
-                  {inProgress.length}
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {inProgress.map((roll) => (
-                  <RollItem key={roll.roll_number} roll={roll} />
-                ))}
-              </ul>
-            </section>
-          )}
+        <h1 className="text-3xl font-bold mb-6">Rolls</h1>
+        {rolls.length === 0 ? (
+          <p className="text-zinc-500 text-center py-16">
+            No active rolls. Tap + to create one!
+          </p>
+        ) : (
+          <div className="space-y-8">
+            {inProgress.length > 0 && (
+              <section>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <h2 className="text-lg font-bold">In Progress</h2>
+                  <span className="text-sm text-zinc-500">
+                    {inProgress.length}
+                  </span>
+                </div>
+                <ul>
+                  {inProgress.map((roll) => (
+                    <RollItem key={roll.roll_number} roll={roll} />
+                  ))}
+                </ul>
+              </section>
+            )}
 
-          {atLab.length > 0 && (
-            <section>
-              <div className="flex items-baseline gap-2 mb-3">
-                <h2 className="text-lg font-bold">At the Lab</h2>
-                <span className="text-sm text-zinc-500">{atLab.length}</span>
-              </div>
-              <ul className="space-y-2">
-                {atLab.map((roll) => (
-                  <RollItem key={roll.roll_number} roll={roll} />
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {historical.length > 0 && (
-            <section>
-              <div className="flex items-baseline gap-2 mb-3">
-                <h2 className="text-lg font-bold">{currentYear}</h2>
-                <span className="text-sm text-zinc-500">
-                  {historical.length} roll{historical.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <ul className="space-y-2">
-                {historical.map((roll) => (
-                  <RollItem key={roll.roll_number} roll={roll} />
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
-      )}
-
-      {/* Previous years navigation */}
-      {currentYear - 1 >= firstYear && (
-        <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between text-sm text-zinc-500">
-            <span>Previous years</span>
-            <div className="flex gap-3">
-              {Array.from(
-                { length: currentYear - firstYear },
-                (_, i) => currentYear - 1 - i
-              ).map((y) => (
-                <Link
-                  key={y}
-                  href={`/?year=${y}`}
-                  className="hover:text-zinc-900 dark:hover:text-white transition-colors"
-                >
-                  {y}
-                </Link>
-              ))}
-            </div>
+            {atLab.length > 0 && (
+              <section>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <h2 className="text-lg font-bold">At the Lab</h2>
+                  <span className="text-sm text-zinc-500">{atLab.length}</span>
+                </div>
+                <ul>
+                  {atLab.map((roll) => (
+                    <RollItem key={roll.roll_number} roll={roll} />
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </PullToRefresh>
   );
 }
