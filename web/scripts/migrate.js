@@ -27,7 +27,7 @@ const sql = postgres(DATABASE_URL, {
   ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
   max: 1, // Only need one connection for migrations
   idle_timeout: 20,
-  connect_timeout: 30, // Increased timeout for Heroku/RDS connection
+  connect_timeout: 60, // Extended timeout for Heroku release phase RDS connection
 });
 
 async function ensureMigrationsTable() {
