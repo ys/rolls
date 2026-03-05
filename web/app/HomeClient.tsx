@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus, STATUS_COLORS } from "@/lib/status";
 import type { Roll } from "@/lib/db";
@@ -122,7 +122,7 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     ? { Authorization: `Bearer ${apiKey}` }
     : {};
 
-  const { data, isLoading, refetch } = useCachedData<HomeData>(
+  const { data, isLoading } = useCachedData<HomeData>(
     ["rolls", "home", yearParam ?? "current"],
     async () => {
       const url = yearParam
@@ -135,8 +135,10 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     { apiKey }
   );
 
+  const router = useRouter();
+
   const handleRefresh = async () => {
-    await refetch();
+    router.refresh();
   };
 
   if (isLoading && !data) {
