@@ -301,35 +301,35 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         {showDates && (
           <div className="px-4 pb-4 space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
             {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
-              <div key={key} className="flex items-center justify-between gap-4">
-                <label className="text-sm text-zinc-600 dark:text-zinc-400 shrink-0 w-28">{label}</label>
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    type={type}
-                    key={roll[key] ?? "empty"}
-                    defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
-                    onBlur={(e) => {
-                      if (e.target.value) save({ [key]: e.target.value });
-                    }}
-                    className="bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
-                  />
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-sm text-zinc-600 dark:text-zinc-400">{label}</label>
                   {roll[key] ? (
                     <button
                       onClick={() => save({ [key]: null })}
-                      className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 whitespace-nowrap"
+                      className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400"
                       title="Clear"
                     >
-                      ✕
+                      Clear
                     </button>
                   ) : (
                     <button
                       onClick={() => save({ [key]: nowValue(type === "date") })}
-                      className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white whitespace-nowrap"
+                      className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                     >
                       Now
                     </button>
                   )}
                 </div>
+                <input
+                  type={type}
+                  key={roll[key] ?? "empty"}
+                  defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
+                  onBlur={(e) => {
+                    if (e.target.value) save({ [key]: e.target.value });
+                  }}
+                  className="w-full min-w-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                />
               </div>
             ))}
           </div>
