@@ -19,8 +19,12 @@ import (
 // archiveCmd represents the archive command
 var contactSheetCmd = &cobra.Command{
 	Use:   "contactsheet",
-	Short: "Generate Contact Sheet",
-	Args:  cobra.MatchAll(cobra.OnlyValidArgs),
+	Short: "Generate contact sheet images for rolls",
+	Long: `Generates a .webp contact sheet image for each roll using ImageMagick.
+Output is written to {contact_sheet_path}/images/{roll_number}.webp.
+
+Accepts roll numbers as arguments, or use --year to process all rolls from a year.`,
+	Args: cobra.MatchAll(cobra.OnlyValidArgs),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		imagick.Initialize()
 		defer imagick.Terminate()

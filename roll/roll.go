@@ -389,6 +389,13 @@ func (roll *Roll) UpdateMetadata() error {
 			} else {
 				updatedLines = append(updatedLines, line)
 			}
+		case "processed_at":
+			if !roll.Metadata.ProcessedAt.IsZero() {
+				updatedLines = append(updatedLines, fmt.Sprintf("processed_at: %s", FormatDateTime(roll.Metadata.ProcessedAt)))
+				updated["processed_at"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
 		case "archived_at":
 			if !roll.Metadata.ArchivedAt.IsZero() {
 				updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", FormatDateTime(roll.Metadata.ArchivedAt)))
@@ -416,6 +423,9 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 	if !updated["album_name"] && roll.Metadata.AlbumName != "" {
 		updatedLines = append(updatedLines, fmt.Sprintf("album_name: %s", roll.Metadata.AlbumName))
+	}
+	if !updated["processed_at"] && !roll.Metadata.ProcessedAt.IsZero() {
+		updatedLines = append(updatedLines, fmt.Sprintf("processed_at: %s", FormatDateTime(roll.Metadata.ProcessedAt)))
 	}
 	if !updated["archived_at"] && !roll.Metadata.ArchivedAt.IsZero() {
 		updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", FormatDateTime(roll.Metadata.ArchivedAt)))

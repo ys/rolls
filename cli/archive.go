@@ -20,7 +20,10 @@ import (
 var archiveCmd = &cobra.Command{
 	Use:   "archive",
 	Short: "Archive a roll",
-	Long:  `Mark a roll as archived by setting the archived_at timestamp in the metadata file.`,
+	Long: `Sets archived_at to the current time in the local roll.md frontmatter.
+
+This is a local-only operation. Run 'rolls push' afterwards to sync the
+timestamp to the web app.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {

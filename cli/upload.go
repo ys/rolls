@@ -19,7 +19,7 @@ import (
 
 var uploadCmd = &cobra.Command{
 	Use:   "upload [roll_number]",
-	Short: "Upload assets to Lightroom albums",
+	Short: "[Lightroom] Upload roll images to Lightroom albums",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {

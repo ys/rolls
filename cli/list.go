@@ -13,9 +13,9 @@ import (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all the rolls",
-	Long: `List all the rolls that are present at PATH
-It will also filter down by year or camera or film
-`,
+	Long: `Displays all rolls from scans_path with their camera, film, shot date, and status.
+Use --compact for a condensed one-line-per-roll view.
+Use --year to filter by year.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		year, err := cmd.Flags().GetInt("year")
 		cobra.CheckErr(err)

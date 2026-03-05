@@ -16,7 +16,7 @@ import (
 
 var linkCmd = &cobra.Command{
 	Use:   "link",
-	Short: "Link uploaded assets to film stock and camera albums based on EXIF data",
+	Short: "[Lightroom] Link assets to camera and film albums via EXIF",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Get the year filter if provided
 		year, err := cmd.Flags().GetInt("year")

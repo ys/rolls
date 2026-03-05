@@ -89,7 +89,11 @@ func remapIDs(root string) (changed, total int) {
 var reconcileCmd = &cobra.Command{
 	Use:   "reconcile [year]",
 	Short: "Reconcile roll.md files with missing metadata and canonical IDs",
-	Long:  `Update roll.md files with missing metadata fields and rewrite camera/film IDs to canonical values.`,
+	Long: `Scans roll.md files in scans_path and obsidian_rolls_path and:
+  - Rewrites unknown camera/film IDs to canonical IDs using fuzzy matching
+  - Fills in missing metadata fields (e.g. roll_number from folder name)
+
+Useful after importing old rolls or renaming cameras/films in the config.`,
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Remap camera/film IDs in Obsidian flat files first

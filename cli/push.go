@@ -139,7 +139,11 @@ type rollJSON struct {
 var pushCmd = &cobra.Command{
 	Use:   "push",
 	Short: "Push local rolls data to the web app",
-	Long:  `Reads all local cameras, films, and rolls and uploads them to the web app via the import API.`,
+	Long: `Reads all local cameras, films, and roll.md files and bulk-upserts them
+to the web app. Also uploads any contact sheet images not yet on the web.
+
+Unknown camera/film IDs are fuzzy-matched to known entries, or added as stubs.
+Note: does not set processed_at. Use 'rolls process' for that.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))

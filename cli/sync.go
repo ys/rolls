@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -22,6 +21,12 @@ func init() {
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Sync roll archive to Obsidian as yearly summary notes",
+	Long: `Reads all local roll.md files from scans_path and generates yearly
+summary notes in obsidian_rolls_path (e.g. 2025.md).
+
+Each note lists every roll for that year with its camera/film display name
+and embeds the contact sheet image if one exists in obsidian_rolls_path/images/.
+Use --dry-run to preview changes without writing files.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
 
@@ -37,35 +42,15 @@ var syncCmd = &cobra.Command{
 			return err
 		}
 
-		// Copy contact sheet images to Obsidian images/ subfolder
-		obsidianImagesDir := filepath.Join(cfg.ObsidianRollsPath, "images")
-		copiedSheets := map[string]bool{} // roll_number → true if local image exists
-		if cfg.ContactSheetPath != "" {
-			srcDir := filepath.Join(cfg.ContactSheetPath, "images")
-			if !dryRun {
-				os.MkdirAll(obsidianImagesDir, 0755)
-			}
-			entries, err := os.ReadDir(srcDir)
-			if err == nil {
-				for _, e := range entries {
-					if e.IsDir() || filepath.Ext(e.Name()) != ".webp" {
-						continue
-					}
-					rollNum := e.Name()[:len(e.Name())-5]
-					src := filepath.Join(srcDir, e.Name())
-					dst := filepath.Join(obsidianImagesDir, e.Name())
-					if dryRun {
-						copiedSheets[rollNum] = true
-						continue
-					}
-					if err := copyFile(src, dst); err != nil {
-						fmt.Fprintf(os.Stderr, "  warn: could not copy %s: %v\n", e.Name(), err)
-					} else {
-						copiedSheets[rollNum] = true
-					}
+		// Build set of rolls that have a contact sheet already in place
+		availableSheets := map[string]bool{}
+		imagesDir := filepath.Join(cfg.ObsidianRollsPath, "images")
+		if entries, err := os.ReadDir(imagesDir); err == nil {
+			for _, e := range entries {
+				if !e.IsDir() && filepath.Ext(e.Name()) == ".webp" {
+					availableSheets[e.Name()[:len(e.Name())-5]] = true
 				}
 			}
-			fmt.Printf("Copied %d contact sheets to Obsidian\n", len(copiedSheets))
 		}
 
 		// Group rolls by year
@@ -95,7 +80,7 @@ var syncCmd = &cobra.Command{
 				return yearRolls[i].Metadata.RollNumber > yearRolls[j].Metadata.RollNumber
 			})
 
-			content := renderYearNote(year, yearRolls, copiedSheets)
+			content := renderYearNote(year, yearRolls, availableSheets)
 			outPath := filepath.Join(cfg.ObsidianRollsPath, fmt.Sprintf("%d.md", year))
 
 			if dryRun {
@@ -111,21 +96,6 @@ var syncCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func copyFile(src, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	_, err = io.Copy(out, in)
-	return err
 }
 
 func renderYearNote(year int, rolls []roll.Roll, sheets map[string]bool) string {

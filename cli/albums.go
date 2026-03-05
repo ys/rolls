@@ -18,7 +18,7 @@ import (
 // albumsCmd represents the albums command
 var albumsCmd = &cobra.Command{
 	Use:    "albums",
-	Short:  "Manage Lightroom albums for rolls",
+	Short:  "[Lightroom] Manage albums for rolls",
 	Hidden: false,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
@@ -131,7 +131,7 @@ var albumsCmd = &cobra.Command{
 // compareCmd represents the compare command
 var compareCmd = &cobra.Command{
 	Use:   "compare",
-	Short: "Compare Lightroom albums with local rolls",
+	Short: "[Lightroom] Compare albums with local rolls",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {

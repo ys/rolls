@@ -22,7 +22,12 @@ type exportResponse struct {
 var backupCmd = &cobra.Command{
 	Use:   "backup",
 	Short: "Backup web app data to local files",
-	Long:  `Fetches all data from the web app and writes it to local YAML/markdown files.`,
+	Long: `Fetches all data from the web app and writes it to local files:
+  - cameras.yml and films.yml → config dir (~/.config/rolls/)
+  - {scans_path}/{roll_number}/roll.md → one markdown file per roll
+
+Requires web_app_url and web_app_api_key to be set in config.
+scans_path must be set to write roll files.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))

@@ -17,7 +17,7 @@ import (
 
 var checkCmd = &cobra.Command{
 	Use:   "check [roll_number]",
-	Short: "Check if local files match the ones in Lightroom albums",
+	Short: "[Lightroom] Check local files match Lightroom album contents",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {

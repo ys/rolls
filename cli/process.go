@@ -1,30 +1,32 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cli
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
+	"path/filepath"
+	"slices"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/ys/rolls/roll"
 	"github.com/ys/rolls/style"
 )
 
-// clearPreviousRoll clears the output of the previous roll
-func clearPreviousRoll() {
-	// Clear 10 lines of previous output
-	ClearPreviousOutput(10)
-}
-
 // processCmd represents the process command
 var processCmd = &cobra.Command{
-	Use:   "process",
-	Short: "Process a roll",
-	Long:  `Process a roll by renaming files, updating EXIF data, and creating a contact sheet.`,
+	Use:   "process [roll_number...]",
+	Short: "Process rolls: rename files, update EXIF, generate contact sheet, and publish to web",
+	Long: `Process one or more rolls locally (rename files, update EXIF data, generate contact sheet)
+and then publish to the web app (upload contact sheet, set processed_at).
+
+Use --local-only to skip the web publish step.
+Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
@@ -41,6 +43,11 @@ var processCmd = &cobra.Command{
 			return err
 		}
 
+		localOnly, err := cmd.Flags().GetBool("local-only")
+		if err != nil {
+			return err
+		}
+
 		// Get all rolls to process
 		var rollsToProcess []roll.Roll
 
@@ -51,12 +58,7 @@ var processCmd = &cobra.Command{
 				return err
 			}
 			rollsToProcess = roll.Filter(allRolls, func(r roll.Roll) bool {
-				for _, arg := range args {
-					if r.Metadata.RollNumber == arg {
-						return true
-					}
-				}
-				return false
+				return slices.Contains(args, r.Metadata.RollNumber)
 			})
 		} else {
 			// Process all rolls in the scans directory
@@ -99,6 +101,13 @@ var processCmd = &cobra.Command{
 			}
 		}
 
+		// Determine whether to publish to web
+		doWebPublish := !localOnly && cfg.WebAppURL != "" && cfg.WebAppAPIKey != "" && cfg.ContactSheetPath != ""
+		var client *http.Client
+		if doWebPublish {
+			client = &http.Client{Timeout: 60 * time.Second}
+		}
+
 		// Show global progress
 		fmt.Println(style.RenderTitle("📦", fmt.Sprintf("Processing %d rolls", len(rollsToProcess))))
 
@@ -125,17 +134,36 @@ var processCmd = &cobra.Command{
 				continue
 			}
 
-			// Archive the roll
+			// Archive the roll locally
 			err = r.Archive(cfg, exifOnly)
 			if err != nil {
 				return err
 			}
 
-			// Print summary line
+			// Always stamp processed_at in local roll.md
+			now := time.Now().UTC()
+			mdPath := filepath.Join(cfg.ScansPath, r.Metadata.RollNumber, "roll.md")
+			if localRoll, err := roll.FromMarkdown(mdPath); err == nil {
+				localRoll.Metadata.ProcessedAt = now
+				if err := localRoll.UpdateMetadata(); err != nil {
+					fmt.Fprintf(os.Stderr, "  warn: could not update processed_at in roll.md: %v\n", err)
+				}
+			}
+
 			status := "Archived"
 			if exifOnly {
 				status = "EXIF updated"
 			}
+
+			// Publish to web app unless --local-only
+			if doWebPublish {
+				if err := publishRollToWeb(r.Metadata.RollNumber, client, now); err != nil {
+					fmt.Fprintf(os.Stderr, "  warn: could not publish %s: %v\n", r.Metadata.RollNumber, err)
+				} else {
+					status += " + published"
+				}
+			}
+
 			fmt.Println(style.RenderSummary(fmt.Sprintf("   ✨ Roll %s: %s", r.Metadata.RollNumber, status)))
 		}
 
@@ -144,9 +172,66 @@ var processCmd = &cobra.Command{
 	},
 }
 
+// publishRollToWeb uploads the contact sheet to the web app and sets processed_at.
+func publishRollToWeb(rollNum string, client *http.Client, now time.Time) error {
+	imgPath := filepath.Join(cfg.ContactSheetPath, "images", rollNum+".webp")
+	imgData, err := os.ReadFile(imgPath)
+	if err != nil {
+		return fmt.Errorf("contact sheet not found at %s: %w", imgPath, err)
+	}
+
+	// Upload contact sheet
+	req, err := http.NewRequest(http.MethodPut,
+		cfg.WebAppURL+"/api/rolls/"+rollNum+"/contact-sheet",
+		bytes.NewReader(imgData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "image/webp")
+	req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("contact sheet upload failed: %w", err)
+	}
+	io.Copy(io.Discard, resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("contact sheet upload failed with status %s", resp.Status)
+	}
+
+	// Set processed_at on web app
+	patchBody, err := json.Marshal(map[string]string{
+		"processed_at": now.Format(time.RFC3339),
+	})
+	if err != nil {
+		return err
+	}
+	req, err = http.NewRequest(http.MethodPatch,
+		cfg.WebAppURL+"/api/rolls/"+rollNum,
+		bytes.NewReader(patchBody))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return fmt.Errorf("setting processed_at failed: %w", err)
+	}
+	io.Copy(io.Discard, resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("setting processed_at failed with status %s", resp.Status)
+	}
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(processCmd)
 	processCmd.Flags().Int("year", 0, "Only process rolls from this year")
 	processCmd.Flags().Bool("exif-only", false, "Only update EXIF data for already processed rolls")
 	processCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompt")
+	processCmd.Flags().Bool("local-only", false, "Skip web publish (contact sheet upload and processed_at)")
 }

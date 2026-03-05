@@ -16,8 +16,15 @@ var verbose bool
 var rootCmd = &cobra.Command{
 	Use:   "rolls",
 	Short: "Rolls allow you to manage your scans",
-	Long: `Rolls will allow you to rename folders, files and add EXIF to your
-  scans. All that based on a markdown file for definition.`,
+	Long: `rolls manages your analog film roll archive.
+
+Workflow:
+  backup    — pull roll.md files + cameras/films from the web app
+  process   — rename files, write EXIF, generate contact sheet, publish to web
+  sync      — write yearly summary notes to your Obsidian vault
+  push      — bulk-sync all local metadata to the web app
+
+Config lives in ~/.config/rolls/config.yml`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
