@@ -146,7 +146,7 @@ scans_path must be set to write roll files.`,
 			return nil
 		})
 
-		written := 0
+		written, newFiles, changed, unchanged := 0, 0, 0, 0
 		for _, r := range data.Rolls {
 			if r.RollNumber == "" {
 				continue
@@ -180,7 +180,27 @@ scans_path must be set to write roll files.`,
 			rollFile := filepath.Join(rollDir, "roll.md")
 
 			if dryRun {
-				fmt.Printf("[dry-run] would write %s\n", rollFile)
+				newContent := buildRollMarkdown(r)
+				oldBytes, readErr := os.ReadFile(rollFile)
+				if readErr != nil {
+					// New file
+					fmt.Printf("new: %s\n", rollFile)
+					for _, line := range strings.Split(strings.TrimRight(newContent, "\n"), "\n") {
+						fmt.Println("+" + line)
+					}
+					fmt.Println()
+					newFiles++
+				} else {
+					diff := lineDiff(string(oldBytes), newContent)
+					if diff != "" {
+						fmt.Printf("~ %s\n", rollFile)
+						fmt.Print(diff)
+						fmt.Println()
+						changed++
+					} else {
+						unchanged++
+					}
+				}
 				written++
 				continue
 			}
@@ -195,7 +215,7 @@ scans_path must be set to write roll files.`,
 			written++
 		}
 		if dryRun {
-			fmt.Printf("[dry-run] would write %d roll files\n", written)
+			fmt.Printf("[dry-run] %d new, %d changed, %d unchanged\n", newFiles, changed, unchanged)
 		} else {
 			fmt.Printf("Wrote %d roll files\n", written)
 		}
@@ -208,7 +228,7 @@ func writeyaml(path string, v interface{}) {
 	cobra.CheckErr(os.WriteFile(path, data, 0644))
 }
 
-func writeRollMarkdown(path string, r rollJSON) error {
+func buildRollMarkdown(r rollJSON) string {
 	var sb strings.Builder
 	sb.WriteString("---\n")
 	sb.WriteString(fmt.Sprintf("roll_number: %s\n", r.RollNumber))
@@ -252,8 +272,83 @@ func writeRollMarkdown(path string, r rollJSON) error {
 		sb.WriteString(r.Notes)
 		sb.WriteString("\n")
 	}
+	return sb.String()
+}
 
-	return os.WriteFile(path, []byte(sb.String()), 0644)
+func writeRollMarkdown(path string, r rollJSON) error {
+	return os.WriteFile(path, []byte(buildRollMarkdown(r)), 0644)
+}
+
+// lineDiff returns a unified-style diff between old and new content.
+// Returns "" if identical. Lines prefixed with '+'/'-'/' ' (context).
+func lineDiff(oldContent, newContent string) string {
+	if oldContent == newContent {
+		return ""
+	}
+	a := strings.Split(strings.TrimRight(oldContent, "\n"), "\n")
+	b := strings.Split(strings.TrimRight(newContent, "\n"), "\n")
+	m, n := len(a), len(b)
+
+	// LCS DP table
+	dp := make([][]int, m+1)
+	for i := range dp {
+		dp[i] = make([]int, n+1)
+	}
+	for i := 1; i <= m; i++ {
+		for j := 1; j <= n; j++ {
+			if a[i-1] == b[j-1] {
+				dp[i][j] = dp[i-1][j-1] + 1
+			} else if dp[i-1][j] >= dp[i][j-1] {
+				dp[i][j] = dp[i-1][j]
+			} else {
+				dp[i][j] = dp[i][j-1]
+			}
+		}
+	}
+
+	// Backtrack to build edit ops
+	type op struct {
+		kind byte
+		line string
+	}
+	ops := make([]op, 0, m+n)
+	i, j := m, n
+	for i > 0 || j > 0 {
+		if i > 0 && j > 0 && a[i-1] == b[j-1] {
+			ops = append(ops, op{' ', a[i-1]})
+			i--
+			j--
+		} else if j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]) {
+			ops = append(ops, op{'+', b[j-1]})
+			j--
+		} else {
+			ops = append(ops, op{'-', a[i-1]})
+			i--
+		}
+	}
+	// Reverse (built backwards)
+	for l, r := 0, len(ops)-1; l < r; l, r = l+1, r-1 {
+		ops[l], ops[r] = ops[r], ops[l]
+	}
+
+	hasChanges := false
+	for _, o := range ops {
+		if o.kind != ' ' {
+			hasChanges = true
+			break
+		}
+	}
+	if !hasChanges {
+		return ""
+	}
+
+	var sb strings.Builder
+	for _, o := range ops {
+		sb.WriteByte(o.kind)
+		sb.WriteString(o.line)
+		sb.WriteByte('\n')
+	}
+	return sb.String()
 }
 
 func init() {
