@@ -108,28 +108,26 @@ export default function NewRollPage() {
       <h1 className="text-2xl font-bold mb-6">New Roll</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        {/* Roll number + Shot at on one row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="min-w-0 overflow-hidden">
-            <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Roll #</label>
-            <input
-              type="text"
-              required
-              value={form.roll_number}
-              onChange={(e) => setForm((f) => ({ ...f, roll_number: e.target.value }))}
-              placeholder={suggestedNumber}
-              className="w-full min-w-0 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-          </div>
-          <div className="min-w-0 overflow-hidden">
-            <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Shot at</label>
-            <input
-              type="date"
-              value={form.shot_at}
-              onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
-              className="w-full min-w-0 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-          </div>
+        <div>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Roll #</label>
+          <input
+            type="text"
+            required
+            value={form.roll_number}
+            onChange={(e) => setForm((f) => ({ ...f, roll_number: e.target.value }))}
+            placeholder={suggestedNumber}
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">Shot at</label>
+          <input
+            type="date"
+            value={form.shot_at}
+            onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
+            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+          />
         </div>
 
         <div>
