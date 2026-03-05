@@ -63,7 +63,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-10 flex justify-center pointer-events-none"
-      style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
     >
       <div className="pointer-events-auto flex items-center gap-1 px-2 py-2 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-3xl shadow-xl shadow-black/20 dark:shadow-black/50 border border-zinc-200/60 dark:border-zinc-700/50">
         {TABS.slice(0, 2).map(({ href, label, icon: Icon, match }) => {
