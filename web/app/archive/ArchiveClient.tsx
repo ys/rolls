@@ -361,11 +361,31 @@ export default function ArchiveClient() {
           <div className="space-y-8">
             {years.map((year) => {
               const yearRolls = byYear.get(year)!;
+              const yearNums = yearRolls.map((r) => r.roll_number);
+              const allYearSelected = yearNums.every((n) => selected.has(n));
+              function toggleYear() {
+                setSelected((prev) => {
+                  const s = new Set(prev);
+                  if (allYearSelected) { yearNums.forEach((n) => s.delete(n)); haptics.light(); }
+                  else { yearNums.forEach((n) => s.add(n)); haptics.medium(); }
+                  return s;
+                });
+              }
               return (
                 <section key={year}>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <h2 className="text-lg font-bold">{year}</h2>
-                    <span className="text-sm text-zinc-500">{yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}</span>
+                  <div className="flex items-baseline justify-between mb-3">
+                    <div className="flex items-baseline gap-2">
+                      <h2 className="text-lg font-bold">{year}</h2>
+                      <span className="text-sm text-zinc-500">{yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}</span>
+                    </div>
+                    {editing && (
+                      <button
+                        onClick={toggleYear}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                      >
+                        {allYearSelected ? "Deselect" : "Select all"}
+                      </button>
+                    )}
                   </div>
                   {view === "grid" ? (
                     <div className="space-y-2">
