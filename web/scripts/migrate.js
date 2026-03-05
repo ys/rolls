@@ -24,7 +24,7 @@ if (!DATABASE_URL) {
 
 // Initialize postgres connection with proper timeout and SSL settings
 const sql = postgres(DATABASE_URL, {
-  ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
+  ssl: DATABASE_URL.includes('localhost') || DATABASE_URL.includes('///') ? false : { rejectUnauthorized: false },
   max: 1, // Only need one connection for migrations
   idle_timeout: 20,
   connect_timeout: 60, // Extended timeout for Heroku release phase RDS connection

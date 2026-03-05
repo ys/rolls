@@ -86,7 +86,9 @@ const withPWA = require('next-pwa')({
 });
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  turbopack: {},
+};
 
 // Bundle analyzer is a dev-only tool; lazy-require so it's not needed in prod
 if (process.env.ANALYZE === "true") {
