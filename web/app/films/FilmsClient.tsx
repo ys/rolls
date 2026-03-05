@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Film } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
+import PullToRefresh from "@/components/PullToRefresh";
+import { SuccessMessage } from "@/components/SuccessCheckmark";
+import { haptics } from "@/lib/haptics";
 
 function filmLabel(f: Film): string {
   if (f.nickname) return f.nickname;
@@ -29,6 +32,8 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
   const [targetId, setTargetId] = useState("");
   const [mergeError, setMergeError] = useState("");
   const [mergeSaving, setMergeSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers = (extra?: Record<string, string>): HeadersInit => ({
@@ -39,6 +44,22 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
   const films = sortBy === "alpha"
     ? [...allFilms].sort((a, b) => filmLabel(a).localeCompare(filmLabel(b)))
     : [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
+
+  async function handleRefresh() {
+    const resp = await fetch("/api/films", { headers: headers() });
+    if (resp.ok) {
+      const films = await resp.json();
+      setAllFilms(films);
+      router.refresh();
+    }
+  }
+
+  function showSuccessMsg(msg: string) {
+    setSuccessMessage(msg);
+    setShowSuccess(true);
+    haptics.success();
+    setTimeout(() => setShowSuccess(false), 2000);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,6 +76,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
       const data = await resp.json();
       setError(data.error ?? "Failed to create film");
       setSaving(false);
+      haptics.error();
       return;
     }
 
@@ -67,6 +89,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
     setSaving(false);
     setShowForm(false);
+    showSuccessMsg("Film saved!");
     router.refresh();
   }
 
@@ -94,6 +117,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
       const data = await resp.json();
       setMergeError(data.error ?? "Merge failed");
       setMergeSaving(false);
+      haptics.error();
       return;
     }
 
@@ -107,26 +131,34 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     setTargetId("");
     setMerging(false);
     setMergeSaving(false);
+    showSuccessMsg(`Films merged into ${targetId}!`);
     router.refresh();
   }
 
   const selectedFilms = allFilms.filter((f) => selected.has(f.id));
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div>
+        {showSuccess && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+            <SuccessMessage message={successMessage} />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Films</h1>
         <div className="flex gap-2 items-center">
           {!merging && (
             <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
               <button
-                onClick={() => setSortBy("usage")}
+                onClick={() => { setSortBy("usage"); haptics.light(); }}
                 className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
               >
                 By usage
               </button>
               <button
-                onClick={() => setSortBy("alpha")}
+                onClick={() => { setSortBy("alpha"); haptics.light(); }}
                 className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
               >
                 A–Z
@@ -134,7 +166,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             </div>
           )}
           <button
-            onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); }}
+            onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
             className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${merging ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"}`}
           >
             {merging ? "Cancel" : "Merge"}
@@ -152,7 +184,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             return (
               <li key={f.id}>
                 <button
-                  onClick={() => toggleSelect(f.id)}
+                  onClick={() => { toggleSelect(f.id); haptics.light(); }}
                   className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-500" : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
                 >
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-400 dark:border-zinc-600"}`}>
@@ -171,6 +203,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             <li key={f.id}>
               <Link
                 href={`/films/${encodeURIComponent(f.id)}`}
+                onClick={() => haptics.light()}
                 className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
                 <div>
@@ -223,7 +256,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
       {!merging && (
         <>
           <button
-            onClick={() => { setShowForm((v) => !v); setError(""); }}
+            onClick={() => { setShowForm((v) => !v); setError(""); haptics.light(); }}
             className="w-full flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl px-4 py-3 text-sm font-medium transition-colors mb-3"
           >
             <span>Add Film</span>
@@ -255,6 +288,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
         </>
       )}
     </div>
+    </PullToRefresh>
   );
 }
 

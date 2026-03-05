@@ -20,7 +20,21 @@
       "Bash(go run:*)",
       "Bash(vercel ls:*)",
       "Bash(vercel alias ls)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(heroku logs --tail=false -n 100 --app rolls)",
+      "Bash(heroku logs -n 200 --app rolls)",
+      "Bash(heroku releases --app rolls -n 5)",
+      "Bash(heroku auth:whoami)",
+      "Bash(heroku releases --app rolls -n 10)",
+      "Bash(heroku releases:info v34 --app rolls)",
+      "Bash(heroku builds --app rolls -n 5)",
+      "Bash(heroku pipelines:info --app rolls)",
+      "Bash(heroku git:remote --app rolls)",
+      "Bash(git push heroku main)",
+      "Bash(git push origin main)",
+      "Bash(heroku logs -n 100 --app rolls)",
+      "Bash(git commit -m \"Increase web app DB connection timeout to 30s\")",
+      "Bash(git commit -m \"Update bottom nav to iOS liquid design with more rounded corners\")"
     ]
   },
   "enableAllProjectMcpServers": false

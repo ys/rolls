@@ -5,6 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus, STATUS_COLORS } from "@/lib/status";
 import type { Roll } from "@/lib/db";
+import PullToRefresh from "@/components/PullToRefresh";
+import { RollSkeleton } from "@/components/Skeleton";
+import { haptics } from "@/lib/haptics";
 
 const STATUS_DOT: Record<string, string> = {
   LOADED: "bg-amber-400",
@@ -67,6 +70,7 @@ function RollItem({ roll }: { roll: RollRow }) {
     <li className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
       <Link
         href={`/roll/${roll.roll_number}`}
+        onClick={() => haptics.light()}
         className="flex items-start gap-3 py-3 active:bg-zinc-100 dark:active:bg-zinc-800/50 -mx-4 px-4 transition-colors"
       >
         <div
@@ -118,7 +122,7 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     ? { Authorization: `Bearer ${apiKey}` }
     : {};
 
-  const { data, isLoading } = useCachedData<HomeData>(
+  const { data, isLoading, refetch } = useCachedData<HomeData>(
     ["rolls", "home", yearParam ?? "current"],
     async () => {
       const url = yearParam
@@ -131,10 +135,17 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     { apiKey }
   );
 
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
   if (isLoading && !data) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-zinc-400">Loading...</div>
+      <div className="space-y-4">
+        <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
+        {[1, 2, 3, 4].map((i) => (
+          <RollSkeleton key={i} />
+        ))}
       </div>
     );
   }
@@ -158,7 +169,8 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
     const showNext = nextYear <= currentYear;
 
     return (
-      <div>
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div>
         <div className="flex items-center gap-3 mb-6">
           {showNext ? (
             <Link
@@ -207,6 +219,7 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
           )}
         </div>
       </div>
+      </PullToRefresh>
     );
   }
 
@@ -223,7 +236,8 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
   const historical = rolls.filter((r) => r.scanned_at);
 
   return (
-    <div>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div>
       <h1 className="text-3xl font-bold mb-6">Rolls</h1>
       {rolls.length === 0 ? (
         <p className="text-zinc-500 text-center py-16">
@@ -302,5 +316,6 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }
