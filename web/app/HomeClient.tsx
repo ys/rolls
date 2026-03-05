@@ -1,111 +1,119 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus, STATUS_COLORS } from "@/lib/status";
+import { invalidateCache } from "@/lib/cache";
 import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 
 const STATUS_DOT: Record<string, string> = {
-  LOADED: "bg-amber-400",
-  FRIDGE: "bg-cyan-400",
-  LAB: "bg-orange-400",
-  SCANNED: "bg-green-400",
+  LOADED:    "bg-amber-400",
+  FRIDGE:    "bg-cyan-400",
+  LAB:       "bg-orange-400",
+  SCANNED:   "bg-green-400",
   PROCESSED: "bg-purple-400",
-  UPLOADED: "bg-blue-400",
-  ARCHIVED: "bg-zinc-300 dark:bg-zinc-600",
+  UPLOADED:  "bg-blue-400",
+  ARCHIVED:  "bg-zinc-300 dark:bg-zinc-600",
 };
+
+const BULK_ACTIONS = [
+  { label: "At Lab",  field: "lab_at",     color: "bg-orange-500" },
+  { label: "Scanned", field: "scanned_at", color: "bg-green-500"  },
+] as const;
 
 type RollRow = Roll & {
   camera_nickname: string | null;
-  camera_brand: string | null;
-  camera_model: string | null;
-  film_nickname: string | null;
-  film_brand: string | null;
-  film_name: string | null;
-  film_iso: number | null;
-  film_show_iso: boolean | null;
+  camera_brand:    string | null;
+  camera_model:    string | null;
+  film_nickname:   string | null;
+  film_brand:      string | null;
+  film_name:       string | null;
+  film_iso:        number | null;
+  film_show_iso:   boolean | null;
 };
 
-interface HomeData {
-  rolls: RollRow[];
-}
+interface HomeData { rolls: RollRow[]; }
 
 const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
 function cameraLabel(roll: RollRow): string {
   if (roll.camera_nickname) return roll.camera_nickname;
-  if (roll.camera_brand && roll.camera_model)
-    return `${roll.camera_brand} ${roll.camera_model}`;
+  if (roll.camera_brand && roll.camera_model) return `${roll.camera_brand} ${roll.camera_model}`;
   return roll.camera_id ?? "";
 }
 
 function filmLabel(roll: RollRow): string {
   if (roll.film_nickname) return roll.film_nickname;
   if (roll.film_brand && roll.film_name) {
-    const iso =
-      roll.film_show_iso && roll.film_iso ? ` ${roll.film_iso}` : "";
+    const iso = roll.film_show_iso && roll.film_iso ? ` ${roll.film_iso}` : "";
     return `${roll.film_brand} ${roll.film_name}${iso}`;
   }
   return roll.film_id ?? "";
 }
 
-function RollItem({ roll }: { roll: RollRow }) {
+function Checkbox({ checked }: { checked: boolean }) {
+  return (
+    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}>
+      {checked && (
+        <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function RollItem({ roll, editing, selected, onToggle }: {
+  roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
+}) {
   const status = rollStatus(roll);
   const dateStr = roll.shot_at
-    ? new Date(roll.shot_at).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })
+    ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
-  const subtitle = [cameraLabel(roll), filmLabel(roll)]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <li className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
-      <Link
-        href={`/roll/${roll.roll_number}`}
-        onClick={() => haptics.light()}
-        className="flex items-start gap-3 py-3 active:bg-zinc-100 dark:active:bg-zinc-800/50 -mx-4 px-4 transition-colors"
-      >
-        <div
-          className={`w-2 h-2 rounded-full shrink-0 mt-[7px] ${
-            STATUS_DOT[status] ?? "bg-zinc-300"
-          }`}
-        />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="font-semibold text-[15px] truncate">
-              {roll.roll_number}
-            </span>
-            {dateStr && (
-              <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">
-                {dateStr}
-              </span>
-            )}
-          </div>
-          {subtitle && (
-            <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">
-              {subtitle}
-            </div>
-          )}
-          <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {status}
-          </div>
+  const subtitle = [cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ");
+
+  const inner = (
+    <>
+      {editing
+        ? <Checkbox checked={selected} />
+        : <div className={`w-2 h-2 rounded-full shrink-0 mt-[7px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`} />
+      }
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
+          {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
         </div>
-        <svg
-          className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        >
+        {subtitle && <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>}
+        <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">{status}</div>
+      </div>
+      {!editing && (
+        <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M9 18l6-6-6-6" />
         </svg>
+      )}
+    </>
+  );
+
+  const cls = "flex items-start gap-3 py-3 -mx-4 px-4 transition-colors border-b border-zinc-200 dark:border-zinc-800 last:border-b-0";
+
+  if (editing) {
+    return (
+      <li>
+        <button onClick={() => { onToggle(); haptics.light(); }} className={`${cls} w-full text-left active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+          {inner}
+        </button>
+      </li>
+    );
+  }
+  return (
+    <li>
+      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+        {inner}
       </Link>
     </li>
   );
@@ -113,9 +121,7 @@ function RollItem({ roll }: { roll: RollRow }) {
 
 export default function HomeClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
-  const headers: HeadersInit = apiKey
-    ? { Authorization: `Bearer ${apiKey}` }
-    : {};
+  const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 
   const { data, isLoading } = useCachedData<HomeData>(
     ["rolls", "home"],
@@ -128,83 +134,197 @@ export default function HomeClient() {
   );
 
   const router = useRouter();
+  const [editing, setEditing]   = useState(false);
+  const [exiting, setExiting]   = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [applying, setApplying] = useState(false);
 
-  const handleRefresh = async () => {
+  useEffect(() => {
+    return () => { document.body.removeAttribute("data-mass-edit"); };
+  }, []);
+
+  function toggleSelect(n: string) {
+    setSelected((prev) => { const s = new Set(prev); s.has(n) ? s.delete(n) : s.add(n); return s; });
+  }
+  function enterEdit() {
+    setEditing(true); setExiting(false); setSelected(new Set());
+    document.body.setAttribute("data-mass-edit", "");
+    haptics.medium();
+  }
+  function exitEdit() {
+    setExiting(true); haptics.light();
+    setTimeout(() => {
+      setEditing(false); setExiting(false); setSelected(new Set());
+      document.body.removeAttribute("data-mass-edit");
+    }, 220);
+  }
+
+  async function applyStatus(field: string) {
+    if (selected.size === 0 || applying) return;
+    setApplying(true); haptics.medium();
+    await fetch("/api/rolls/bulk-update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...headers },
+      body: JSON.stringify({ roll_numbers: [...selected], field, value: new Date().toISOString() }),
+    });
+    invalidateCache("rolls");
+    haptics.success();
+    setApplying(false);
+    exitEdit();
     router.refresh();
-  };
+  }
 
   if (isLoading && !data) {
     return (
       <div className="space-y-4">
         <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
-        {[1, 2, 3, 4].map((i) => (
-          <RollSkeleton key={i} />
-        ))}
+        {[1, 2, 3, 4].map((i) => <RollSkeleton key={i} />)}
       </div>
     );
   }
 
   if (!data) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-zinc-400">No data available</div>
-      </div>
-    );
+    return <div className="flex items-center justify-center py-16"><div className="text-zinc-400">No data available</div></div>;
   }
 
   const { rolls } = data;
-
-  const inProgress = rolls
-    .filter((r) => !r.lab_at)
-    .sort(
-      (a, b) =>
-        (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) -
-        (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9)
-    );
+  const inProgress = rolls.filter((r) => !r.lab_at).sort((a, b) => (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) - (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9));
   const atLab = rolls.filter((r) => r.lab_at);
 
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <div>
-        <h1 className="text-3xl font-bold mb-6">Rolls</h1>
-        {rolls.length === 0 ? (
-          <p className="text-zinc-500 text-center py-16">
-            No active rolls. Tap + to create one!
-          </p>
-        ) : (
-          <div className="space-y-8">
-            {inProgress.length > 0 && (
-              <section>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <h2 className="text-lg font-bold">In Progress</h2>
-                  <span className="text-sm text-zinc-500">
-                    {inProgress.length}
-                  </span>
-                </div>
-                <ul>
-                  {inProgress.map((roll) => (
-                    <RollItem key={roll.roll_number} roll={roll} />
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {atLab.length > 0 && (
-              <section>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <h2 className="text-lg font-bold">At the Lab</h2>
-                  <span className="text-sm text-zinc-500">{atLab.length}</span>
-                </div>
-                <ul>
-                  {atLab.map((roll) => (
-                    <RollItem key={roll.roll_number} roll={roll} />
-                  ))}
-                </ul>
-              </section>
+    <>
+      <PullToRefresh onRefresh={async () => { router.refresh(); }}>
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold">Rolls</h1>
+            {rolls.length > 0 && !editing && (
+              <button
+                onClick={enterEdit}
+                className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Edit
+              </button>
             )}
           </div>
-        )}
-      </div>
-    </PullToRefresh>
+
+          {rolls.length === 0 ? (
+            <p className="text-zinc-500 text-center py-16">No active rolls. Tap + to create one!</p>
+          ) : (
+            <div className="space-y-8">
+              {inProgress.length > 0 && (
+                <section>
+                  <div className="flex items-baseline justify-between mb-3">
+                    <div className="flex items-baseline gap-2">
+                      <h2 className="text-lg font-bold">In Progress</h2>
+                      <span className="text-sm text-zinc-500">{inProgress.length}</span>
+                    </div>
+                    {editing && (
+                      <button
+                        onClick={() => {
+                          const nums = inProgress.map((r) => r.roll_number);
+                          const allSel = nums.every((n) => selected.has(n));
+                          setSelected((prev) => {
+                            const s = new Set(prev);
+                            if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
+                            else { nums.forEach((n) => s.add(n)); haptics.medium(); }
+                            return s;
+                          });
+                        }}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${inProgress.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                      >
+                        {inProgress.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                      </button>
+                    )}
+                  </div>
+                  <ul>
+                    {inProgress.map((roll) => (
+                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {atLab.length > 0 && (
+                <section>
+                  <div className="flex items-baseline justify-between mb-3">
+                    <div className="flex items-baseline gap-2">
+                      <h2 className="text-lg font-bold">At the Lab</h2>
+                      <span className="text-sm text-zinc-500">{atLab.length}</span>
+                    </div>
+                    {editing && (
+                      <button
+                        onClick={() => {
+                          const nums = atLab.map((r) => r.roll_number);
+                          const allSel = nums.every((n) => selected.has(n));
+                          setSelected((prev) => {
+                            const s = new Set(prev);
+                            if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
+                            else { nums.forEach((n) => s.add(n)); haptics.medium(); }
+                            return s;
+                          });
+                        }}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${atLab.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                      >
+                        {atLab.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                      </button>
+                    )}
+                  </div>
+                  <ul>
+                    {atLab.map((roll) => (
+                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+          )}
+        </div>
+      </PullToRefresh>
+
+      {/* Edit-mode action bar — same flip animation as archive */}
+      {editing && (
+        <div
+          className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
+          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+        >
+          <div
+            className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+            style={{
+              transformOrigin: "center bottom",
+              animation: exiting
+                ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
+                : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+            }}
+          >
+            <button
+              onClick={exitEdit}
+              disabled={exiting}
+              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+            >
+              Done
+            </button>
+            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+            {selected.size === 0 ? (
+              <span className="text-[13px] text-zinc-400 px-1">Select rolls…</span>
+            ) : (
+              <>
+                <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
+                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                {BULK_ACTIONS.map(({ label, field, color }) => (
+                  <button
+                    key={field}
+                    onClick={() => applyStatus(field)}
+                    disabled={applying}
+                    className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                  >
+                    {applying ? "…" : label}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
