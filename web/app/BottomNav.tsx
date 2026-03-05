@@ -62,24 +62,24 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-10 flex justify-center items-end gap-3 pointer-events-none"
+      className="fixed bottom-0 inset-x-0 z-10 flex justify-center items-end gap-3 pointer-events-none px-4"
       style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="pointer-events-auto flex items-center gap-1.5 px-4 py-3.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
+      <div className="pointer-events-auto flex items-center gap-0.5 px-2 py-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center px-5 py-2 gap-1 rounded-[1.5rem] transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center min-w-[68px] px-3 py-2.5 gap-1 rounded-[1.5rem] transition-all duration-200 ${
                 active
                   ? "bg-zinc-900/10 dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-inner"
                   : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100/50 dark:active:bg-zinc-800/50"
               }`}
             >
               <Icon active={active} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[10px] font-medium whitespace-nowrap">{label}</span>
             </Link>
           );
         })}
@@ -87,7 +87,7 @@ export default function BottomNav() {
       <Link
         href="/new"
         aria-label="New roll"
-        className="pointer-events-auto w-14 h-14 mb-1 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-xl shadow-amber-400/40 dark:shadow-amber-500/30 active:scale-95 transition-transform text-3xl font-light leading-none"
+        className="pointer-events-auto flex-shrink-0 w-14 h-14 aspect-square mb-0.5 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-xl shadow-amber-400/40 dark:shadow-amber-500/30 active:scale-95 transition-transform text-3xl font-light leading-none"
       >
         +
       </Link>
