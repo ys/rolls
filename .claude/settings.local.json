@@ -19,7 +19,8 @@
       "Bash(go build:*)",
       "Bash(go run:*)",
       "Bash(vercel ls:*)",
-      "Bash(vercel alias ls)"
+      "Bash(vercel alias ls)",
+      "Bash(git push)"
     ]
   },
   "enableAllProjectMcpServers": false
