@@ -358,30 +358,31 @@ export default function ArchiveClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — replaces bottom nav visually, always visible */}
+      {/* Edit-mode action bar — floating pill above the bottom nav */}
       {editing && (
         <div
-          className="fixed inset-x-0 bottom-0 z-20 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-200/70 dark:border-zinc-700/60"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          className="fixed inset-x-0 bottom-0 z-20 flex justify-center pointer-events-none px-4"
+          style={{ paddingBottom: "calc(5.75rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="flex items-center gap-2 px-4 py-3">
+          <div className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
             <button
               onClick={exitEdit}
-              className="text-sm font-semibold text-amber-600 dark:text-amber-400 mr-auto px-1"
+              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity"
             >
               Done
             </button>
+            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
             {selected.size === 0 ? (
-              <span className="text-[13px] text-zinc-400">Select rolls to update</span>
+              <span className="text-[13px] text-zinc-400 px-1">Select rolls…</span>
             ) : (
               <>
-                <span className="text-[13px] text-zinc-500">{selected.size} selected</span>
+                <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
                 {BULK_STATUSES.map(({ label, field, color }) => (
                   <button
                     key={field}
                     onClick={() => applyStatus(field)}
                     disabled={applying}
-                    className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-xl active:scale-95 transition-transform disabled:opacity-50`}
+                    className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
                   >
                     {applying ? "…" : label}
                   </button>
