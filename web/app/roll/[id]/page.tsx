@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import { rollStatus } from "@/lib/db";
+import { rollStatus } from "@/lib/status";
 import type { Roll, Camera, Film } from "@/lib/db";
 import { notFound } from "next/navigation";
 import RollDetailClient from "./RollDetailClient";

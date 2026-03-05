@@ -53,15 +53,3 @@ export interface Roll {
   notes: string | null;
   contact_sheet_url: string | null;
 }
-
-export type RollStatus = "LOADED" | "FRIDGE" | "LAB" | "SCANNED" | "PROCESSED" | "UPLOADED" | "ARCHIVED";
-
-export function rollStatus(roll: Roll): RollStatus {
-  if (roll.archived_at) return "ARCHIVED";
-  if (roll.uploaded_at) return "UPLOADED";
-  if (roll.processed_at) return "PROCESSED";
-  if (roll.scanned_at) return "SCANNED";
-  if (roll.lab_at) return "LAB";
-  if (roll.fridge_at) return "FRIDGE";
-  return "LOADED";
-}
