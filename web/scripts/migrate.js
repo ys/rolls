@@ -22,10 +22,12 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-// Initialize postgres connection
+// Initialize postgres connection with proper timeout and SSL settings
 const sql = postgres(DATABASE_URL, {
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
   max: 1, // Only need one connection for migrations
+  idle_timeout: 20,
+  connect_timeout: 30, // Increased timeout for Heroku/RDS connection
 });
 
 async function ensureMigrationsTable() {
