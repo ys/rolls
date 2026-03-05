@@ -47,8 +47,11 @@ export async function PUT(
     ContentType: "image/webp",
   }));
 
-  const origin = new URL(request.url).origin;
-  const contactSheetUrl = `${origin}/api/rolls/${id}/contact-sheet`;
+  // Prefer a direct public R2 URL if the bucket has public access configured,
+  // otherwise fall back to the app-proxied URL (using APP_URL env or request origin).
+  const contactSheetUrl = process.env.R2_PUBLIC_URL
+    ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${id}.webp`
+    : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${id}/contact-sheet`;
   await sql`UPDATE rolls SET contact_sheet_url = ${contactSheetUrl} WHERE roll_number = ${id}`;
 
   return NextResponse.json({ contact_sheet_url: contactSheetUrl });
