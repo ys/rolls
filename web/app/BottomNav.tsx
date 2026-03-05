@@ -65,14 +65,14 @@ export default function BottomNav() {
       className="fixed bottom-0 inset-x-0 z-10 flex justify-center pointer-events-none"
       style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="pointer-events-auto flex items-center gap-1 px-2 py-2 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-3xl shadow-xl shadow-black/20 dark:shadow-black/50 border border-zinc-200/60 dark:border-zinc-700/50">
+      <div className="pointer-events-auto flex items-center gap-1 px-3 py-3 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[2rem] shadow-xl shadow-black/20 dark:shadow-black/50 border border-zinc-200/60 dark:border-zinc-700/50">
         {TABS.slice(0, 2).map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-2xl transition-colors ${
+              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-[1.25rem] transition-colors ${
                 active
                   ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
                   : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
@@ -96,7 +96,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-2xl transition-colors ${
+              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-[1.25rem] transition-colors ${
                 active
                   ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
                   : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
