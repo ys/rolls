@@ -128,7 +128,8 @@ export default function HomeClient({ firstYear }: { firstYear: number }) {
       const res = await fetch(url, { headers });
       if (!res.ok) throw new Error("Failed to fetch rolls");
       return res.json();
-    }
+    },
+    { apiKey }
   );
 
   if (isLoading && !data) {

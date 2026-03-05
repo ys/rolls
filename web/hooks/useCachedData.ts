@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
-import { getCached, setCached, getCacheKey } from "@/lib/cache";
+import {
+  getCachedWithTimestamps,
+  setCached,
+  getCacheKey,
+  fetchTimestamps,
+  timestampsChanged,
+  type Timestamps,
+} from "@/lib/cache";
 
 interface UseCachedDataOptions {
   ttl?: number;
   enabled?: boolean;
+  apiKey?: string;
 }
 
 export function useCachedData<T>(
@@ -11,13 +19,14 @@ export function useCachedData<T>(
   fetcher: () => Promise<T>,
   options: UseCachedDataOptions = {}
 ) {
-  const { ttl, enabled = true } = options;
+  const { ttl, enabled = true, apiKey } = options;
   const cacheKey = Array.isArray(key) ? getCacheKey(...key) : getCacheKey(key);
 
   const [data, setData] = useState<T | null>(() => {
-    // Try to load from cache immediately
+    // Try to load from cache immediately for instant display
     if (enabled) {
-      return getCached<T>(cacheKey, ttl);
+      const cached = getCachedWithTimestamps<T>(cacheKey, ttl);
+      return cached?.data ?? null;
     }
     return null;
   });
@@ -30,12 +39,46 @@ export function useCachedData<T>(
 
     let cancelled = false;
 
-    async function fetchData() {
+    async function validate() {
+      try {
+        // Get cached data with timestamps
+        const cached = getCachedWithTimestamps<T>(cacheKey, ttl);
+
+        // Fetch current server timestamps
+        const currentTimestamps = await fetchTimestamps(apiKey);
+
+        // If no server timestamps available, fall back to fetching data
+        if (!currentTimestamps) {
+          await fetchData(null);
+          return;
+        }
+
+        // If we have cached data and timestamps haven't changed, we're done
+        if (cached && !timestampsChanged(cached.serverTimestamps, currentTimestamps)) {
+          if (!cancelled) {
+            setData(cached.data);
+            setIsLoading(false);
+            setError(null);
+          }
+          return;
+        }
+
+        // Timestamps changed or no cache - fetch fresh data
+        await fetchData(currentTimestamps);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err : new Error("Failed to validate cache"));
+          setIsLoading(false);
+        }
+      }
+    }
+
+    async function fetchData(timestamps: Timestamps | null) {
       try {
         const result = await fetcher();
         if (!cancelled) {
           setData(result);
-          setCached(cacheKey, result);
+          setCached(cacheKey, result, timestamps ?? undefined);
           setIsLoading(false);
           setError(null);
         }
@@ -47,18 +90,13 @@ export function useCachedData<T>(
       }
     }
 
-    // If we have cached data, show it but fetch fresh in background
-    if (data) {
-      setIsLoading(false);
-      fetchData(); // background refresh
-    } else {
-      fetchData();
-    }
+    // Always validate on mount
+    validate();
 
     return () => {
       cancelled = true;
     };
-  }, [cacheKey, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cacheKey, enabled, apiKey, ttl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, isLoading, error };
 }
