@@ -91,7 +91,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
   );
 }
 
-// ── Grid card (1-column, 3:2 landscape) ───────────────────────────────────────
+// ── Grid card ─────────────────────────────────────────────────────────────────
 function GridCard({ roll, editing, selected, onToggle }: {
   roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
 }) {
@@ -101,10 +101,17 @@ function GridCard({ roll, editing, selected, onToggle }: {
     ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
     : null;
 
+  // Contact sheet cards: natural image height so nothing is cropped.
+  // Placeholder cards: fixed landscape ratio.
+  const hasImage = !!roll.contact_sheet_url;
+  const containerBase = hasImage
+    ? "relative w-full rounded-xl overflow-hidden bg-zinc-900"
+    : "relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-zinc-800";
+
   const inner = (
     <>
-      {roll.contact_sheet_url
-        ? <img src={roll.contact_sheet_url} alt={roll.roll_number} className="w-full h-full object-cover" />
+      {hasImage
+        ? <img src={roll.contact_sheet_url!} alt={roll.roll_number} className="w-full h-auto block" />
         : <PlaceholderSheet rollNumber={roll.roll_number} />
       }
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent pt-6 pb-2 px-3">
@@ -129,7 +136,7 @@ function GridCard({ roll, editing, selected, onToggle }: {
     return (
       <button
         onClick={() => { onToggle(); haptics.light(); }}
-        className={`relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-zinc-800 transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
+        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
       >
         {inner}
       </button>
@@ -139,7 +146,7 @@ function GridCard({ roll, editing, selected, onToggle }: {
     <Link
       href={`/roll/${roll.roll_number}`}
       onClick={() => haptics.light()}
-      className="block relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-zinc-800 active:scale-[0.98] transition-transform"
+      className={`block ${containerBase} active:scale-[0.98] transition-transform`}
     >
       {inner}
     </Link>
