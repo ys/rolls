@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/ys/rolls/roll"
 	"gopkg.in/yaml.v2"
 )
 
@@ -101,18 +102,44 @@ scans_path must be set to write roll files.`,
 			return
 		}
 
+		// Pre-scan to find existing roll folders (handles year-nested structures)
+		existingFolders := map[string]string{}
+		_ = filepath.Walk(cfg.ScansPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil || info.IsDir() || filepath.Base(path) != "roll.md" {
+				return nil
+			}
+			r, parseErr := roll.FromMarkdown(path)
+			if parseErr != nil || r.Metadata.RollNumber == "" {
+				return nil
+			}
+			existingFolders[r.Metadata.RollNumber] = filepath.Dir(path)
+			return nil
+		})
+
 		written := 0
 		for _, r := range data.Rolls {
 			if r.RollNumber == "" {
 				continue
 			}
-			rollFile := filepath.Join(cfg.ScansPath, r.RollNumber, "roll.md")
+
+			// Use existing folder if found, otherwise create under year subdir
+			rollDir, exists := existingFolders[r.RollNumber]
+			if !exists {
+				year := "unknown"
+				if r.ShotAt != nil {
+					year = r.ShotAt.Format("2006")
+				} else if r.ScannedAt != nil {
+					year = r.ScannedAt.Format("2006")
+				}
+				rollDir = filepath.Join(cfg.ScansPath, year, r.RollNumber)
+			}
+			rollFile := filepath.Join(rollDir, "roll.md")
+
 			if dryRun {
 				fmt.Printf("[dry-run] would write %s\n", rollFile)
 				written++
 				continue
 			}
-			rollDir := filepath.Join(cfg.ScansPath, r.RollNumber)
 			if err := os.MkdirAll(rollDir, 0755); err != nil {
 				fmt.Fprintf(os.Stderr, "failed to create %s: %v\n", rollDir, err)
 				continue

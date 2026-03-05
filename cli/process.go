@@ -142,7 +142,7 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 
 			// Always stamp processed_at in local roll.md
 			now := time.Now().UTC()
-			mdPath := filepath.Join(cfg.ScansPath, r.Metadata.RollNumber, "roll.md")
+			mdPath := filepath.Join(r.Folder, "roll.md")
 			if localRoll, err := roll.FromMarkdown(mdPath); err == nil {
 				localRoll.Metadata.ProcessedAt = now
 				if err := localRoll.UpdateMetadata(); err != nil {
