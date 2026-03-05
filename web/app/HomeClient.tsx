@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
-import { rollStatus, STATUS_COLORS } from "@/lib/status";
+import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
 import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -21,10 +22,11 @@ const STATUS_DOT: Record<string, string> = {
   ARCHIVED:  "bg-zinc-300 dark:bg-zinc-600",
 };
 
-const BULK_ACTIONS = [
-  { label: "At Lab",  field: "lab_at",     color: "bg-orange-500" },
-  { label: "Scanned", field: "scanned_at", color: "bg-green-500"  },
-] as const;
+const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
+  LOADED: { field: "fridge_at",  label: "To Fridge", color: "bg-cyan-500"   },
+  FRIDGE: { field: "lab_at",     label: "To Lab",    color: "bg-orange-500" },
+  LAB:    { field: "scanned_at", label: "Scanned",   color: "bg-green-500"  },
+};
 
 type RollRow = Roll & {
   camera_nickname: string | null;
@@ -138,6 +140,9 @@ export default function HomeClient() {
   const [exiting, setExiting]   = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
+  const [mounted, setMounted]   = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     return () => { document.body.removeAttribute("data-mass-edit"); };
@@ -190,6 +195,20 @@ export default function HomeClient() {
   const { rolls } = data;
   const inProgress = rolls.filter((r) => !r.lab_at).sort((a, b) => (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) - (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9));
   const atLab = rolls.filter((r) => r.lab_at);
+
+  // Derive available bulk actions from the statuses of selected rolls
+  const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));
+  const seenFields = new Set<string>();
+  const availableActions: Array<{ field: string; label: string; color: string }> = [];
+  for (const num of selected) {
+    const roll = rollMap.get(num);
+    if (!roll) continue;
+    const next = STATUS_NEXT[rollStatus(roll)];
+    if (next && !seenFields.has(next.field)) {
+      seenFields.add(next.field);
+      availableActions.push(next);
+    }
+  }
 
   return (
     <>
@@ -281,8 +300,8 @@ export default function HomeClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — same flip animation as archive */}
-      {editing && (
+      {/* Edit-mode action bar — portalled to body to escape PageTransition transform */}
+      {editing && mounted && createPortal(
         <div
           className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
           style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
@@ -309,21 +328,23 @@ export default function HomeClient() {
             ) : (
               <>
                 <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
-                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
-                {BULK_ACTIONS.map(({ label, field, color }) => (
-                  <button
-                    key={field}
-                    onClick={() => applyStatus(field)}
-                    disabled={applying}
-                    className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
-                  >
-                    {applying ? "…" : label}
-                  </button>
+                {availableActions.map(({ label, field, color }) => (
+                  <Fragment key={field}>
+                    <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                    <button
+                      onClick={() => applyStatus(field)}
+                      disabled={applying}
+                      className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                    >
+                      {applying ? "…" : label}
+                    </button>
+                  </Fragment>
                 ))}
               </>
             )}
           </div>
         </div>
+        , document.body
       )}
     </>
   );

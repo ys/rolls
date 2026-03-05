@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
@@ -239,6 +240,9 @@ export default function ArchiveClient() {
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   // Clean up body attribute if component unmounts while editing
   useEffect(() => {
@@ -407,8 +411,8 @@ export default function ArchiveClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — flips in over the nav */}
-      {editing && (
+      {/* Edit-mode action bar — portalled to body to escape PageTransition transform */}
+      {editing && mounted && createPortal(
         <div
           className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
           style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
@@ -454,6 +458,7 @@ export default function ArchiveClient() {
             )}
           </div>
         </div>
+        , document.body
       )}
     </>
   );
