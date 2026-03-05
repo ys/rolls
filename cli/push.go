@@ -146,12 +146,18 @@ Unknown camera/film IDs are fuzzy-matched to known entries, or added as stubs.
 Note: does not set processed_at. Use 'rolls process' for that.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
+		sheetsOnly, _ := cmd.Flags().GetBool("sheets")
 
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
 		}
 		if cfg.WebAppAPIKey == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_api_key is not set in config"))
+		}
+
+		if sheetsOnly {
+			uploadContactSheets(dryRun, nil)
+			return
 		}
 
 		payload := importPayload{}
@@ -306,75 +312,84 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 				len(payload.Cameras), len(payload.Films), len(payload.Rolls))
 		}
 
-		// Upload contact sheets
-		if cfg.ContactSheetPath != "" {
-			// Skip rolls that already have a contact_sheet_url in the DB
-			alreadyUploaded := make(map[string]bool)
-			for _, r := range payload.Rolls {
-				if r.ContactSheetURL != "" {
-					alreadyUploaded[r.RollNumber] = true
-				}
-			}
+		uploadContactSheets(dryRun, payload.Rolls)
+	},
+}
 
-			imagesDir := filepath.Join(cfg.ContactSheetPath, "images")
-			entries, err := os.ReadDir(imagesDir)
-			if err == nil {
-				uploaded, skipped := 0, 0
-				for _, entry := range entries {
-					if entry.IsDir() || filepath.Ext(entry.Name()) != ".webp" {
-						continue
-					}
-					rollNum := entry.Name()[:len(entry.Name())-5] // strip .webp
-					if alreadyUploaded[rollNum] {
-						skipped++
-						continue
-					}
-					if dryRun {
-						fmt.Printf("[dry-run] would upload contact sheet for %s\n", rollNum)
-						uploaded++
-						continue
-					}
-					imgPath := filepath.Join(imagesDir, entry.Name())
-					data, err := os.ReadFile(imgPath)
-					if err != nil {
-						fmt.Printf("  warn: could not read %s: %v\n", entry.Name(), err)
-						continue
-					}
+// uploadContactSheets uploads all .webp files from contact_sheet_path/images/ to R2.
+// If knownRolls is non-nil, rolls that already have a contact_sheet_url are skipped.
+// Pass nil to force-upload all (used by --sheets).
+func uploadContactSheets(dryRun bool, knownRolls []rollJSON) {
+	if cfg.ContactSheetPath == "" {
+		return
+	}
 
-					url := cfg.WebAppURL + "/api/rolls/" + rollNum + "/contact-sheet"
-					req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
-					if err != nil {
-						skipped++
-						continue
-					}
-					req.Header.Set("Content-Type", "image/webp")
-					req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
-
-					client := &http.Client{Timeout: 60 * time.Second}
-					resp, err := client.Do(req)
-					if err != nil || resp.StatusCode != http.StatusOK {
-						skipped++
-						if resp != nil {
-							io.Copy(io.Discard, resp.Body)
-							resp.Body.Close()
-						}
-						continue
-					}
-					io.Copy(io.Discard, resp.Body)
-					resp.Body.Close()
-					uploaded++
-				}
-				if dryRun {
-					fmt.Printf("[dry-run] would upload %d contact sheets (%d already uploaded)\n", uploaded, skipped)
-				} else {
-					fmt.Printf("Uploaded %d contact sheets (%d skipped)\n", uploaded, skipped)
-				}
+	skip := make(map[string]bool)
+	if knownRolls != nil {
+		for _, r := range knownRolls {
+			if r.ContactSheetURL != "" {
+				skip[r.RollNumber] = true
 			}
 		}
-	},
+	}
+
+	imagesDir := filepath.Join(cfg.ContactSheetPath, "images")
+	entries, err := os.ReadDir(imagesDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "warn: could not read %s: %v\n", imagesDir, err)
+		return
+	}
+
+	uploaded, skipped, failed := 0, 0, 0
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".webp" {
+			continue
+		}
+		rollNum := entry.Name()[:len(entry.Name())-5]
+		if skip[rollNum] {
+			skipped++
+			continue
+		}
+		if dryRun {
+			fmt.Printf("[dry-run] would upload contact sheet for %s\n", rollNum)
+			uploaded++
+			continue
+		}
+		imgPath := filepath.Join(cfg.ContactSheetPath, "images", entry.Name())
+		data, readErr := os.ReadFile(imgPath)
+		if readErr != nil {
+			fmt.Fprintf(os.Stderr, "  warn: could not read %s: %v\n", entry.Name(), readErr)
+			failed++
+			continue
+		}
+		putURL := cfg.WebAppURL + "/api/rolls/" + rollNum + "/contact-sheet"
+		req, _ := http.NewRequest(http.MethodPut, putURL, bytes.NewReader(data))
+		req.Header.Set("Content-Type", "image/webp")
+		req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+		resp, reqErr := (&http.Client{Timeout: 60 * time.Second}).Do(req)
+		if reqErr != nil || resp.StatusCode != http.StatusOK {
+			fmt.Fprintf(os.Stderr, "  warn: upload failed for %s\n", rollNum)
+			failed++
+			if resp != nil {
+				io.Copy(io.Discard, resp.Body)
+				resp.Body.Close()
+			}
+			continue
+		}
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+		fmt.Printf("  uploaded %s\n", rollNum)
+		uploaded++
+	}
+	if dryRun {
+		fmt.Printf("[dry-run] would upload %d contact sheets (%d skipped)\n", uploaded, skipped)
+	} else {
+		fmt.Printf("Uploaded %d contact sheets (%d skipped, %d failed)\n", uploaded, skipped, failed)
+	}
 }
 
 func init() {
 	rootCmd.AddCommand(pushCmd)
 	pushCmd.Flags().Bool("dry-run", false, "Show what would be pushed without sending data")
+	pushCmd.Flags().Bool("sheets", false, "Re-upload all contact sheets to R2 (skip metadata import)")
 }
