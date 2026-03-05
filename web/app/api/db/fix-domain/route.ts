@@ -8,10 +8,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const r2PublicUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, "");
+  if (!r2PublicUrl) {
+    return NextResponse.json({ error: "R2_PUBLIC_URL not set" }, { status: 500 });
+  }
+
+  // Rebuild all contact_sheet_url values using the current R2_PUBLIC_URL.
+  // Strips whatever base URL was previously stored and replaces with the current one.
   const updated = await sql<{ roll_number: string }[]>`
     UPDATE rolls
-    SET contact_sheet_url = REPLACE(contact_sheet_url, 'rolls.b.yannick.computer', 'rolls-b.yannick.computer')
-    WHERE contact_sheet_url LIKE '%rolls.b.yannick.computer%'
+    SET contact_sheet_url = ${r2PublicUrl} || '/' || roll_number || '.webp'
+    WHERE contact_sheet_url IS NOT NULL
     RETURNING roll_number
   `;
 
