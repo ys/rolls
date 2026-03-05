@@ -3,6 +3,7 @@ import "./globals.css";
 import BottomNav from "./BottomNav";
 import OfflineIndicator from "../components/OfflineIndicator";
 import PageTransition from "../components/PageTransition";
+import SwipeNavigation from "../components/SwipeNavigation";
 
 export const metadata: Metadata = {
   title: "Rolls",
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen font-mono">
         <OfflineIndicator />
+        <SwipeNavigation />
         <main
           className="max-w-2xl mx-auto px-4"
           style={{

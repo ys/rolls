@@ -110,7 +110,15 @@ export default function NewRollPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">New Roll</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">New Roll</h1>
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        >
+          Cancel
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
 
         <div>
