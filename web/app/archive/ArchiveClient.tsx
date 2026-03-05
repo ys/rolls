@@ -12,16 +12,22 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { haptics } from "@/lib/haptics";
 
 const STATUS_DOT: Record<string, string> = {
-  SCANNED:   "bg-green-400",
+  SCANNED: "bg-green-400",
   PROCESSED: "bg-purple-400",
-  UPLOADED:  "bg-blue-400",
-  ARCHIVED:  "bg-zinc-400",
+  UPLOADED: "bg-blue-400",
+  ARCHIVED: "bg-zinc-400",
 };
 
-const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
-  SCANNED:   { field: "processed_at", label: "Processed", color: "bg-purple-500" },
-  PROCESSED: { field: "uploaded_at",  label: "Uploaded",  color: "bg-blue-500"   },
-  UPLOADED:  { field: "archived_at",  label: "Archived",  color: "bg-zinc-500"   },
+const STATUS_NEXT: Partial<
+  Record<string, { field: string; label: string; color: string }>
+> = {
+  SCANNED: {
+    field: "processed_at",
+    label: "Processed",
+    color: "bg-purple-500",
+  },
+  PROCESSED: { field: "uploaded_at", label: "Uploaded", color: "bg-blue-500" },
+  UPLOADED: { field: "archived_at", label: "Archived", color: "bg-zinc-500" },
 };
 
 type RollRow = Roll & {
@@ -35,7 +41,9 @@ type RollRow = Roll & {
   film_show_iso: boolean | null;
 };
 
-interface ArchiveData { rolls: RollRow[]; }
+interface ArchiveData {
+  rolls: RollRow[];
+}
 
 function rollYear(roll: RollRow): number {
   const match = roll.roll_number.match(/^(\d{2})x/);
@@ -46,7 +54,8 @@ function rollYear(roll: RollRow): number {
 
 function cameraLabel(roll: RollRow): string {
   if (roll.camera_nickname) return roll.camera_nickname;
-  if (roll.camera_brand && roll.camera_model) return `${roll.camera_brand} ${roll.camera_model}`;
+  if (roll.camera_brand && roll.camera_model)
+    return `${roll.camera_brand} ${roll.camera_model}`;
   return roll.camera_id ?? "";
 }
 
@@ -61,10 +70,22 @@ function filmLabel(roll: RollRow): string {
 
 function Checkbox({ checked }: { checked: boolean }) {
   return (
-    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}>
+    <div
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}
+    >
       {checked && (
-        <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        <svg
+          className="w-3 h-3 text-black"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={3}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 13l4 4L19 7"
+          />
         </svg>
       )}
     </div>
@@ -76,7 +97,10 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
     <div className="w-full h-full flex items-center justify-center bg-zinc-800 dark:bg-zinc-900 select-none relative">
       <div className="absolute top-0 inset-x-0 flex justify-around px-2 py-1">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800" />
+          <div
+            key={i}
+            className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800"
+          />
         ))}
       </div>
       <span className="text-zinc-500 text-[13px] font-mono tracking-widest uppercase">
@@ -84,7 +108,10 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
       </span>
       <div className="absolute bottom-0 inset-x-0 flex justify-around px-2 py-1">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800" />
+          <div
+            key={i}
+            className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800"
+          />
         ))}
       </div>
     </div>
@@ -92,13 +119,25 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
 }
 
 // ── Grid card ─────────────────────────────────────────────────────────────────
-function GridCard({ roll, editing, selected, onToggle }: {
-  roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
+function GridCard({
+  roll,
+  editing,
+  selected,
+  onToggle,
+}: {
+  roll: RollRow;
+  editing: boolean;
+  selected: boolean;
+  onToggle: () => void;
 }) {
   const status = rollStatus(roll);
   const film = filmLabel(roll);
   const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+    ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : null;
 
   // Contact sheet cards: natural image height so nothing is cropped.
@@ -110,20 +149,35 @@ function GridCard({ roll, editing, selected, onToggle }: {
 
   const inner = (
     <>
-      {hasImage
-        ? <img src={roll.contact_sheet_url!} alt={roll.roll_number} className="w-full h-auto block" />
-        : <PlaceholderSheet rollNumber={roll.roll_number} />
-      }
+      {hasImage ? (
+        <img
+          src={roll.contact_sheet_url!}
+          alt={roll.roll_number}
+          className="w-full h-auto block"
+        />
+      ) : (
+        <PlaceholderSheet rollNumber={roll.roll_number} />
+      )}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent pt-6 pb-2 px-3">
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">{roll.roll_number}</div>
-            {film && <div className="text-white/60 text-[11px] truncate leading-tight mt-0.5">{film}</div>}
+            <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
+              {roll.roll_number}
+            </div>
+            {film && (
+              <div className="text-white/60 text-[11px] truncate leading-tight mt-0.5">
+                {film}
+              </div>
+            )}
           </div>
-          {dateStr && <div className="text-white/50 text-[11px] shrink-0">{dateStr}</div>}
+          {dateStr && (
+            <div className="text-white/50 text-[11px] shrink-0">{dateStr}</div>
+          )}
         </div>
       </div>
-      <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${STATUS_DOT[status] ?? "bg-zinc-400"} shadow-sm`} />
+      <div
+        className={`absolute top-2 right-2 w-2 h-2 rounded-full ${STATUS_DOT[status] ?? "bg-zinc-400"} shadow-sm`}
+      />
       {editing && (
         <div className="absolute top-2 left-2">
           <Checkbox checked={selected} />
@@ -135,7 +189,10 @@ function GridCard({ roll, editing, selected, onToggle }: {
   if (editing) {
     return (
       <button
-        onClick={() => { onToggle(); haptics.light(); }}
+        onClick={() => {
+          onToggle();
+          haptics.light();
+        }}
         className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
       >
         {inner}
@@ -154,41 +211,75 @@ function GridCard({ roll, editing, selected, onToggle }: {
 }
 
 // ── List row ──────────────────────────────────────────────────────────────────
-function ListRow({ roll, editing, selected, onToggle }: {
-  roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
+function ListRow({
+  roll,
+  editing,
+  selected,
+  onToggle,
+}: {
+  roll: RollRow;
+  editing: boolean;
+  selected: boolean;
+  onToggle: () => void;
 }) {
   const status = rollStatus(roll);
   const camera = cameraLabel(roll);
   const film = filmLabel(roll);
   const subtitle = [camera, film].filter(Boolean).join(" · ");
   const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })
     : null;
 
   const content = (
     <>
       {editing && <Checkbox checked={selected} />}
       {!editing && (
-        <div className={`w-2 h-2 rounded-full shrink-0 mt-[5px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`} />
+        <div
+          className={`w-2 h-2 rounded-full shrink-0 mt-[5px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`}
+        />
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
-          {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
+          <span className="font-semibold text-[15px] truncate">
+            {roll.roll_number}
+          </span>
+          {dateStr && (
+            <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">
+              {dateStr}
+            </span>
+          )}
         </div>
         {subtitle && (
-          <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>
+          <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">
+            {subtitle}
+          </div>
         )}
-        <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">{status}</div>
+        <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+          {status}
+        </div>
       </div>
       {!editing && (
         <div className="flex items-center gap-2 shrink-0">
           {roll.contact_sheet_url && (
             <div className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 shrink-0">
-              <img src={roll.contact_sheet_url} alt="" className="w-full h-full object-cover" />
+              <img
+                src={roll.contact_sheet_url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
-          <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg
+            className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          >
             <path d="M9 18l6-6-6-6" />
           </svg>
         </div>
@@ -201,7 +292,13 @@ function ListRow({ roll, editing, selected, onToggle }: {
   if (editing) {
     return (
       <li>
-        <button onClick={() => { onToggle(); haptics.light(); }} className={`${cls} w-full text-left active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+        <button
+          onClick={() => {
+            onToggle();
+            haptics.light();
+          }}
+          className={`${cls} w-full text-left active:bg-zinc-100 dark:active:bg-zinc-800/50`}
+        >
           {content}
         </button>
       </li>
@@ -209,7 +306,11 @@ function ListRow({ roll, editing, selected, onToggle }: {
   }
   return (
     <li>
-      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+      <Link
+        href={`/roll/${roll.roll_number}`}
+        onClick={() => haptics.light()}
+        className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}
+      >
         {content}
       </Link>
     </li>
@@ -219,16 +320,38 @@ function ListRow({ roll, editing, selected, onToggle }: {
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function GridIcon({ active }: { active: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
-      <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={active ? 2.2 : 1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="8" height="8" rx="1" />
+      <rect x="13" y="3" width="8" height="8" rx="1" />
+      <rect x="3" y="13" width="8" height="8" rx="1" />
+      <rect x="13" y="13" width="8" height="8" rx="1" />
     </svg>
   );
 }
 function ListIcon({ active }: { active: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={active ? 2.2 : 1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   );
 }
@@ -236,7 +359,9 @@ function ListIcon({ active }: { active: boolean }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ArchiveClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
-  const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+  const headers: HeadersInit = apiKey
+    ? { Authorization: `Bearer ${apiKey}` }
+    : {};
 
   const { data, isLoading } = useCachedData<ArchiveData>(
     ["rolls", "archive"],
@@ -245,7 +370,7 @@ export default function ArchiveClient() {
       if (!res.ok) throw new Error("Failed to fetch archive");
       return res.json();
     },
-    { apiKey }
+    { apiKey },
   );
 
   const router = useRouter();
@@ -255,16 +380,25 @@ export default function ArchiveClient() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Clean up body attribute if component unmounts while editing
   useEffect(() => {
-    return () => { document.body.removeAttribute("data-mass-edit"); };
+    return () => {
+      document.body.removeAttribute("data-mass-edit");
+    };
   }, []);
 
   function toggleSelect(n: string) {
-    setSelected((prev) => { const s = new Set(prev); s.has(n) ? s.delete(n) : s.add(n); return s; });
+    setSelected((prev) => {
+      const s = new Set(prev);
+      s.has(n) ? s.delete(n) : s.add(n);
+      return s;
+    });
   }
   function enterEdit() {
     setEditing(true);
@@ -287,8 +421,13 @@ export default function ArchiveClient() {
   function selectAll() {
     if (!data) return;
     const all = new Set(data.rolls.map((r) => r.roll_number));
-    if (selected.size === all.size) { setSelected(new Set()); haptics.light(); }
-    else { setSelected(all); haptics.medium(); }
+    if (selected.size === all.size) {
+      setSelected(new Set());
+      haptics.light();
+    } else {
+      setSelected(all);
+      haptics.medium();
+    }
   }
   const allSelected = !!data && selected.size === data.rolls.length;
 
@@ -299,7 +438,11 @@ export default function ArchiveClient() {
     await fetch("/api/rolls/bulk-update", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ roll_numbers: [...selected], field, value: new Date().toISOString() }),
+      body: JSON.stringify({
+        roll_numbers: [...selected],
+        field,
+        value: new Date().toISOString(),
+      }),
     });
     invalidateCache("rolls");
     haptics.success();
@@ -314,7 +457,10 @@ export default function ArchiveClient() {
         <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse mb-6" />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-full aspect-[3/2] rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+            <div
+              key={i}
+              className="w-full aspect-[3/2] rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -325,7 +471,11 @@ export default function ArchiveClient() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <div className="text-4xl">🎞️</div>
-        <p className="text-zinc-400 text-center">No scanned rolls yet.<br />Scanned rolls appear here.</p>
+        <p className="text-zinc-400 text-center">
+          No scanned rolls yet.
+          <br />
+          Scanned rolls appear here.
+        </p>
       </div>
     );
   }
@@ -337,11 +487,17 @@ export default function ArchiveClient() {
     byYear.get(y)!.push(roll);
   }
   const years = Array.from(byYear.keys()).sort((a, b) => b - a);
+  const displayYear = selectedYear ?? years[0];
+  const yearsToShow = selectedYear ? [selectedYear] : years;
 
   // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(data.rolls.map((r) => [r.roll_number, r]));
   const seenFields = new Set<string>();
-  const availableActions: Array<{ field: string; label: string; color: string }> = [];
+  const availableActions: Array<{
+    field: string;
+    label: string;
+    color: string;
+  }> = [];
   for (const num of selected) {
     const roll = rollMap.get(num);
     if (!roll) continue;
@@ -354,7 +510,11 @@ export default function ArchiveClient() {
 
   return (
     <>
-      <PullToRefresh onRefresh={async () => { router.refresh(); }}>
+      <PullToRefresh
+        onRefresh={async () => {
+          router.refresh();
+        }}
+      >
         <div>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -364,13 +524,19 @@ export default function ArchiveClient() {
               {!editing && (
                 <div className="flex gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
                   <button
-                    onClick={() => { setView("list"); haptics.light(); }}
+                    onClick={() => {
+                      setView("list");
+                      haptics.light();
+                    }}
                     className={`p-1.5 rounded-md transition-colors ${view === "list" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
                   >
                     <ListIcon active={view === "list"} />
                   </button>
                   <button
-                    onClick={() => { setView("grid"); haptics.light(); }}
+                    onClick={() => {
+                      setView("grid");
+                      haptics.light();
+                    }}
                     className={`p-1.5 rounded-md transition-colors ${view === "grid" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
                   >
                     <GridIcon active={view === "grid"} />
@@ -389,17 +555,62 @@ export default function ArchiveClient() {
             </div>
           </div>
 
+          {/* Year slider */}
+          {years.length > 1 && !editing && (
+            <div className="mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Year
+                </span>
+                {selectedYear && (
+                  <button
+                    onClick={() => {
+                      setSelectedYear(null);
+                      haptics.light();
+                    }}
+                    className="text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  >
+                    View All
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {years.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => {
+                      setSelectedYear(year);
+                      haptics.light();
+                    }}
+                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      (selectedYear ?? years[0]) === year
+                        ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Content */}
           <div className="space-y-8">
-            {years.map((year) => {
+            {yearsToShow.map((year) => {
               const yearRolls = byYear.get(year)!;
               const yearNums = yearRolls.map((r) => r.roll_number);
               const allYearSelected = yearNums.every((n) => selected.has(n));
               function toggleYear() {
                 setSelected((prev) => {
                   const s = new Set(prev);
-                  if (allYearSelected) { yearNums.forEach((n) => s.delete(n)); haptics.light(); }
-                  else { yearNums.forEach((n) => s.add(n)); haptics.medium(); }
+                  if (allYearSelected) {
+                    yearNums.forEach((n) => s.delete(n));
+                    haptics.light();
+                  } else {
+                    yearNums.forEach((n) => s.add(n));
+                    haptics.medium();
+                  }
                   return s;
                 });
               }
@@ -408,7 +619,10 @@ export default function ArchiveClient() {
                   <div className="flex items-baseline justify-between mb-3">
                     <div className="flex items-baseline gap-2">
                       <h2 className="text-lg font-bold">{year}</h2>
-                      <span className="text-sm text-zinc-500">{yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}</span>
+                      <span className="text-sm text-zinc-500">
+                        {yearRolls.length} roll
+                        {yearRolls.length !== 1 ? "s" : ""}
+                      </span>
                     </div>
                     {editing && (
                       <button
@@ -422,13 +636,25 @@ export default function ArchiveClient() {
                   {view === "grid" ? (
                     <div className="space-y-2">
                       {yearRolls.map((roll) => (
-                        <GridCard key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                        <GridCard
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                        />
                       ))}
                     </div>
                   ) : (
                     <ul>
                       {yearRolls.map((roll) => (
-                        <ListRow key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                        <ListRow
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                        />
                       ))}
                     </ul>
                   )}
@@ -440,56 +666,62 @@ export default function ArchiveClient() {
       </PullToRefresh>
 
       {/* Edit-mode action bar — portalled to body to escape PageTransition transform */}
-      {editing && mounted && createPortal(
-        <div
-          className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
-          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
-        >
+      {editing &&
+        mounted &&
+        createPortal(
           <div
-            className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+            className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
             style={{
-              transformOrigin: "center bottom",
-              animation: exiting
-                ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
-                : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+              paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
             }}
           >
-            <button
-              onClick={exitEdit}
-              disabled={exiting}
-              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+            <div
+              className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+              style={{
+                transformOrigin: "center bottom",
+                animation: exiting
+                  ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
+                  : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+              }}
             >
-              Done
-            </button>
-            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
-            <button
-              onClick={selectAll}
-              className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
-            >
-              {allSelected ? "Deselect All" : "All"}
-            </button>
-            {selected.size > 0 && (
-              <>
-                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
-                <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
-                {availableActions.map(({ label, field, color }) => (
-                  <Fragment key={field}>
-                    <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
-                    <button
-                      onClick={() => applyStatus(field)}
-                      disabled={applying}
-                      className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
-                    >
-                      {applying ? "…" : label}
-                    </button>
-                  </Fragment>
-                ))}
-              </>
-            )}
-          </div>
-        </div>
-        , document.body
-      )}
+              <button
+                onClick={exitEdit}
+                disabled={exiting}
+                className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+              >
+                Done
+              </button>
+              <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+              <button
+                onClick={selectAll}
+                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
+              >
+                {allSelected ? "Deselect All" : "All"}
+              </button>
+              {selected.size > 0 && (
+                <>
+                  <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                  <span className="text-[13px] text-zinc-500 tabular-nums">
+                    {selected.size} selected
+                  </span>
+                  {availableActions.map(({ label, field, color }) => (
+                    <Fragment key={field}>
+                      <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                      <button
+                        onClick={() => applyStatus(field)}
+                        disabled={applying}
+                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                      >
+                        {applying ? "…" : label}
+                      </button>
+                    </Fragment>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
