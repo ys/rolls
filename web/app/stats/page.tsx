@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic";
 
 export default async function StatsPage() {
   const [rollsPerYear, topCameras, topFilms, statusCounts] = await Promise.all([
-    // Rolls per year derived from roll_number prefix (e.g. 25x01 → 2025)
     sql<{ year: string; count: number }[]>`
       SELECT
         '20' || SUBSTRING(roll_number, 1, 2) AS year,
@@ -16,20 +15,26 @@ export default async function StatsPage() {
       ORDER BY 1 DESC
     `,
 
-    sql<{ camera_id: string; count: number }[]>`
-      SELECT camera_id, COUNT(*)::int AS count
-      FROM rolls
-      WHERE camera_id IS NOT NULL
-      GROUP BY camera_id
+    sql<{ label: string; count: number }[]>`
+      SELECT
+        COALESCE(c.nickname, c.brand || ' ' || c.model) AS label,
+        COUNT(*)::int AS count
+      FROM rolls r
+      JOIN cameras c ON c.id = r.camera_id
+      WHERE r.camera_id IS NOT NULL
+      GROUP BY c.id, c.nickname, c.brand, c.model
       ORDER BY count DESC
       LIMIT 10
     `,
 
-    sql<{ film_id: string; count: number }[]>`
-      SELECT film_id, COUNT(*)::int AS count
-      FROM rolls
-      WHERE film_id IS NOT NULL
-      GROUP BY film_id
+    sql<{ label: string; count: number }[]>`
+      SELECT
+        COALESCE(f.nickname, f.brand || ' ' || f.name) AS label,
+        COUNT(*)::int AS count
+      FROM rolls r
+      JOIN films f ON f.id = r.film_id
+      WHERE r.film_id IS NOT NULL
+      GROUP BY f.id, f.nickname, f.brand, f.name
       ORDER BY count DESC
       LIMIT 10
     `,
@@ -55,8 +60,8 @@ export default async function StatsPage() {
     <StatsClient
       initialData={{
         rollsPerYear: rollsPerYear as { year: string; count: number }[],
-        topCameras: topCameras as { camera_id: string; count: number }[],
-        topFilms: topFilms as { film_id: string; count: number }[],
+        topCameras: topCameras as { label: string; count: number }[],
+        topFilms: topFilms as { label: string; count: number }[],
         statusCounts: statusCounts as { status: string; count: number }[],
       }}
     />
