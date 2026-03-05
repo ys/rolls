@@ -62,44 +62,20 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-10 flex justify-center pointer-events-none"
+      className="fixed bottom-0 inset-x-0 z-10 flex justify-center items-end gap-3 pointer-events-none"
       style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="pointer-events-auto flex items-center gap-1 px-3 py-3 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[2rem] shadow-xl shadow-black/20 dark:shadow-black/50 border border-zinc-200/60 dark:border-zinc-700/50">
-        {TABS.slice(0, 2).map(({ href, label, icon: Icon, match }) => {
+      <div className="pointer-events-auto flex items-center gap-1.5 px-4 py-3.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
+        {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-[1.25rem] transition-colors ${
+              className={`flex flex-col items-center justify-center px-5 py-2 gap-1 rounded-[1.5rem] transition-all duration-200 ${
                 active
-                  ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
-                  : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
-              }`}
-            >
-              <Icon active={active} />
-              <span className="text-[10px] font-medium">{label}</span>
-            </Link>
-          );
-        })}
-        <Link
-          href="/new"
-          aria-label="New roll"
-          className="w-10 h-10 mx-1 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 text-white shadow-md shadow-amber-300/50 active:scale-95 transition-transform text-2xl font-light leading-none"
-        >
-          +
-        </Link>
-        {TABS.slice(2).map(({ href, label, icon: Icon, match }) => {
-          const active = match(pathname);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-[1.25rem] transition-colors ${
-                active
-                  ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
-                  : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
+                  ? "bg-zinc-900/10 dark:bg-white/10 text-amber-600 dark:text-amber-400 shadow-inner"
+                  : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100/50 dark:active:bg-zinc-800/50"
               }`}
             >
               <Icon active={active} />
@@ -108,6 +84,13 @@ export default function BottomNav() {
           );
         })}
       </div>
+      <Link
+        href="/new"
+        aria-label="New roll"
+        className="pointer-events-auto w-14 h-14 mb-1 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-xl shadow-amber-400/40 dark:shadow-amber-500/30 active:scale-95 transition-transform text-3xl font-light leading-none"
+      >
+        +
+      </Link>
     </nav>
   );
 }
