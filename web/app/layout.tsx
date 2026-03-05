@@ -8,6 +8,9 @@ import SwipeNavigation from "../components/SwipeNavigation";
 export const metadata: Metadata = {
   title: "Rolls",
   description: "Film roll tracker",
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     title: "Rolls",
