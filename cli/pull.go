@@ -102,17 +102,25 @@ scans_path must be set to write roll files.`,
 			return
 		}
 
-		// Pre-scan to find existing roll folders (handles year-nested structures)
+		// Pre-scan to find existing roll folders (handles year-nested structures).
+		// Tries frontmatter roll_number first; falls back to the directory name
+		// prefix (e.g. "25x01" from "25x01-0112-canon eos 33v-kodak portra 400").
 		existingFolders := map[string]string{}
 		_ = filepath.Walk(cfg.ScansPath, func(path string, info os.FileInfo, err error) error {
 			if err != nil || info.IsDir() || filepath.Base(path) != "roll.md" {
 				return nil
 			}
+			dir := filepath.Dir(path)
 			r, parseErr := roll.FromMarkdown(path)
-			if parseErr != nil || r.Metadata.RollNumber == "" {
+			if parseErr == nil && r.Metadata.RollNumber != "" {
+				existingFolders[r.Metadata.RollNumber] = dir
 				return nil
 			}
-			existingFolders[r.Metadata.RollNumber] = filepath.Dir(path)
+			// Fall back: first segment of dir name before "-" is the roll number
+			dirName := filepath.Base(dir)
+			if rollNum := strings.SplitN(dirName, "-", 2)[0]; rollNum != "" {
+				existingFolders[rollNum] = dir
+			}
 			return nil
 		})
 
