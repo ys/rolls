@@ -102,6 +102,28 @@ scans_path must be set to write roll files.`,
 			return
 		}
 
+		// Build camera/film lookup maps for folder name generation
+		cameraNames := map[string]string{}
+		for _, c := range data.Cameras {
+			if c.Nickname != "" {
+				cameraNames[c.ID] = strings.ToLower(c.Nickname)
+			} else {
+				cameraNames[c.ID] = strings.ToLower(c.Brand + " " + c.Model)
+			}
+		}
+		filmNames := map[string]string{}
+		for _, f := range data.Films {
+			if f.Nickname != "" {
+				filmNames[f.ID] = strings.ToLower(f.Nickname)
+			} else {
+				name := strings.ToLower(f.Brand + " " + f.Name)
+				if f.Iso > 0 {
+					name += fmt.Sprintf(" %d", f.Iso)
+				}
+				filmNames[f.ID] = name
+			}
+		}
+
 		// Pre-scan to find existing roll folders (handles year-nested structures).
 		// Tries frontmatter roll_number first; falls back to the directory name
 		// prefix (e.g. "25x01" from "25x01-0112-canon eos 33v-kodak portra 400").
@@ -130,16 +152,30 @@ scans_path must be set to write roll files.`,
 				continue
 			}
 
-			// Use existing folder if found, otherwise create under year subdir
+			// Use existing folder if found, otherwise create with full naming convention:
+			// {year}/{roll_number}-{MMDD}-{camera}-{film}/
 			rollDir, exists := existingFolders[r.RollNumber]
 			if !exists {
 				year := "unknown"
+				mmdd := ""
 				if r.ShotAt != nil {
 					year = r.ShotAt.Format("2006")
+					mmdd = r.ShotAt.Format("0102")
 				} else if r.ScannedAt != nil {
 					year = r.ScannedAt.Format("2006")
+					mmdd = r.ScannedAt.Format("0102")
 				}
-				rollDir = filepath.Join(cfg.ScansPath, year, r.RollNumber)
+				dirName := r.RollNumber
+				if mmdd != "" {
+					dirName += "-" + mmdd
+				}
+				if cam := cameraNames[r.CameraID]; cam != "" {
+					dirName += "-" + cam
+				}
+				if film := filmNames[r.FilmID]; film != "" {
+					dirName += "-" + film
+				}
+				rollDir = filepath.Join(cfg.ScansPath, year, dirName)
 			}
 			rollFile := filepath.Join(rollDir, "roll.md")
 
