@@ -47,7 +47,8 @@ export async function PUT(
     ContentType: "image/webp",
   }));
 
-  const contactSheetUrl = `/api/rolls/${id}/contact-sheet`;
+  const origin = new URL(request.url).origin;
+  const contactSheetUrl = `${origin}/api/rolls/${id}/contact-sheet`;
   await sql`UPDATE rolls SET contact_sheet_url = ${contactSheetUrl} WHERE roll_number = ${id}`;
 
   return NextResponse.json({ contact_sheet_url: contactSheetUrl });
