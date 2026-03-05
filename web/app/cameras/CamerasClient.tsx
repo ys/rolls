@@ -8,6 +8,7 @@ import { invalidateCache } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
 import { SuccessMessage } from "@/components/SuccessCheckmark";
 import { haptics } from "@/lib/haptics";
+import BackButton from "@/components/BackButton";
 
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
@@ -82,6 +83,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div>
+        <BackButton label="Settings" />
         {showSuccess && (
           <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
             <SuccessMessage message="Camera saved!" />

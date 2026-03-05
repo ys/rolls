@@ -8,6 +8,7 @@ import { invalidateCache } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
 import { SuccessMessage } from "@/components/SuccessCheckmark";
 import { haptics } from "@/lib/haptics";
+import BackButton from "@/components/BackButton";
 
 function filmLabel(f: Film): string {
   if (f.nickname) return f.nickname;
@@ -140,6 +141,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div>
+        <BackButton label="Settings" />
         {showSuccess && (
           <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
             <SuccessMessage message={successMessage} />
