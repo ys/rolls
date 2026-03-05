@@ -245,6 +245,14 @@ export default function ArchiveClient() {
   function enterEdit() { setEditing(true); setSelected(new Set()); haptics.medium(); }
   function exitEdit()  { setEditing(false); setSelected(new Set()); }
 
+  function selectAll() {
+    if (!data) return;
+    const all = new Set(data.rolls.map((r) => r.roll_number));
+    if (selected.size === all.size) { setSelected(new Set()); haptics.light(); }
+    else { setSelected(all); haptics.medium(); }
+  }
+  const allSelected = !!data && selected.size === data.rolls.length;
+
   async function applyStatus(field: string) {
     if (selected.size === 0 || applying) return;
     setApplying(true);
@@ -372,10 +380,15 @@ export default function ArchiveClient() {
               Done
             </button>
             <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
-            {selected.size === 0 ? (
-              <span className="text-[13px] text-zinc-400 px-1">Select rolls…</span>
-            ) : (
+            <button
+              onClick={selectAll}
+              className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
+            >
+              {allSelected ? "Deselect All" : "All"}
+            </button>
+            {selected.size > 0 && (
               <>
+                <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
                 <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
                 {BULK_STATUSES.map(({ label, field, color }) => (
                   <button
