@@ -1,5 +1,6 @@
 import { sql } from "@/lib/db";
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton />
       <h1 className="text-3xl font-bold">Settings</h1>
 
       <SettingsGroup label="Library">
