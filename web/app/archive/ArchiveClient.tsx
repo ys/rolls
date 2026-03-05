@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
@@ -18,11 +18,11 @@ const STATUS_DOT: Record<string, string> = {
   ARCHIVED:  "bg-zinc-400",
 };
 
-const BULK_STATUSES = [
-  { label: "Processed", field: "processed_at", color: "bg-purple-500" },
-  { label: "Uploaded",  field: "uploaded_at",  color: "bg-blue-500" },
-  { label: "Archived",  field: "archived_at",  color: "bg-zinc-500" },
-] as const;
+const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
+  SCANNED:   { field: "processed_at", label: "Processed", color: "bg-purple-500" },
+  PROCESSED: { field: "uploaded_at",  label: "Uploaded",  color: "bg-blue-500"   },
+  UPLOADED:  { field: "archived_at",  label: "Archived",  color: "bg-zinc-500"   },
+};
 
 type RollRow = Roll & {
   camera_nickname: string | null;
@@ -324,6 +324,20 @@ export default function ArchiveClient() {
   }
   const years = Array.from(byYear.keys()).sort((a, b) => b - a);
 
+  // Derive available bulk actions from the statuses of selected rolls
+  const rollMap = new Map(data.rolls.map((r) => [r.roll_number, r]));
+  const seenFields = new Set<string>();
+  const availableActions: Array<{ field: string; label: string; color: string }> = [];
+  for (const num of selected) {
+    const roll = rollMap.get(num);
+    if (!roll) continue;
+    const next = STATUS_NEXT[rollStatus(roll)];
+    if (next && !seenFields.has(next.field)) {
+      seenFields.add(next.field);
+      availableActions.push(next);
+    }
+  }
+
   return (
     <>
       <PullToRefresh onRefresh={async () => { router.refresh(); }}>
@@ -444,15 +458,17 @@ export default function ArchiveClient() {
               <>
                 <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
                 <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
-                {BULK_STATUSES.map(({ label, field, color }) => (
-                  <button
-                    key={field}
-                    onClick={() => applyStatus(field)}
-                    disabled={applying}
-                    className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
-                  >
-                    {applying ? "…" : label}
-                  </button>
+                {availableActions.map(({ label, field, color }) => (
+                  <Fragment key={field}>
+                    <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                    <button
+                      onClick={() => applyStatus(field)}
+                      disabled={applying}
+                      className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                    >
+                      {applying ? "…" : label}
+                    </button>
+                  </Fragment>
                 ))}
               </>
             )}
