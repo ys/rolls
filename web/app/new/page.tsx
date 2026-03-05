@@ -126,7 +126,7 @@ export default function NewRollPage() {
             type="date"
             value={form.shot_at}
             onChange={(e) => setForm((f) => ({ ...f, shot_at: e.target.value }))}
-            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+            className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
           />
         </div>
 

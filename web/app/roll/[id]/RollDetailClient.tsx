@@ -228,7 +228,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 type="date"
                 value={metaForm.shot_at}
                 onChange={(e) => setMetaForm((f) => ({ ...f, shot_at: e.target.value }))}
-                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
               />
             </div>
 
@@ -328,7 +328,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                   onBlur={(e) => {
                     if (e.target.value) save({ [key]: e.target.value });
                   }}
-                  className="w-full min-w-0 bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                  className="w-full min-w-0 appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
                 />
               </div>
             ))}
