@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
@@ -236,14 +236,35 @@ export default function ArchiveClient() {
   const router = useRouter();
   const [view, setView] = useState<"grid" | "list">("grid");
   const [editing, setEditing] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
+
+  // Clean up body attribute if component unmounts while editing
+  useEffect(() => {
+    return () => { document.body.removeAttribute("data-mass-edit"); };
+  }, []);
 
   function toggleSelect(n: string) {
     setSelected((prev) => { const s = new Set(prev); s.has(n) ? s.delete(n) : s.add(n); return s; });
   }
-  function enterEdit() { setEditing(true); setSelected(new Set()); haptics.medium(); }
-  function exitEdit()  { setEditing(false); setSelected(new Set()); }
+  function enterEdit() {
+    setEditing(true);
+    setExiting(false);
+    setSelected(new Set());
+    document.body.setAttribute("data-mass-edit", "");
+    haptics.medium();
+  }
+  function exitEdit() {
+    setExiting(true);
+    haptics.light();
+    setTimeout(() => {
+      setEditing(false);
+      setExiting(false);
+      setSelected(new Set());
+      document.body.removeAttribute("data-mass-edit");
+    }, 220);
+  }
 
   function selectAll() {
     if (!data) return;
@@ -366,16 +387,25 @@ export default function ArchiveClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — overlays nav at exact same position */}
+      {/* Edit-mode action bar — flips in over the nav */}
       {editing && (
         <div
           className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
           style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
+          <div
+            className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+            style={{
+              transformOrigin: "center bottom",
+              animation: exiting
+                ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
+                : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+            }}
+          >
             <button
               onClick={exitEdit}
-              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity"
+              disabled={exiting}
+              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
             >
               Done
             </button>

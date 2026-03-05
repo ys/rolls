@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { haptics } from "../lib/haptics";
+
+type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
 function RollsIcon({ active }: { active: boolean }) {
   return (
@@ -53,15 +56,44 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [anim, setAnim] = useState<NavAnim>("idle");
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const observer = new MutationObserver(() => {
+      clearTimeout(timer);
+      if (document.body.hasAttribute("data-mass-edit")) {
+        setAnim("hiding");
+        timer = setTimeout(() => setAnim("hidden"), 240);
+      } else {
+        setAnim("showing");
+        timer = setTimeout(() => setAnim("idle"), 240);
+      }
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-mass-edit"] });
+    return () => { observer.disconnect(); clearTimeout(timer); };
+  }, []);
 
   if (pathname === "/login") return null;
+
+  const pillStyle: React.CSSProperties = {
+    transformOrigin: "center bottom",
+    animation: anim === "hiding"  ? "navFlipOut 0.24s cubic-bezier(0.4,0,1,1) forwards"
+             : anim === "showing" ? "navFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards"
+             : undefined,
+    opacity:       anim === "hidden" ? 0 : undefined,
+    pointerEvents: anim === "hidden" ? "none" : undefined,
+  };
 
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-10 flex justify-center items-end gap-3 pointer-events-none px-4"
       style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="pointer-events-auto flex items-center gap-0.5 px-2 py-1 h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60">
+      <div
+        className="pointer-events-auto flex items-center gap-0.5 px-2 py-1 h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+        style={pillStyle}
+      >
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
@@ -86,6 +118,7 @@ export default function BottomNav() {
         aria-label="New roll"
         onClick={() => haptics.medium()}
         className="pointer-events-auto flex-shrink-0 w-14 h-14 aspect-square rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-xl shadow-amber-400/40 dark:shadow-amber-500/30 active:scale-95 transition-transform text-3xl font-light leading-none"
+        style={pillStyle}
       >
         +
       </Link>
