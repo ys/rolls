@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "./BottomNav";
-import NewRollFab from "./NewRollFab";
 
 export const metadata: Metadata = {
   title: "Rolls",
@@ -38,7 +37,6 @@ export default function RootLayout({
           {children}
         </main>
         <BottomNav />
-        <NewRollFab />
       </body>
     </html>
   );

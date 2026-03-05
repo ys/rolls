@@ -58,7 +58,7 @@ const TABS = [
 export default function BottomNav() {
   const pathname = usePathname();
 
-  if (pathname === "/login" || pathname === "/new") return null;
+  if (pathname === "/login") return null;
 
   return (
     <nav
@@ -66,7 +66,31 @@ export default function BottomNav() {
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
       <div className="pointer-events-auto flex items-center gap-1 px-2 py-2 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-3xl shadow-xl shadow-black/20 dark:shadow-black/50 border border-zinc-200/60 dark:border-zinc-700/50">
-        {TABS.map(({ href, label, icon: Icon, match }) => {
+        {TABS.slice(0, 2).map(({ href, label, icon: Icon, match }) => {
+          const active = match(pathname);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center justify-center px-5 py-1.5 gap-0.5 rounded-2xl transition-colors ${
+                active
+                  ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                  : "text-zinc-400 dark:text-zinc-500 active:bg-zinc-100 dark:active:bg-zinc-800"
+              }`}
+            >
+              <Icon active={active} />
+              <span className="text-[10px] font-medium">{label}</span>
+            </Link>
+          );
+        })}
+        <Link
+          href="/new"
+          aria-label="New roll"
+          className="w-10 h-10 mx-1 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 text-white shadow-md shadow-amber-300/50 active:scale-95 transition-transform text-2xl font-light leading-none"
+        >
+          +
+        </Link>
+        {TABS.slice(2).map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
