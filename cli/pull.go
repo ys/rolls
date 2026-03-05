@@ -264,9 +264,6 @@ func buildRollMarkdown(r rollJSON) string {
 	if len(r.Tags) > 0 {
 		sb.WriteString(fmt.Sprintf("tags: %s\n", strings.Join(r.Tags, ", ")))
 	}
-	if r.ContactSheetURL != "" {
-		sb.WriteString(fmt.Sprintf("contact_sheet_url: %s\n", r.ContactSheetURL))
-	}
 	sb.WriteString("---\n")
 	if r.Notes != "" {
 		sb.WriteString(r.Notes)
