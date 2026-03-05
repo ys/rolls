@@ -34,6 +34,17 @@
   font-display: swap;
 }
 
+/* Splash screen animations */
+@keyframes splashIcon {
+  0%   { opacity: 0; transform: scale(0.78); }
+  65%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1);    }
+}
+@keyframes splashLabel {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0);   }
+}
+
 /* Nav ↔ edit bar flip animations */
 @keyframes navFlipOut {
   0%   { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
