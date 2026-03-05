@@ -147,6 +147,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
 		sheetsOnly, _ := cmd.Flags().GetBool("sheets")
+		year, _ := cmd.Flags().GetInt("year")
 
 		if cfg.WebAppURL == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
@@ -156,7 +157,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 		}
 
 		if sheetsOnly {
-			uploadContactSheets(dryRun, nil)
+			uploadContactSheets(dryRun, nil, nil)
 			return
 		}
 
@@ -199,6 +200,11 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 		// Collect rolls from scans path
 		rolls, err := roll.GetRolls(cfg.ScansPath)
 		cobra.CheckErr(err)
+		if year != 0 {
+			rolls = roll.Filter(rolls, func(r roll.Roll) bool {
+				return r.Metadata.ShotAt.Year() == year || r.Metadata.ScannedAt.Year() == year
+			})
+		}
 
 		// For unknown camera/film IDs: try fuzzy-match to a known entry first,
 		// only fall back to a stub if nothing similar is found.
@@ -312,14 +318,24 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 				len(payload.Cameras), len(payload.Films), len(payload.Rolls))
 		}
 
-		uploadContactSheets(dryRun, payload.Rolls)
+		var allowRolls map[string]bool
+		if year != 0 {
+			allowRolls = make(map[string]bool, len(payload.Rolls))
+			for _, r := range payload.Rolls {
+				allowRolls[r.RollNumber] = true
+			}
+		}
+		uploadContactSheets(dryRun, payload.Rolls, allowRolls)
 	},
 }
 
 // uploadContactSheets uploads all .webp files from contact_sheet_path/images/ to R2.
 // If knownRolls is non-nil, rolls that already have a contact_sheet_url are skipped.
 // Pass nil to force-upload all (used by --sheets).
-func uploadContactSheets(dryRun bool, knownRolls []rollJSON) {
+// uploadContactSheets uploads .webp files from contact_sheet_path/images/ to R2.
+// knownRolls: if non-nil, rolls with a contact_sheet_url are skipped (normal push).
+// allowOnly:  if non-nil, only roll numbers in this set are uploaded (--year filter).
+func uploadContactSheets(dryRun bool, knownRolls []rollJSON, allowOnly map[string]bool) {
 	if cfg.ContactSheetPath == "" {
 		return
 	}
@@ -346,6 +362,9 @@ func uploadContactSheets(dryRun bool, knownRolls []rollJSON) {
 			continue
 		}
 		rollNum := entry.Name()[:len(entry.Name())-5]
+		if allowOnly != nil && !allowOnly[rollNum] {
+			continue
+		}
 		if skip[rollNum] {
 			skipped++
 			continue
@@ -392,4 +411,5 @@ func init() {
 	rootCmd.AddCommand(pushCmd)
 	pushCmd.Flags().Bool("dry-run", false, "Show what would be pushed without sending data")
 	pushCmd.Flags().Bool("sheets", false, "Re-upload all contact sheets to R2 (skip metadata import)")
+	pushCmd.Flags().Int("year", 0, "Only push rolls from this year")
 }
