@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 import type postgres from "postgres";
+import { getUserId } from "@/lib/request-context";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const userId = await getUserId();
   const { id } = await params;
-  const rows = await sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id}`;
+  const rows = await sql<Roll[]>`
+    SELECT * FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}
+  `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -19,6 +23,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const userId = await getUserId();
   const { id } = await params;
   const body = await request.json();
 
@@ -44,8 +49,9 @@ export async function PATCH(
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
+  values.push(userId);
   values.push(id);
-  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE roll_number = $${idx} RETURNING *`;
+  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND roll_number = $${idx + 1} RETURNING *`;
   const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
 
   if (rows.length === 0) {

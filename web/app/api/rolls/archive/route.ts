@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
+import { getUserId } from "@/lib/request-context";
 
 type RollRow = Roll & {
   camera_nickname: string | null;
@@ -14,6 +15,7 @@ type RollRow = Roll & {
 };
 
 export async function GET() {
+  const userId = await getUserId();
   const rolls = await sql<RollRow[]>`
     SELECT r.*,
       c.nickname  AS camera_nickname,
@@ -25,9 +27,9 @@ export async function GET() {
       f.iso       AS film_iso,
       f.show_iso  AS film_show_iso
     FROM rolls r
-    LEFT JOIN cameras c ON c.id = r.camera_id
-    LEFT JOIN films   f ON f.id = r.film_id
-    WHERE r.scanned_at IS NOT NULL
+    LEFT JOIN cameras c ON c.id = r.camera_id AND c.user_id = ${userId}
+    LEFT JOIN films   f ON f.id = r.film_id AND f.user_id = ${userId}
+    WHERE r.user_id = ${userId} AND r.scanned_at IS NOT NULL
     ORDER BY r.scanned_at DESC, r.roll_number DESC
   `;
 

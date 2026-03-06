@@ -34,7 +34,11 @@
       "Bash(git push origin main)",
       "Bash(heroku logs -n 100 --app rolls)",
       "Bash(git commit -m \"Increase web app DB connection timeout to 30s\")",
-      "Bash(git commit -m \"Update bottom nav to iOS liquid design with more rounded corners\")"
+      "Bash(git commit -m \"Update bottom nav to iOS liquid design with more rounded corners\")",
+      "Bash(gh pr list --draft --limit 10)",
+      "Bash(git checkout multitenancy-plan)",
+      "Bash(gh pr view 2)",
+      "Bash(gh pr checkout 2)"
     ]
   },
   "enableAllProjectMcpServers": false

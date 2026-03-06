@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { r2, R2_BUCKET } from "@/lib/r2";
 import { sql } from "@/lib/db";
+import { getUserId } from "@/lib/request-context";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const userId = await getUserId();
   const { id } = await params;
+
+  // Verify user owns this roll before serving the image
+  const [roll] = await sql<{ roll_number: string }[]>`
+    SELECT roll_number FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}
+  `;
+
+  if (!roll) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   try {
     const obj = await r2.send(new GetObjectCommand({
@@ -33,7 +44,17 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const userId = await getUserId();
   const { id } = await params;
+
+  // Verify user owns this roll before uploading
+  const [roll] = await sql<{ roll_number: string }[]>`
+    SELECT roll_number FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}
+  `;
+
+  if (!roll) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const body = await request.arrayBuffer();
   if (!body.byteLength) {
@@ -52,7 +73,11 @@ export async function PUT(
   const contactSheetUrl = process.env.R2_PUBLIC_URL
     ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${id}.webp`
     : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${id}/contact-sheet`;
-  await sql`UPDATE rolls SET contact_sheet_url = ${contactSheetUrl} WHERE roll_number = ${id}`;
+  await sql`
+    UPDATE rolls
+    SET contact_sheet_url = ${contactSheetUrl}
+    WHERE roll_number = ${id} AND user_id = ${userId}
+  `;
 
   return NextResponse.json({ contact_sheet_url: contactSheetUrl });
 }

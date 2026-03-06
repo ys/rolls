@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { getUserId } from "@/lib/request-context";
 
 export async function GET() {
+  const userId = await getUserId();
   const year = new Date().getFullYear().toString().slice(-2);
   const prefix = `${year}x`;
 
   const rows = await sql<{ roll_number: string }[]>`
     SELECT roll_number FROM rolls
-    WHERE roll_number ILIKE ${prefix + "%"}
+    WHERE user_id = ${userId} AND roll_number ILIKE ${prefix + "%"}
     ORDER BY roll_number DESC
     LIMIT 20
   `;

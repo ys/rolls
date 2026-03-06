@@ -7,14 +7,23 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1001.0",
     "@github/markdown-toolbar-element": "^2.2.3",
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.3",
+    "@upstash/ratelimit": "^2.0.8",
+    "ioredis": "^5.10.0",
+    "jose": "^6.2.0",
     "marked": "^17.0.3",
     "next": "^16.1.6",
     "next-pwa": "^5.6.0",
+    "node-mailjet": "^6.0.11",
     "postgres": "^3.4.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -22,14 +31,19 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.1.6",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.0.18",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
+    "jsdom": "^28.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }

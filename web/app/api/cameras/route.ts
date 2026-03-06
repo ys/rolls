@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Camera } from "@/lib/db";
+import { getUserId } from "@/lib/request-context";
 
 export async function GET() {
+  const userId = await getUserId();
   const rows = await sql<Camera[]>`
     SELECT c.*, COUNT(r.roll_number)::int AS roll_count
     FROM cameras c
-    LEFT JOIN rolls r ON r.camera_id = c.id
+    LEFT JOIN rolls r ON r.camera_id = c.id AND r.user_id = ${userId}
+    WHERE c.user_id = ${userId}
     GROUP BY c.id
     ORDER BY COALESCE(c.nickname, c.brand || ' ' || c.model)
   `;
@@ -14,6 +17,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const userId = await getUserId();
   const body = await request.json();
   const { id, brand, model, nickname, format } = body;
 
@@ -22,9 +26,9 @@ export async function POST(request: NextRequest) {
   }
 
   const rows = await sql<Camera[]>`
-    INSERT INTO cameras (id, brand, model, nickname, format)
-    VALUES (${id}, ${brand}, ${model}, ${nickname ?? null}, ${format ?? 135})
-    ON CONFLICT (id) DO UPDATE SET brand = EXCLUDED.brand, model = EXCLUDED.model, nickname = EXCLUDED.nickname, format = EXCLUDED.format
+    INSERT INTO cameras (id, user_id, brand, model, nickname, format)
+    VALUES (${id}, ${userId}, ${brand}, ${model}, ${nickname ?? null}, ${format ?? 135})
+    ON CONFLICT (id, user_id) DO UPDATE SET brand = EXCLUDED.brand, model = EXCLUDED.model, nickname = EXCLUDED.nickname, format = EXCLUDED.format
     RETURNING *
   `;
   return NextResponse.json(rows[0], { status: 201 });
