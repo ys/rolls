@@ -14,16 +14,16 @@ export default async function RollDetailPage({
   const { id } = await params;
 
   const [rolls, cameras, films] = await Promise.all([
-    sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id}`,
+    sql<Roll[]>`SELECT * FROM rolls WHERE slug = ${id}`,
     sql<Camera[]>`
-      SELECT c.*, COUNT(r.roll_number)::int AS roll_count
-      FROM cameras c LEFT JOIN rolls r ON r.camera_id = c.id
-      GROUP BY c.id ORDER BY COUNT(r.roll_number) DESC
+      SELECT c.*, COUNT(r.slug)::int AS roll_count
+      FROM cameras c LEFT JOIN rolls r ON r.camera_uuid = c.uuid
+      GROUP BY c.uuid ORDER BY COUNT(r.slug) DESC
     `,
     sql<Film[]>`
-      SELECT f.*, COUNT(r.roll_number)::int AS roll_count
-      FROM films f LEFT JOIN rolls r ON r.film_id = f.id
-      GROUP BY f.id ORDER BY COUNT(r.roll_number) DESC
+      SELECT f.*, COUNT(r.slug)::int AS roll_count
+      FROM films f LEFT JOIN rolls r ON r.film_uuid = f.uuid
+      GROUP BY f.uuid ORDER BY COUNT(r.slug) DESC
     `,
   ]);
 

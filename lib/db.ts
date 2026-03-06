@@ -59,7 +59,8 @@ export interface Invite {
 }
 
 export interface Camera {
-  id: string;
+  uuid: string;
+  slug: string;
   user_id: string;
   brand: string;
   model: string;
@@ -69,7 +70,8 @@ export interface Camera {
 }
 
 export interface Film {
-  id: string;
+  uuid: string;
+  slug: string;
   user_id: string;
   brand: string;
   name: string;
@@ -81,10 +83,14 @@ export interface Film {
 }
 
 export interface Roll {
-  roll_number: string;
+  uuid: string;
+  slug: string;
   user_id: string;
-  camera_id: string | null;
-  film_id: string | null;
+  camera_uuid: string | null;
+  film_uuid: string | null;
+  // Temporary columns for migration (will be removed in migration 004)
+  camera_slug?: string | null;
+  film_slug?: string | null;
   shot_at: string | null;
   fridge_at: string | null;
   lab_at: string | null;

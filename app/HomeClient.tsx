@@ -46,7 +46,7 @@ const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 function cameraLabel(roll: RollRow): string {
   if (roll.camera_nickname) return roll.camera_nickname;
   if (roll.camera_brand && roll.camera_model) return `${roll.camera_brand} ${roll.camera_model}`;
-  return roll.camera_id ?? "";
+  return roll.camera_slug ?? "";
 }
 
 function filmLabel(roll: RollRow): string {
@@ -55,7 +55,7 @@ function filmLabel(roll: RollRow): string {
     const iso = roll.film_show_iso && roll.film_iso ? ` ${roll.film_iso}` : "";
     return `${roll.film_brand} ${roll.film_name}${iso}`;
   }
-  return roll.film_id ?? "";
+  return roll.film_slug ?? "";
 }
 
 function Checkbox({ checked }: { checked: boolean }) {
@@ -87,7 +87,7 @@ function RollItem({ roll, editing, selected, onToggle }: {
       }
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
+          <span className="font-semibold text-[15px] truncate">{roll.slug}</span>
           {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
         </div>
         {subtitle && <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>}
@@ -114,7 +114,7 @@ function RollItem({ roll, editing, selected, onToggle }: {
   }
   return (
     <li>
-      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+      <Link href={`/roll/${roll.slug}`} onClick={() => haptics.light()} className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
         {inner}
       </Link>
     </li>
@@ -197,7 +197,7 @@ export default function HomeClient() {
   const atLab = rolls.filter((r) => r.lab_at);
 
   // Derive available bulk actions from the statuses of selected rolls
-  const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));
+  const rollMap = new Map(rolls.map((r) => [r.slug, r]));
   const seenFields = new Set<string>();
   const availableActions: Array<{ field: string; label: string; color: string }> = [];
   for (const num of selected) {
@@ -240,7 +240,7 @@ export default function HomeClient() {
                     {editing && (
                       <button
                         onClick={() => {
-                          const nums = inProgress.map((r) => r.roll_number);
+                          const nums = inProgress.map((r) => r.slug);
                           const allSel = nums.every((n) => selected.has(n));
                           setSelected((prev) => {
                             const s = new Set(prev);
@@ -249,15 +249,15 @@ export default function HomeClient() {
                             return s;
                           });
                         }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${inProgress.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${inProgress.every((r) => selected.has(r.slug)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
                       >
-                        {inProgress.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                        {inProgress.every((r) => selected.has(r.slug)) ? "Deselect" : "Select all"}
                       </button>
                     )}
                   </div>
                   <ul>
                     {inProgress.map((roll) => (
-                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                      <RollItem key={roll.slug} roll={roll} editing={editing} selected={selected.has(roll.slug)} onToggle={() => toggleSelect(roll.slug)} />
                     ))}
                   </ul>
                 </section>
@@ -273,7 +273,7 @@ export default function HomeClient() {
                     {editing && (
                       <button
                         onClick={() => {
-                          const nums = atLab.map((r) => r.roll_number);
+                          const nums = atLab.map((r) => r.slug);
                           const allSel = nums.every((n) => selected.has(n));
                           setSelected((prev) => {
                             const s = new Set(prev);
@@ -282,15 +282,15 @@ export default function HomeClient() {
                             return s;
                           });
                         }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${atLab.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${atLab.every((r) => selected.has(r.slug)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
                       >
-                        {atLab.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                        {atLab.every((r) => selected.has(r.slug)) ? "Deselect" : "Select all"}
                       </button>
                     )}
                   </div>
                   <ul>
                     {atLab.map((roll) => (
-                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                      <RollItem key={roll.slug} roll={roll} editing={editing} selected={selected.has(roll.slug)} onToggle={() => toggleSelect(roll.slug)} />
                     ))}
                   </ul>
                 </section>

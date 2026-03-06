@@ -57,30 +57,10 @@ CREATE TABLE IF NOT EXISTS invites (
 CREATE INDEX IF NOT EXISTS invites_code_idx ON invites (code);
 CREATE INDEX IF NOT EXISTS invites_created_by_idx ON invites (created_by);
 
--- Add user_id columns to existing tables (nullable for now, will be made NOT NULL in migration 003)
+-- Add user_id columns to existing tables (nullable for now, will be made NOT NULL in migration 002)
+-- Note: Keep existing PKs intact - migration 003 will handle UUID refactor
 
--- First, drop foreign key constraints on rolls table so we can modify cameras/films PKs
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'rolls_camera_id_fkey' AND conrelid = 'rolls'::regclass
-  ) THEN
-    ALTER TABLE rolls DROP CONSTRAINT rolls_camera_id_fkey;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'rolls_film_id_fkey' AND conrelid = 'rolls'::regclass
-  ) THEN
-    ALTER TABLE rolls DROP CONSTRAINT rolls_film_id_fkey;
-  END IF;
-END $$;
-
--- cameras: add user_id and internal_id, change PK to surrogate
+-- cameras: add user_id and add unique constraint on (user_id, id)
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -94,31 +74,21 @@ END $$;
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'cameras' AND column_name = 'internal_id'
-  ) THEN
-    ALTER TABLE cameras ADD COLUMN internal_id BIGSERIAL;
-  END IF;
-END $$;
-
--- Drop old PK and add new composite unique constraint (only if not already done)
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'cameras_pkey' AND conrelid = 'cameras'::regclass
-  ) THEN
-    ALTER TABLE cameras DROP CONSTRAINT cameras_pkey;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conname = 'cameras_user_id_id_uniq'
   ) THEN
     ALTER TABLE cameras ADD CONSTRAINT cameras_user_id_id_uniq UNIQUE (user_id, id);
+  END IF;
+END $$;
+
+-- Add internal_id for future use (will be removed in migration 003)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'cameras' AND column_name = 'internal_id'
+  ) THEN
+    ALTER TABLE cameras ADD COLUMN internal_id BIGSERIAL;
   END IF;
 END $$;
 
@@ -136,30 +106,20 @@ END $$;
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'films' AND column_name = 'internal_id'
-  ) THEN
-    ALTER TABLE films ADD COLUMN internal_id BIGSERIAL;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF EXISTS (
     SELECT 1 FROM pg_constraint
-    WHERE conname = 'films_pkey' AND conrelid = 'films'::regclass
+    WHERE conname = 'films_user_id_id_uniq'
   ) THEN
-    ALTER TABLE films DROP CONSTRAINT films_pkey;
+    ALTER TABLE films ADD CONSTRAINT films_user_id_id_uniq UNIQUE (user_id, id);
   END IF;
 END $$;
 
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'films_user_id_id_uniq'
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'films' AND column_name = 'internal_id'
   ) THEN
-    ALTER TABLE films ADD CONSTRAINT films_user_id_id_uniq UNIQUE (user_id, id);
+    ALTER TABLE films ADD COLUMN internal_id BIGSERIAL;
   END IF;
 END $$;
 
@@ -177,26 +137,6 @@ END $$;
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'rolls' AND column_name = 'internal_id'
-  ) THEN
-    ALTER TABLE rolls ADD COLUMN internal_id BIGSERIAL;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'rolls_pkey' AND conrelid = 'rolls'::regclass
-  ) THEN
-    ALTER TABLE rolls DROP CONSTRAINT rolls_pkey;
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conname = 'rolls_user_id_roll_number_uniq'
   ) THEN
@@ -204,23 +144,15 @@ BEGIN
   END IF;
 END $$;
 
--- Re-add foreign key constraints on rolls table (now that cameras/films PKs are updated)
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'rolls_camera_id_fkey' AND conrelid = 'rolls'::regclass
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'rolls' AND column_name = 'internal_id'
   ) THEN
-    ALTER TABLE rolls ADD CONSTRAINT rolls_camera_id_fkey FOREIGN KEY (camera_id) REFERENCES cameras(id);
+    ALTER TABLE rolls ADD COLUMN internal_id BIGSERIAL;
   END IF;
 END $$;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'rolls_film_id_fkey' AND conrelid = 'rolls'::regclass
-  ) THEN
-    ALTER TABLE rolls ADD CONSTRAINT rolls_film_id_fkey FOREIGN KEY (film_id) REFERENCES films(id);
-  END IF;
-END $$;
+-- Note: Foreign keys on rolls.camera_id and rolls.film_id remain unchanged
+-- They still reference cameras(id) and films(id) which are still PRIMARY KEYs

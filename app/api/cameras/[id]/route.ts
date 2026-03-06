@@ -8,9 +8,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id } = await params;
+  const { id: slug } = await params;
   const rows = await sql<Camera[]>`
-    SELECT * FROM cameras WHERE id = ${id} AND user_id = ${userId}
+    SELECT * FROM cameras WHERE slug = ${slug} AND user_id = ${userId}
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(rows[0]);
@@ -21,7 +21,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id } = await params;
+  const { id: slug } = await params;
   const { brand, model, nickname, format } = await request.json();
 
   if (!brand || !model) {
@@ -31,7 +31,7 @@ export async function PATCH(
   const rows = await sql<Camera[]>`
     UPDATE cameras
     SET brand = ${brand}, model = ${model}, nickname = ${nickname ?? null}, format = ${format ?? 135}
-    WHERE id = ${id} AND user_id = ${userId}
+    WHERE slug = ${slug} AND user_id = ${userId}
     RETURNING *
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -27,10 +27,10 @@ export async function GET() {
       f.iso       AS film_iso,
       f.show_iso  AS film_show_iso
     FROM rolls r
-    LEFT JOIN cameras c ON c.id = r.camera_id AND c.user_id = ${userId}
-    LEFT JOIN films   f ON f.id = r.film_id AND f.user_id = ${userId}
+    LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
+    LEFT JOIN films   f ON f.uuid = r.film_uuid AND f.user_id = ${userId}
     WHERE r.user_id = ${userId} AND r.scanned_at IS NULL
-    ORDER BY r.roll_number DESC
+    ORDER BY r.slug DESC
   `;
 
   return NextResponse.json({ rolls });

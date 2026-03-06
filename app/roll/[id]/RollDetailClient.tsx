@@ -87,8 +87,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   }, []);
 
   const nextAction = NEXT_ACTION[status];
-  const currentCamera = cameras.find((c) => c.id === roll.camera_id) ?? null;
-  const currentFilm = films.find((f) => f.id === roll.film_id) ?? null;
+  const currentCamera = cameras.find((c) => c.slug === roll.camera_slug) ?? null;
+  const currentFilm = films.find((f) => f.slug === roll.film_slug) ?? null;
 
   async function save(patch: Partial<Roll>): Promise<boolean> {
     setSaving(true);
@@ -203,7 +203,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 >
                   <option value="">— none —</option>
                   {cameras.map((c) => (
-                    <option key={c.id} value={c.id}>{cameraLabel(c)}</option>
+                    <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
                   ))}
                 </select>
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
@@ -220,7 +220,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 >
                   <option value="">— none —</option>
                   {films.map((f) => (
-                    <option key={f.id} value={f.id}>{filmLabel(f)}</option>
+                    <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
                   ))}
                 </select>
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
@@ -278,8 +278,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           </div>
         ) : (
           <div className="px-4 pb-4 pt-2 space-y-3">
-            <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : roll.camera_id ?? "—"} />
-            <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : roll.film_id ?? "—"} />
+            <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : roll.camera_slug ?? "—"} />
+            <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : roll.film_slug ?? "—"} />
             <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
             {roll.lab_name && <Row label="Lab" value={roll.lab_name} />}
             {roll.album_name && <Row label="Album" value={roll.album_name} />}

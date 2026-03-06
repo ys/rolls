@@ -63,7 +63,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
     }
 
     const camera = await resp.json();
-    setAllCameras((prev) => [...prev.filter((c) => c.id !== camera.id), camera]);
+    setAllCameras((prev) => [...prev.filter((c) => c.slug !== camera.slug), camera]);
 
     // Invalidate rolls cache since camera data changed
     invalidateCache("rolls");
@@ -110,16 +110,16 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
 
       <ul className="space-y-2 mb-8">
         {cameras.map((c) => (
-          <li key={c.id}>
+          <li key={c.slug}>
             <Link
-              href={`/cameras/${encodeURIComponent(c.id)}`}
+              href={`/cameras/${encodeURIComponent(c.slug)}`}
               onClick={() => haptics.light()}
               className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <div>
                 <div className="font-medium">{cameraLabel(c)}</div>
                 <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-                  {c.id} · {c.format}mm
+                  {c.slug} · {c.format}mm
                   {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
                 </div>
               </div>

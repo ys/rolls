@@ -9,9 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id } = await params;
+  const { id: slug } = await params;
   const rows = await sql<Roll[]>`
-    SELECT * FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}
+    SELECT * FROM rolls WHERE slug = ${slug} AND user_id = ${userId}
   `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -24,11 +24,28 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id } = await params;
+  const { id: slug } = await params;
   const body = await request.json();
 
+  // Resolve camera_id and film_id slugs to UUIDs if provided
+  if ("camera_id" in body && body.camera_id) {
+    const [cam] = await sql<{ uuid: string }[]>`
+      SELECT uuid FROM cameras WHERE slug = ${body.camera_id} AND user_id = ${userId}
+    `;
+    body.camera_uuid = cam?.uuid ?? null;
+    delete body.camera_id;
+  }
+
+  if ("film_id" in body && body.film_id) {
+    const [film] = await sql<{ uuid: string }[]>`
+      SELECT uuid FROM films WHERE slug = ${body.film_id} AND user_id = ${userId}
+    `;
+    body.film_uuid = film?.uuid ?? null;
+    delete body.film_id;
+  }
+
   const allowed = [
-    "camera_id", "film_id", "shot_at", "fridge_at", "lab_at", "lab_name",
+    "camera_uuid", "film_uuid", "shot_at", "fridge_at", "lab_at", "lab_name",
     "scanned_at", "processed_at", "uploaded_at", "archived_at",
     "album_name", "tags", "notes",
   ] as const;
@@ -50,8 +67,8 @@ export async function PATCH(
   }
 
   values.push(userId);
-  values.push(id);
-  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND roll_number = $${idx + 1} RETURNING *`;
+  values.push(slug);
+  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND slug = $${idx + 1} RETURNING *`;
   const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
 
   if (rows.length === 0) {

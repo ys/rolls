@@ -32,10 +32,6 @@ function filmLabel(f: Film): string {
   return `${f.brand} ${f.name}${iso}`;
 }
 
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 export default function NewRollPage() {
   const router = useRouter();
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
@@ -88,16 +84,15 @@ export default function NewRollPage() {
   async function handleAddCamera(e: React.FormEvent) {
     e.preventDefault();
     setAddingCamera(true);
-    const id = slugify(`${cameraForm.brand}-${cameraForm.model}`);
     const resp = await fetch("/api/cameras", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
-      body: JSON.stringify({ id, brand: cameraForm.brand, model: cameraForm.model, nickname: cameraForm.nickname || null, format: 135 }),
+      body: JSON.stringify({ brand: cameraForm.brand, model: cameraForm.model, nickname: cameraForm.nickname || null, format: 135 }),
     });
     if (resp.ok) {
       const camera: Camera = await resp.json();
       setAllCameras((prev) => [...prev, camera]);
-      setForm((f) => ({ ...f, camera_id: camera.id }));
+      setForm((f) => ({ ...f, camera_id: camera.slug }));
       setShowAddCamera(false);
       setCameraForm({ brand: "", model: "", nickname: "" });
     }
@@ -107,16 +102,15 @@ export default function NewRollPage() {
   async function handleAddFilm(e: React.FormEvent) {
     e.preventDefault();
     setAddingFilm(true);
-    const id = slugify(`${filmForm.brand}-${filmForm.name}`);
     const resp = await fetch("/api/films", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
-      body: JSON.stringify({ id, brand: filmForm.brand, name: filmForm.name, nickname: filmForm.nickname || null, iso: filmForm.iso ? parseInt(filmForm.iso, 10) : null, color: true, show_iso: false }),
+      body: JSON.stringify({ brand: filmForm.brand, name: filmForm.name, nickname: filmForm.nickname || null, iso: filmForm.iso ? parseInt(filmForm.iso, 10) : null, color: true, show_iso: false }),
     });
     if (resp.ok) {
       const film: Film = await resp.json();
       setAllFilms((prev) => [...prev, film]);
-      setForm((f) => ({ ...f, film_id: film.id }));
+      setForm((f) => ({ ...f, film_id: film.slug }));
       setShowAddFilm(false);
       setFilmForm({ brand: "", name: "", nickname: "", iso: "" });
     }
@@ -205,7 +199,7 @@ export default function NewRollPage() {
             >
               <option value="">— select —</option>
               {cameras.map((c) => (
-                <option key={c.id} value={c.id}>{cameraLabel(c)}</option>
+                <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
               ))}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
@@ -251,7 +245,7 @@ export default function NewRollPage() {
             >
               <option value="">— select —</option>
               {films.map((f) => (
-                <option key={f.id} value={f.id}>{filmLabel(f)}</option>
+                <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
               ))}
             </select>
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>

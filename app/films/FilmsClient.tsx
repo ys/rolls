@@ -82,7 +82,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     }
 
     const film = await resp.json();
-    setAllFilms((prev) => [...prev.filter((f) => f.id !== film.id), film]);
+    setAllFilms((prev) => [...prev.filter((f) => f.slug !== film.slug), film]);
 
     // Invalidate rolls cache since film data changed
     invalidateCache("rolls");
@@ -136,7 +136,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     router.refresh();
   }
 
-  const selectedFilms = allFilms.filter((f) => selected.has(f.id));
+  const selectedFilms = allFilms.filter((f) => selected.has(f.slug));
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -179,14 +179,14 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
       <ul className="space-y-2 mb-4">
         {films.map((f) => {
           const displayName = filmLabel(f);
-          const meta = `${f.id} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${f.roll_count ? ` · ${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}` : ""}`;
+          const meta = `${f.slug} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${f.roll_count ? ` · ${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}` : ""}`;
 
           if (merging) {
-            const isSelected = selected.has(f.id);
+            const isSelected = selected.has(f.slug);
             return (
-              <li key={f.id}>
+              <li key={f.slug}>
                 <button
-                  onClick={() => { toggleSelect(f.id); haptics.light(); }}
+                  onClick={() => { toggleSelect(f.slug); haptics.light(); }}
                   className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-500" : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
                 >
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-400 dark:border-zinc-600"}`}>
@@ -202,9 +202,9 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
           }
 
           return (
-            <li key={f.id}>
+            <li key={f.slug}>
               <Link
-                href={`/films/${encodeURIComponent(f.id)}`}
+                href={`/films/${encodeURIComponent(f.slug)}`}
                 onClick={() => haptics.light()}
                 className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
@@ -228,18 +228,18 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
           <p className="text-sm font-medium">{selected.size} films selected — keep which one?</p>
           <div className="space-y-2">
             {selectedFilms.map((f) => (
-              <label key={f.id} className="flex items-center gap-3 cursor-pointer">
+              <label key={f.slug} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="radio"
                   name="target"
-                  value={f.id}
-                  checked={targetId === f.id}
-                  onChange={() => setTargetId(f.id)}
+                  value={f.slug}
+                  checked={targetId === f.slug}
+                  onChange={() => setTargetId(f.slug)}
                   className="w-4 h-4 accent-white"
                 />
                 <span className="text-sm">
                   {filmLabel(f)}
-                  <span className="text-zinc-500 ml-1">({f.id})</span>
+                  <span className="text-zinc-500 ml-1">({f.slug})</span>
                 </span>
               </label>
             ))}
