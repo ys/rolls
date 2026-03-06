@@ -1,0 +1,14 @@
+{
+  "name": "rolls-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd web && npm install",
+    "build": "cd web && npm run build",
+    "start": "cd web && npm start"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  }
+}

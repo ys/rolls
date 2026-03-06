@@ -38,7 +38,8 @@
       "Bash(gh pr list --draft --limit 10)",
       "Bash(git checkout multitenancy-plan)",
       "Bash(gh pr view 2)",
-      "Bash(gh pr checkout 2)"
+      "Bash(gh pr checkout 2)",
+      "WebFetch(domain:dashboard.heroku.com)"
     ]
   },
   "enableAllProjectMcpServers": false
