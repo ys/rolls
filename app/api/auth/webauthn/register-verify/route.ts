@@ -20,38 +20,38 @@ export async function POST(request: Request) {
       device_name,
     } = body;
 
-    // Validate required fields
-    if (!username || !email || !invite_code || !credentialResponse || !challenge) {
+    // Check if this is a bootstrap registration (no users exist yet)
+    const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM users`;
+    const isBootstrap = parseInt(count) === 0;
+
+    // Validate required fields (invite_code optional during bootstrap)
+    if (!username || !email || (!isBootstrap && !invite_code) || !credentialResponse || !challenge) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Validate invite code again (double-check)
-    const [invite] = await sql<Invite[]>`
-      SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
-    `;
+    // Validate invite code (skip during bootstrap)
+    let invite: Invite | undefined;
+    if (!isBootstrap) {
+      const [found] = await sql<Invite[]>`
+        SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
+      `;
 
-    if (!invite) {
-      return NextResponse.json(
-        { error: "Invalid invite code" },
-        { status: 400 }
-      );
-    }
+      if (!found) {
+        return NextResponse.json({ error: "Invalid invite code" }, { status: 400 });
+      }
 
-    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-      return NextResponse.json(
-        { error: "Invite code has expired" },
-        { status: 400 }
-      );
-    }
+      if (found.expires_at && new Date(found.expires_at) < new Date()) {
+        return NextResponse.json({ error: "Invite code has expired" }, { status: 400 });
+      }
 
-    if (invite.max_uses !== null && invite.used_count >= invite.max_uses) {
-      return NextResponse.json(
-        { error: "Invite code has been fully used" },
-        { status: 400 }
-      );
+      if (found.max_uses !== null && found.used_count >= found.max_uses) {
+        return NextResponse.json({ error: "Invite code has been fully used" }, { status: 400 });
+      }
+
+      invite = found;
     }
 
     // Verify the WebAuthn credential
@@ -64,10 +64,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create user in transaction
+    // Create user — first user gets 'admin' role
     const [user] = await sql<User[]>`
-      INSERT INTO users (username, email, name)
-      VALUES (${username}, ${email}, ${name || null})
+      INSERT INTO users (username, email, name, role)
+      VALUES (${username}, ${email}, ${name || null}, ${isBootstrap ? "admin" : "user"})
       RETURNING *
     `;
 
@@ -93,14 +93,16 @@ export async function POST(request: Request) {
       )
     `;
 
-    // Update invite usage
-    await sql`
-      UPDATE invites
-      SET used_count = used_count + 1,
-          used_by = ${user.id},
-          used_at = NOW()
-      WHERE code = ${invite_code}
-    `;
+    // Update invite usage (skip during bootstrap — no invite was used)
+    if (invite) {
+      await sql`
+        UPDATE invites
+        SET used_count = used_count + 1,
+            used_by = ${user.id},
+            used_at = NOW()
+        WHERE code = ${invite_code}
+      `;
+    }
 
     // Send welcome email (async, don't block response)
     sendWelcomeEmail(user).catch((err) =>

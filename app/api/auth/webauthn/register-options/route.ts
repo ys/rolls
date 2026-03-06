@@ -7,10 +7,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { username, email, name, invite_code } = body;
 
-    // Validate required fields
-    if (!username || !email || !invite_code) {
+    // Check if this is a bootstrap registration (no users exist yet)
+    const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM users`;
+    const isBootstrap = parseInt(count) === 0;
+
+    // Validate required fields (invite_code optional during bootstrap)
+    if (!username || !email || (!isBootstrap && !invite_code)) {
       return NextResponse.json(
-        { error: "Username, email, and invite code are required" },
+        { error: isBootstrap ? "Username and email are required" : "Username, email, and invite code are required" },
         { status: 400 }
       );
     }
@@ -23,32 +27,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate invite code
-    const [invite] = await sql<Invite[]>`
-      SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
-    `;
+    // Validate invite code (skip during bootstrap)
+    if (!isBootstrap) {
+      const [invite] = await sql<Invite[]>`
+        SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
+      `;
 
-    if (!invite) {
-      return NextResponse.json(
-        { error: "Invalid invite code" },
-        { status: 400 }
-      );
-    }
+      if (!invite) {
+        return NextResponse.json({ error: "Invalid invite code" }, { status: 400 });
+      }
 
-    // Check if invite is expired
-    if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-      return NextResponse.json(
-        { error: "Invite code has expired" },
-        { status: 400 }
-      );
-    }
+      if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+        return NextResponse.json({ error: "Invite code has expired" }, { status: 400 });
+      }
 
-    // Check if invite has reached max uses
-    if (invite.max_uses !== null && invite.used_count >= invite.max_uses) {
-      return NextResponse.json(
-        { error: "Invite code has been fully used" },
-        { status: 400 }
-      );
+      if (invite.max_uses !== null && invite.used_count >= invite.max_uses) {
+        return NextResponse.json({ error: "Invite code has been fully used" }, { status: 400 });
+      }
     }
 
     // Check if username or email already exists

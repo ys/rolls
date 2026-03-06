@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/api/auth/webauthn/login-verify",
   "/api/auth/invites/validate",
   "/api/auth/check-username",
+  "/api/auth/bootstrap",
 ];
 
 export default async function proxy(request: NextRequest) {
@@ -62,10 +63,16 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 4. Inject user context headers for downstream handlers
+  // 4. Enforce admin-only routes
+  if (pathname.startsWith("/api/admin/") && user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // 5. Inject user context headers for downstream handlers
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-user-id", user.id);
   requestHeaders.set("x-user-email", user.email);
+  requestHeaders.set("x-user-role", user.role);
 
   return NextResponse.next({
     request: {

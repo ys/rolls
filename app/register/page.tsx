@@ -16,6 +16,18 @@ function RegisterForm() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsInvite, setNeedsInvite] = useState(true);
+
+  // Check if this is a bootstrap registration (no users exist yet)
+  useEffect(() => {
+    fetch("/api/auth/bootstrap")
+      .then((r) => r.json())
+      .then(({ needsInvite: ni }) => {
+        setNeedsInvite(ni);
+        if (!ni) setStep("details");
+      })
+      .catch(() => {}); // keep needsInvite=true on error (safe default)
+  }, []);
 
   // If invite is in URL, validate it and move to details step
   useEffect(() => {
@@ -252,7 +264,7 @@ function RegisterForm() {
 
         {/* Help text */}
         <p className="text-center text-sm text-zinc-500 mt-6">
-          {step === "invite" && "Don't have an invite? Contact the admin."}
+          {step === "invite" && needsInvite && "Don't have an invite? Contact the admin."}
           {(step === "details" || step === "passkey") && (
             <button
               onClick={() => router.push("/login")}

@@ -22,6 +22,7 @@ export interface User {
   name: string | null;
   email: string;
   email_notifications: boolean;
+  role: string;
   created_at: string;
 }
 

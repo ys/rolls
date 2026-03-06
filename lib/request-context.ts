@@ -27,3 +27,15 @@ export async function getOptionalUserId(): Promise<string | null> {
   const headersData = await headers();
   return headersData.get("x-user-id");
 }
+
+export async function getUserRole(): Promise<string> {
+  const headersData = await headers();
+  return headersData.get("x-user-role") ?? "user";
+}
+
+export async function requireAdmin(): Promise<void> {
+  const role = await getUserRole();
+  if (role !== "admin") {
+    throw new Error("Admin required");
+  }
+}

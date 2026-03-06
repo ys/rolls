@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { getUserId } from "@/lib/request-context";
+import { getUserId, getUserRole } from "@/lib/request-context";
 import { sql, type Invite } from "@/lib/db";
 import crypto from "crypto";
 
 export async function GET(request: Request) {
   try {
     const userId = await getUserId();
+    const role = await getUserRole();
+    if (role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Get all invites created by this user
     const invites = await sql<Invite[]>`
@@ -35,6 +39,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const userId = await getUserId();
+    const role = await getUserRole();
+    if (role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const body = await request.json();
     const { max_uses, expires_in_days } = body;
 
