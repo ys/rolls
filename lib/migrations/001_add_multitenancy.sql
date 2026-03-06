@@ -59,6 +59,27 @@ CREATE INDEX IF NOT EXISTS invites_created_by_idx ON invites (created_by);
 
 -- Add user_id columns to existing tables (nullable for now, will be made NOT NULL in migration 003)
 
+-- First, drop foreign key constraints on rolls table so we can modify cameras/films PKs
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'rolls_camera_id_fkey' AND conrelid = 'rolls'::regclass
+  ) THEN
+    ALTER TABLE rolls DROP CONSTRAINT rolls_camera_id_fkey;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'rolls_film_id_fkey' AND conrelid = 'rolls'::regclass
+  ) THEN
+    ALTER TABLE rolls DROP CONSTRAINT rolls_film_id_fkey;
+  END IF;
+END $$;
+
 -- cameras: add user_id and internal_id, change PK to surrogate
 DO $$
 BEGIN
@@ -180,5 +201,26 @@ BEGIN
     WHERE conname = 'rolls_user_id_roll_number_uniq'
   ) THEN
     ALTER TABLE rolls ADD CONSTRAINT rolls_user_id_roll_number_uniq UNIQUE (user_id, roll_number);
+  END IF;
+END $$;
+
+-- Re-add foreign key constraints on rolls table (now that cameras/films PKs are updated)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'rolls_camera_id_fkey' AND conrelid = 'rolls'::regclass
+  ) THEN
+    ALTER TABLE rolls ADD CONSTRAINT rolls_camera_id_fkey FOREIGN KEY (camera_id) REFERENCES cameras(id);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'rolls_film_id_fkey' AND conrelid = 'rolls'::regclass
+  ) THEN
+    ALTER TABLE rolls ADD CONSTRAINT rolls_film_id_fkey FOREIGN KEY (film_id) REFERENCES films(id);
   END IF;
 END $$;
