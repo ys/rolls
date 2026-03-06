@@ -12,8 +12,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/roll"
-	"github.com/ys/rolls/style"
+	"github.com/ys/rolls/cli/roll"
+	"github.com/ys/rolls/cli/style"
 )
 
 // archiveCmd represents the archive command

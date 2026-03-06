@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/roll"
+	"github.com/ys/rolls/cli/roll"
 )
 
 var reNonAlnum = regexp.MustCompile(`[^a-z0-9]`)

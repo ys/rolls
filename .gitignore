@@ -1,12 +1,15 @@
 # Go
 *.exe
 *.test
+cli/vendor/
 
 # Node / Next.js
-web/node_modules/
-web/.next/
-web/.env.local
-web/.env*.local
+node_modules/
+.next/
+.env.local
+.env*.local
+tsconfig.tsbuildinfo
+next-env.d.ts
 
 
 # macOS

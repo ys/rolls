@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/roll"
+	"github.com/ys/rolls/cli/roll"
 	"gopkg.in/yaml.v2"
 )
 

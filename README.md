@@ -16,19 +16,31 @@ Rolls helps you maintain a structured archive of your film photography by:
 
 Each roll is defined by a simple markdown file with YAML frontmatter containing metadata like camera, film stock, shot date, and tags.
 
+## Repository Structure
+
+This is a monorepo containing:
+- **Web app** (root) - Next.js application for managing rolls from any device
+- **Go CLI** (`cli/`) - Local command-line tool for processing scans
+
 ## Installation
 
+### CLI Tool
+
 ```bash
-go install github.com/ys/rolls/cmd/rolls@latest
+go install github.com/ys/rolls/cli/cmd/rolls@latest
 ```
 
 Or build from source:
 
 ```bash
 git clone https://github.com/ys/rolls
-cd rolls
+cd rolls/cli
 go build -o rolls ./cmd/rolls
 ```
+
+### Web App
+
+See deployment instructions in `IMPLEMENTATION_COMPLETE.md`
 
 ## Configuration
 
@@ -161,7 +173,7 @@ rolls ui
 
 ## Web App & Full Workflow
 
-The web app (`web/`) runs on Vercel and acts as the always-on source of truth, accessible from any device (iPhone, browser). The CLI handles local file archiving and syncing.
+The web app (Next.js at repository root) runs on Heroku and acts as the always-on source of truth, accessible from any device (iPhone, browser). The CLI (in `cli/`) handles local file archiving and syncing.
 
 ### Full roll lifecycle
 

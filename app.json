@@ -61,7 +61,7 @@
     }
   },
   "scripts": {
-    "postdeploy": "cd web && npm run migrate"
+    "postdeploy": "npm run migrate"
   },
   "environments": {
     "review": {
@@ -76,7 +76,7 @@
         }
       ],
       "scripts": {
-        "postdeploy": "cd web && npm run migrate"
+        "postdeploy": "npm run migrate"
       }
     }
   }
