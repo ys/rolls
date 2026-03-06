@@ -2,43 +2,172 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { startAuthentication } from "@simplewebauthn/browser";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [password, setPassword] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<"identifier" | "passkey">("identifier");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleIdentifierSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Set cookie and redirect
-    document.cookie = `rolls_auth=${encodeURIComponent(password)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Strict`;
-    const from = searchParams.get("from") ?? "/";
-    router.push(from);
-    router.refresh();
+    setError("");
+    setLoading(true);
+
+    try {
+      // Validate that user exists (optional - could skip directly to passkey)
+      // For better UX, we check if the user exists first
+      const checkResp = await fetch(`/api/auth/me`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      });
+
+      if (checkResp.ok || checkResp.status === 401) {
+        // User might exist, proceed to passkey
+        setStep("passkey");
+      } else {
+        setError("Account not found. Please check your email or username.");
+      }
+    } catch (err) {
+      setError("Failed to connect. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePasskeyLogin() {
+    setError("");
+    setLoading(true);
+
+    try {
+      // Step 1: Get authentication options from server
+      const optionsResp = await fetch("/api/auth/webauthn/login-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      });
+
+      if (!optionsResp.ok) {
+        const data = await optionsResp.json();
+        throw new Error(data.error || "Failed to start login");
+      }
+
+      const options = await optionsResp.json();
+
+      // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
+      const credential = await startAuthentication({ optionsJSON: options });
+
+      // Step 3: Verify authentication with server
+      const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, credential }),
+      });
+
+      if (!verifyResp.ok) {
+        const data = await verifyResp.json();
+        throw new Error(data.error || "Failed to complete login");
+      }
+
+      // Login successful! Redirect to original destination or home
+      const from = searchParams.get("from") ?? "/";
+      router.push(from);
+      router.refresh();
+    } catch (err: any) {
+      console.error("Login error:", err);
+
+      // User-friendly error messages
+      if (err.name === "NotAllowedError") {
+        setError("Login cancelled. Please try again.");
+      } else if (err.name === "NotSupportedError") {
+        setError("Your device doesn't support passkeys. Try using a different device or browser.");
+      } else if (err.message?.includes("not found")) {
+        setError("Account not found. Please check your email or username.");
+      } else {
+        setError(err.message || "Failed to sign in. Please try again.");
+      }
+
+      // Go back to identifier step if user not found
+      if (err.message?.includes("not found")) {
+        setStep("identifier");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-8">Rolls</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            autoFocus
-            className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-          />
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+        <h1 className="text-2xl font-bold text-center mb-8">Sign In to Rolls</h1>
+
+        {/* Step 1: Enter email or username */}
+        {step === "identifier" && (
+          <form onSubmit={handleIdentifierSubmit} className="space-y-4">
+            <input
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value.trim())}
+              placeholder="Email or username"
+              required
+              autoFocus
+              autoComplete="username webauthn"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
+            />
+            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading || !identifier}
+              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+            >
+              {loading ? "Checking..." : "Continue"}
+            </button>
+          </form>
+        )}
+
+        {/* Step 2: Passkey authentication */}
+        {step === "passkey" && (
+          <div className="space-y-4">
+            <p className="text-center text-zinc-600 dark:text-zinc-400 mb-6">
+              Use your passkey to sign in
+            </p>
+            <div className="text-center mb-6">
+              <p className="font-medium">{identifier}</p>
+            </div>
+            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+            <button
+              onClick={handlePasskeyLogin}
+              disabled={loading}
+              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+            >
+              {loading ? "Signing in..." : "Sign In with Passkey"}
+            </button>
+            <button
+              onClick={() => {
+                setStep("identifier");
+                setError("");
+              }}
+              disabled={loading}
+              className="w-full text-zinc-600 dark:text-zinc-400 py-2 text-sm"
+            >
+              ← Back
+            </button>
+          </div>
+        )}
+
+        {/* Help text */}
+        <p className="text-center text-sm text-zinc-500 mt-6">
           <button
-            type="submit"
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform"
+            onClick={() => router.push("/register")}
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
           >
-            Enter
+            Don't have an account? Get an invite
           </button>
-        </form>
+        </p>
       </div>
     </div>
   );

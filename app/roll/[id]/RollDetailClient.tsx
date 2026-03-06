@@ -75,8 +75,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
   const [editMeta, setEditMeta] = useState(false);
   const [metaForm, setMetaForm] = useState({
-    camera_id: initialRoll.camera_id ?? "",
-    film_id: initialRoll.film_id ?? "",
+    camera_id: initialRoll.camera_slug ?? "",
+    film_id: initialRoll.film_slug ?? "",
     shot_at: initialRoll.shot_at ? String(initialRoll.shot_at).slice(0, 10) : "",
     album_name: initialRoll.album_name ?? "",
     tags: initialRoll.tags?.join(", ") ?? "",
@@ -98,7 +98,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       "Content-Type": "application/json",
       ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
     };
-    const resp = await fetch(`/api/rolls/${roll.roll_number}`, {
+    const resp = await fetch(`/api/rolls/${roll.slug}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(patch),
@@ -136,7 +136,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
     <div>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
+          <h1 className="text-3xl font-mono font-bold">{roll.slug}</h1>
           <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
             {status}
           </span>
@@ -346,7 +346,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         <div className="mb-4">
           <img
             src={roll.contact_sheet_url}
-            alt={`Contact sheet for ${roll.roll_number}`}
+            alt={`Contact sheet for ${roll.slug}`}
             className="w-full rounded-xl"
           />
         </div>
