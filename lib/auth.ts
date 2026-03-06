@@ -131,7 +131,7 @@ export async function generateAuthenticationOptions(identifier: string) {
   const options = await generateWebAuthnAuthenticationOptions({
     rpID: WEBAUTHN_RP_ID,
     allowCredentials: credentials.map((cred) => ({
-      id: Buffer.from(cred.credential_id, "base64url"),
+      id: cred.credential_id,
       transports: cred.transports as AuthenticatorTransport[] | undefined,
     })),
     userVerification: "preferred",
@@ -162,10 +162,11 @@ export async function verifyAuthenticationResponse(
     expectedChallenge,
     expectedOrigin: WEBAUTHN_ORIGIN,
     expectedRPID: WEBAUTHN_RP_ID,
-    authenticator: {
-      credentialID: Buffer.from(credential.credential_id, "base64url"),
-      credentialPublicKey: Buffer.from(credential.public_key, "base64"),
+    credential: {
+      id: credential.credential_id,
+      publicKey: Buffer.from(credential.public_key, "base64"),
       counter: Number(credential.counter),
+      transports: credential.transports as any,
     },
   });
 

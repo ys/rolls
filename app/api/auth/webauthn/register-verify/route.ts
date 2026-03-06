@@ -5,7 +5,7 @@ import {
   makeSessionCookie,
   sendWelcomeEmail,
 } from "@/lib/auth";
-import { sql, type Invite } from "@/lib/db";
+import { sql, type Invite, type User } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
@@ -65,14 +65,14 @@ export async function POST(request: Request) {
     }
 
     // Create user in transaction
-    const [user] = await sql`
+    const [user] = await sql<User[]>`
       INSERT INTO users (username, email, name)
       VALUES (${username}, ${email}, ${name || null})
       RETURNING *
     `;
 
     // Store WebAuthn credential
-    const { credential, credentialPublicKey } = verification.registrationInfo;
+    const { credential } = verification.registrationInfo;
 
     await sql`
       INSERT INTO webauthn_credentials (
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       VALUES (
         ${user.id},
         ${Buffer.from(credential.id).toString("base64url")},
-        ${Buffer.from(credentialPublicKey).toString("base64")},
+        ${Buffer.from(credential.publicKey).toString("base64")},
         ${credential.counter},
         ${credential.transports ? sql.array(credential.transports) : null},
         ${device_name || null}

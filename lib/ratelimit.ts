@@ -27,14 +27,25 @@ function createUpstashRedisAdapter(client: Redis) {
       return result;
     },
     eval: async (...args: any[]) => {
-      const result = await client.eval(...args);
+      const result = await (client.eval as any)(...args);
       return result;
     },
     evalsha: async (...args: any[]) => {
-      const result = await client.evalsha(...args);
+      const result = await (client.evalsha as any)(...args);
       return result;
     },
-  };
+    get: async (key: string) => {
+      return await client.get(key);
+    },
+    set: async (key: string, value: string, options?: { ex?: number; px?: number }) => {
+      if (options?.ex) {
+        return await client.set(key, value, "EX", options.ex);
+      } else if (options?.px) {
+        return await client.set(key, value, "PX", options.px);
+      }
+      return await client.set(key, value);
+    },
+  } as any;
 }
 
 // Create rate limiters for different use cases
