@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "../route";
+import type { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({ sql: vi.fn() }));
 vi.mock("@/lib/request-context", () => ({ getUserId: vi.fn(() => Promise.resolve("user-123")) }));
@@ -30,7 +31,7 @@ describe("Roll API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roll_number: "26x01" }),
-      });
+      }) as unknown as NextRequest;
       const response = await POST(request);
       expect(response.status).toBe(201);
     });
@@ -40,7 +41,7 @@ describe("Roll API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
-      });
+      }) as unknown as NextRequest;
       const response = await POST(request);
       expect(response.status).toBe(400);
     });

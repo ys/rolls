@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "../route";
+import type { NextRequest } from "next/server";
 
 // Mock dependencies
 vi.mock("@/lib/db", () => ({
@@ -98,7 +99,7 @@ describe("Camera API Routes", () => {
           nickname: "My Pentax",
           format: 135,
         }),
-      });
+      }) as unknown as NextRequest;
 
       const response = await POST(request);
       const data = await response.json();
@@ -117,7 +118,7 @@ describe("Camera API Routes", () => {
           brand: "Pentax",
           // Missing model
         }),
-      });
+      }) as unknown as NextRequest;
 
       const response = await POST(request);
       const data = await response.json();
@@ -148,7 +149,7 @@ describe("Camera API Routes", () => {
           model: "AE-1 Program",
           nickname: "Updated Nickname",
         }),
-      });
+      }) as unknown as NextRequest;
 
       const response = await POST(request);
       const data = await response.json();

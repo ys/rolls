@@ -90,7 +90,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const currentCamera = cameras.find((c) => c.slug === roll.camera_slug) ?? null;
   const currentFilm = films.find((f) => f.slug === roll.film_slug) ?? null;
 
-  async function save(patch: Partial<Roll>): Promise<boolean> {
+  async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[] }): Promise<boolean> {
     setSaving(true);
     setSaved(false);
     const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";

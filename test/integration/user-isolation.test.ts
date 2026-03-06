@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 /**
  * Integration tests to verify user data isolation across the entire system
@@ -32,7 +33,7 @@ describe("User Data Isolation Integration Tests", () => {
       (getUserId as any).mockResolvedValueOnce(user1Id);
       (sql as any).mockResolvedValueOnce([]); // No results due to user_id filter
 
-      const request = new Request("http://localhost/api/cameras/user2-camera");
+      const request = new Request("http://localhost/api/cameras/user2-camera") as unknown as NextRequest;
       const response = await GET(request, { params: Promise.resolve({ id: "user2-camera" }) });
 
       expect(response.status).toBe(404);
@@ -48,7 +49,7 @@ describe("User Data Isolation Integration Tests", () => {
         { id: "user1-camera", user_id: user1Id, brand: "Canon", model: "AE-1" },
       ]);
 
-      const request = new Request("http://localhost/api/cameras/user1-camera");
+      const request = new Request("http://localhost/api/cameras/user1-camera") as unknown as NextRequest;
       const response = await GET(request, { params: Promise.resolve({ id: "user1-camera" }) });
 
       expect(response.status).toBe(200);
@@ -70,7 +71,7 @@ describe("User Data Isolation Integration Tests", () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: "Hacked!" }),
-      });
+      }) as unknown as NextRequest;
 
       const response = await PATCH(request, { params: Promise.resolve({ id: "user2-roll" }) });
 
@@ -115,7 +116,7 @@ describe("User Data Isolation Integration Tests", () => {
           target_id: "user2-film1",
           source_ids: ["user2-film2"],
         }),
-      });
+      }) as unknown as NextRequest;
 
       const response = await POST(request);
       const data = await response.json();
@@ -134,7 +135,7 @@ describe("User Data Isolation Integration Tests", () => {
       (getUserId as any).mockResolvedValueOnce(user1Id);
       (sql as any).mockResolvedValueOnce([]); // No results due to created_by filter
 
-      const request = new Request("http://localhost/api/auth/invites/user2-invite");
+      const request = new Request("http://localhost/api/auth/invites/user2-invite") as unknown as NextRequest;
       const response = await DELETE(request, { params: Promise.resolve({ id: "user2-invite" }) });
 
       expect(response.status).toBe(404);
@@ -150,7 +151,7 @@ describe("User Data Isolation Integration Tests", () => {
         { id: 1, code: "user1-invite", created_by: user1Id },
       ]);
 
-      const request = new Request("http://localhost/api/auth/invites");
+      const request = new Request("http://localhost/api/auth/invites") as unknown as NextRequest;
       const response = await GET(request);
       const data = await response.json();
 
@@ -169,7 +170,7 @@ describe("User Data Isolation Integration Tests", () => {
       (getUserId as any).mockResolvedValueOnce(user1Id);
       (sql as any).mockResolvedValueOnce([]); // No results due to user_id filter
 
-      const request = new Request("http://localhost/api/auth/api-keys/user2-key");
+      const request = new Request("http://localhost/api/auth/api-keys/user2-key") as unknown as NextRequest;
       const response = await DELETE(request, { params: Promise.resolve({ id: "user2-key" }) });
 
       expect(response.status).toBe(404);

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PATCH } from "../route";
+import type { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({ sql: vi.fn() }));
 vi.mock("@/lib/request-context", () => ({ getUserId: vi.fn(() => Promise.resolve("user-123")) }));
@@ -11,7 +12,7 @@ describe("Roll Detail API Routes", () => {
     it("should return roll if owned by user", async () => {
       const { sql } = await import("@/lib/db");
       (sql as any).mockResolvedValueOnce([{ roll_number: "26x01", user_id: "user-123" }]);
-      const request = new Request("http://localhost/api/rolls/26x01");
+      const request = new Request("http://localhost/api/rolls/26x01") as unknown as NextRequest;
       const response = await GET(request, { params: Promise.resolve({ id: "26x01" }) });
       expect(response.status).toBe(200);
     });
@@ -19,7 +20,7 @@ describe("Roll Detail API Routes", () => {
     it("should return 404 if roll not found", async () => {
       const { sql } = await import("@/lib/db");
       (sql as any).mockResolvedValueOnce([]);
-      const request = new Request("http://localhost/api/rolls/nonexistent");
+      const request = new Request("http://localhost/api/rolls/nonexistent") as unknown as NextRequest;
       const response = await GET(request, { params: Promise.resolve({ id: "nonexistent" }) });
       expect(response.status).toBe(404);
     });
@@ -33,7 +34,7 @@ describe("Roll Detail API Routes", () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: "Updated" }),
-      });
+      }) as unknown as NextRequest;
       const response = await PATCH(request, { params: Promise.resolve({ id: "26x01" }) });
       expect(response.status).toBe(200);
     });
@@ -43,7 +44,7 @@ describe("Roll Detail API Routes", () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
-      });
+      }) as unknown as NextRequest;
       const response = await PATCH(request, { params: Promise.resolve({ id: "26x01" }) });
       expect(response.status).toBe(400);
     });
