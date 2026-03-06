@@ -14,8 +14,8 @@ const fs = require('fs');
 const path = require('path');
 const postgres = require('postgres');
 
-// Load environment variables from .env.local
-require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
+// Load environment variables from .env.local if dotenv is available (local dev only)
+try { require('dotenv').config({ path: path.join(__dirname, '../.env.local') }); } catch {}
 
 const MIGRATIONS_DIR = path.join(__dirname, '../lib/migrations');
 const DATABASE_URL = process.env.DATABASE_URL;
