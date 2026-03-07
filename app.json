@@ -1,0 +1,83 @@
+{
+  "name": "Rolls",
+  "description": "Film photography roll tracker",
+  "repository": "https://github.com/ys/rolls",
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0",
+      "as": "DATABASE"
+    },
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "JWT_SECRET": {
+      "description": "Secret key for JWT tokens",
+      "generator": "secret"
+    },
+    "WEBAUTHN_RP_NAME": {
+      "description": "WebAuthn Relying Party name",
+      "value": "Rolls (Review App)",
+      "required": false
+    },
+    "WEBAUTHN_RP_ID": {
+      "description": "WebAuthn Relying Party ID (will be set to review app domain)",
+      "required": false
+    },
+    "WEBAUTHN_ORIGIN": {
+      "description": "WebAuthn origin (will be set to review app URL)",
+      "required": false
+    },
+    "MAILJET_API_KEY": {
+      "description": "Mailjet API key for sending emails (optional for review apps)",
+      "required": false
+    },
+    "MAILJET_SECRET_KEY": {
+      "description": "Mailjet secret key (optional for review apps)",
+      "required": false
+    },
+    "MAILJET_FROM_EMAIL": {
+      "description": "From email address",
+      "value": "noreply@rolls.yannick.computer",
+      "required": false
+    },
+    "MAILJET_FROM_NAME": {
+      "description": "From name",
+      "value": "Rolls",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "scripts": {
+    "postdeploy": "npm run migrate"
+  },
+  "environments": {
+    "review": {
+      "addons": [
+        {
+          "plan": "heroku-postgresql:essential-0",
+          "as": "DATABASE"
+        },
+        {
+          "plan": "heroku-redis:mini",
+          "as": "REDIS"
+        }
+      ],
+      "scripts": {
+        "postdeploy": "npm run migrate"
+      }
+    }
+  }
+}

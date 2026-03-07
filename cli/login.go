@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ys/rolls/lightroom"
+	"github.com/ys/rolls/cli/lightroom"
 )
 
 // loginCmd represents the login command

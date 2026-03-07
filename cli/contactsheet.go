@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
-	"github.com/ys/rolls/roll"
+	"github.com/ys/rolls/cli/roll"
 	"golang.org/x/exp/slices"
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
