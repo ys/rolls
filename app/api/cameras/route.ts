@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Camera } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
+import { getCameras } from "@/lib/queries";
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -9,14 +10,7 @@ function slugify(s: string): string {
 
 export async function GET() {
   const userId = await getUserId();
-  const rows = await sql<Camera[]>`
-    SELECT c.*, COUNT(r.roll_number)::int AS roll_count
-    FROM cameras c
-    LEFT JOIN rolls r ON r.camera_uuid = c.uuid AND r.user_id = ${userId}
-    WHERE c.user_id = ${userId}
-    GROUP BY c.uuid
-    ORDER BY COALESCE(c.nickname, c.brand || ' ' || c.model)
-  `;
+  const rows = await getCameras(userId);
   return NextResponse.json(rows);
 }
 

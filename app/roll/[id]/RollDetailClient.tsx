@@ -6,6 +6,8 @@ import { marked } from "marked";
 import type { Roll, Camera, Film } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
+import BackButton from "@/components/BackButton";
+import FormButton from "@/components/FormButton";
 
 declare module "react" {
   namespace JSX {
@@ -15,7 +17,7 @@ declare module "react" {
       "md-italic": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
       "md-strikethrough": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
       "md-link": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
-      "md-image": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+      "md-image": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & { src?: string; alt?: string }, HTMLElement>;
       "md-unordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
       "md-ordered-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
       "md-task-list": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
@@ -45,6 +47,9 @@ const NEXT_ACTION: Record<string, { label: string; field: TsKey; isDate?: boolea
   PROCESSED: { label: "Mark Uploaded", field: "uploaded_at" },
   UPLOADED:  { label: "Archive",       field: "archived_at" },
 };
+
+const inputCls = "w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-sm focus:outline-none transition-colors";
+const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400 mb-1";
 
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
@@ -134,6 +139,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
   return (
     <div>
+      <BackButton />
+
       <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
@@ -141,125 +148,117 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             {status}
           </span>
         </div>
-        <a href="/" className="text-zinc-500 text-sm hover:text-zinc-900 dark:hover:text-white">← Back</a>
       </div>
 
       {/* Next-step action button */}
       {nextAction && (
-        <div className="mb-4 space-y-2">
+        <div className="mb-6 space-y-4">
           {status === "FRIDGE" && (
-            <input
-              type="text"
-              value={labName}
-              onChange={(e) => setLabName(e.target.value)}
-              placeholder="Lab name (optional)"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
+            <div className="space-y-1">
+              <label className={labelCls}>Lab name</label>
+              <input
+                type="text"
+                value={labName}
+                onChange={(e) => setLabName(e.target.value)}
+                placeholder="optional"
+                className={inputCls}
+              />
+            </div>
           )}
-          <button
+          <FormButton
             onClick={() => {
               const patch: Partial<Roll> = { [nextAction.field]: nowValue(nextAction.isDate) };
               if (status === "FRIDGE" && labName) patch.lab_name = labName;
               save(patch);
             }}
             disabled={saving}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold text-base active:scale-95 transition-transform disabled:opacity-50"
           >
             {saving ? "Saving…" : nextAction.label}
-          </button>
+          </FormButton>
         </div>
       )}
 
       {/* Metadata */}
       <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 border border-zinc-100 dark:border-transparent">
         <div className="flex items-center justify-between px-4 pt-3 pb-1">
-          <span className="text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">Info</span>
-          {editMeta ? (
-            <button
-              onClick={() => setEditMeta(false)}
-              className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-          ) : (
-            <button
-              onClick={() => setEditMeta(true)}
-              className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-            >
-              Edit
-            </button>
-          )}
+          <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-medium">Info</span>
+          <button
+            onClick={() => setEditMeta((v) => !v)}
+            className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          >
+            {editMeta ? "Cancel" : "Edit"}
+          </button>
         </div>
 
         {editMeta ? (
-          <div className="px-4 pb-4 pt-2 space-y-3">
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Camera</label>
+          <div className="px-4 pb-4 pt-2 space-y-4">
+            <div className="space-y-1">
+              <label className={labelCls}>Camera</label>
               <div className="relative">
                 <select
                   value={metaForm.camera_id}
                   onChange={(e) => setMetaForm((f) => ({ ...f, camera_id: e.target.value }))}
-                  className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 pr-8"
+                  className={inputCls + " pr-6"}
                 >
                   <option value="">— none —</option>
                   {cameras.map((c) => (
                     <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+                <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
               </div>
             </div>
 
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Film</label>
+            <div className="space-y-1">
+              <label className={labelCls}>Film</label>
               <div className="relative">
                 <select
                   value={metaForm.film_id}
                   onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
-                  className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 pr-8"
+                  className={inputCls + " pr-6"}
                 >
                   <option value="">— none —</option>
                   {films.map((f) => (
                     <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+                <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
               </div>
             </div>
 
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Shot at</label>
+            <div className="space-y-1">
+              <label className={labelCls}>Shot at</label>
               <input
                 type="date"
                 value={metaForm.shot_at}
                 onChange={(e) => setMetaForm((f) => ({ ...f, shot_at: e.target.value }))}
-                className="w-full appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                className={inputCls}
               />
             </div>
 
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Album</label>
+            <div className="space-y-1">
+              <label className={labelCls}>Album</label>
               <input
                 type="text"
                 value={metaForm.album_name}
                 onChange={(e) => setMetaForm((f) => ({ ...f, album_name: e.target.value }))}
                 placeholder="Album name"
-                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                className={inputCls}
               />
             </div>
 
-            <div>
-              <label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Tags</label>
+            <div className="space-y-1">
+              <label className={labelCls}>Tags</label>
               <input
                 type="text"
                 value={metaForm.tags}
                 onChange={(e) => setMetaForm((f) => ({ ...f, tags: e.target.value }))}
                 placeholder="travel, street"
-                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                className={inputCls}
               />
             </div>
 
-            <button
+            <FormButton
               onClick={async () => {
                 const ok = await save({
                   camera_id: metaForm.camera_id || null,
@@ -271,10 +270,9 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 if (ok) setEditMeta(false);
               }}
               disabled={saving}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-3 rounded-lg text-sm font-semibold active:scale-95 transition-transform disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
-            </button>
+            </FormButton>
           </div>
         ) : (
           <div className="px-4 pb-4 pt-2 space-y-3">
@@ -298,29 +296,28 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 overflow-hidden border border-zinc-100 dark:border-transparent">
         <button
           onClick={() => setShowDates((v) => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
         >
           <span>Dates</span>
           <span>{showDates ? "▴" : "▾"}</span>
         </button>
         {showDates && (
-          <div className="px-4 pb-4 space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+          <div className="px-4 pb-4 space-y-4 border-t border-zinc-100 dark:border-zinc-800 pt-3">
             {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
               <div key={key}>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-sm text-zinc-600 dark:text-zinc-400">{label}</label>
+                  <label className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</label>
                   {roll[key] ? (
                     <button
                       onClick={() => save({ [key]: null })}
-                      className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400"
-                      title="Clear"
+                      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
                       Clear
                     </button>
                   ) : (
                     <button
                       onClick={() => save({ [key]: nowValue(type === "date") })}
-                      className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                       Now
                     </button>
@@ -333,7 +330,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                   onBlur={(e) => {
                     if (e.target.value) save({ [key]: e.target.value });
                   }}
-                  className="w-full min-w-0 appearance-none bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20"
+                  className={inputCls}
                 />
               </div>
             ))}
@@ -354,8 +351,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
       {/* Notes */}
       <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 mb-4 border border-zinc-100 dark:border-transparent">
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm text-zinc-600 dark:text-zinc-400">Notes</label>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-medium">Notes</span>
           <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 text-xs">
             <button
               onClick={() => setNotesMode("edit")}
@@ -391,7 +388,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               onChange={(e) => setNotes(e.target.value)}
               rows={8}
               placeholder="Write notes in markdown…"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-white/20 resize-none font-mono"
+              className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-sm focus:outline-none transition-colors resize-none font-mono"
             />
           </>
         ) : (
@@ -415,13 +412,11 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         )}
 
         {notesMode === "edit" && (
-          <button
-            onClick={() => save({ notes })}
-            disabled={saving}
-            className="mt-3 w-full bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {saving ? "Saving…" : saved ? "Saved ✓" : "Save Notes"}
-          </button>
+          <div className="mt-4">
+            <FormButton onClick={() => save({ notes })} disabled={saving}>
+              {saving ? "Saving…" : saved ? "Saved ✓" : "Save Notes"}
+            </FormButton>
+          </div>
         )}
       </div>
     </div>
@@ -431,7 +426,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <span className="text-sm text-zinc-500 dark:text-zinc-400">{label}</span>
+      <span className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</span>
       <span className="text-sm font-medium">{value}</span>
     </div>
   );

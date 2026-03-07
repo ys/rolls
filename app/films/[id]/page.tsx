@@ -3,6 +3,9 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import type { Film } from "@/lib/db";
+import BackButton from "@/components/BackButton";
+import FormField from "@/components/FormField";
+import FormButton from "@/components/FormButton";
 
 export default function EditFilmPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -63,23 +66,21 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Edit Film</h1>
-        <a href="/films" className="text-zinc-500 text-sm hover:text-zinc-900 dark:hover:text-white">← Films</a>
-      </div>
+      <BackButton label="Films" />
+      <h1 className="text-2xl font-bold mb-6">Edit Film</h1>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl px-4 py-2 mb-6 border border-zinc-100 dark:border-transparent">
-        <p className="text-xs text-zinc-500 py-2">ID: <span className="font-mono text-zinc-700 dark:text-zinc-700 dark:text-zinc-300">{id}</span></p>
-      </div>
+      <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-6">
+        ID: <span className="font-mono normal-case">{id}</span>
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <Field label="Brand"    value={form.brand}    onChange={(v) => setForm((f) => ({ ...f, brand: v }))}    placeholder="Kodak" required />
-        <Field label="Name"     value={form.name}     onChange={(v) => setForm((f) => ({ ...f, name: v }))}     placeholder="Portra" required />
-        <Field label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="(optional)" />
-        <Field label="ISO"      value={form.iso}      onChange={(v) => setForm((f) => ({ ...f, iso: v }))}      placeholder="400" />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <FormField label="Brand"    value={form.brand}    onChange={(v) => setForm((f) => ({ ...f, brand: v }))}    placeholder="Kodak" required />
+        <FormField label="Name"     value={form.name}     onChange={(v) => setForm((f) => ({ ...f, name: v }))}     placeholder="Portra" required />
+        <FormField label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="optional" />
+        <FormField label="ISO"      value={form.iso}      onChange={(v) => setForm((f) => ({ ...f, iso: v }))}      placeholder="400" inputMode="numeric" />
 
         <div className="flex gap-6">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-400">
             <input
               type="checkbox"
               checked={form.color}
@@ -88,7 +89,7 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
             />
             Color
           </label>
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-400">
             <input
               type="checkbox"
               checked={form.show_iso}
@@ -99,39 +100,11 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
           </label>
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50"
-        >
+        {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
+        <FormButton type="submit" disabled={saving}>
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save Changes"}
-        </button>
+        </FormButton>
       </form>
-    </div>
-  );
-}
-
-function Field({
-  label, value, onChange, placeholder, required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <div>
-      <label className="block text-sm text-zinc-600 dark:text-zinc-400 mb-1">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-      />
     </div>
   );
 }

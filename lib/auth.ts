@@ -23,7 +23,8 @@ const WEBAUTHN_RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
 const WEBAUTHN_ORIGIN = process.env.WEBAUTHN_ORIGIN || "http://localhost:3000";
 const MAILJET_API_KEY = process.env.MAILJET_API_KEY;
 const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY;
-const MAILJET_FROM_EMAIL = process.env.MAILJET_FROM_EMAIL || "noreply@rolls.yannick.computer";
+const MAILJET_FROM_EMAIL =
+  process.env.MAILJET_FROM_EMAIL || "noreply@yannick.computer";
 const MAILJET_FROM_NAME = process.env.MAILJET_FROM_NAME || "Rolls";
 
 if (!JWT_SECRET) {
@@ -45,7 +46,9 @@ function getMailjetClient() {
 // User Lookup
 // ============================================================================
 
-export async function lookupUserByIdentifier(identifier: string): Promise<User | null> {
+export async function lookupUserByIdentifier(
+  identifier: string,
+): Promise<User | null> {
   // Check if identifier is email (contains @) or username
   const isEmail = identifier.includes("@");
 
@@ -75,9 +78,11 @@ export async function getUserById(userId: string): Promise<User | null> {
 
 export async function generateRegistrationOptions(
   email: string,
-  username: string
+  username: string,
 ) {
-  const user = await sql<User[]>`SELECT * FROM users WHERE email = ${email} LIMIT 1`;
+  const user = await sql<
+    User[]
+  >`SELECT * FROM users WHERE email = ${email} LIMIT 1`;
 
   if (user.length > 0) {
     throw new Error("User already exists");
@@ -101,7 +106,7 @@ export async function generateRegistrationOptions(
 
 export async function verifyRegistrationResponse(
   response: any,
-  expectedChallenge: string
+  expectedChallenge: string,
 ) {
   const verification = await verifyWebAuthnRegistrationResponse({
     response,
@@ -144,7 +149,7 @@ export async function generateAuthenticationOptions(identifier: string) {
 export async function verifyAuthenticationResponse(
   response: any,
   expectedChallenge: string,
-  userId?: string
+  userId?: string,
 ) {
   const credId = response.id;
 
@@ -205,7 +210,9 @@ export async function createSessionToken(userId: string): Promise<string> {
   return token;
 }
 
-export async function verifySessionToken(token: string): Promise<{ userId: string } | null> {
+export async function verifySessionToken(
+  token: string,
+): Promise<{ userId: string } | null> {
   try {
     const { payload } = await jwtVerify(token, jwtSecret);
     return { userId: payload.userId as string };
@@ -214,7 +221,10 @@ export async function verifySessionToken(token: string): Promise<{ userId: strin
   }
 }
 
-export function makeSessionCookie(token: string, isProduction: boolean = false): string {
+export function makeSessionCookie(
+  token: string,
+  isProduction: boolean = false,
+): string {
   const secure = isProduction ? "Secure; " : "";
   const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
   return `session=${token}; HttpOnly; ${secure}SameSite=Strict; Path=/; Max-Age=${maxAge}`;
@@ -253,7 +263,9 @@ export async function verifyApiKey(rawKey: string): Promise<User | null> {
   // Update last_used_at asynchronously
   sql`
     UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = ${keyHash}
-  `.catch((err) => console.error("Failed to update API key last_used_at:", err));
+  `.catch((err) =>
+    console.error("Failed to update API key last_used_at:", err),
+  );
 
   // Get user
   return await getUserById(apiKey.user_id);
@@ -305,7 +317,7 @@ export async function sendInviteEmail(
   to: string,
   inviteCode: string,
   inviterName: string,
-  message?: string
+  message?: string,
 ): Promise<void> {
   const client = getMailjetClient();
   if (!client) {
@@ -353,7 +365,7 @@ export async function sendSecurityNotification(
     type: "api_key_created" | "passkey_added" | "passkey_deleted";
     details?: string;
     deviceInfo?: string;
-  }
+  },
 ): Promise<void> {
   if (!user.email_notifications) {
     return; // User has disabled notifications
