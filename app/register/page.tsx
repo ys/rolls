@@ -67,7 +67,11 @@ function RegisterForm() {
   async function checkUsername(username: string) {
     if (username.length < 3) return false;
 
-    const resp = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
+    const resp = await fetch("/api/auth/check-username", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, invite_code: invite }),
+    });
     const data = await resp.json();
     return data.available;
   }
