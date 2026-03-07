@@ -27,13 +27,12 @@ function createUpstashRedisAdapter(client: Redis) {
       const result = await client.sadd(key, ...members);
       return result;
     },
-    eval: async (...args: any[]) => {
-      const result = await (client.eval as any)(...args);
-      return result;
+    // Upstash calls eval(script, keys[], args[]) but ioredis expects eval(script, numkeys, ...keys, ...args)
+    eval: async (script: string, keys: string[], args: (string | number)[]) => {
+      return await (client.eval as any)(script, keys.length, ...keys, ...args);
     },
-    evalsha: async (...args: any[]) => {
-      const result = await (client.evalsha as any)(...args);
-      return result;
+    evalsha: async (sha: string, keys: string[], args: (string | number)[]) => {
+      return await (client.evalsha as any)(sha, keys.length, ...keys, ...args);
     },
     get: async (key: string) => {
       return await client.get(key);
