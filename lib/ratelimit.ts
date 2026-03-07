@@ -16,6 +16,7 @@ if (redisUrl) {
     maxRetriesPerRequest: 3,
     enableReadyCheck: false,
     enableOfflineQueue: false,
+    tls: { rejectUnauthorized: false },
   });
 }
 
