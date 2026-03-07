@@ -56,7 +56,7 @@ function cameraLabel(roll: RollRow): string {
   if (roll.camera_nickname) return roll.camera_nickname;
   if (roll.camera_brand && roll.camera_model)
     return `${roll.camera_brand} ${roll.camera_model}`;
-  return roll.camera_slug ?? "";
+  return "";
 }
 
 function filmLabel(roll: RollRow): string {
@@ -65,7 +65,7 @@ function filmLabel(roll: RollRow): string {
     const iso = roll.film_show_iso && roll.film_iso ? ` ${roll.film_iso}` : "";
     return `${roll.film_brand} ${roll.film_name}${iso}`;
   }
-  return roll.film_slug ?? "";
+  return "";
 }
 
 function Checkbox({ checked }: { checked: boolean }) {
