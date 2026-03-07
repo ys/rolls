@@ -83,16 +83,12 @@ export async function generateRegistrationOptions(
     throw new Error("User already exists");
   }
 
-  // v9+ API: user.id must be a Uint8Array, name/displayName moved into user object
-  const userId = crypto.randomUUID();
   const options = await generateWebAuthnRegistrationOptions({
     rpName: WEBAUTHN_RP_NAME,
     rpID: WEBAUTHN_RP_ID,
-    user: {
-      id: new TextEncoder().encode(userId),
-      name: email,
-      displayName: username,
-    },
+    userName: email,
+    userDisplayName: username,
+    userID: new TextEncoder().encode(crypto.randomUUID()),
     attestationType: "none",
     authenticatorSelection: {
       residentKey: "preferred",
