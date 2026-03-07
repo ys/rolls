@@ -115,7 +115,7 @@ function RegisterForm() {
       const optionsResp = await fetch("/api/auth/webauthn/register-options", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, name, inviteCode: invite }),
+        body: JSON.stringify({ email, username, name, invite_code: invite }),
       });
 
       if (!optionsResp.ok) {
@@ -123,10 +123,10 @@ function RegisterForm() {
         throw new Error(data.error || "Failed to start registration");
       }
 
-      const options = await optionsResp.json();
+      const { options: optionsJSON, challenge } = await optionsResp.json();
 
       // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
-      const credential = await startRegistration({ optionsJSON: options });
+      const response = await startRegistration({ optionsJSON });
 
       // Step 3: Verify registration with server
       const verifyResp = await fetch("/api/auth/webauthn/register-verify", {
@@ -136,8 +136,9 @@ function RegisterForm() {
           email,
           username,
           name,
-          inviteCode: invite,
-          credential,
+          invite_code: invite,
+          response,
+          challenge,
         }),
       });
 
