@@ -9,7 +9,7 @@ import {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { response: credentialResponse, challenge, userId } = body;
+    const { response: credentialResponse, challenge, user_id: userId } = body;
 
     if (!credentialResponse || !challenge || !userId) {
       return NextResponse.json(

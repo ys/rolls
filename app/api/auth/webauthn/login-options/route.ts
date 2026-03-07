@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       options,
       challenge: options.challenge,
-      userId, // Need this for verification step
+      user_id: userId,
     });
   } catch (error: any) {
     console.error("Login options error:", error);

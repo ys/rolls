@@ -56,16 +56,16 @@ function LoginForm() {
         throw new Error(data.error || "Failed to start login");
       }
 
-      const options = await optionsResp.json();
+      const { options: optionsJSON, challenge, userId } = await optionsResp.json();
 
       // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
-      const credential = await startAuthentication({ optionsJSON: options });
+      const response = await startAuthentication({ optionsJSON });
 
       // Step 3: Verify authentication with server
       const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, credential }),
+        body: JSON.stringify({ response, challenge, user_id: userId }),
       });
 
       if (!verifyResp.ok) {
