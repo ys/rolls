@@ -14,11 +14,22 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { username, invite_code } = body;
 
-    // Validate required fields
-    if (!username || !invite_code) {
+    if (!username) {
       await constantTimeDelay(100);
       return NextResponse.json(
-        { error: "Username and invite code are required" },
+        { error: "Username is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check bootstrap mode (no users yet — invite not required)
+    const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM users`;
+    const isBootstrap = parseInt(count) === 0;
+
+    if (!isBootstrap && !invite_code) {
+      await constantTimeDelay(100);
+      return NextResponse.json(
+        { error: "Invite code is required" },
         { status: 400 }
       );
     }
@@ -35,17 +46,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate invite code first (don't leak username availability without valid invite)
-    const [invite] = await sql<{ id: number }[]>`
-      SELECT id FROM invites WHERE code = ${invite_code} LIMIT 1
-    `;
+    // Validate invite code (skip during bootstrap)
+    if (!isBootstrap) {
+      const [invite] = await sql<{ id: number }[]>`
+        SELECT id FROM invites WHERE code = ${invite_code} LIMIT 1
+      `;
 
-    if (!invite) {
-      await constantTimeDelay(100);
-      return NextResponse.json(
-        { error: "Invalid invite code" },
-        { status: 400 }
-      );
+      if (!invite) {
+        await constantTimeDelay(100);
+        return NextResponse.json(
+          { error: "Invalid invite code" },
+          { status: 400 }
+        );
+      }
     }
 
     // Validate username format
