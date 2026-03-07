@@ -93,6 +93,16 @@ export async function POST(request: Request) {
       )
     `;
 
+    // Bootstrap: seed all existing data (cameras/films/rolls) to this admin user
+    if (isBootstrap) {
+      await sql`UPDATE cameras SET user_id = ${user.id} WHERE user_id IS NULL`;
+      await sql`UPDATE films SET user_id = ${user.id} WHERE user_id IS NULL`;
+      await sql`UPDATE rolls SET user_id = ${user.id} WHERE user_id IS NULL`;
+      await sql`ALTER TABLE cameras ALTER COLUMN user_id SET NOT NULL`;
+      await sql`ALTER TABLE films ALTER COLUMN user_id SET NOT NULL`;
+      await sql`ALTER TABLE rolls ALTER COLUMN user_id SET NOT NULL`;
+    }
+
     // Update invite usage (skip during bootstrap — no invite was used)
     if (invite) {
       await sql`
