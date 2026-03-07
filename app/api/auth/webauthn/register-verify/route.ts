@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       )
       VALUES (
         ${user.id},
-        ${Buffer.from(credential.id).toString("base64url")},
+        ${credential.id},
         ${Buffer.from(credential.publicKey).toString("base64")},
         ${credential.counter},
         ${credential.transports ? sql.array(credential.transports) : null},

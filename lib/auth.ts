@@ -146,7 +146,7 @@ export async function verifyAuthenticationResponse(
   expectedChallenge: string,
   userId?: string
 ) {
-  const credId = Buffer.from(response.id, "base64url").toString("base64url");
+  const credId = response.id;
 
   // Look up credential — by user + credential ID if userId known, otherwise by credential ID alone
   const [credential] = userId
