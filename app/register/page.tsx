@@ -4,6 +4,21 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startRegistration } from "@simplewebauthn/browser";
 
+function FilmIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-6 opacity-70">
+      <rect x="1" y="5" width="30" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="1" y="9" width="4" height="4" fill="currentColor" />
+      <rect x="1" y="15" width="4" height="4" fill="currentColor" />
+      <rect x="1" y="21" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="9" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="15" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="21" width="4" height="4" fill="currentColor" />
+      <rect x="8" y="9" width="16" height="14" rx="1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -165,32 +180,46 @@ function RegisterForm() {
     }
   }
 
+  const stepLabel: Record<typeof step, string> = {
+    invite: "Invite",
+    details: "Create Account",
+    passkey: "Passkey",
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-8">
-          {step === "invite" && "Enter Invite Code"}
-          {step === "details" && "Create Account"}
-          {step === "passkey" && "Set Up Passkey"}
-        </h1>
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="w-full max-w-xs">
+
+        {/* Header */}
+        <div className="text-center mb-12">
+          <FilmIcon />
+          <h1 className="text-2xl font-bold tracking-[0.3em] uppercase mb-1">Rolls</h1>
+          <p className="text-[10px] tracking-widest uppercase text-zinc-400">
+            {stepLabel[step]}
+          </p>
+        </div>
 
         {/* Step 1: Invite Code */}
         {step === "invite" && (
-          <form onSubmit={handleInviteSubmit} className="space-y-4">
-            <input
-              type="text"
-              value={invite}
-              onChange={(e) => setInvite(e.target.value.trim())}
-              placeholder="Invite code"
-              required
-              autoFocus
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <form onSubmit={handleInviteSubmit} className="space-y-8">
+            <div className="space-y-1">
+              <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+                Invite Code
+              </label>
+              <input
+                type="text"
+                value={invite}
+                onChange={(e) => setInvite(e.target.value.trim())}
+                required
+                autoFocus
+                className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+              />
+            </div>
+            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               type="submit"
               disabled={loading || !invite}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Validating..." : "Continue"}
             </button>
@@ -199,38 +228,52 @@ function RegisterForm() {
 
         {/* Step 2: User Details */}
         {step === "details" && (
-          <form onSubmit={handleDetailsSubmit} className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value.trim())}
-              placeholder="Email"
-              required
-              autoFocus
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
-              placeholder="Username"
-              required
-              pattern="[a-z0-9_-]{3,}"
-              title="Lowercase letters, numbers, dashes, and underscores only (min 3 characters)"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Display name (optional)"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <form onSubmit={handleDetailsSubmit} className="space-y-8">
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.trim())}
+                  required
+                  autoFocus
+                  className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
+                  required
+                  pattern="[a-z0-9_-]{3,}"
+                  title="Lowercase letters, numbers, dashes, and underscores only (min 3 characters)"
+                  className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+                  Display Name <span className="normal-case">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               type="submit"
               disabled={loading || !email || !username}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Checking..." : "Continue"}
             </button>
@@ -239,27 +282,27 @@ function RegisterForm() {
 
         {/* Step 3: Passkey Registration */}
         {step === "passkey" && (
-          <div className="space-y-4">
-            <p className="text-center text-zinc-600 dark:text-zinc-400 mb-6">
-              Use Face ID, Touch ID, or a security key to secure your account. No password needed!
-            </p>
-            <div className="text-center space-y-2 mb-6">
-              <p className="font-medium">{email}</p>
-              <p className="text-sm text-zinc-500">@{username}</p>
-              {name && <p className="text-sm text-zinc-500">{name}</p>}
+          <div className="space-y-8">
+            <div className="text-center space-y-1">
+              <p className="font-medium tracking-wide">{email}</p>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400">@{username}</p>
+              {name && <p className="text-xs text-zinc-500">{name}</p>}
             </div>
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+            <p className="text-xs text-center text-zinc-400 tracking-wide leading-relaxed">
+              Use Face ID, Touch ID, or a security key to secure your account. No password needed.
+            </p>
+            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               onClick={handlePasskeyRegistration}
               disabled={loading}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Setting up..." : "Set Up Passkey"}
             </button>
             <button
               onClick={() => setStep("details")}
               disabled={loading}
-              className="w-full text-zinc-600 dark:text-zinc-400 py-2 text-sm"
+              className="w-full text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-2 transition-colors"
             >
               ← Back
             </button>
@@ -267,17 +310,22 @@ function RegisterForm() {
         )}
 
         {/* Help text */}
-        <p className="text-center text-sm text-zinc-500 mt-6">
-          {step === "invite" && needsInvite && "Don't have an invite? Contact the admin."}
+        <div className="mt-12 text-center">
+          {step === "invite" && needsInvite && (
+            <p className="text-[10px] uppercase tracking-widest text-zinc-400">
+              Contact the admin for an invite
+            </p>
+          )}
           {(step === "details" || step === "passkey") && (
             <button
               onClick={() => router.push("/login")}
-              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
               Already have an account? Sign in
             </button>
           )}
-        </p>
+        </div>
+
       </div>
     </div>
   );

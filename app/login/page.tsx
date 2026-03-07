@@ -1,8 +1,23 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startAuthentication } from "@simplewebauthn/browser";
+
+function FilmIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-6 opacity-70">
+      <rect x="1" y="5" width="30" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="1" y="9" width="4" height="4" fill="currentColor" />
+      <rect x="1" y="15" width="4" height="4" fill="currentColor" />
+      <rect x="1" y="21" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="9" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="15" width="4" height="4" fill="currentColor" />
+      <rect x="27" y="21" width="4" height="4" fill="currentColor" />
+      <rect x="8" y="9" width="16" height="14" rx="1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
 
 function LoginForm() {
   const router = useRouter();
@@ -11,9 +26,48 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"identifier" | "passkey">("identifier");
+  const autofillAbortRef = useRef<AbortController | null>(null);
+
+  // Start conditional UI (passkey autofill) on mount
+  useEffect(() => {
+    const abort = new AbortController();
+    autofillAbortRef.current = abort;
+
+    async function startAutofill() {
+      try {
+        const resp = await fetch("/api/auth/webauthn/autofill-options", { method: "POST" });
+        if (!resp.ok || abort.signal.aborted) return;
+        const { options: optionsJSON, challenge } = await resp.json();
+
+        // useBrowserAutofill=true: passkey appears in the email input's autocomplete
+        const response = await startAuthentication({ optionsJSON, useBrowserAutofill: true });
+        if (abort.signal.aborted) return;
+
+        const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ response, challenge }),
+        });
+
+        if (verifyResp.ok) {
+          window.location.href = searchParams.get("from") ?? "/";
+        }
+      } catch {
+        // Silently ignore — user dismissed autofill or browser doesn't support it
+      }
+    }
+
+    startAutofill();
+
+    return () => {
+      abort.abort();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleIdentifierSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Cancel autofill before starting explicit flow
+    autofillAbortRef.current?.abort();
     setStep("passkey");
   }
 
@@ -56,7 +110,6 @@ function LoginForm() {
     } catch (err: any) {
       console.error("Login error:", err);
 
-      // User-friendly error messages
       if (err.name === "NotAllowedError") {
         setError("Login cancelled. Please try again.");
       } else if (err.name === "NotSupportedError") {
@@ -67,7 +120,6 @@ function LoginForm() {
         setError(err.message || "Failed to sign in. Please try again.");
       }
 
-      // Go back to identifier step if user not found
       if (err.message?.includes("not found")) {
         setStep("identifier");
       }
@@ -77,28 +129,40 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-8">Sign In to Rolls</h1>
+    <div className="min-h-screen flex items-center justify-center px-6">
+      <div className="w-full max-w-xs">
+
+        {/* Header */}
+        <div className="text-center mb-12">
+          <FilmIcon />
+          <h1 className="text-2xl font-bold tracking-[0.3em] uppercase mb-1">Rolls</h1>
+          <p className="text-[10px] tracking-widest uppercase text-zinc-400">
+            {step === "identifier" ? "Sign In" : "Passkey"}
+          </p>
+        </div>
 
         {/* Step 1: Enter email or username */}
         {step === "identifier" && (
-          <form onSubmit={handleIdentifierSubmit} className="space-y-4">
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value.trim())}
-              placeholder="Email or username"
-              required
-              autoFocus
-              autoComplete="username webauthn"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/20"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <form onSubmit={handleIdentifierSubmit} className="space-y-8">
+            <div className="space-y-1">
+              <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+                Email or Username
+              </label>
+              <input
+                type="text"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value.trim())}
+                required
+                autoFocus
+                autoComplete="username webauthn"
+                className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+              />
+            </div>
+            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               type="submit"
               disabled={loading || !identifier}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Checking..." : "Continue"}
             </button>
@@ -107,18 +171,16 @@ function LoginForm() {
 
         {/* Step 2: Passkey authentication */}
         {step === "passkey" && (
-          <div className="space-y-4">
-            <p className="text-center text-zinc-600 dark:text-zinc-400 mb-6">
-              Use your passkey to sign in
-            </p>
-            <div className="text-center mb-6">
-              <p className="font-medium">{identifier}</p>
+          <div className="space-y-8">
+            <div className="text-center space-y-1">
+              <p className="font-medium tracking-wide">{identifier}</p>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400">Ready to authenticate</p>
             </div>
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               onClick={handlePasskeyLogin}
               disabled={loading}
-              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-semibold active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In with Passkey"}
             </button>
@@ -128,7 +190,7 @@ function LoginForm() {
                 setError("");
               }}
               disabled={loading}
-              className="w-full text-zinc-600 dark:text-zinc-400 py-2 text-sm"
+              className="w-full text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-2 transition-colors"
             >
               ← Back
             </button>
@@ -136,14 +198,15 @@ function LoginForm() {
         )}
 
         {/* Help text */}
-        <p className="text-center text-sm text-zinc-500 mt-6">
+        <div className="mt-12 text-center">
           <button
             onClick={() => router.push("/register")}
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+            className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
           >
-            Don't have an account? Get an invite
+            No account? Get an invite
           </button>
-        </p>
+        </div>
+
       </div>
     </div>
   );

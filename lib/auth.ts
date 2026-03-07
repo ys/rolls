@@ -144,15 +144,22 @@ export async function generateAuthenticationOptions(identifier: string) {
 export async function verifyAuthenticationResponse(
   response: any,
   expectedChallenge: string,
-  userId: string
+  userId?: string
 ) {
-  // Get the credential from database
-  const [credential] = await sql<WebAuthnCredential[]>`
-    SELECT * FROM webauthn_credentials
-    WHERE user_id = ${userId}
-    AND credential_id = ${Buffer.from(response.id, "base64url").toString("base64url")}
-    LIMIT 1
-  `;
+  const credId = Buffer.from(response.id, "base64url").toString("base64url");
+
+  // Look up credential — by user + credential ID if userId known, otherwise by credential ID alone
+  const [credential] = userId
+    ? await sql<WebAuthnCredential[]>`
+        SELECT * FROM webauthn_credentials
+        WHERE user_id = ${userId} AND credential_id = ${credId}
+        LIMIT 1
+      `
+    : await sql<WebAuthnCredential[]>`
+        SELECT * FROM webauthn_credentials
+        WHERE credential_id = ${credId}
+        LIMIT 1
+      `;
 
   if (!credential) {
     throw new Error("Credential not found");
@@ -181,7 +188,7 @@ export async function verifyAuthenticationResponse(
     `;
   }
 
-  return verification;
+  return { ...verification, resolvedUserId: credential.user_id };
 }
 
 // ============================================================================

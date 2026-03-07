@@ -11,14 +11,14 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { response: credentialResponse, challenge, user_id: userId } = body;
 
-    if (!credentialResponse || !challenge || !userId) {
+    if (!credentialResponse || !challenge) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Verify the authentication response
+    // Verify the authentication response (userId optional — conditional UI flow omits it)
     const verification = await verifyAuthenticationResponse(
       credentialResponse,
       challenge,
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user data
-    const user = await getUserById(userId);
+    // Get user data — use resolvedUserId from credential lookup
+    const user = await getUserById(verification.resolvedUserId);
 
     if (!user) {
       return NextResponse.json(
