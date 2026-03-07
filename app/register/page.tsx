@@ -147,9 +147,8 @@ function RegisterForm() {
         throw new Error(data.error || "Failed to complete registration");
       }
 
-      // Registration successful! Redirect to home
-      router.push("/");
-      router.refresh();
+      // Full page navigation so session cookie is sent on the next request
+      window.location.href = "/";
     } catch (err: any) {
       console.error("Registration error:", err);
 

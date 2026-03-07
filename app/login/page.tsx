@@ -14,29 +14,7 @@ function LoginForm() {
 
   async function handleIdentifierSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // Validate that user exists (optional - could skip directly to passkey)
-      // For better UX, we check if the user exists first
-      const checkResp = await fetch(`/api/auth/me`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
-      });
-
-      if (checkResp.ok || checkResp.status === 401) {
-        // User might exist, proceed to passkey
-        setStep("passkey");
-      } else {
-        setError("Account not found. Please check your email or username.");
-      }
-    } catch (err) {
-      setError("Failed to connect. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setStep("passkey");
   }
 
   async function handlePasskeyLogin() {
@@ -73,10 +51,8 @@ function LoginForm() {
         throw new Error(data.error || "Failed to complete login");
       }
 
-      // Login successful! Redirect to original destination or home
-      const from = searchParams.get("from") ?? "/";
-      router.push(from);
-      router.refresh();
+      // Full page navigation so session cookie is sent on the next request
+      window.location.href = searchParams.get("from") ?? "/";
     } catch (err: any) {
       console.error("Login error:", err);
 
