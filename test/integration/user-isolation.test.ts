@@ -12,6 +12,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/request-context", () => ({
+  getUser: vi.fn(),
   getUserId: vi.fn(),
 }));
 
@@ -142,11 +143,11 @@ describe("User Data Isolation Integration Tests", () => {
     });
 
     it("should only list user's own invites", async () => {
-      const { getUserId } = await import("@/lib/request-context");
+      const { getUser } = await import("@/lib/request-context");
       const { sql } = await import("@/lib/db");
       const { GET } = await import("@/app/api/auth/invites/route");
 
-      (getUserId as any).mockResolvedValueOnce(user1Id);
+      (getUser as any).mockResolvedValueOnce({ id: user1Id, email: "user1@example.com", role: "admin" });
       (sql as any).mockResolvedValueOnce([
         { id: 1, code: "user1-invite", created_by: user1Id },
       ]);

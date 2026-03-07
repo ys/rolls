@@ -7,6 +7,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/request-context", () => ({
+  getUser: vi.fn(() => Promise.resolve({ id: "user-123", email: "test@example.com", role: "admin" })),
   getUserId: vi.fn(() => Promise.resolve("user-123")),
 }));
 

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { getUserId, getUserRole } from "@/lib/request-context";
+import { getUser } from "@/lib/request-context";
 import { sql, type Invite } from "@/lib/db";
 import crypto from "crypto";
 
 export async function GET(request: Request) {
   try {
-    const userId = await getUserId();
-    const role = await getUserRole();
+    const { id: userId, role } = await getUser();
     if (role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -38,8 +37,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const userId = await getUserId();
-    const role = await getUserRole();
+    const { id: userId, role } = await getUser();
     if (role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
