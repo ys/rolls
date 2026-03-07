@@ -53,7 +53,7 @@ export const usernameCheckLimiter = redis
   ? new Ratelimit({
       redis: createUpstashRedisAdapter(redis),
       limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute
-      analytics: true,
+      analytics: false,
       prefix: "@upstash/ratelimit",
     })
   : null;
@@ -62,7 +62,7 @@ export const apiLimiter = redis
   ? new Ratelimit({
       redis: createUpstashRedisAdapter(redis),
       limiter: Ratelimit.slidingWindow(100, "1 m"), // 100 requests per minute
-      analytics: true,
+      analytics: false,
       prefix: "@upstash/ratelimit",
     })
   : null;
@@ -71,7 +71,7 @@ export const emailLimiter = redis
   ? new Ratelimit({
       redis: createUpstashRedisAdapter(redis),
       limiter: Ratelimit.slidingWindow(5, "1 h"), // 5 emails per hour
-      analytics: true,
+      analytics: false,
       prefix: "@upstash/ratelimit",
     })
   : null;
