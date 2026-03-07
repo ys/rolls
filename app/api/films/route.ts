@@ -10,7 +10,7 @@ function slugify(s: string): string {
 export async function GET() {
   const userId = await getUserId();
   const rows = await sql<Film[]>`
-    SELECT f.*, COUNT(r.slug)::int AS roll_count
+    SELECT f.*, COUNT(r.roll_number)::int AS roll_count
     FROM films f
     LEFT JOIN rolls r ON r.film_uuid = f.uuid AND r.user_id = ${userId}
     WHERE f.user_id = ${userId}

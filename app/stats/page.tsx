@@ -20,9 +20,9 @@ export default async function StatsPage() {
         COALESCE(c.nickname, c.brand || ' ' || c.model) AS label,
         COUNT(*)::int AS count
       FROM rolls r
-      JOIN cameras c ON c.id = r.camera_id
-      WHERE r.camera_id IS NOT NULL
-      GROUP BY c.id, c.nickname, c.brand, c.model
+      JOIN cameras c ON c.uuid = r.camera_uuid
+      WHERE r.camera_uuid IS NOT NULL
+      GROUP BY c.uuid, c.nickname, c.brand, c.model
       ORDER BY count DESC
       LIMIT 10
     `,
@@ -32,9 +32,9 @@ export default async function StatsPage() {
         COALESCE(f.nickname, f.brand || ' ' || f.name) AS label,
         COUNT(*)::int AS count
       FROM rolls r
-      JOIN films f ON f.id = r.film_id
-      WHERE r.film_id IS NOT NULL
-      GROUP BY f.id, f.nickname, f.brand, f.name
+      JOIN films f ON f.uuid = r.film_uuid
+      WHERE r.film_uuid IS NOT NULL
+      GROUP BY f.uuid, f.nickname, f.brand, f.name
       ORDER BY count DESC
       LIMIT 10
     `,

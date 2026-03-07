@@ -25,13 +25,13 @@ export async function POST(request: NextRequest) {
   // Use a single UPDATE with ANY for efficiency (using slug instead of roll_number)
   const v = value ?? null;
   if (field === "processed_at") {
-    await sql`UPDATE rolls SET processed_at = ${v} WHERE user_id = ${userId} AND slug = ANY(${roll_numbers})`;
+    await sql`UPDATE rolls SET processed_at = ${v} WHERE user_id = ${userId} AND roll_number = ANY(${roll_numbers})`;
   } else if (field === "uploaded_at") {
-    await sql`UPDATE rolls SET uploaded_at = ${v} WHERE user_id = ${userId} AND slug = ANY(${roll_numbers})`;
+    await sql`UPDATE rolls SET uploaded_at = ${v} WHERE user_id = ${userId} AND roll_number = ANY(${roll_numbers})`;
   } else if (field === "archived_at") {
-    await sql`UPDATE rolls SET archived_at = ${v} WHERE user_id = ${userId} AND slug = ANY(${roll_numbers})`;
+    await sql`UPDATE rolls SET archived_at = ${v} WHERE user_id = ${userId} AND roll_number = ANY(${roll_numbers})`;
   } else if (field === "scanned_at") {
-    await sql`UPDATE rolls SET scanned_at = ${v} WHERE user_id = ${userId} AND slug = ANY(${roll_numbers})`;
+    await sql`UPDATE rolls SET scanned_at = ${v} WHERE user_id = ${userId} AND roll_number = ANY(${roll_numbers})`;
   }
 
   return NextResponse.json({ updated: roll_numbers.length });

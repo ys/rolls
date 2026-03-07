@@ -9,11 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id: roll_number } = await params;
 
   // Verify user owns this roll before serving the image
-  const [roll] = await sql<{ slug: string }[]>`
-    SELECT slug FROM rolls WHERE slug = ${slug} AND user_id = ${userId}
+  const [roll] = await sql<{ roll_number: string }[]>`
+    SELECT roll_number FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
   `;
 
   if (!roll) {
@@ -23,7 +23,7 @@ export async function GET(
   try {
     const obj = await r2.send(new GetObjectCommand({
       Bucket: R2_BUCKET,
-      Key: `${slug}.webp`,
+      Key: `${roll_number}.webp`,
     }));
 
     const stream = obj.Body?.transformToWebStream();
@@ -45,11 +45,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id: roll_number } = await params;
 
   // Verify user owns this roll before uploading
-  const [roll] = await sql<{ slug: string }[]>`
-    SELECT slug FROM rolls WHERE slug = ${slug} AND user_id = ${userId}
+  const [roll] = await sql<{ roll_number: string }[]>`
+    SELECT roll_number FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
   `;
 
   if (!roll) {
@@ -63,7 +63,7 @@ export async function PUT(
 
   await r2.send(new PutObjectCommand({
     Bucket: R2_BUCKET,
-    Key: `${slug}.webp`,
+    Key: `${roll_number}.webp`,
     Body: new Uint8Array(body),
     ContentType: "image/webp",
   }));
@@ -71,12 +71,12 @@ export async function PUT(
   // Prefer a direct public R2 URL if the bucket has public access configured,
   // otherwise fall back to the app-proxied URL (using APP_URL env or request origin).
   const contactSheetUrl = process.env.R2_PUBLIC_URL
-    ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${slug}.webp`
-    : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${slug}/contact-sheet`;
+    ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${roll_number}.webp`
+    : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${roll_number}/contact-sheet`;
   await sql`
     UPDATE rolls
     SET contact_sheet_url = ${contactSheetUrl}
-    WHERE slug = ${slug} AND user_id = ${userId}
+    WHERE roll_number = ${roll_number} AND user_id = ${userId}
   `;
 
   return NextResponse.json({ contact_sheet_url: contactSheetUrl });

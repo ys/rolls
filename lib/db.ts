@@ -85,13 +85,10 @@ export interface Film {
 
 export interface Roll {
   uuid: string;
-  slug: string;
+  roll_number: string;
   user_id: string;
   camera_uuid: string | null;
   film_uuid: string | null;
-  // Temporary columns for migration (will be removed in migration 004)
-  camera_slug?: string | null;
-  film_slug?: string | null;
   shot_at: string | null;
   fridge_at: string | null;
   lab_at: string | null;

@@ -39,7 +39,11 @@
       "Bash(git checkout multitenancy-plan)",
       "Bash(gh pr view 2)",
       "Bash(gh pr checkout 2)",
-      "WebFetch(domain:dashboard.heroku.com)"
+      "WebFetch(domain:dashboard.heroku.com)",
+      "Bash(git commit:*)",
+      "Bash(heroku logs --tail --app rolls-multitenancy-plan-bxj9dg -n 100)",
+      "Bash(heroku config --app rolls-multitenancy-plan-bxj9dg)",
+      "Bash(heroku config:set WEBAUTHN_RP_ID=rolls-multitenancy-plan-bxj9dg.herokuapp.com WEBAUTHN_ORIGIN=https://rolls-multitenancy-plan-bxj9dg.herokuapp.com --app rolls-multitenancy-plan-bxj9dg)"
     ]
   },
   "enableAllProjectMcpServers": false

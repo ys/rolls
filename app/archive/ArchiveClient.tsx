@@ -46,7 +46,7 @@ interface ArchiveData {
 }
 
 function rollYear(roll: RollRow): number {
-  const match = roll.slug.match(/^(\d{2})x/);
+  const match = roll.roll_number.match(/^(\d{2})x/);
   if (match) return 2000 + parseInt(match[1], 10);
   if (roll.scanned_at) return new Date(roll.scanned_at).getFullYear();
   return new Date().getFullYear();
@@ -152,17 +152,17 @@ function GridCard({
       {hasImage ? (
         <img
           src={roll.contact_sheet_url!}
-          alt={roll.slug}
+          alt={roll.roll_number}
           className="w-full h-auto block"
         />
       ) : (
-        <PlaceholderSheet rollNumber={roll.slug} />
+        <PlaceholderSheet rollNumber={roll.roll_number} />
       )}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent pt-6 pb-2 px-3">
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
             <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
-              {roll.slug}
+              {roll.roll_number}
             </div>
             {film && (
               <div className="text-white/60 text-[11px] truncate leading-tight mt-0.5">
@@ -201,7 +201,7 @@ function GridCard({
   }
   return (
     <Link
-      href={`/roll/${roll.slug}`}
+      href={`/roll/${roll.roll_number}`}
       onClick={() => haptics.light()}
       className={`block ${containerBase} active:scale-[0.98] transition-transform`}
     >
@@ -244,7 +244,7 @@ function ListRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <span className="font-semibold text-[15px] truncate">
-            {roll.slug}
+            {roll.roll_number}
           </span>
           {dateStr && (
             <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">
@@ -307,7 +307,7 @@ function ListRow({
   return (
     <li>
       <Link
-        href={`/roll/${roll.slug}`}
+        href={`/roll/${roll.roll_number}`}
         onClick={() => haptics.light()}
         className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}
       >
@@ -420,7 +420,7 @@ export default function ArchiveClient() {
 
   function selectAll() {
     if (!data) return;
-    const all = new Set(data.rolls.map((r) => r.slug));
+    const all = new Set(data.rolls.map((r) => r.roll_number));
     if (selected.size === all.size) {
       setSelected(new Set());
       haptics.light();
@@ -491,7 +491,7 @@ export default function ArchiveClient() {
   const yearsToShow = selectedYear ? [selectedYear] : years;
 
   // Derive available bulk actions from the statuses of selected rolls
-  const rollMap = new Map(data.rolls.map((r) => [r.slug, r]));
+  const rollMap = new Map(data.rolls.map((r) => [r.roll_number, r]));
   const seenFields = new Set<string>();
   const availableActions: Array<{
     field: string;
@@ -599,7 +599,7 @@ export default function ArchiveClient() {
           <div className="space-y-8">
             {yearsToShow.map((year) => {
               const yearRolls = byYear.get(year)!;
-              const yearNums = yearRolls.map((r) => r.slug);
+              const yearNums = yearRolls.map((r) => r.roll_number);
               const allYearSelected = yearNums.every((n) => selected.has(n));
               function toggleYear() {
                 setSelected((prev) => {
@@ -637,11 +637,11 @@ export default function ArchiveClient() {
                     <div className="space-y-2">
                       {yearRolls.map((roll) => (
                         <GridCard
-                          key={roll.slug}
+                          key={roll.roll_number}
                           roll={roll}
                           editing={editing}
-                          selected={selected.has(roll.slug)}
-                          onToggle={() => toggleSelect(roll.slug)}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
                         />
                       ))}
                     </div>
@@ -649,11 +649,11 @@ export default function ArchiveClient() {
                     <ul>
                       {yearRolls.map((roll) => (
                         <ListRow
-                          key={roll.slug}
+                          key={roll.roll_number}
                           roll={roll}
                           editing={editing}
-                          selected={selected.has(roll.slug)}
-                          onToggle={() => toggleSelect(roll.slug)}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
                         />
                       ))}
                     </ul>

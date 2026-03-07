@@ -75,8 +75,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
   const [editMeta, setEditMeta] = useState(false);
   const [metaForm, setMetaForm] = useState({
-    camera_id: initialRoll.camera_slug ?? "",
-    film_id: initialRoll.film_slug ?? "",
+    camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
+    film_id: films.find((f) => f.uuid === initialRoll.film_uuid)?.slug ?? "",
     shot_at: initialRoll.shot_at ? String(initialRoll.shot_at).slice(0, 10) : "",
     album_name: initialRoll.album_name ?? "",
     tags: initialRoll.tags?.join(", ") ?? "",
@@ -87,8 +87,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   }, []);
 
   const nextAction = NEXT_ACTION[status];
-  const currentCamera = cameras.find((c) => c.slug === roll.camera_slug) ?? null;
-  const currentFilm = films.find((f) => f.slug === roll.film_slug) ?? null;
+  const currentCamera = cameras.find((c) => c.uuid === roll.camera_uuid) ?? null;
+  const currentFilm = films.find((f) => f.uuid === roll.film_uuid) ?? null;
 
   async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[] }): Promise<boolean> {
     setSaving(true);
@@ -98,7 +98,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       "Content-Type": "application/json",
       ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
     };
-    const resp = await fetch(`/api/rolls/${roll.slug}`, {
+    const resp = await fetch(`/api/rolls/${roll.roll_number}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(patch),
@@ -136,7 +136,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
     <div>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-mono font-bold">{roll.slug}</h1>
+          <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
           <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
             {status}
           </span>
@@ -278,8 +278,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           </div>
         ) : (
           <div className="px-4 pb-4 pt-2 space-y-3">
-            <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : roll.camera_slug ?? "—"} />
-            <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : roll.film_slug ?? "—"} />
+            <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : "—"} />
+            <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : "—"} />
             <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
             {roll.lab_name && <Row label="Lab" value={roll.lab_name} />}
             {roll.album_name && <Row label="Album" value={roll.album_name} />}
@@ -346,7 +346,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         <div className="mb-4">
           <img
             src={roll.contact_sheet_url}
-            alt={`Contact sheet for ${roll.slug}`}
+            alt={`Contact sheet for ${roll.roll_number}`}
             className="w-full rounded-xl"
           />
         </div>

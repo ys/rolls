@@ -9,9 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id: roll_number } = await params;
   const rows = await sql<Roll[]>`
-    SELECT * FROM rolls WHERE slug = ${slug} AND user_id = ${userId}
+    SELECT * FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
   `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -24,7 +24,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id: roll_number } = await params;
   const body = await request.json();
 
   // Resolve camera_id and film_id slugs to UUIDs if provided
@@ -67,8 +67,8 @@ export async function PATCH(
   }
 
   values.push(userId);
-  values.push(slug);
-  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND slug = $${idx + 1} RETURNING *`;
+  values.push(roll_number);
+  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND roll_number = $${idx + 1} RETURNING *`;
   const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
 
   if (rows.length === 0) {

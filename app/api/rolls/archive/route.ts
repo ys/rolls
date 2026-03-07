@@ -30,7 +30,7 @@ export async function GET() {
     LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
     LEFT JOIN films   f ON f.uuid = r.film_uuid AND f.user_id = ${userId}
     WHERE r.user_id = ${userId} AND r.scanned_at IS NOT NULL
-    ORDER BY r.scanned_at DESC, r.slug DESC
+    ORDER BY r.scanned_at DESC, r.roll_number DESC
   `;
 
   return NextResponse.json({ rolls });
