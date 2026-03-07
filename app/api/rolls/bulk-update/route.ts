@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid field" }, { status: 400 });
   }
 
-  // Use a single UPDATE with ANY for efficiency (using slug instead of roll_number)
   const v = value ?? null;
   if (field === "processed_at") {
     await sql`UPDATE rolls SET processed_at = ${v} WHERE user_id = ${userId} AND roll_number = ANY(${roll_numbers})`;

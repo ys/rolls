@@ -439,7 +439,7 @@ export default function ArchiveClient() {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({
-        slugs: [...selected],
+        roll_numbers: [...selected],
         field,
         value: new Date().toISOString(),
       }),
