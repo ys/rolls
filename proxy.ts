@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/api/auth/webauthn/register-verify",
   "/api/auth/webauthn/login-options",
   "/api/auth/webauthn/login-verify",
+  "/api/auth/webauthn/autofill-options",
   "/api/auth/invites/validate",
   "/api/auth/check-username",
   "/api/auth/bootstrap",
