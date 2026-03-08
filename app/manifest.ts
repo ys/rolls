@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/api/icon?size=48",  sizes: "48x48",   type: "image/png" },
       { src: "/api/icon?size=96",  sizes: "96x96",   type: "image/png" },
       { src: "/api/icon?size=192", sizes: "192x192", type: "image/png" },
-      { src: "/api/icon?size=512", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      { src: "/api/icon?size=512", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
