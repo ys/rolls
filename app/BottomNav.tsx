@@ -81,6 +81,7 @@ export default function BottomNav() {
                 size={28}
                 weight={active ? "fill" : "regular"}
                 className={active ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
+                style={active ? { filter: "drop-shadow(0 0 6px rgb(245 158 11 / 0.8))" } : undefined}
               />
             </Link>
           );
