@@ -72,7 +72,7 @@ function filmLabel(roll: RollRow): string {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}
+      className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-400 dark:border-zinc-600"}`}
     >
       {checked && (
         <svg
@@ -145,8 +145,8 @@ function GridCard({
   // Placeholder cards: fixed landscape ratio.
   const hasImage = !!roll.contact_sheet_url;
   const containerBase = hasImage
-    ? "relative w-full rounded-xl overflow-hidden bg-zinc-900"
-    : "relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-zinc-800";
+    ? "relative w-full overflow-hidden bg-zinc-900"
+    : "relative w-full aspect-[3/2] overflow-hidden bg-zinc-800";
 
   const inner = (
     <>
@@ -544,13 +544,13 @@ export default function ArchiveClient() {
             <div className="flex items-center gap-2">
               {/* View toggle */}
               {!editing && (
-                <div className="flex gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+                <div className="flex gap-0.5 border border-zinc-300 dark:border-zinc-700 p-0.5">
                   <button
                     onClick={() => {
                       setView("list");
                       haptics.light();
                     }}
-                    className={`p-1.5 rounded-md transition-colors ${view === "list" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
+                    className={`p-1.5 transition-colors ${view === "list" ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900" : "text-zinc-400 dark:text-zinc-500"}`}
                   >
                     <ListIcon active={view === "list"} />
                   </button>
@@ -559,7 +559,7 @@ export default function ArchiveClient() {
                       setView("grid");
                       haptics.light();
                     }}
-                    className={`p-1.5 rounded-md transition-colors ${view === "grid" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
+                    className={`p-1.5 rounded-md transition-colors ${view === "grid" ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900" : "text-zinc-400 dark:text-zinc-500"}`}
                   >
                     <GridIcon active={view === "grid"} />
                   </button>
@@ -604,10 +604,10 @@ export default function ArchiveClient() {
                       setSelectedYear(year);
                       haptics.light();
                     }}
-                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    className={`whitespace-nowrap px-4 py-2 text-sm font-medium transition-colors border ${
                       (selectedYear ?? years[0]) === year
-                        ? "bg-amber-500 dark:bg-amber-400 text-white dark:text-zinc-900"
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        ? "bg-amber-500 dark:bg-amber-400 text-white dark:text-zinc-900 border-amber-500 dark:border-amber-400"
+                        : "bg-transparent text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 dark:hover:border-zinc-500"
                     }`}
                   >
                     {year}
@@ -692,13 +692,11 @@ export default function ArchiveClient() {
         mounted &&
         createPortal(
           <div
-            className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
-            style={{
-              paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
-            }}
+            className="fixed bottom-0 inset-x-0 z-20 flex pointer-events-none"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             <div
-              className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+              className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white dark:bg-zinc-950 border-t-2 border-zinc-900 dark:border-zinc-100 w-full"
               style={{
                 transformOrigin: "center bottom",
                 animation: exiting
@@ -732,7 +730,7 @@ export default function ArchiveClient() {
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
-                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 active:opacity-70 transition-opacity disabled:opacity-50`}
                       >
                         {applying ? "…" : label}
                       </button>

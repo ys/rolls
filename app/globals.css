@@ -92,7 +92,7 @@
 
 /* Font override via CSS variable (set by FontPicker via localStorage) */
 body {
-  font-family: var(--app-font, "iA Writer Mono", ui-monospace, monospace);
+  font-family: var(--app-font, "Departure Mono", ui-monospace, monospace);
 }
 
 /* Nav ↔ edit bar flip animations */

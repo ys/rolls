@@ -49,7 +49,8 @@
       "Bash(heroku pg:psql:*)",
       "Bash(head -1 \"/Users/ys/src/github.com/ys/rolls/app/@modal/\\(.\\)new/page.tsx\")",
       "Bash(python3 -c \"from PIL import Image; img = Image.open\\(''/Users/ys/src/github.com/ys/rolls/public/apple-touch-icon.png''\\); print\\(img.size, img.mode\\)\")",
-      "Bash(sips -g pixelWidth -g pixelHeight /Users/ys/src/github.com/ys/rolls/public/apple-touch-icon.png)"
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/ys/src/github.com/ys/rolls/public/apple-touch-icon.png)",
+      "WebFetch(domain:departuremono.com)"
     ]
   },
   "enableAllProjectMcpServers": false

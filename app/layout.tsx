@@ -52,14 +52,14 @@ export default function RootLayout({
         {/* Restore theme + font preference before paint to avoid flash */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}var f=localStorage.getItem('app-font');if(f){document.documentElement.style.setProperty('--app-font',f)}})()` }} />
       </head>
-      <body className="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+      <body className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
         <OfflineIndicator />
         <SwipeNavigation />
         <main
           className="max-w-2xl mx-auto px-4"
           style={{
             paddingTop: "calc(1rem + env(safe-area-inset-top))",
-            paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+            paddingBottom: "calc(5rem + env(safe-area-inset-bottom))",
           }}
         >
           <PageTransition>{children}</PageTransition>

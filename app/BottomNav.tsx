@@ -48,18 +48,13 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-end gap-3 pointer-events-none px-6"
-      style={{ paddingBottom: "calc(1.75rem + env(safe-area-inset-bottom))" }}
+      className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-zinc-950 border-t-2 border-zinc-900 dark:border-zinc-100"
+      style={{
+        ...animStyle,
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
     >
-      {/* Tab pill */}
-      <div
-        className="pointer-events-auto flex items-center gap-0.5 px-2 rounded-full bg-white/40 dark:bg-zinc-900/60 backdrop-blur-3xl border border-white/60 dark:border-white/10"
-        style={{
-          ...animStyle,
-          height: 64,
-          boxShadow: "0 8px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
-        }}
-      >
+      <div className="flex items-center h-14 max-w-2xl mx-auto px-2">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
@@ -68,42 +63,28 @@ export default function BottomNav() {
               href={href}
               aria-label={label}
               onClick={() => haptics.light()}
-              className="relative flex items-center justify-center transition-all duration-200 active:scale-90"
-              style={{ width: 60, height: 48, borderRadius: 20 }}
+              className="flex-1 flex items-center justify-center h-full active:opacity-40 transition-opacity"
             >
-              {active && (
-                <span
-                  className="absolute inset-0 bg-amber-500/10 dark:bg-amber-400/15"
-                  style={{ borderRadius: 20 }}
-                />
-              )}
               <Icon
-                size={28}
+                size={26}
                 weight={active ? "fill" : "regular"}
                 className={active ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
-                style={active ? { filter: "drop-shadow(0 0 6px rgb(245 158 11 / 0.8))" } : undefined}
+                style={active ? { filter: "drop-shadow(0 0 5px rgb(245 158 11 / 0.7))" } : undefined}
               />
             </Link>
           );
         })}
-      </div>
 
-      {/* New roll FAB */}
-      <Link
-        href="/new"
-        aria-label="New roll"
-        onClick={() => haptics.medium()}
-        className="pointer-events-auto flex-shrink-0 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-        style={{
-          ...animStyle,
-          width: 64,
-          height: 64,
-          background: "linear-gradient(160deg, #fbbf24 0%, #f97316 100%)",
-          boxShadow: "0 8px 24px rgba(234,88,12,0.5), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3)",
-        }}
-      >
-        <Plus size={26} weight="bold" color="white" />
-      </Link>
+        {/* New roll button */}
+        <Link
+          href="/new"
+          aria-label="New roll"
+          onClick={() => haptics.medium()}
+          className="flex items-center justify-center w-10 h-10 bg-amber-500 active:opacity-70 transition-opacity ml-1"
+        >
+          <Plus size={20} weight="bold" color="white" />
+        </Link>
+      </div>
     </nav>
   );
 }
