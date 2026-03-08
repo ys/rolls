@@ -12,16 +12,6 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 
-const STATUS_DOT: Record<string, string> = {
-  LOADED:    "bg-amber-400",
-  FRIDGE:    "bg-cyan-400",
-  LAB:       "bg-orange-400",
-  SCANNED:   "bg-green-400",
-  PROCESSED: "bg-purple-400",
-  UPLOADED:  "bg-blue-400",
-  ARCHIVED:  "bg-zinc-300 dark:bg-zinc-600",
-};
-
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
   LOADED: { field: "fridge_at",  label: "To Fridge", color: "bg-cyan-500"   },
   FRIDGE: { field: "lab_at",     label: "To Lab",    color: "bg-orange-500" },
@@ -40,8 +30,6 @@ type RollRow = Roll & {
 };
 
 interface HomeData { rolls: RollRow[]; }
-
-const IN_PROGRESS_ORDER: Record<string, number> = { LOADED: 0, FRIDGE: 1 };
 
 function cameraLabel(roll: RollRow): string {
   if (roll.camera_nickname) return roll.camera_nickname;
@@ -73,7 +61,6 @@ function Checkbox({ checked }: { checked: boolean }) {
 function RollItem({ roll, editing, selected, onToggle }: {
   roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
 }) {
-  const status = rollStatus(roll);
   const dateStr = roll.shot_at
     ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
@@ -81,17 +68,13 @@ function RollItem({ roll, editing, selected, onToggle }: {
 
   const inner = (
     <>
-      {editing
-        ? <Checkbox checked={selected} />
-        : <div className={`w-2 h-2 rounded-full shrink-0 mt-[7px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`} />
-      }
+      {editing && <Checkbox checked={selected} />}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
           {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
         </div>
         {subtitle && <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>}
-        <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">{status}</div>
       </div>
       {!editing && (
         <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -193,8 +176,9 @@ export default function HomeClient() {
   }
 
   const { rolls } = data;
-  const inProgress = rolls.filter((r) => !r.lab_at).sort((a, b) => (IN_PROGRESS_ORDER[rollStatus(a)] ?? 9) - (IN_PROGRESS_ORDER[rollStatus(b)] ?? 9));
-  const atLab = rolls.filter((r) => r.lab_at);
+  const loaded   = rolls.filter((r) => rollStatus(r) === "LOADED");
+  const inFridge = rolls.filter((r) => rollStatus(r) === "FRIDGE");
+  const atLab    = rolls.filter((r) => rollStatus(r) === "LAB");
 
   // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));
@@ -230,17 +214,21 @@ export default function HomeClient() {
             <p className="text-zinc-500 text-center py-16">No active rolls. Tap + to create one!</p>
           ) : (
             <div className="space-y-8">
-              {inProgress.length > 0 && (
-                <section>
+              {[
+                { label: "Loaded",        rolls: loaded   },
+                { label: "In the Fridge", rolls: inFridge },
+                { label: "At the Lab",    rolls: atLab    },
+              ].map(({ label, rolls: sectionRolls }) => sectionRolls.length > 0 && (
+                <section key={label}>
                   <div className="flex items-baseline justify-between mb-3">
                     <div className="flex items-baseline gap-2">
-                      <h2 className="text-lg font-bold">In Progress</h2>
-                      <span className="text-sm text-zinc-500">{inProgress.length}</span>
+                      <h2 className="text-lg font-bold">{label}</h2>
+                      <span className="text-sm text-zinc-500">{sectionRolls.length}</span>
                     </div>
                     {editing && (
                       <button
                         onClick={() => {
-                          const nums = inProgress.map((r) => r.roll_number);
+                          const nums = sectionRolls.map((r) => r.roll_number);
                           const allSel = nums.every((n) => selected.has(n));
                           setSelected((prev) => {
                             const s = new Set(prev);
@@ -249,52 +237,19 @@ export default function HomeClient() {
                             return s;
                           });
                         }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${inProgress.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
                       >
-                        {inProgress.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                        {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
                       </button>
                     )}
                   </div>
                   <ul>
-                    {inProgress.map((roll) => (
+                    {sectionRolls.map((roll) => (
                       <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
                     ))}
                   </ul>
                 </section>
-              )}
-
-              {atLab.length > 0 && (
-                <section>
-                  <div className="flex items-baseline justify-between mb-3">
-                    <div className="flex items-baseline gap-2">
-                      <h2 className="text-lg font-bold">At the Lab</h2>
-                      <span className="text-sm text-zinc-500">{atLab.length}</span>
-                    </div>
-                    {editing && (
-                      <button
-                        onClick={() => {
-                          const nums = atLab.map((r) => r.roll_number);
-                          const allSel = nums.every((n) => selected.has(n));
-                          setSelected((prev) => {
-                            const s = new Set(prev);
-                            if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
-                            else { nums.forEach((n) => s.add(n)); haptics.medium(); }
-                            return s;
-                          });
-                        }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${atLab.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
-                      >
-                        {atLab.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
-                      </button>
-                    )}
-                  </div>
-                  <ul>
-                    {atLab.map((roll) => (
-                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
-                    ))}
-                  </ul>
-                </section>
-              )}
+              ))}
             </div>
           )}
         </div>

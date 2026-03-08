@@ -34,17 +34,17 @@ scans_path must be set to write roll files.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
 
-		if cfg.WebAppURL == "" {
+		if cfg.URL() == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
 		}
-		if cfg.WebAppAPIKey == "" {
+		if cfg.APIKey() == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_api_key is not set in config"))
 		}
 
-		url := cfg.WebAppURL + "/api/export"
+		url := cfg.URL() + "/api/export"
 		req, err := http.NewRequest(http.MethodGet, url, nil)
 		cobra.CheckErr(err)
-		req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+		req.Header.Set("Authorization", "Bearer "+cfg.APIKey())
 
 		client := &http.Client{Timeout: 30 * time.Second}
 		resp, err := client.Do(req)

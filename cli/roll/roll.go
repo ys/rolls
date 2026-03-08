@@ -22,6 +22,7 @@ type Metadata struct {
 	LabAt           time.Time `yaml:"lab_at,omitempty"`
 	LabName         string    `yaml:"lab,omitempty"`
 	ScannedAt       time.Time `yaml:"scanned_at"`
+	ScannedAtSet    bool      `yaml:"-"` // true only when scanned_at was explicit in frontmatter
 	RollNumber      string    `yaml:"roll_number"`
 	Tags            []string  `yaml:"tags"`
 	Copyright       string
@@ -193,6 +194,7 @@ func FromMarkdown(path string) (Roll, error) {
 		case "scanned_at":
 			if t, err := ParseDate(value); err == nil {
 				metadata.ScannedAt = t
+				metadata.ScannedAtSet = true
 			}
 		case "processed_at":
 			if t, err := ParseDateTime(value); err == nil {
@@ -234,8 +236,8 @@ func GetRolls(scansPath string) (Rolls, error) {
 			return nil
 		}
 
-		// Only process markdown files
-		if filepath.Ext(path) != ".md" {
+		// Only process roll.md files
+		if filepath.Base(path) != "roll.md" {
 			return nil
 		}
 
@@ -441,6 +443,136 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 
 	return nil
+}
+
+// MergeFrom fills zero/empty fields in r.Metadata from src, and appends src.Content
+// if r.Content is empty. Primary (r) always wins on non-zero fields.
+func (r *Roll) MergeFrom(src Roll) {
+	m, s := &r.Metadata, src.Metadata
+	if m.CameraID == "" {
+		m.CameraID = s.CameraID
+	}
+	if m.FilmID == "" {
+		m.FilmID = s.FilmID
+	}
+	if m.ShotAt.IsZero() {
+		m.ShotAt = s.ShotAt
+	}
+	if m.FridgeAt.IsZero() {
+		m.FridgeAt = s.FridgeAt
+	}
+	if m.LabAt.IsZero() {
+		m.LabAt = s.LabAt
+	}
+	if m.LabName == "" {
+		m.LabName = s.LabName
+	}
+	if m.ScannedAt.IsZero() {
+		m.ScannedAt = s.ScannedAt
+	}
+	if m.ProcessedAt.IsZero() {
+		m.ProcessedAt = s.ProcessedAt
+	}
+	if m.UploadedAt.IsZero() {
+		m.UploadedAt = s.UploadedAt
+	}
+	if m.ArchivedAt.IsZero() {
+		m.ArchivedAt = s.ArchivedAt
+	}
+	if m.AlbumName == "" {
+		m.AlbumName = s.AlbumName
+	}
+	if len(m.Tags) == 0 {
+		m.Tags = s.Tags
+	}
+	if r.Content == "" {
+		r.Content = src.Content
+	}
+}
+
+// WriteRollMd serialises the roll's current metadata + content to roll.md.
+func (r *Roll) WriteRollMd() error {
+	var sb strings.Builder
+	m := r.Metadata
+	sb.WriteString("---\n")
+	sb.WriteString("roll_number: " + m.RollNumber + "\n")
+	if m.CameraID != "" {
+		sb.WriteString("camera: " + m.CameraID + "\n")
+	}
+	if m.FilmID != "" {
+		sb.WriteString("film: " + m.FilmID + "\n")
+	}
+	if !m.ShotAt.IsZero() {
+		sb.WriteString("shot_at: " + m.ShotAt.Format("2006-01-02") + "\n")
+	}
+	if !m.FridgeAt.IsZero() {
+		sb.WriteString("fridge_at: " + FormatDateTime(m.FridgeAt) + "\n")
+	}
+	if !m.LabAt.IsZero() {
+		sb.WriteString("lab_at: " + FormatDateTime(m.LabAt) + "\n")
+	}
+	if m.LabName != "" {
+		sb.WriteString("lab: " + m.LabName + "\n")
+	}
+	if !m.ScannedAt.IsZero() {
+		sb.WriteString("scanned_at: " + m.ScannedAt.Format("2006-01-02") + "\n")
+	}
+	if !m.ProcessedAt.IsZero() {
+		sb.WriteString("processed_at: " + FormatDateTime(m.ProcessedAt) + "\n")
+	}
+	if !m.UploadedAt.IsZero() {
+		sb.WriteString("uploaded_at: " + FormatDateTime(m.UploadedAt) + "\n")
+	}
+	if !m.ArchivedAt.IsZero() {
+		sb.WriteString("archived_at: " + FormatDateTime(m.ArchivedAt) + "\n")
+	}
+	if m.AlbumName != "" {
+		sb.WriteString("album_name: " + m.AlbumName + "\n")
+	}
+	if len(m.Tags) > 0 {
+		sb.WriteString("tags: " + strings.Join(m.Tags, ", ") + "\n")
+	}
+	sb.WriteString("---\n")
+	if r.Content != "" {
+		sb.WriteString(r.Content)
+		if !strings.HasSuffix(r.Content, "\n") {
+			sb.WriteByte('\n')
+		}
+	}
+	return os.WriteFile(filepath.Join(r.Folder, "roll.md"), []byte(sb.String()), 0644)
+}
+
+// SetCameraFilm rewrites the camera: and film: frontmatter lines in-place.
+// Pass empty string for a field to leave it unchanged.
+func (r *Roll) SetCameraFilm(cameraID, filmID string) error {
+	path := filepath.Join(r.Folder, "roll.md")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	parts := strings.Split(string(content), "---")
+	if len(parts) < 3 {
+		return fmt.Errorf("missing frontmatter in %s", path)
+	}
+	lines := strings.Split(parts[1], "\n")
+	for i, line := range lines {
+		kv := strings.SplitN(line, ":", 2)
+		if len(kv) != 2 {
+			continue
+		}
+		switch strings.TrimSpace(kv[0]) {
+		case "camera":
+			if cameraID != "" {
+				lines[i] = "camera: " + cameraID
+			}
+		case "film":
+			if filmID != "" {
+				lines[i] = "film: " + filmID
+			}
+		}
+	}
+	newContent := "---" + strings.Join(lines, "\n") + "---" + parts[2]
+	return os.WriteFile(path, []byte(newContent), 0644)
 }
 
 // SetArchived sets the archived timestamp for a roll

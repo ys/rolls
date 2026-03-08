@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Film } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
+import { getFilms } from "@/lib/queries";
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -9,14 +10,7 @@ function slugify(s: string): string {
 
 export async function GET() {
   const userId = await getUserId();
-  const rows = await sql<Film[]>`
-    SELECT f.*, COUNT(r.roll_number)::int AS roll_count
-    FROM films f
-    LEFT JOIN rolls r ON r.film_uuid = f.uuid AND r.user_id = ${userId}
-    WHERE f.user_id = ${userId}
-    GROUP BY f.uuid
-    ORDER BY COALESCE(f.nickname, f.brand || ' ' || f.name)
-  `;
+  const rows = await getFilms(userId);
   return NextResponse.json(rows);
 }
 

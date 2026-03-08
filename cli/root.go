@@ -11,8 +11,8 @@ import (
 var cfgFile string
 var cfg *roll.Config
 var verbose bool
+var envFlag string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "rolls",
 	Short: "Rolls allow you to manage your scans",
@@ -25,13 +25,8 @@ Workflow:
   push      — bulk-sync all local metadata to the web app
 
 Config lives in ~/.config/rolls/config.yml`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -42,18 +37,17 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/rolls/config.yml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
+	rootCmd.PersistentFlags().StringVar(&envFlag, "env", "", "environment to use (e.g. prod, local, staging)")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	var err error
 	cfg, err = roll.New(cfgFile)
 	cobra.CheckErr(err)
+	// --env flag overrides active_env from config for this invocation only
+	if envFlag != "" {
+		cfg.ActiveEnv = envFlag
+	}
 }

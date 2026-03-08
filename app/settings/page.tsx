@@ -1,16 +1,30 @@
-import { sql } from "@/lib/db";
+import { getUser } from "@/lib/request-context";
+import { getCameraCount, getFilmCount, getInviteCount } from "@/lib/queries";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
 const Chevron = () => (
-  <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg
+    className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+  >
     <path d="M9 18l6-6-6-6" />
   </svg>
 );
 
-function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function SettingsGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <section>
       <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1 mb-2">
@@ -53,12 +67,13 @@ function SettingsRow({
 }
 
 export default async function SettingsPage() {
-  const [[cameraRow], [filmRow]] = await Promise.all([
-    sql<{ camera_count: number }[]>`SELECT COUNT(*)::int AS camera_count FROM cameras`,
-    sql<{ film_count: number }[]>`SELECT COUNT(*)::int AS film_count FROM films`,
+  const { id: userId, role } = await getUser();
+
+  const [camera_count, film_count, invite_count] = await Promise.all([
+    getCameraCount(userId),
+    getFilmCount(userId),
+    role === "admin" ? getInviteCount(userId) : Promise.resolve(0),
   ]);
-  const camera_count = cameraRow?.camera_count ?? 0;
-  const film_count = filmRow?.film_count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -67,7 +82,14 @@ export default async function SettingsPage() {
 
       <SettingsGroup label="Library">
         <SettingsRow href="/cameras" label="Cameras" value={camera_count} />
-        <SettingsRow href="/films"   label="Films"   value={film_count} />
+        <SettingsRow href="/films" label="Films" value={film_count} />
+        {role === "admin" && (
+          <SettingsRow href="/invites" label="Invitations" value={invite_count} />
+        )}
+      </SettingsGroup>
+
+      <SettingsGroup label="Developer">
+        <SettingsRow href="/settings/api-keys" label="API Keys" />
       </SettingsGroup>
 
       <SettingsGroup label="Data">
