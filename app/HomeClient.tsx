@@ -79,13 +79,13 @@ function RollItem({ roll, editing, selected, onToggle }: {
         {(cam || film) && (
           <div className="flex items-center gap-2 mt-0.5 min-w-0">
             {cam && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
                 <Camera size={12} weight="bold" className="shrink-0" />{cam}
               </span>
             )}
             {cam && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
                 <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
               </span>
             )}

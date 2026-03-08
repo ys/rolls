@@ -80,7 +80,7 @@ export default function BottomNav() {
               <Icon
                 size={28}
                 weight={active ? "fill" : "regular"}
-                className={active ? "text-kodak-600 dark:text-kodak-400" : "text-zinc-400 dark:text-zinc-500"}
+                className={active ? "text-kodak-500 dark:text-kodak-400" : "text-zinc-400 dark:text-zinc-500"}
               />
             </Link>
           );
