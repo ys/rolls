@@ -95,6 +95,7 @@ export default function NewRollModal() {
       const roll = await resp.json();
       invalidateCache("rolls");
       haptics.success();
+      setOpen(false);
       router.push(`/roll/${roll.roll_number}`);
     } catch {
       setError("Network error — please try again");
