@@ -77,6 +77,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showDates, setShowDates] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
   const [editMeta, setEditMeta] = useState(false);
   const [metaForm, setMetaForm] = useState({
@@ -401,6 +403,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
     </div>
   );
 
+  async function handleDelete() {
+    setDeleting(true);
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
+    const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+    await fetch(`/api/rolls/${roll.roll_number}`, { method: "DELETE", headers });
+    invalidateCache("rolls");
+    router.push("/");
+  }
+
   return (
     <div>
       <BackButton />
@@ -447,6 +458,35 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           {datesSection}
         </>
       )}
+
+      {/* Delete */}
+      <div className="mt-2 mb-8 flex justify-center">
+        {confirmDelete ? (
+          <div className="flex gap-3 items-center">
+            <span className="text-xs text-zinc-400">Delete this roll?</span>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors"
+            >
+              {deleting ? "Deleting…" : "Yes, delete"}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="text-xs text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+          >
+            Delete roll
+          </button>
+        )}
+      </div>
     </div>
   );
 }

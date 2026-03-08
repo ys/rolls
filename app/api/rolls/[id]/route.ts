@@ -76,3 +76,18 @@ export async function PATCH(
   }
   return NextResponse.json(rows[0]);
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const userId = await getUserId();
+  const { id: roll_number } = await params;
+  const rows = await sql`
+    DELETE FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId} RETURNING roll_number
+  `;
+  if (rows.length === 0) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return new NextResponse(null, { status: 204 });
+}
