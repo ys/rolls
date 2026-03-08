@@ -18,6 +18,7 @@ export default function Sheet({
   const [expanded, setExpanded] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const startY = useRef(0);
 
   useEffect(() => { setMounted(true); }, []);
@@ -36,17 +37,19 @@ export default function Sheet({
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     e.currentTarget.setPointerCapture(e.pointerId);
     startY.current = e.clientY;
+    isDraggingRef.current = true;
     setIsDragging(true);
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!isDragging) return;
+    if (!isDraggingRef.current) return;
     const delta = e.clientY - startY.current;
     // Resistance when dragging up past natural position
     setDragOffset(delta > 0 ? delta : delta * 0.3);
   }
 
   function onPointerUp() {
+    isDraggingRef.current = false;
     setIsDragging(false);
     const offset = dragOffset;
     if (offset > 80) {
