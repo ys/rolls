@@ -34,6 +34,54 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* Font override via CSS variable (set by FontPicker via localStorage) */
 body {
   font-family: var(--app-font, "iA Writer Mono", ui-monospace, monospace);

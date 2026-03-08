@@ -6,8 +6,8 @@ const FONTS = [
   { id: "ia-writer-mono",  name: "iA Writer Mono",  stack: '"iA Writer Mono", ui-monospace, monospace',  url: null },
   { id: "departure-mono",  name: "Departure Mono",   stack: '"Departure Mono", ui-monospace, monospace',  url: "https://fonts.googleapis.com/css2?family=Departure+Mono&display=swap" },
   { id: "dm-mono",         name: "DM Mono",          stack: '"DM Mono", ui-monospace, monospace',         url: "https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" },
-  { id: "commit-mono",     name: "Commit Mono",      stack: '"Commit Mono", ui-monospace, monospace',     url: "https://fonts.googleapis.com/css2?family=Commit+Mono:ital,wght@0,100..700;1,100..700&display=swap" },
-  { id: "geist-mono",      name: "Geist Mono",       stack: '"Geist Mono", ui-monospace, monospace',      url: "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" },
+  { id: "commit-mono",     name: "Commit Mono",      stack: '"Commit Mono", ui-monospace, monospace',     url: null },
+  { id: "geist-mono",      name: "Geist Mono",       stack: '"Geist Mono", ui-monospace, monospace',      url: null },
   { id: "input-mono",      name: "Input Mono",       stack: '"Input Mono", ui-monospace, monospace',      url: null },
 ] as const;
 

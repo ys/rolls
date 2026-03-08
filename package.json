@@ -20,6 +20,7 @@
     "@simplewebauthn/browser": "^13.2.2",
     "@simplewebauthn/server": "^13.2.3",
     "@upstash/ratelimit": "^2.0.8",
+    "geist": "^1.7.0",
     "ioredis": "^5.10.0",
     "jose": "^6.2.0",
     "marked": "^17.0.3",
