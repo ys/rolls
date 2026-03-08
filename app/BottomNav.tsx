@@ -73,7 +73,7 @@ export default function BottomNav() {
             >
               {active && (
                 <span
-                  className="absolute inset-0 bg-kodak-500/12 dark:bg-kodak-400/15"
+                  className="absolute inset-0 bg-kodak-500/10 dark:bg-kodak-400/15"
                   style={{ borderRadius: 20 }}
                 />
               )}
