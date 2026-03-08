@@ -90,7 +90,7 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
       <h1 className="text-2xl font-bold mb-6">Edit Film</h1>
 
       <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-6">
-        ID: <span className="font-mono normal-case">{id}</span>
+        ID: <span className="normal-case">{id}</span>
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">

@@ -7,7 +7,7 @@ import { haptics } from "../lib/haptics";
 import { Images } from "pixelarticons/react/Images";
 import { Archive } from "pixelarticons/react/Archive";
 import { Chart } from "pixelarticons/react/Chart";
-import { SettingsCog } from "pixelarticons/react/SettingsCog";
+import { Settings2 } from "pixelarticons/react/Settings2";
 import { Plus } from "pixelarticons/react/Plus";
 
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
@@ -16,7 +16,7 @@ const TABS = [
   { href: "/",         label: "Rolls",    icon: Images,      match: (p: string) => p === "/" || p.startsWith("/roll/") },
   { href: "/archive",  label: "Archive",  icon: Archive,     match: (p: string) => p.startsWith("/archive") },
   { href: "/stats",    label: "Stats",    icon: Chart,       match: (p: string) => p === "/stats" },
-  { href: "/settings", label: "Settings", icon: SettingsCog, match: (p: string) => p.startsWith("/settings") || p.startsWith("/cameras") || p.startsWith("/films") },
+  { href: "/settings", label: "Settings", icon: Settings2, match: (p: string) => p.startsWith("/settings") || p.startsWith("/cameras") || p.startsWith("/films") },
 ];
 
 export default function BottomNav() {

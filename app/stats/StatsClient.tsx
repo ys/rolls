@@ -81,14 +81,14 @@ export default function StatsClient({
             <HeroStat label="Per year" value={avgPerYear} />
           </div>
 
-          {/* Scanned % pill */}
+          {/* Scanned % */}
           {totalRolls > 0 && (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 flex items-center justify-between border border-zinc-100 dark:border-transparent">
+            <div className="bg-white dark:bg-zinc-900 px-4 py-3 flex items-center justify-between border border-zinc-900 dark:border-zinc-100">
               <span className="text-sm text-zinc-500">Scanned or beyond</span>
               <div className="flex items-center gap-2">
-                <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
                   <div
-                    className="h-full bg-green-400 rounded-full"
+                    className="h-full bg-green-400"
                     style={{ width: `${pctScanned}%` }}
                   />
                 </div>
@@ -114,9 +114,9 @@ export default function StatsClient({
                   >
                     {status}
                   </span>
-                  <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-5 overflow-hidden">
+                  <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 h-5 overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${STATUS_BAR[status] ?? "bg-zinc-400"}`}
+                      className={`h-full transition-all ${STATUS_BAR[status] ?? "bg-zinc-400"}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -135,12 +135,12 @@ export default function StatsClient({
           <div className="space-y-2.5">
             {data.rollsPerYear.map((r) => (
               <div key={r.year} className="flex items-center gap-3">
-                <span className="font-mono text-sm w-10 shrink-0 text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm w-10 shrink-0 text-zinc-500 dark:text-zinc-400">
                   {r.year}
                 </span>
-                <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-6 overflow-hidden">
+                <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 h-6 overflow-hidden">
                   <div
-                    className="bg-amber-400 h-full rounded-full transition-all"
+                    className="bg-amber-400 h-full transition-all"
                     style={{ width: `${(r.count / maxPerYear) * 100}%` }}
                   />
                 </div>
@@ -182,7 +182,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl px-3 py-4 text-center border border-zinc-100 dark:border-transparent">
+    <div className="bg-white dark:bg-zinc-900 px-3 py-4 text-center border border-zinc-900 dark:border-zinc-100">
       <div className="text-2xl font-bold tabular-nums">{value}</div>
       <div className="text-[11px] text-zinc-500 mt-1 uppercase tracking-wide">
         {label}
@@ -212,9 +212,9 @@ function RankedList({
                 {r.count}
               </span>
             </div>
-            <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
               <div
-                className="h-full bg-amber-400 rounded-full transition-all"
+                className="h-full bg-amber-400 transition-all"
                 style={{ width: `${(r.count / max) * 100}%` }}
               />
             </div>

@@ -5,7 +5,7 @@ import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Camera } from "pixelarticons/react/Camera";
-import { Image } from "pixelarticons/react/Image";
+import { Clapperboard } from "pixelarticons/react/Clapperboard";
 import { ChevronRight } from "pixelarticons/react/ChevronRight";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
@@ -85,8 +85,8 @@ function Checkbox({ checked }: { checked: boolean }) {
           strokeWidth={3}
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
             d="M5 13l4 4L19 7"
           />
         </svg>
@@ -106,7 +106,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
           />
         ))}
       </div>
-      <span className="text-zinc-500 text-[13px] font-mono tracking-widest uppercase">
+      <span className="text-zinc-500 text-[13px] tracking-widest uppercase">
         {rollNumber}
       </span>
       <div className="absolute bottom-0 inset-x-0 flex justify-around px-2 py-1">
@@ -165,11 +165,11 @@ function GridCard({
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
+              <div className="text-white text-[13px] font-semibold leading-tight truncate">
                 {roll.roll_number}
               </div>
               {roll.push_pull != null && (
-                <span className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0">
+                <span className="text-[10px] font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0">
                   {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
                 </span>
               )}
@@ -271,11 +271,11 @@ function ListRow({
             {camera && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
               <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
-                <Image width={12} height={12} className="shrink-0" />{film}
+                <Clapperboard width={12} height={12} className="shrink-0" />{film}
               </span>
             )}
             {roll.push_pull != null && (
-              <span className="text-[12px] font-mono text-zinc-400 dark:text-zinc-500 shrink-0">
+              <span className="text-[12px] text-zinc-400 dark:text-zinc-500 shrink-0">
                 {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
               </span>
             )}

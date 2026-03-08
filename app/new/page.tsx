@@ -235,7 +235,7 @@ export default function NewRollPage() {
                         if (active) { setPushPull(null); setPushPullCustom(""); }
                         else { setPushPull(v); setPushPullCustom(""); }
                       }}
-                      className={`px-3 py-1 rounded-full text-sm font-mono border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
                     >{label}</button>
                   );
                 })}
@@ -249,7 +249,7 @@ export default function NewRollPage() {
                     setPushPull(raw !== "" ? parseFloat(raw) : null);
                   }}
                   placeholder="other"
-                  className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-sm text-center font-mono focus:outline-none transition-colors"
+                  className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-sm text-center focus:outline-none transition-colors"
                 />
               </div>
             </div>

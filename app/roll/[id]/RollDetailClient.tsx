@@ -167,7 +167,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         [&_p]:mb-3 [&_p]:leading-relaxed
         [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul_li]:mb-1
         [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol_li]:mb-1
-        [&_code]:bg-zinc-100 dark:[&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+        [&_code]:bg-zinc-100 dark:[&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs 
         [&_pre]:bg-zinc-100 dark:[&_pre]:bg-zinc-800 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:mb-3 [&_pre]:overflow-x-auto
         [&_pre_code]:bg-transparent [&_pre_code]:p-0
         [&_blockquote]:border-l-2 [&_blockquote]:border-zinc-300 dark:[&_blockquote]:border-zinc-600 [&_blockquote]:pl-3 [&_blockquote]:text-zinc-600 dark:[&_blockquote]:text-zinc-400 [&_blockquote]:mb-3
@@ -208,7 +208,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             <md-unordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">• List</button></md-unordered-list>
             <md-ordered-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">1. List</button></md-ordered-list>
             <md-task-list><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">☐ Task</button></md-task-list>
-            <md-code><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-mono transition-colors">&lt;/&gt;</button></md-code>
+            <md-code><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">&lt;/&gt;</button></md-code>
             <md-quote><button type="button" className="px-2 py-1 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm transition-colors">❝ Quote</button></md-quote>
           </markdown-toolbar>
           <textarea
@@ -217,7 +217,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             onChange={(e) => setNotes(e.target.value)}
             rows={8}
             placeholder="Write notes in markdown…"
-            className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-sm focus:outline-none transition-colors resize-none font-mono"
+            className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-sm focus:outline-none transition-colors resize-none"
           />
         </>
       ) : notesPreview}
@@ -329,7 +329,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                         setMetaForm((f) => ({ ...f, push_pull: v, push_pull_custom: "" }));
                       }
                     }}
-                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
+                    className={`px-3 py-1 rounded-full text-xs border transition-colors ${
                       active
                         ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
                         : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"
@@ -352,7 +352,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                   }));
                 }}
                 placeholder="other"
-                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center font-mono focus:outline-none transition-colors"
+                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -580,14 +580,14 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                       if (active) setMetaForm((f) => ({ ...f, push_pull: null, push_pull_custom: "" }));
                       else setMetaForm((f) => ({ ...f, push_pull: v, push_pull_custom: "" }));
                     }}
-                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
+                    className={`px-3 py-1 rounded-full text-xs border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
                   >{label}</button>
                 );
               })}
               <input type="number" step="0.5" value={metaForm.push_pull_custom}
                 onChange={(e) => { const raw = e.target.value; setMetaForm((f) => ({ ...f, push_pull_custom: raw, push_pull: raw !== "" ? parseFloat(raw) : null })); }}
                 placeholder="other"
-                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center font-mono focus:outline-none transition-colors"
+                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -643,7 +643,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
+          <h1 className="text-3xl font-bold">{roll.roll_number}</h1>
           <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
             {status}
           </span>

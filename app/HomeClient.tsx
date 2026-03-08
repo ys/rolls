@@ -5,7 +5,7 @@ import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Camera } from "pixelarticons/react/Camera";
-import { Image } from "pixelarticons/react/Image";
+import { Clapperboard } from "pixelarticons/react/Clapperboard";
 import { ChevronRight } from "pixelarticons/react/ChevronRight";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
@@ -54,7 +54,7 @@ function Checkbox({ checked }: { checked: boolean }) {
     <div className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-400 dark:border-zinc-600"}`}>
       {checked && (
         <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          <path strokeLinecap="square" strokeLinejoin="miter" d="M5 13l4 4L19 7" />
         </svg>
       )}
     </div>
@@ -88,7 +88,7 @@ function RollItem({ roll, editing, selected, onToggle }: {
             {cam && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
               <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
-                <Image width={12} height={12} className="shrink-0" />{film}
+                <Clapperboard width={12} height={12} className="shrink-0" />{film}
               </span>
             )}
           </div>

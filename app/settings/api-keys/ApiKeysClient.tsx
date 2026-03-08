@@ -27,7 +27,7 @@ function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
   return (
-    <button onClick={copy} className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity break-all text-left">
+    <button onClick={copy} className="text-xs text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity break-all text-left">
       {copied ? "Copied!" : text}
     </button>
   );
@@ -98,7 +98,7 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
           </p>
           <CopyButton text={newKey} />
           <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70">
-            Tap to copy. Use it in your CLI config as <code className="font-mono">web_app_api_key</code>, or run <code className="font-mono">rolls login</code>.
+            Tap to copy. Use it in your CLI config as <code className="">web_app_api_key</code>, or run <code className="">rolls login</code>.
           </p>
           <button
             onClick={() => setNewKey(null)}
