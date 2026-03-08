@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { Camera, FilmStrip } from "@phosphor-icons/react";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
@@ -232,7 +233,6 @@ function ListRow({
   const status = rollStatus(roll);
   const camera = cameraLabel(roll);
   const film = filmLabel(roll);
-  const subtitle = [camera, film].filter(Boolean).join(" · ");
   const dateStr = roll.scanned_at
     ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
         month: "short",
@@ -259,11 +259,21 @@ function ListRow({
             </span>
           )}
         </div>
-        {subtitle && (
-          <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">
-            {subtitle}
+        {(camera || film) && (
+          <div className="flex items-center gap-2 mt-0.5 min-w-0">
+            {camera && (
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+                <Camera size={12} weight="bold" className="shrink-0" />{camera}
+              </span>
+            )}
+            {camera && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
+            {film && (
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+                <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
+              </span>
+            )}
             {roll.push_pull != null && (
-              <span className="ml-1.5 text-[12px] font-mono text-zinc-400 dark:text-zinc-500">
+              <span className="text-[12px] font-mono text-zinc-400 dark:text-zinc-500 shrink-0">
                 {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
               </span>
             )}
