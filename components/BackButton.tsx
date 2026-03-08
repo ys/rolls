@@ -8,7 +8,7 @@ export default function BackButton({ label = "Back" }: { label?: string }) {
   return (
     <button
       onClick={() => { haptics.light(); router.back(); }}
-      className="flex items-center gap-0.5 text-kodak-500 dark:text-kodak-400 font-semibold text-[17px] active:opacity-40 transition-opacity -ml-1 mb-4"
+      className="flex items-center gap-0.5 text-amber-500 dark:text-amber-400 font-semibold text-[17px] active:opacity-40 transition-opacity -ml-1 mb-4"
     >
       <svg
         width="12" height="20" viewBox="0 0 12 20"

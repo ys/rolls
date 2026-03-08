@@ -12,9 +12,9 @@ export default function NewRollFab() {
       href="/new"
       aria-label="New roll"
       className="fixed right-4 z-20 w-16 h-16 rounded-full flex items-center justify-center
-        bg-gradient-to-br from-yellow-300 via-kodak-400 to-orange-500
+        bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500
         text-white
-        shadow-2xl shadow-kodak-400/60
+        shadow-2xl shadow-amber-400/60
         active:scale-95 transition-transform"
       style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
     >

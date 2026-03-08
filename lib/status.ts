@@ -20,7 +20,7 @@ export function rollStatus(roll: RollStatusData): RollStatus {
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-  LOADED:    "bg-kodak-100 dark:bg-kodak-900 text-kodak-800 dark:text-kodak-300",
+  LOADED:    "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300",
   FRIDGE:    "bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-300",
   LAB:       "bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-300",
   SCANNED:   "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300",
@@ -30,7 +30,7 @@ export const STATUS_COLORS: Record<string, string> = {
 };
 
 export const STATUS_BORDER: Record<string, string> = {
-  LOADED:    "border-l-4 border-l-kodak-400",
+  LOADED:    "border-l-4 border-l-amber-400",
   FRIDGE:    "border-l-4 border-l-cyan-400",
   LAB:       "border-l-4 border-l-orange-400",
   SCANNED:   "border-l-4 border-l-green-400",

@@ -73,15 +73,14 @@ export default function BottomNav() {
             >
               {active && (
                 <span
-                  className="absolute inset-0"
-                  style={{ borderRadius: 20, background: "rgba(255,149,0,0.12)" }}
+                  className="absolute inset-0 bg-amber-500/10 dark:bg-amber-400/15"
+                  style={{ borderRadius: 20 }}
                 />
               )}
               <Icon
                 size={28}
                 weight={active ? "fill" : "regular"}
-                style={active ? { color: "#FF9500" } : undefined}
-                className={active ? undefined : "text-zinc-400 dark:text-zinc-500"}
+                className={active ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
               />
             </Link>
           );
