@@ -2,10 +2,17 @@ package cli
 
 import (
 	"bufio"
+	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -114,10 +121,16 @@ Example:
 		keyFlag, _ := cmd.Flags().GetString("key")
 		apiKey := keyFlag
 		if apiKey == "" {
-			fmt.Printf("\nCreate a key at: %s/settings/api-keys\n\n", webURL)
-			fmt.Print("API key: ")
-			input, _ := reader.ReadString('\n')
-			apiKey = strings.TrimSpace(input)
+			var loginErr error
+			apiKey, loginErr = browserLogin(webURL, name)
+			if loginErr != nil {
+				// Fall back to manual paste
+				fmt.Printf("\nCould not complete browser login (%v).\n", loginErr)
+				fmt.Printf("Create a key at: %s/settings/api-keys\n\n", webURL)
+				fmt.Print("API key: ")
+				input, _ := reader.ReadString('\n')
+				apiKey = strings.TrimSpace(input)
+			}
 		}
 		if apiKey == "" {
 			return fmt.Errorf("API key is required")
@@ -172,6 +185,77 @@ var envRemoveCmd = &cobra.Command{
 		fmt.Printf("Removed environment %q\n", name)
 		return nil
 	},
+}
+
+// browserLogin starts a local HTTP server, opens the web app's CLI auth page,
+// and waits for the API key to be delivered via redirect callback.
+func browserLogin(webURL, envName string) (string, error) {
+	// Find a free port
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return "", fmt.Errorf("could not start local server: %w", err)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	ln.Close()
+
+	// Generate a random state token to prevent CSRF
+	stateBytes := make([]byte, 16)
+	if _, err := rand.Read(stateBytes); err != nil {
+		return "", err
+	}
+	state := hex.EncodeToString(stateBytes)
+
+	keyCh := make(chan string, 1)
+	errCh := make(chan error, 1)
+
+	srv := &http.Server{Addr: fmt.Sprintf("127.0.0.1:%d", port)}
+	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("state") != state {
+			errCh <- fmt.Errorf("state mismatch — possible CSRF")
+			http.Error(w, "invalid state", http.StatusBadRequest)
+			return
+		}
+		key := r.URL.Query().Get("key")
+		if key == "" {
+			errCh <- fmt.Errorf("no key in callback")
+			http.Error(w, "no key", http.StatusBadRequest)
+			return
+		}
+		fmt.Fprintln(w, "<html><body><p>API key received! You can close this tab.</p></body></html>")
+		keyCh <- key
+	})
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+		}
+	}()
+
+	label := "CLI " + envName
+	callback := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
+	params := url.Values{
+		"callback": {callback},
+		"label":    {label},
+		"state":    {state},
+	}
+	authURL := webURL + "/api/auth/cli-token?" + params.Encode()
+
+	fmt.Printf("Opening browser for login…\n  %s\n", authURL)
+	exec.Command("open", authURL).Start() //nolint:errcheck
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	defer srv.Shutdown(context.Background()) //nolint:errcheck
+
+	select {
+	case key := <-keyCh:
+		fmt.Println("Login successful.")
+		return key, nil
+	case err := <-errCh:
+		return "", err
+	case <-ctx.Done():
+		return "", fmt.Errorf("timed out waiting for browser login")
+	}
 }
 
 func init() {
