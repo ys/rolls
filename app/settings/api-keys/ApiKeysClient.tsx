@@ -27,7 +27,7 @@ function CopyButton({ text }: { text: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
   return (
-    <button onClick={copy} className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity break-all text-left">
+    <button onClick={copy} className="text-xs font-mono text-kodak-600 dark:text-kodak-400 hover:opacity-70 transition-opacity break-all text-left">
       {copied ? "Copied!" : text}
     </button>
   );
@@ -92,17 +92,17 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
 
       {/* One-time new key banner */}
       {newKey && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-3">
-          <p className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-400 font-medium">
+        <div className="mb-6 p-4 rounded-2xl bg-kodak-50 dark:bg-kodak-950/30 border border-kodak-200 dark:border-kodak-800 space-y-3">
+          <p className="text-[10px] uppercase tracking-widest text-kodak-700 dark:text-kodak-400 font-medium">
             Save this key — it won't be shown again
           </p>
           <CopyButton text={newKey} />
-          <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70">
+          <p className="text-[11px] text-kodak-600/70 dark:text-kodak-500/70">
             Tap to copy. Use it in your CLI config as <code className="font-mono">web_app_api_key</code>, or run <code className="font-mono">rolls login</code>.
           </p>
           <button
             onClick={() => setNewKey(null)}
-            className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity"
+            className="text-[10px] uppercase tracking-widest text-kodak-600 dark:text-kodak-400 hover:opacity-70 transition-opacity"
           >
             Dismiss
           </button>

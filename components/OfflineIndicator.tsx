@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
  * - Listens to online/offline events
  * - Auto-dismisses when connection is restored
  * - Slide-down animation
- * - Native-looking amber warning banner
+ * - Native-looking kodak warning banner
  */
 export default function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);
@@ -58,7 +58,7 @@ export default function OfflineIndicator() {
       <div
         className={`px-4 py-3 text-center text-sm font-medium ${
           isOffline
-            ? "bg-amber-500 dark:bg-amber-600 text-white"
+            ? "bg-kodak-500 dark:bg-kodak-600 text-white"
             : "bg-green-500 dark:bg-green-600 text-white"
         }`}
       >

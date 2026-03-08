@@ -117,7 +117,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
             isRefreshing
-              ? "bg-amber-500 dark:bg-amber-600"
+              ? "bg-kodak-500 dark:bg-kodak-600"
               : isTriggered
               ? "bg-green-500 dark:bg-green-600"
               : "bg-zinc-300 dark:bg-zinc-700"

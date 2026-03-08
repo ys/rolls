@@ -48,7 +48,7 @@ function filmLabel(roll: RollRow): string {
 
 function Checkbox({ checked }: { checked: boolean }) {
   return (
-    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}>
+    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-kodak-400 border-kodak-400" : "border-zinc-300 dark:border-zinc-600"}`}>
       {checked && (
         <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -237,7 +237,7 @@ export default function HomeClient() {
                             return s;
                           });
                         }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-kodak-500 dark:text-kodak-400" : "text-zinc-400 dark:text-zinc-500"}`}
                       >
                         {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
                       </button>
@@ -273,7 +273,7 @@ export default function HomeClient() {
             <button
               onClick={exitEdit}
               disabled={exiting}
-              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+              className="text-[15px] font-semibold text-kodak-500 dark:text-kodak-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
             >
               Done
             </button>

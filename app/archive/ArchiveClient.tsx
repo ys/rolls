@@ -71,7 +71,7 @@ function filmLabel(roll: RollRow): string {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-kodak-400 border-kodak-400" : "border-zinc-300 dark:border-zinc-600"}`}
     >
       {checked && (
         <svg
@@ -200,7 +200,7 @@ function GridCard({
           onToggle();
           haptics.light();
         }}
-        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
+        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-kodak-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
       >
         {inner}
       </button>
@@ -639,7 +639,7 @@ export default function ArchiveClient() {
                     {editing && (
                       <button
                         onClick={toggleYear}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-kodak-500 dark:text-kodak-400" : "text-zinc-400 dark:text-zinc-500"}`}
                       >
                         {allYearSelected ? "Deselect" : "Select all"}
                       </button>
@@ -699,14 +699,14 @@ export default function ArchiveClient() {
               <button
                 onClick={exitEdit}
                 disabled={exiting}
-                className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+                className="text-[15px] font-semibold text-kodak-500 dark:text-kodak-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
               >
                 Done
               </button>
               <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
               <button
                 onClick={selectAll}
-                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
+                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-kodak-500 dark:text-kodak-400" : "text-zinc-500 dark:text-zinc-400"}`}
               >
                 {allSelected ? "Deselect All" : "All"}
               </button>

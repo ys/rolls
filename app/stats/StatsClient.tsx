@@ -6,7 +6,7 @@ import { STATUS_ORDER } from "@/lib/status";
 
 // Solid bar colors per status
 const STATUS_BAR: Record<string, string> = {
-  LOADED: "bg-amber-400",
+  LOADED: "bg-kodak-400",
   FRIDGE: "bg-cyan-400",
   LAB: "bg-orange-400",
   SCANNED: "bg-green-400",
@@ -16,7 +16,7 @@ const STATUS_BAR: Record<string, string> = {
 };
 
 const STATUS_LABEL_COLOR: Record<string, string> = {
-  LOADED: "text-amber-600 dark:text-amber-400",
+  LOADED: "text-kodak-600 dark:text-kodak-400",
   FRIDGE: "text-cyan-600 dark:text-cyan-400",
   LAB: "text-orange-600 dark:text-orange-400",
   SCANNED: "text-green-600 dark:text-green-400",
@@ -140,7 +140,7 @@ export default function StatsClient({
                 </span>
                 <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-6 overflow-hidden">
                   <div
-                    className="bg-amber-400 h-full rounded-full transition-all"
+                    className="bg-kodak-400 h-full rounded-full transition-all"
                     style={{ width: `${(r.count / maxPerYear) * 100}%` }}
                   />
                 </div>
@@ -214,7 +214,7 @@ function RankedList({
             </div>
             <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-amber-400 rounded-full transition-all"
+                className="h-full bg-kodak-400 rounded-full transition-all"
                 style={{ width: `${(r.count / max) * 100}%` }}
               />
             </div>
