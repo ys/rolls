@@ -69,12 +69,13 @@ export default function BottomNav() {
               onClick={() => haptics.light()}
               className="flex-1 flex items-center justify-center h-full active:opacity-40 transition-opacity"
             >
-              <Icon
-                width={24}
-                height={24}
-                className={active ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}
-                style={active ? { filter: "drop-shadow(0 0 5px rgb(245 158 11 / 0.7))" } : undefined}
-              />
+              <span className={`flex items-center justify-center w-10 h-8 border-2 ${active ? "bg-amber-500 border-amber-500 pixel-corners [--pc-bg:white] dark:[--pc-bg:rgb(9_9_11)]" : "border-transparent"}`}>
+                <Icon
+                  width={20}
+                  height={20}
+                  className={active ? "text-white" : "text-zinc-400 dark:text-zinc-500"}
+                />
+              </span>
             </Link>
           );
         })}

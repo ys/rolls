@@ -83,7 +83,7 @@ export default function StatsClient({
 
           {/* Scanned % */}
           {totalRolls > 0 && (
-            <div className="bg-white dark:bg-zinc-900 px-4 py-3 flex items-center justify-between border border-zinc-900 dark:border-zinc-100">
+            <div className="bg-white dark:bg-zinc-900 px-4 py-3 flex items-center justify-between border-2 border-zinc-900 dark:border-zinc-100 pixel-corners [--pc-bg:white] dark:[--pc-bg:rgb(9_9_11)]">
               <span className="text-sm text-zinc-500">Scanned or beyond</span>
               <div className="flex items-center gap-2">
                 <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
@@ -110,7 +110,7 @@ export default function StatsClient({
               return (
                 <div key={status} className="flex items-center gap-3">
                   <span
-                    className={`text-xs font-semibold w-20 shrink-0 ${STATUS_LABEL_COLOR[status]}`}
+                    className={`text-xs font-semibold w-20 shrink-0 border-2 border-current px-2 py-1 pixel-corners [--pc-bg:white] dark:[--pc-bg:rgb(9_9_11)] ${STATUS_LABEL_COLOR[status]}`}
                   >
                     {status}
                   </span>
@@ -135,7 +135,7 @@ export default function StatsClient({
           <div className="space-y-2.5">
             {data.rollsPerYear.map((r) => (
               <div key={r.year} className="flex items-center gap-3">
-                <span className="text-sm w-10 shrink-0 text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm w-12 shrink-0 text-center text-zinc-500 dark:text-zinc-400 border-2 border-zinc-300 dark:border-zinc-600 px-1 py-1 pixel-corners [--pc-bg:white] dark:[--pc-bg:rgb(9_9_11)]">
                   {r.year}
                 </span>
                 <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 h-6 overflow-hidden">
@@ -182,7 +182,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 px-3 py-4 text-center border border-zinc-900 dark:border-zinc-100">
+    <div className="bg-white dark:bg-zinc-900 px-3 py-4 text-center border-2 border-zinc-900 dark:border-zinc-100 pixel-corners [--pc-bg:white] dark:[--pc-bg:rgb(9_9_11)]">
       <div className="text-2xl font-bold tabular-nums">{value}</div>
       <div className="text-[11px] text-zinc-500 mt-1 uppercase tracking-wide">
         {label}
