@@ -49,10 +49,10 @@ export default function RootLayout({
         <meta name="msapplication-square150x150logo" content="/api/icon?size=150" />
         <meta name="msapplication-square310x310logo" content="/api/icon?size=310" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        {/* Restore theme preference before paint to avoid flash */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}})()` }} />
+        {/* Restore theme + font preference before paint to avoid flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}var f=localStorage.getItem('app-font');if(f){document.documentElement.style.setProperty('--app-font',f)}})()` }} />
       </head>
-      <body className="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen font-mono">
+      <body className="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
         <OfflineIndicator />
         <SwipeNavigation />
         <main

@@ -34,6 +34,11 @@
   font-display: swap;
 }
 
+/* Font override via CSS variable (set by FontPicker via localStorage) */
+body {
+  font-family: var(--app-font, "iA Writer Mono", ui-monospace, monospace);
+}
+
 /* Nav ↔ edit bar flip animations */
 @keyframes navFlipOut {
   0%   { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
