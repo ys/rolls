@@ -53,7 +53,7 @@ export default function BottomNav() {
     >
       {/* Tab pill */}
       <div
-        className="pointer-events-auto flex items-center gap-0.5 px-2 rounded-full bg-white/70 dark:bg-zinc-900/80 backdrop-blur-3xl border border-zinc-900/5 dark:border-white/10"
+        className="pointer-events-auto flex items-center gap-0.5 px-2 rounded-full bg-white/40 dark:bg-zinc-900/60 backdrop-blur-3xl border border-white/60 dark:border-white/10"
         style={{
           ...animStyle,
           height: 64,
@@ -92,12 +92,13 @@ export default function BottomNav() {
         href="/new"
         aria-label="New roll"
         onClick={() => haptics.medium()}
-        className="pointer-events-auto flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-b from-amber-400 to-orange-500 text-white active:scale-90 transition-transform"
+        className="pointer-events-auto flex-shrink-0 flex items-center justify-center rounded-full active:scale-90 transition-transform"
         style={{
           ...animStyle,
           width: 64,
           height: 64,
-          boxShadow: "0 8px 24px rgba(234,88,12,0.45), 0 2px 6px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
+          background: "linear-gradient(160deg, #fbbf24 0%, #f97316 100%)",
+          boxShadow: "0 8px 24px rgba(234,88,12,0.5), 0 2px 6px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3)",
         }}
       >
         <Plus size={26} weight="bold" color="white" />
