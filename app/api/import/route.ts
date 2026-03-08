@@ -103,13 +103,13 @@ export async function POST(request: NextRequest) {
         ${r.album_name ?? null}, ${r.tags ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null}
       )
       ON CONFLICT (user_id, roll_number) DO UPDATE SET
-        camera_uuid      = EXCLUDED.camera_uuid,
-        film_uuid        = EXCLUDED.film_uuid,
+        camera_uuid      = COALESCE(EXCLUDED.camera_uuid, rolls.camera_uuid),
+        film_uuid        = COALESCE(EXCLUDED.film_uuid, rolls.film_uuid),
         shot_at          = EXCLUDED.shot_at,
         fridge_at        = EXCLUDED.fridge_at,
         lab_at           = EXCLUDED.lab_at,
         lab_name         = EXCLUDED.lab_name,
-        scanned_at       = EXCLUDED.scanned_at,
+        scanned_at       = COALESCE(EXCLUDED.scanned_at, rolls.scanned_at),
         processed_at     = EXCLUDED.processed_at,
         uploaded_at      = EXCLUDED.uploaded_at,
         archived_at      = EXCLUDED.archived_at,

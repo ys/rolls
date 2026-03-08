@@ -140,13 +140,16 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 				return err
 			}
 
-			// Always stamp processed_at in local roll.md
+			// Always stamp processed_at (and scanned_at if not set) in local roll.md
 			now := time.Now().UTC()
 			mdPath := filepath.Join(r.Folder, "roll.md")
 			if localRoll, err := roll.FromMarkdown(mdPath); err == nil {
 				localRoll.Metadata.ProcessedAt = now
-				if err := localRoll.UpdateMetadata(); err != nil {
-					fmt.Fprintf(os.Stderr, "  warn: could not update processed_at in roll.md: %v\n", err)
+				if !localRoll.Metadata.ScannedAtSet {
+					localRoll.Metadata.ScannedAt = now
+				}
+				if err := localRoll.WriteRollMd(); err != nil {
+					fmt.Fprintf(os.Stderr, "  warn: could not update roll.md: %v\n", err)
 				}
 			}
 

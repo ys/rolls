@@ -206,8 +206,8 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			})
 		}
 
-		// For unknown camera/film IDs: try fuzzy-match to a known entry first,
-		// only fall back to a stub if nothing similar is found.
+		// For unknown camera/film IDs: try fuzzy-match to a known entry.
+		// Never add stubs — unknown IDs are skipped (camera_uuid stays null in the DB).
 		cameraRemap := make(map[string]string)
 		filmRemap := make(map[string]string)
 
@@ -217,12 +217,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 					fmt.Printf("  mapped camera %q → %q\n", r.Metadata.CameraID, canonID)
 					cameraRemap[r.Metadata.CameraID] = canonID
 				} else {
-					fmt.Printf("  note: unknown camera %q — adding stub\n", r.Metadata.CameraID)
-					payload.Cameras = append(payload.Cameras, cameraJSON{
-						ID:    r.Metadata.CameraID,
-						Brand: r.Metadata.CameraID,
-						Model: "unknown",
-					})
+					fmt.Fprintf(os.Stderr, "  warn: unknown camera %q (no match in cameras.yml) — skipping\n", r.Metadata.CameraID)
 				}
 				knownCameras[r.Metadata.CameraID] = true
 			}
@@ -231,13 +226,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 					fmt.Printf("  mapped film   %q → %q\n", r.Metadata.FilmID, canonID)
 					filmRemap[r.Metadata.FilmID] = canonID
 				} else {
-					fmt.Printf("  note: unknown film %q — adding stub\n", r.Metadata.FilmID)
-					payload.Films = append(payload.Films, filmJSON{
-						ID:    r.Metadata.FilmID,
-						Brand: r.Metadata.FilmID,
-						Name:  "unknown",
-						Color: true,
-					})
+					fmt.Fprintf(os.Stderr, "  warn: unknown film %q (no match in films.yml) — skipping\n", r.Metadata.FilmID)
 				}
 				knownFilms[r.Metadata.FilmID] = true
 			}
@@ -251,6 +240,12 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			filmID := r.Metadata.FilmID
 			if mapped, ok := filmRemap[filmID]; ok {
 				filmID = mapped
+			}
+			if cameraID == "" {
+				fmt.Fprintf(os.Stderr, "  warn: %s has no camera\n", r.Metadata.RollNumber)
+			}
+			if filmID == "" {
+				fmt.Fprintf(os.Stderr, "  warn: %s has no film\n", r.Metadata.RollNumber)
 			}
 			rj := rollJSON{
 				RollNumber: r.Metadata.RollNumber,
@@ -273,7 +268,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 				t := r.Metadata.LabAt
 				rj.LabAt = &t
 			}
-			if !r.Metadata.ScannedAt.IsZero() {
+			if r.Metadata.ScannedAtSet {
 				t := r.Metadata.ScannedAt
 				rj.ScannedAt = &t
 			}
@@ -318,14 +313,17 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 				len(payload.Cameras), len(payload.Films), len(payload.Rolls))
 		}
 
-		var allowRolls map[string]bool
-		if year != 0 {
-			allowRolls = make(map[string]bool, len(payload.Rolls))
-			for _, r := range payload.Rolls {
-				allowRolls[r.RollNumber] = true
+		skipSheets, _ := cmd.Flags().GetBool("skip-contact-sheets")
+		if !skipSheets {
+			var allowRolls map[string]bool
+			if year != 0 {
+				allowRolls = make(map[string]bool, len(payload.Rolls))
+				for _, r := range payload.Rolls {
+					allowRolls[r.RollNumber] = true
+				}
 			}
+			uploadContactSheets(dryRun, payload.Rolls, allowRolls)
 		}
-		uploadContactSheets(dryRun, payload.Rolls, allowRolls)
 	},
 }
 
@@ -412,4 +410,5 @@ func init() {
 	pushCmd.Flags().Bool("dry-run", false, "Show what would be pushed without sending data")
 	pushCmd.Flags().Bool("sheets", false, "Re-upload all contact sheets to R2 (skip metadata import)")
 	pushCmd.Flags().Int("year", 0, "Only push rolls from this year")
+	pushCmd.Flags().Bool("skip-contact-sheets", false, "Skip contact sheet upload")
 }

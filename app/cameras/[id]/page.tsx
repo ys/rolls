@@ -11,9 +11,11 @@ export default function EditCameraPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const router = useRouter();
   const [form, setForm] = useState({ brand: "", model: "", nickname: "", format: "135" });
+  const [rollCount, setRollCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
@@ -25,13 +27,14 @@ export default function EditCameraPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     fetch(`/api/cameras/${encodeURIComponent(id)}`, { headers: headers() })
       .then((r) => r.json())
-      .then((c: Camera) => {
+      .then((c: Camera & { roll_count: number }) => {
         setForm({
           brand: c.brand ?? "",
           model: c.model ?? "",
           nickname: c.nickname ?? "",
           format: String(c.format ?? 135),
         });
+        setRollCount(c.roll_count ?? 0);
         setLoading(false);
       });
   }, [id]);
@@ -58,6 +61,23 @@ export default function EditCameraPage({ params }: { params: Promise<{ id: strin
     setSaved(true);
     setSaving(false);
     router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this camera? This cannot be undone.")) return;
+    setDeleting(true);
+    setError("");
+    const resp = await fetch(`/api/cameras/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: headers(),
+    });
+    if (resp.ok) {
+      router.push("/cameras");
+    } else {
+      const data = await resp.json();
+      setError(data.error ?? "Failed to delete");
+      setDeleting(false);
+    }
   }
 
   if (loading) return <div className="text-zinc-500 text-sm text-center py-16">Loading…</div>;
@@ -96,6 +116,14 @@ export default function EditCameraPage({ params }: { params: Promise<{ id: strin
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save Changes"}
         </FormButton>
       </form>
+
+      {rollCount === 0 && (
+        <div className="mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+          <FormButton variant="secondary" onClick={handleDelete} disabled={deleting}>
+            {deleting ? "Deleting…" : "Delete Camera"}
+          </FormButton>
+        </div>
+      )}
     </div>
   );
 }

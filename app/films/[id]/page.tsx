@@ -11,9 +11,11 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
   const { id } = use(params);
   const router = useRouter();
   const [form, setForm] = useState({ brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
+  const [rollCount, setRollCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
@@ -25,7 +27,7 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     fetch(`/api/films/${encodeURIComponent(id)}`, { headers: headers() })
       .then((r) => r.json())
-      .then((f: Film) => {
+      .then((f: Film & { roll_count: number }) => {
         setForm({
           brand: f.brand ?? "",
           name: f.name ?? "",
@@ -34,6 +36,7 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
           color: f.color ?? true,
           show_iso: f.show_iso ?? false,
         });
+        setRollCount(f.roll_count ?? 0);
         setLoading(false);
       });
   }, [id]);
@@ -60,6 +63,23 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
     setSaved(true);
     setSaving(false);
     router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this film? This cannot be undone.")) return;
+    setDeleting(true);
+    setError("");
+    const resp = await fetch(`/api/films/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: headers(),
+    });
+    if (resp.ok) {
+      router.push("/films");
+    } else {
+      const data = await resp.json();
+      setError(data.error ?? "Failed to delete");
+      setDeleting(false);
+    }
   }
 
   if (loading) return <div className="text-zinc-500 text-sm text-center py-16">Loading…</div>;
@@ -105,6 +125,14 @@ export default function EditFilmPage({ params }: { params: Promise<{ id: string 
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save Changes"}
         </FormButton>
       </form>
+
+      {rollCount === 0 && (
+        <div className="mt-12 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+          <FormButton variant="secondary" onClick={handleDelete} disabled={deleting}>
+            {deleting ? "Deleting…" : "Delete Film"}
+          </FormButton>
+        </div>
+      )}
     </div>
   );
 }
