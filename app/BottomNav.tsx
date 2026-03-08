@@ -53,7 +53,7 @@ export default function BottomNav() {
     >
       {/* Tab pill */}
       <div
-        className="pointer-events-auto flex items-center gap-0.5 px-2 rounded-full bg-white/80 dark:bg-zinc-900/85 backdrop-blur-xl border border-zinc-900/5 dark:border-white/10"
+        className="pointer-events-auto flex items-center gap-0.5 px-2 rounded-full bg-white/70 dark:bg-zinc-900/80 backdrop-blur-3xl border border-zinc-900/5 dark:border-white/10"
         style={{
           ...animStyle,
           height: 64,
