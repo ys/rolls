@@ -6,67 +6,77 @@ import { createPortal } from "react-dom";
 export default function Sheet({
   open,
   onClose,
+  onExpand,
   title,
   children,
 }: {
   open: boolean;
   onClose: () => void;
+  onExpand?: (expanded: boolean) => void;
   title: string;
   children: React.ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
-  const startY = useRef(0);
+  const startYRef = useRef(0);
+  const dragOffsetRef = useRef(0);
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
     if (open) {
       document.body.style.overflow = "hidden";
+      sheet.style.transition = "transform 300ms ease-out";
+      sheet.style.transform = "translateY(0)";
     } else {
       document.body.style.overflow = "";
       setExpanded(false);
-      setDragOffset(0);
+      sheet.style.transition = "transform 300ms ease-out";
+      sheet.style.transform = "translateY(100%)";
     }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     e.currentTarget.setPointerCapture(e.pointerId);
-    startY.current = e.clientY;
+    startYRef.current = e.clientY;
+    dragOffsetRef.current = 0;
     isDraggingRef.current = true;
-    setIsDragging(true);
+    const sheet = sheetRef.current;
+    if (sheet) sheet.style.transition = "none";
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!isDraggingRef.current) return;
-    const delta = e.clientY - startY.current;
-    // Resistance when dragging up past natural position
-    setDragOffset(delta > 0 ? delta : delta * 0.3);
+    const delta = e.clientY - startYRef.current;
+    const offset = delta > 0 ? delta : delta * 0.3;
+    dragOffsetRef.current = offset;
+    const sheet = sheetRef.current;
+    if (sheet) sheet.style.transform = `translateY(${offset}px)`;
   }
 
   function onPointerUp() {
+    if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-    setIsDragging(false);
-    const offset = dragOffset;
+    const offset = dragOffsetRef.current;
+    dragOffsetRef.current = 0;
+    const sheet = sheetRef.current;
+    if (sheet) sheet.style.transition = "transform 300ms ease-out";
+
     if (offset > 80) {
-      onClose(); // dragOffset resets via the open→false effect
+      onClose();
     } else if (offset < -20) {
       setExpanded(true);
-      setDragOffset(0);
+      onExpand?.(true);
+      if (sheet) sheet.style.transform = "translateY(0)";
     } else {
-      setDragOffset(0);
+      if (sheet) sheet.style.transform = "translateY(0)";
     }
   }
-
-  const sheetTransform = !open
-    ? "translateY(100%)"
-    : dragOffset !== 0
-      ? `translateY(${dragOffset}px)`
-      : "translateY(0)";
 
   if (!mounted) return null;
 
@@ -82,10 +92,10 @@ export default function Sheet({
 
       {/* Sheet */}
       <div
+        ref={sheetRef}
         className="relative w-full max-w-lg bg-white dark:bg-zinc-950 rounded-t-3xl shadow-2xl"
         style={{
-          transform: sheetTransform,
-          transition: isDragging ? "none" : "transform 300ms ease-out",
+          transform: "translateY(100%)",
           paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
         }}
       >

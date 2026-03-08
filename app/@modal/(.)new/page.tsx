@@ -6,6 +6,8 @@ import type { Camera, Film } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
+import NewCameraSheet from "@/components/NewCameraSheet";
+import NewFilmSheet from "@/components/NewFilmSheet";
 import { haptics } from "@/lib/haptics";
 
 function cameraLabel(c: Camera): string {
@@ -21,6 +23,8 @@ function filmLabel(f: Film): string {
 const selectCls = "w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6";
 const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
 const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
+const textareaCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors resize-none";
+const addLinkCls = "text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors";
 
 export default function NewRollModal() {
   const router = useRouter();
@@ -31,6 +35,13 @@ export default function NewRollModal() {
   const [rollNumber, setRollNumber] = useState("");
   const [cameraId, setCameraId] = useState("");
   const [filmId, setFilmId] = useState("");
+  const [shotAt, setShotAt] = useState(new Date().toISOString().slice(0, 10));
+  const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
+  const [albumName, setAlbumName] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [showNewCamera, setShowNewCamera] = useState(false);
+  const [showNewFilm, setShowNewFilm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -66,7 +77,10 @@ export default function NewRollModal() {
         roll_number: rollNumber,
         camera_id: cameraId || undefined,
         film_id: filmId || undefined,
-        shot_at: new Date().toISOString().slice(0, 10),
+        shot_at: shotAt || undefined,
+        notes: notes || undefined,
+        tags: tags || undefined,
+        album_name: albumName || undefined,
       }),
     });
 
@@ -85,8 +99,10 @@ export default function NewRollModal() {
   }
 
   return (
-    <Sheet open={open} onClose={() => router.back()} title="New Roll">
+    <>
+    <Sheet open={open} onClose={() => router.back()} onExpand={setExpanded} title="New Roll">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Primary fields */}
         <div className="space-y-1">
           <label className={labelCls}>Roll #</label>
           <input
@@ -100,11 +116,14 @@ export default function NewRollModal() {
         </div>
 
         <div className="space-y-1">
-          <label className={labelCls}>Camera</label>
+          <div className="flex items-center justify-between">
+            <label className={labelCls}>Camera</label>
+            <button type="button" onClick={() => setShowNewCamera(true)} className={addLinkCls}>+ new</button>
+          </div>
           {cameras.length === 0 ? (
-            <a href="/cameras" className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+            <button type="button" onClick={() => setShowNewCamera(true)} className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
               + Add a camera first
-            </a>
+            </button>
           ) : (
             <div className="relative">
               <select
@@ -123,11 +142,14 @@ export default function NewRollModal() {
         </div>
 
         <div className="space-y-1">
-          <label className={labelCls}>Film</label>
+          <div className="flex items-center justify-between">
+            <label className={labelCls}>Film</label>
+            <button type="button" onClick={() => setShowNewFilm(true)} className={addLinkCls}>+ new</button>
+          </div>
           {films.length === 0 ? (
-            <a href="/films" className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+            <button type="button" onClick={() => setShowNewFilm(true)} className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
               + Add a film first
-            </a>
+            </button>
           ) : (
             <div className="relative">
               <select
@@ -145,6 +167,52 @@ export default function NewRollModal() {
           )}
         </div>
 
+        {/* Extra fields — revealed by dragging the sheet up */}
+        {expanded && (
+          <>
+            <div className="space-y-1">
+              <label className={labelCls}>Shot date</label>
+              <input
+                type="date"
+                value={shotAt}
+                onChange={(e) => setShotAt(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className={labelCls}>Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className={textareaCls}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className={labelCls}>Tags</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="street, portrait, travel"
+                className={inputCls}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className={labelCls}>Album name</label>
+              <input
+                type="text"
+                value={albumName}
+                onChange={(e) => setAlbumName(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+          </>
+        )}
+
         {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
 
         <FormButton type="submit" disabled={saving}>
@@ -152,5 +220,28 @@ export default function NewRollModal() {
         </FormButton>
       </form>
     </Sheet>
+
+    <NewCameraSheet
+      open={showNewCamera}
+      onClose={() => setShowNewCamera(false)}
+      authHeaders={authHeaders}
+      onCreated={(camera) => {
+        setAllCameras((prev) => [...prev, camera]);
+        setCameraId(camera.slug);
+        setShowNewCamera(false);
+      }}
+    />
+
+    <NewFilmSheet
+      open={showNewFilm}
+      onClose={() => setShowNewFilm(false)}
+      authHeaders={authHeaders}
+      onCreated={(film) => {
+        setAllFilms((prev) => [...prev, film]);
+        setFilmId(film.slug);
+        setShowNewFilm(false);
+      }}
+    />
+    </>
   );
 }
