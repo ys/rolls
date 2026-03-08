@@ -47,10 +47,20 @@ Example:
 		keyFlag, _ := cmd.Flags().GetString("key")
 		apiKey := keyFlag
 		if apiKey == "" {
-			fmt.Printf("\nCreate a key at: %s/settings/api-keys\n\n", webURL)
-			fmt.Print("API key: ")
-			input, _ := reader.ReadString('\n')
-			apiKey = strings.TrimSpace(input)
+			envName := cfg.ActiveEnv
+			if envName == "" {
+				envName = "default"
+			}
+			var loginErr error
+			apiKey, loginErr = browserLogin(webURL, envName)
+			if loginErr != nil {
+				// Fall back to manual paste
+				fmt.Printf("\nCould not complete browser login (%v).\n", loginErr)
+				fmt.Printf("Create a key at: %s/settings/api-keys\n\n", webURL)
+				fmt.Print("API key: ")
+				input, _ := reader.ReadString('\n')
+				apiKey = strings.TrimSpace(input)
+			}
 		}
 		if apiKey == "" {
 			return fmt.Errorf("API key is required")

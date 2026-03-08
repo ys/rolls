@@ -60,6 +60,22 @@ func (cfg *Config) APIKey() string {
 	return cfg.WebAppAPIKey
 }
 
+// SetAPIKey updates the API key for the active environment (or the top-level
+// default if no environment is active) and writes the config.
+func (cfg *Config) SetAPIKey(apiKey string) error {
+	if cfg.ActiveEnv != "" {
+		env := cfg.Environments[cfg.ActiveEnv]
+		env.WebAppAPIKey = apiKey
+		if cfg.Environments == nil {
+			cfg.Environments = make(map[string]Env)
+		}
+		cfg.Environments[cfg.ActiveEnv] = env
+	} else {
+		cfg.WebAppAPIKey = apiKey
+	}
+	return cfg.Write()
+}
+
 // SetEnv adds or updates a named environment and writes the config.
 func (cfg *Config) SetEnv(name, url, apiKey string) error {
 	if cfg.Environments == nil {
