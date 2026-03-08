@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { haptics } from "../lib/haptics";
-import { FilmStrip, Archive, ChartBar, Gear } from "@phosphor-icons/react";
+import { FilmStrip, Archive, ChartBar, Gear, Plus } from "@phosphor-icons/react";
 
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
@@ -100,10 +100,7 @@ export default function BottomNav() {
           boxShadow: "0 8px 24px rgba(234,88,12,0.45), 0 2px 6px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="11" y1="2" x2="11" y2="20" />
-          <line x1="2" y1="11" x2="20" y2="11" />
-        </svg>
+        <Plus size={26} weight="bold" color="white" />
       </Link>
     </nav>
   );
