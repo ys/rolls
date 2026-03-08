@@ -149,10 +149,10 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 		sheetsOnly, _ := cmd.Flags().GetBool("sheets")
 		year, _ := cmd.Flags().GetInt("year")
 
-		if cfg.WebAppURL == "" {
+		if cfg.URL() == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_url is not set in config"))
 		}
-		if cfg.WebAppAPIKey == "" {
+		if cfg.APIKey() == "" {
 			cobra.CheckErr(fmt.Errorf("web_app_api_key is not set in config"))
 		}
 
@@ -299,11 +299,11 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			body, err := json.Marshal(payload)
 			cobra.CheckErr(err)
 
-			url := cfg.WebAppURL + "/api/import"
+			url := cfg.URL() + "/api/import"
 			req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 			cobra.CheckErr(err)
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+			req.Header.Set("Authorization", "Bearer "+cfg.APIKey())
 
 			client := &http.Client{Timeout: 60 * time.Second}
 			resp, err := client.Do(req)
@@ -381,10 +381,10 @@ func uploadContactSheets(dryRun bool, knownRolls []rollJSON, allowOnly map[strin
 			failed++
 			continue
 		}
-		putURL := cfg.WebAppURL + "/api/rolls/" + rollNum + "/contact-sheet"
+		putURL := cfg.URL() + "/api/rolls/" + rollNum + "/contact-sheet"
 		req, _ := http.NewRequest(http.MethodPut, putURL, bytes.NewReader(data))
 		req.Header.Set("Content-Type", "image/webp")
-		req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+		req.Header.Set("Authorization", "Bearer "+cfg.APIKey())
 		resp, reqErr := (&http.Client{Timeout: 60 * time.Second}).Do(req)
 		if reqErr != nil || resp.StatusCode != http.StatusOK {
 			fmt.Fprintf(os.Stderr, "  warn: upload failed for %s\n", rollNum)

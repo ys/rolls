@@ -176,9 +176,9 @@ export default function HomeClient() {
   }
 
   const { rolls } = data;
-  const loaded  = rolls.filter((r) => !r.fridge_at);
-  const inFridge = rolls.filter((r) => r.fridge_at && !r.lab_at);
-  const atLab   = rolls.filter((r) => r.lab_at);
+  const loaded   = rolls.filter((r) => rollStatus(r) === "LOADED");
+  const inFridge = rolls.filter((r) => rollStatus(r) === "FRIDGE");
+  const atLab    = rolls.filter((r) => rollStatus(r) === "LAB");
 
   // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));

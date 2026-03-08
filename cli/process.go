@@ -102,7 +102,7 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 		}
 
 		// Determine whether to publish to web
-		doWebPublish := !localOnly && cfg.WebAppURL != "" && cfg.WebAppAPIKey != "" && cfg.ContactSheetPath != ""
+		doWebPublish := !localOnly && cfg.URL() != "" && cfg.APIKey() != "" && cfg.ContactSheetPath != ""
 		var client *http.Client
 		if doWebPublish {
 			client = &http.Client{Timeout: 60 * time.Second}
@@ -182,13 +182,13 @@ func publishRollToWeb(rollNum string, client *http.Client, now time.Time) error 
 
 	// Upload contact sheet
 	req, err := http.NewRequest(http.MethodPut,
-		cfg.WebAppURL+"/api/rolls/"+rollNum+"/contact-sheet",
+		cfg.URL()+"/api/rolls/"+rollNum+"/contact-sheet",
 		bytes.NewReader(imgData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "image/webp")
-	req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+	req.Header.Set("Authorization", "Bearer "+cfg.APIKey())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -208,13 +208,13 @@ func publishRollToWeb(rollNum string, client *http.Client, now time.Time) error 
 		return err
 	}
 	req, err = http.NewRequest(http.MethodPatch,
-		cfg.WebAppURL+"/api/rolls/"+rollNum,
+		cfg.URL()+"/api/rolls/"+rollNum,
 		bytes.NewReader(patchBody))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+cfg.WebAppAPIKey)
+	req.Header.Set("Authorization", "Bearer "+cfg.APIKey())
 
 	resp, err = client.Do(req)
 	if err != nil {

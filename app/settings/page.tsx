@@ -88,6 +88,10 @@ export default async function SettingsPage() {
         )}
       </SettingsGroup>
 
+      <SettingsGroup label="Developer">
+        <SettingsRow href="/settings/api-keys" label="API Keys" />
+      </SettingsGroup>
+
       <SettingsGroup label="Data">
         <SettingsRow href="/api/export" label="Export JSON" />
       </SettingsGroup>
