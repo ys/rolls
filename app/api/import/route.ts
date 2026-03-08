@@ -36,6 +36,7 @@ interface ImportRoll {
   tags?: string[];
   notes?: string;
   contact_sheet_url?: string;
+  push_pull?: number | null;
 }
 
 interface ImportPayload {
@@ -94,13 +95,14 @@ export async function POST(request: NextRequest) {
       : [];
 
     await sql`
-      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url)
+      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url, push_pull)
       VALUES (
         ${r.roll_number}, ${userId},
         ${cam?.uuid ?? null}, ${film?.uuid ?? null},
         ${r.shot_at ?? null}, ${r.fridge_at ?? null}, ${r.lab_at ?? null}, ${r.lab_name ?? null},
         ${r.scanned_at ?? null}, ${r.processed_at ?? null}, ${r.uploaded_at ?? null}, ${r.archived_at ?? null},
-        ${r.album_name ?? null}, ${r.tags ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null}
+        ${r.album_name ?? null}, ${r.tags ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null},
+        ${r.push_pull ?? null}
       )
       ON CONFLICT (user_id, roll_number) DO UPDATE SET
         camera_uuid      = COALESCE(EXCLUDED.camera_uuid, rolls.camera_uuid),
@@ -116,7 +118,8 @@ export async function POST(request: NextRequest) {
         album_name       = EXCLUDED.album_name,
         tags             = EXCLUDED.tags,
         notes            = EXCLUDED.notes,
-        contact_sheet_url = EXCLUDED.contact_sheet_url
+        contact_sheet_url = EXCLUDED.contact_sheet_url,
+        push_pull        = EXCLUDED.push_pull
     `;
   }
 

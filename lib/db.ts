@@ -101,4 +101,5 @@ export interface Roll {
   tags: string[] | null;
   notes: string | null;
   contact_sheet_url: string | null;
+  push_pull: number | null;
 }

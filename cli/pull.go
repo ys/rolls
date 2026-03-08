@@ -264,6 +264,9 @@ func buildRollMarkdown(r rollJSON) string {
 	if len(r.Tags) > 0 {
 		sb.WriteString(fmt.Sprintf("tags: %s\n", strings.Join(r.Tags, ", ")))
 	}
+	if r.PushPull != nil {
+		sb.WriteString(fmt.Sprintf("push_pull: %g\n", *r.PushPull))
+	}
 	sb.WriteString("---\n")
 	if r.Notes != "" {
 		sb.WriteString(r.Notes)

@@ -46,7 +46,8 @@
       "Bash(heroku config:set WEBAUTHN_RP_ID=rolls-multitenancy-plan-bxj9dg.herokuapp.com WEBAUTHN_ORIGIN=https://rolls-multitenancy-plan-bxj9dg.herokuapp.com --app rolls-multitenancy-plan-bxj9dg)",
       "Bash(npx tsc --noEmit)",
       "Bash(git checkout -b ui-redesign)",
-      "Bash(heroku pg:psql:*)"
+      "Bash(heroku pg:psql:*)",
+      "Bash(head -1 \"/Users/ys/src/github.com/ys/rolls/app/@modal/\\(.\\)new/page.tsx\")"
     ]
   },
   "enableAllProjectMcpServers": false

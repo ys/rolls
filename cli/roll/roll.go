@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -31,6 +32,7 @@ type Metadata struct {
 	AlbumName       string    `yaml:"album_name,omitempty"`
 	ArchivedAt      time.Time `yaml:"archived_at,omitempty"`
 	ContactSheetURL string    `yaml:"contact_sheet_url,omitempty"`
+	PushPull        *float64  `yaml:"push_pull,omitempty"`
 }
 
 type Roll struct {
@@ -211,6 +213,10 @@ func FromMarkdown(path string) (Roll, error) {
 			}
 		case "contact_sheet_url":
 			metadata.ContactSheetURL = value
+		case "push_pull":
+			if v, err := strconv.ParseFloat(value, 64); err == nil {
+				metadata.PushPull = &v
+			}
 		}
 	}
 
@@ -485,6 +491,9 @@ func (r *Roll) MergeFrom(src Roll) {
 	if len(m.Tags) == 0 {
 		m.Tags = s.Tags
 	}
+	if m.PushPull == nil {
+		m.PushPull = s.PushPull
+	}
 	if r.Content == "" {
 		r.Content = src.Content
 	}
@@ -531,6 +540,9 @@ func (r *Roll) WriteRollMd() error {
 	}
 	if len(m.Tags) > 0 {
 		sb.WriteString("tags: " + strings.Join(m.Tags, ", ") + "\n")
+	}
+	if m.PushPull != nil {
+		sb.WriteString("push_pull: " + strconv.FormatFloat(*m.PushPull, 'f', -1, 64) + "\n")
 	}
 	sb.WriteString("---\n")
 	if r.Content != "" {

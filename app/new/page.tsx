@@ -39,6 +39,8 @@ export default function NewRollPage() {
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState("");
   const [albumName, setAlbumName] = useState("");
+  const [pushPull, setPushPull] = useState<number | null>(null);
+  const [pushPullCustom, setPushPullCustom] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [showNewCamera, setShowNewCamera] = useState(false);
   const [showNewFilm, setShowNewFilm] = useState(false);
@@ -82,6 +84,7 @@ export default function NewRollPage() {
           notes: notes || undefined,
           tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
           album_name: albumName || undefined,
+          push_pull: pushPull ?? undefined,
         }),
       });
 
@@ -216,6 +219,39 @@ export default function NewRollPage() {
                 onChange={(e) => setAlbumName(e.target.value)}
                 className={inputCls}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className={labelCls}>Push / Pull</label>
+              <div className="flex gap-1 flex-wrap">
+                {[-2, -1, 0, 1, 2].map((v) => {
+                  const label = v > 0 ? `+${v}` : `${v}`;
+                  const active = pushPull === v && pushPullCustom === "";
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => {
+                        if (active) { setPushPull(null); setPushPullCustom(""); }
+                        else { setPushPull(v); setPushPullCustom(""); }
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-mono border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
+                    >{label}</button>
+                  );
+                })}
+                <input
+                  type="number"
+                  step="0.5"
+                  value={pushPullCustom}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setPushPullCustom(raw);
+                    setPushPull(raw !== "" ? parseFloat(raw) : null);
+                  }}
+                  placeholder="other"
+                  className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-sm text-center font-mono focus:outline-none transition-colors"
+                />
+              </div>
             </div>
           </>
         )}

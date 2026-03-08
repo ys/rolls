@@ -119,21 +119,22 @@ type filmJSON struct {
 }
 
 type rollJSON struct {
-	RollNumber  string     `json:"roll_number"`
-	CameraID    string     `json:"camera_id"`
-	FilmID      string     `json:"film_id"`
-	ShotAt      *time.Time `json:"shot_at,omitempty"`
-	FridgeAt    *time.Time `json:"fridge_at,omitempty"`
-	LabAt       *time.Time `json:"lab_at,omitempty"`
-	LabName     string     `json:"lab_name,omitempty"`
-	ScannedAt   *time.Time `json:"scanned_at,omitempty"`
-	ProcessedAt *time.Time `json:"processed_at,omitempty"`
-	UploadedAt  *time.Time `json:"uploaded_at,omitempty"`
-	ArchivedAt  *time.Time `json:"archived_at,omitempty"`
+	RollNumber      string     `json:"roll_number"`
+	CameraID        string     `json:"camera_id"`
+	FilmID          string     `json:"film_id"`
+	ShotAt          *time.Time `json:"shot_at,omitempty"`
+	FridgeAt        *time.Time `json:"fridge_at,omitempty"`
+	LabAt           *time.Time `json:"lab_at,omitempty"`
+	LabName         string     `json:"lab_name,omitempty"`
+	ScannedAt       *time.Time `json:"scanned_at,omitempty"`
+	ProcessedAt     *time.Time `json:"processed_at,omitempty"`
+	UploadedAt      *time.Time `json:"uploaded_at,omitempty"`
+	ArchivedAt      *time.Time `json:"archived_at,omitempty"`
 	AlbumName       string     `json:"album_name,omitempty"`
 	Tags            []string   `json:"tags,omitempty"`
 	Notes           string     `json:"notes,omitempty"`
 	ContactSheetURL string     `json:"contact_sheet_url,omitempty"`
+	PushPull        *float64   `json:"push_pull,omitempty"`
 }
 
 var pushCmd = &cobra.Command{
@@ -283,6 +284,9 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			if !r.Metadata.ArchivedAt.IsZero() {
 				t := r.Metadata.ArchivedAt
 				rj.ArchivedAt = &t
+			}
+			if r.Metadata.PushPull != nil {
+				rj.PushPull = r.Metadata.PushPull
 			}
 			payload.Rolls = append(payload.Rolls, rj)
 		}

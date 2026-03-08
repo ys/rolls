@@ -81,13 +81,31 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [deleting, setDeleting] = useState(false);
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
   const [editMeta, setEditMeta] = useState(false);
+  const [editAll, setEditAll] = useState(false);
   const [metaForm, setMetaForm] = useState({
     camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
     film_id: films.find((f) => f.uuid === initialRoll.film_uuid)?.slug ?? "",
     shot_at: initialRoll.shot_at ? String(initialRoll.shot_at).slice(0, 10) : "",
     album_name: initialRoll.album_name ?? "",
     tags: initialRoll.tags?.join(", ") ?? "",
+    push_pull: initialRoll.push_pull ?? null as number | null,
+    push_pull_custom: "",
   });
+
+  // Sync metaForm when roll updates after save (relevant in editAll mode)
+  useEffect(() => {
+    setMetaForm((f) => ({
+      ...f,
+      camera_id: cameras.find((c) => c.uuid === roll.camera_uuid)?.slug ?? "",
+      film_id: films.find((fi) => fi.uuid === roll.film_uuid)?.slug ?? "",
+      shot_at: roll.shot_at ? String(roll.shot_at).slice(0, 10) : "",
+      album_name: roll.album_name ?? "",
+      tags: roll.tags?.join(", ") ?? "",
+      push_pull: roll.push_pull ?? null,
+      push_pull_custom: "",
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roll]);
 
   useEffect(() => {
     import("@github/markdown-toolbar-element");
@@ -98,7 +116,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const currentFilm = films.find((f) => f.uuid === roll.film_uuid) ?? null;
   const isPostScan = ["SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED"].includes(status);
 
-  async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[] }): Promise<boolean> {
+  async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[]; push_pull?: number | null }): Promise<boolean> {
     setSaving(true);
     setSaved(false);
     const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
@@ -294,6 +312,51 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             />
           </div>
 
+          <div className="space-y-2">
+            <label className={labelCls}>Push / Pull</label>
+            <div className="flex gap-1 flex-wrap">
+              {[-2, -1, 0, 1, 2].map((v) => {
+                const label = v > 0 ? `+${v}` : `${v}`;
+                const active = metaForm.push_pull === v && metaForm.push_pull_custom === "";
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => {
+                      if (active) {
+                        setMetaForm((f) => ({ ...f, push_pull: null, push_pull_custom: "" }));
+                      } else {
+                        setMetaForm((f) => ({ ...f, push_pull: v, push_pull_custom: "" }));
+                      }
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
+                      active
+                        ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
+                        : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+              <input
+                type="number"
+                step="0.5"
+                value={metaForm.push_pull_custom}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setMetaForm((f) => ({
+                    ...f,
+                    push_pull_custom: raw,
+                    push_pull: raw !== "" ? parseFloat(raw) : null,
+                  }));
+                }}
+                placeholder="other"
+                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center font-mono focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
           <FormButton
             onClick={async () => {
               const ok = await save({
@@ -302,6 +365,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 shot_at: metaForm.shot_at || null,
                 album_name: metaForm.album_name || null,
                 tags: metaForm.tags ? metaForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                push_pull: metaForm.push_pull,
               });
               if (ok) setEditMeta(false);
             }}
@@ -323,6 +387,9 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 <span key={tag} className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
               ))}
             </div>
+          )}
+          {roll.push_pull != null && (
+            <Row label="Push / Pull" value={roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`} />
           )}
         </div>
       )}
@@ -412,6 +479,164 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
     router.push("/");
   }
 
+  // Clean read-only view of all info + dates for post-scan view mode
+  const viewCard = (
+    <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 border border-zinc-100 dark:border-transparent">
+      <div className="px-4 pb-4 pt-3 space-y-3">
+        <Row label="Camera" value={currentCamera ? cameraLabel(currentCamera) : "—"} />
+        <Row label="Film"   value={currentFilm ? filmLabel(currentFilm) : "—"} />
+        <Row label="Shot"   value={roll.shot_at ? new Date(roll.shot_at).toLocaleDateString() : "—"} />
+        {roll.lab_name && <Row label="Lab" value={roll.lab_name} />}
+        {roll.album_name && <Row label="Album" value={roll.album_name} />}
+        {roll.push_pull != null && (
+          <Row label="Push / Pull" value={roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`} />
+        )}
+        {roll.tags && roll.tags.length > 0 && (
+          <div className="flex gap-2 flex-wrap pt-1">
+            {roll.tags.map((tag) => (
+              <span key={tag} className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded-full">{tag}</span>
+            ))}
+          </div>
+        )}
+        {TIMESTAMP_FIELDS.some(({ key }) => roll[key]) && (
+          <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
+            {TIMESTAMP_FIELDS.map(({ key, label, type }) => roll[key] ? (
+              <Row
+                key={key}
+                label={label}
+                value={type === "date"
+                  ? new Date(roll[key]!).toLocaleDateString()
+                  : new Date(roll[key]!).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+              />
+            ) : null)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Edit mode sections for post-scan (notes + meta form + dates all visible at once)
+  const editAllSections = (
+    <>
+      {notesEditor}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 border border-zinc-100 dark:border-transparent">
+        <div className="px-4 pt-3 pb-1">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-medium">Info</span>
+        </div>
+        <div className="px-4 pb-4 pt-2 space-y-4">
+          <div className="space-y-1">
+            <label className={labelCls}>Camera</label>
+            <div className="relative">
+              <select
+                value={metaForm.camera_id}
+                onChange={(e) => setMetaForm((f) => ({ ...f, camera_id: e.target.value }))}
+                className={inputCls + " pr-6"}
+              >
+                <option value="">— none —</option>
+                {cameras.map((c) => (
+                  <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Film</label>
+            <div className="relative">
+              <select
+                value={metaForm.film_id}
+                onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
+                className={inputCls + " pr-6"}
+              >
+                <option value="">— none —</option>
+                {films.map((f) => (
+                  <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Shot at</label>
+            <input type="date" value={metaForm.shot_at} onChange={(e) => setMetaForm((f) => ({ ...f, shot_at: e.target.value }))} className={inputCls} />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Album</label>
+            <input type="text" value={metaForm.album_name} onChange={(e) => setMetaForm((f) => ({ ...f, album_name: e.target.value }))} placeholder="Album name" className={inputCls} />
+          </div>
+          <div className="space-y-1">
+            <label className={labelCls}>Tags</label>
+            <input type="text" value={metaForm.tags} onChange={(e) => setMetaForm((f) => ({ ...f, tags: e.target.value }))} placeholder="travel, street" className={inputCls} />
+          </div>
+          <div className="space-y-2">
+            <label className={labelCls}>Push / Pull</label>
+            <div className="flex gap-1 flex-wrap">
+              {[-2, -1, 0, 1, 2].map((v) => {
+                const label = v > 0 ? `+${v}` : `${v}`;
+                const active = metaForm.push_pull === v && metaForm.push_pull_custom === "";
+                return (
+                  <button key={v} type="button"
+                    onClick={() => {
+                      if (active) setMetaForm((f) => ({ ...f, push_pull: null, push_pull_custom: "" }));
+                      else setMetaForm((f) => ({ ...f, push_pull: v, push_pull_custom: "" }));
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
+                  >{label}</button>
+                );
+              })}
+              <input type="number" step="0.5" value={metaForm.push_pull_custom}
+                onChange={(e) => { const raw = e.target.value; setMetaForm((f) => ({ ...f, push_pull_custom: raw, push_pull: raw !== "" ? parseFloat(raw) : null })); }}
+                placeholder="other"
+                className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center font-mono focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+          <FormButton
+            onClick={async () => {
+              await save({
+                camera_id: metaForm.camera_id || null,
+                film_id: metaForm.film_id || null,
+                shot_at: metaForm.shot_at || null,
+                album_name: metaForm.album_name || null,
+                tags: metaForm.tags ? metaForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                push_pull: metaForm.push_pull,
+              });
+            }}
+            disabled={saving}
+          >
+            {saving ? "Saving…" : "Save Info"}
+          </FormButton>
+        </div>
+      </div>
+      <div className="bg-white dark:bg-zinc-900 rounded-xl mb-4 border border-zinc-100 dark:border-transparent">
+        <div className="px-4 pt-3 pb-1">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-medium">Dates</span>
+        </div>
+        <div className="px-4 pb-4 space-y-4 pt-2">
+          {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
+            <div key={key}>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</label>
+                {roll[key] ? (
+                  <button onClick={() => save({ [key]: null })} className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">Clear</button>
+                ) : (
+                  <button onClick={() => save({ [key]: nowValue(type === "date") })} className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Now</button>
+                )}
+              </div>
+              <input
+                type={type}
+                key={roll[key] ?? "empty"}
+                defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
+                onBlur={(e) => { if (e.target.value) save({ [key]: e.target.value }); }}
+                className={inputCls}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div>
       <BackButton />
@@ -423,11 +648,19 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             {status}
           </span>
         </div>
+        {isPostScan && (
+          <button
+            onClick={() => setEditAll((v) => !v)}
+            className="mt-1 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          >
+            {editAll ? "Done" : "Edit"}
+          </button>
+        )}
       </div>
 
       {isPostScan ? (
         <>
-          {/* Contact sheet first */}
+          {/* Contact sheet — always visible */}
           {roll.contact_sheet_url && (
             <div className="mb-4">
               <img
@@ -438,17 +671,23 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             </div>
           )}
 
-          {/* Notes read-only */}
-          {notes && (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 mb-4 border border-zinc-100 dark:border-transparent">
-              <span className="block text-[10px] uppercase tracking-widest text-zinc-400 font-medium mb-3">Notes</span>
-              {notesPreview}
-            </div>
+          {editAll ? (
+            <>
+              {editAllSections}
+              {actionButton}
+            </>
+          ) : (
+            <>
+              {notes && (
+                <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 mb-4 border border-zinc-100 dark:border-transparent">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-400 font-medium mb-3">Notes</span>
+                  {notesPreview}
+                </div>
+              )}
+              {actionButton}
+              {viewCard}
+            </>
           )}
-
-          {actionButton}
-          {metaSection}
-          {datesSection}
         </>
       ) : (
         <>

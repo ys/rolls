@@ -161,8 +161,15 @@ function GridCard({
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent pt-6 pb-2 px-3">
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
-              {roll.roll_number}
+            <div className="flex items-center gap-1.5">
+              <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
+                {roll.roll_number}
+              </div>
+              {roll.push_pull != null && (
+                <span className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0">
+                  {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+                </span>
+              )}
             </div>
             {film && (
               <div className="text-white/60 text-[11px] truncate leading-tight mt-0.5">
@@ -255,6 +262,11 @@ function ListRow({
         {subtitle && (
           <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">
             {subtitle}
+            {roll.push_pull != null && (
+              <span className="ml-1.5 text-[12px] font-mono text-zinc-400 dark:text-zinc-500">
+                {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+              </span>
+            )}
           </div>
         )}
         <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">
