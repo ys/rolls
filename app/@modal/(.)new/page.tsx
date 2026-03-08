@@ -22,7 +22,7 @@ const selectCls = "w-full appearance-none rounded-none bg-transparent border-b b
 const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
 const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
 
-export default function NewRollPage() {
+export default function NewRollModal() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
