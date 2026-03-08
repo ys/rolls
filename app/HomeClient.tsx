@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { Camera, FilmStrip } from "@phosphor-icons/react";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
@@ -64,7 +65,8 @@ function RollItem({ roll, editing, selected, onToggle }: {
   const dateStr = roll.shot_at
     ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
-  const subtitle = [cameraLabel(roll), filmLabel(roll)].filter(Boolean).join(" · ");
+  const cam  = cameraLabel(roll);
+  const film = filmLabel(roll);
 
   const inner = (
     <>
@@ -74,7 +76,21 @@ function RollItem({ roll, editing, selected, onToggle }: {
           <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
           {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
         </div>
-        {subtitle && <div className="text-[14px] text-zinc-600 dark:text-zinc-300 truncate mt-0.5">{subtitle}</div>}
+        {(cam || film) && (
+          <div className="flex items-center gap-2 mt-0.5 min-w-0">
+            {cam && (
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
+                <Camera size={12} weight="bold" className="shrink-0" />{cam}
+              </span>
+            )}
+            {cam && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
+            {film && (
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
+                <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
+              </span>
+            )}
+          </div>
+        )}
       </div>
       {!editing && (
         <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
