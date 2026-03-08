@@ -162,7 +162,7 @@ export default function HomeClient() {
     router.refresh();
   }
 
-  if (isLoading && !data) {
+  if (!mounted || (isLoading && !data)) {
     return (
       <div className="space-y-4">
         <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
