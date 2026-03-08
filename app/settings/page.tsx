@@ -2,7 +2,6 @@ import { getUser } from "@/lib/request-context";
 import { getCameraCount, getFilmCount, getInviteCount } from "@/lib/queries";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
-import FontPicker from "@/components/FontPicker";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +91,6 @@ export default async function SettingsPage() {
       {role === "admin" && (
         <SettingsGroup label="Admin">
           <SettingsRow href="/settings/admin" label="Dashboard" />
-          <FontPicker />
         </SettingsGroup>
       )}
 
