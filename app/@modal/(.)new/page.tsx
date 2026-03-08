@@ -70,32 +70,38 @@ export default function NewRollModal() {
     setSaving(true);
     setError("");
 
-    const resp = await fetch("/api/rolls", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders },
-      body: JSON.stringify({
-        roll_number: rollNumber,
-        camera_id: cameraId || undefined,
-        film_id: filmId || undefined,
-        shot_at: shotAt || undefined,
-        notes: notes || undefined,
-        tags: tags || undefined,
-        album_name: albumName || undefined,
-      }),
-    });
+    try {
+      const resp = await fetch("/api/rolls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({
+          roll_number: rollNumber,
+          camera_id: cameraId || undefined,
+          film_id: filmId || undefined,
+          shot_at: shotAt || undefined,
+          notes: notes || undefined,
+          tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
+          album_name: albumName || undefined,
+        }),
+      });
 
-    if (!resp.ok) {
-      const data = await resp.json();
-      setError(data.error ?? "Failed to create roll");
-      setSaving(false);
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        setError(data.error ?? "Failed to create roll");
+        haptics.error();
+        return;
+      }
+
+      const roll = await resp.json();
+      invalidateCache("rolls");
+      haptics.success();
+      router.push(`/roll/${roll.roll_number}`);
+    } catch {
+      setError("Network error — please try again");
       haptics.error();
-      return;
+    } finally {
+      setSaving(false);
     }
-
-    const roll = await resp.json();
-    invalidateCache("rolls");
-    haptics.success();
-    router.push(`/roll/${roll.roll_number}`);
   }
 
   return (
