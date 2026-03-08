@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Camera, FilmStrip } from "@phosphor-icons/react";
+import { Camera } from "pixelarticons/react/Camera";
+import { Image } from "pixelarticons/react/Image";
+import { ChevronRight } from "pixelarticons/react/ChevronRight";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
@@ -263,13 +265,13 @@ function ListRow({
           <div className="flex items-center gap-2 mt-0.5 min-w-0">
             {camera && (
               <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
-                <Camera size={12} weight="bold" className="shrink-0" />{camera}
+                <Camera width={12} height={12} className="shrink-0" />{camera}
               </span>
             )}
             {camera && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
               <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
-                <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
+                <Image width={12} height={12} className="shrink-0" />{film}
               </span>
             )}
             {roll.push_pull != null && (
@@ -294,16 +296,7 @@ function ListRow({
               />
             </div>
           )}
-          <svg
-            className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+          <ChevronRight width={16} height={16} className="text-zinc-300 dark:text-zinc-600 shrink-0" />
         </div>
       )}
     </>

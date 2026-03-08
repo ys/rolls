@@ -2,20 +2,12 @@ import { getUser } from "@/lib/request-context";
 import { getCameraCount, getFilmCount, getInviteCount } from "@/lib/queries";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
+import { ChevronRight } from "pixelarticons/react/ChevronRight";
 
 export const dynamic = "force-dynamic";
 
 const Chevron = () => (
-  <svg
-    className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
+  <ChevronRight width={16} height={16} className="text-zinc-300 dark:text-zinc-600 shrink-0" />
 );
 
 function SettingsGroup({
