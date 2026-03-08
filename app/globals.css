@@ -90,9 +90,8 @@
   font-display: swap;
 }
 
-/* Font override via CSS variable (set by FontPicker via localStorage) */
 body {
-  font-family: var(--app-font, "Departure Mono", ui-monospace, monospace);
+  font-family: "Departure Mono", ui-monospace, monospace;
 }
 
 /* Nav ↔ edit bar flip animations */
