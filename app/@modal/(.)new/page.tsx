@@ -101,36 +101,48 @@ export default function NewRollModal() {
 
         <div className="space-y-1">
           <label className={labelCls}>Camera</label>
-          <div className="relative">
-            <select
-              value={cameraId}
-              onChange={(e) => setCameraId(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">— select —</option>
-              {cameras.map((c) => (
-                <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
-          </div>
+          {cameras.length === 0 ? (
+            <a href="/cameras" className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              + Add a camera first
+            </a>
+          ) : (
+            <div className="relative">
+              <select
+                value={cameraId}
+                onChange={(e) => setCameraId(e.target.value)}
+                className={selectCls}
+              >
+                <option value="">— select —</option>
+                {cameras.map((c) => (
+                  <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
+            </div>
+          )}
         </div>
 
         <div className="space-y-1">
           <label className={labelCls}>Film</label>
-          <div className="relative">
-            <select
-              value={filmId}
-              onChange={(e) => setFilmId(e.target.value)}
-              className={selectCls}
-            >
-              <option value="">— select —</option>
-              {films.map((f) => (
-                <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
-          </div>
+          {films.length === 0 ? (
+            <a href="/films" className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+              + Add a film first
+            </a>
+          ) : (
+            <div className="relative">
+              <select
+                value={filmId}
+                onChange={(e) => setFilmId(e.target.value)}
+                className={selectCls}
+              >
+                <option value="">— select —</option>
+                {films.map((f) => (
+                  <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
+            </div>
+          )}
         </div>
 
         {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
