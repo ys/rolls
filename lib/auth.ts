@@ -72,6 +72,10 @@ export async function getUserById(userId: string): Promise<User | null> {
   return user || null;
 }
 
+export function touchLastSeen(userId: string): void {
+  sql`UPDATE users SET last_seen_at = NOW() WHERE id = ${userId}`.catch(() => {});
+}
+
 // ============================================================================
 // WebAuthn Functions
 // ============================================================================

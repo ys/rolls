@@ -75,6 +75,9 @@ export default async function proxy(request: NextRequest) {
   requestHeaders.set("x-user-email", user.email);
   requestHeaders.set("x-user-role", user.role);
 
+  // 6. Update last_seen_at (fire-and-forget)
+  import("./lib/auth").then(({ touchLastSeen }) => touchLastSeen(user.id));
+
   return NextResponse.next({
     request: {
       headers: requestHeaders,

@@ -88,6 +88,12 @@ export default async function SettingsPage() {
         )}
       </SettingsGroup>
 
+      {role === "admin" && (
+        <SettingsGroup label="Admin">
+          <SettingsRow href="/settings/admin" label="Dashboard" />
+        </SettingsGroup>
+      )}
+
       <SettingsGroup label="Developer">
         <SettingsRow href="/settings/api-keys" label="API Keys" />
       </SettingsGroup>
