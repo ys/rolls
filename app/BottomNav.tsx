@@ -35,7 +35,7 @@ export default function BottomNav() {
     return () => { observer.disconnect(); clearTimeout(timer); };
   }, []);
 
-  if (pathname === "/login") return null;
+  if (pathname === "/login" || pathname === "/register") return null;
 
   const animStyle: React.CSSProperties = {
     transformOrigin: "center bottom",
