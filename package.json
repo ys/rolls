@@ -32,6 +32,9 @@
     "react-dom": "^19.0.0",
     "server-only": "^0.0.1"
   },
+  "overrides": {
+    "serialize-javascript": "^7.0.4"
+  },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.1.6",
     "@testing-library/jest-dom": "^6.9.1",
