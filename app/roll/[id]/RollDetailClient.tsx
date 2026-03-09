@@ -9,7 +9,7 @@ import { invalidateCache } from "@/lib/cache";
 import BackButton from "@/components/BackButton";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
-import { DotsThreeOutline, CaretDown, Camera, FilmStrip } from "@phosphor-icons/react";
+import { DotsThreeOutline, CaretDown, Camera as CameraIcon, FilmStrip } from "@phosphor-icons/react";
 
 declare module "react" {
   namespace JSX {
@@ -732,7 +732,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                 <h1 className="text-xl font-mono font-bold">{roll.roll_number}</h1>
                 {currentCamera && (
                   <span className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    <Camera size={14} weight="regular" />
+                    <CameraIcon size={14} weight="regular" />
                     {cameraLabel(currentCamera)}
                   </span>
                 )}
