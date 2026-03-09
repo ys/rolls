@@ -92,6 +92,8 @@ rolls lr albums / upload / check / link / login
 - `APP_URL=https://rolls.yannick.computer`
 - `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN`
 - `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `MAILJET_FROM_EMAIL`, `MAILJET_FROM_NAME`
+- `NEW_RELIC_LICENSE_KEY` — New Relic ingest license key
+- `NEW_RELIC_APP_NAME` — defaults to `rolls` if unset
 
 ## Database migrations
 
