@@ -37,6 +37,18 @@ CREATE TABLE IF NOT EXISTS rolls (
   updated_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS catalog_films (
+  slug          TEXT PRIMARY KEY,
+  brand         TEXT NOT NULL,
+  name          TEXT NOT NULL,
+  nickname      TEXT,
+  iso           INT,
+  color         BOOLEAN DEFAULT true,
+  show_iso      BOOLEAN DEFAULT false,
+  gradient_from TEXT,
+  gradient_to   TEXT
+);
+
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

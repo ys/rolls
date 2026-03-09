@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/request-context";
 import { sql } from "@/lib/db";
+import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import AdminUsersClient from "./AdminUsersClient";
 
@@ -125,6 +126,23 @@ export default async function AdminPage() {
         <div className="grid grid-cols-3 gap-2">
           <StatCard label="Active (30d)" value={stats.active_users_30d} sub="seen in last 30 days" />
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
+          Catalog
+        </p>
+        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+          <li>
+            <Link
+              href="/settings/admin/catalog-films"
+              className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
+            >
+              <span className="text-[15px]">Films</span>
+              <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+            </Link>
+          </li>
+        </ul>
       </section>
 
       <section className="space-y-2">

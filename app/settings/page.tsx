@@ -92,6 +92,7 @@ export default async function SettingsPage() {
       {role === "admin" && (
         <SettingsGroup label="Admin">
           <SettingsRow href="/settings/admin" label="Dashboard" />
+          <SettingsRow href="/settings/admin/catalog-films" label="Catalog Films" />
         </SettingsGroup>
       )}
 

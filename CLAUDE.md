@@ -93,6 +93,17 @@ rolls lr albums / upload / check / link / login
 - `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`, `WEBAUTHN_ORIGIN`
 - `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `MAILJET_FROM_EMAIL`, `MAILJET_FROM_NAME`
 
+## Database migrations
+
+- Migration files live in `lib/migrations/NNN_description.sql` (alphabetical order)
+- Tracked in `schema_migrations` table — runner skips already-applied files
+- **On Heroku**: run automatically via `Procfile` release phase (`release: npm run migrate`) before every deploy
+- **Locally**: `npm run migrate` (reads `DATABASE_URL` from `.env.local`)
+- Runner: `scripts/migrate.js` — creates `schema_migrations` table if missing, then runs pending `.sql` files in order
+- All migrations must be idempotent: use `IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `ON CONFLICT DO UPDATE`, etc.
+- To add a migration: create `lib/migrations/NNN_description.sql`, commit, push — it runs on next deploy
+- `lib/schema.sql` is a human-readable reference snapshot of the full schema; keep it in sync when adding tables/columns
+
 ## Patterns
 
 - Roll status (derived from timestamps): `archived > uploaded > processed > scanned > lab > fridge > loaded`
@@ -103,4 +114,3 @@ rolls lr albums / upload / check / link / login
 - All DB queries scoped to `user_id` (multitenancy)
 - Camera/film slugs: CLI uses YAML keys; web UI uses `slugify(brand+"-"+model/name)`
 - Push fuzzy matching: unknown camera/film IDs → try fuzzy match to cameras.yml/films.yml; no stubs created on failure (warns to stderr)
-- One-time DB migrations: create endpoint under `app/api/admin/`, call it, delete it
