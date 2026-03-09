@@ -2,6 +2,7 @@ import { getUser } from "@/lib/request-context";
 import { getCameraCount, getFilmCount, getInviteCount } from "@/lib/queries";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
+import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,10 @@ export default async function SettingsPage() {
 
       <SettingsGroup label="Data">
         <SettingsRow href="/api/export" label="Export JSON" />
+      </SettingsGroup>
+
+      <SettingsGroup label="Account">
+        <LogoutButton />
       </SettingsGroup>
     </div>
   );
