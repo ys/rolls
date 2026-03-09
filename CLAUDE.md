@@ -104,6 +104,12 @@ rolls lr albums / upload / check / link / login
 - To add a migration: create `lib/migrations/NNN_description.sql`, commit, push — it runs on next deploy
 - `lib/schema.sql` is a human-readable reference snapshot of the full schema; keep it in sync when adding tables/columns
 
+## npm vulnerabilities
+
+- `next-pwa@5.x` has known vulns in its transitive dep `serialize-javascript` — fixed via `package.json` `"overrides": { "serialize-javascript": "^7.0.4" }`
+- Do NOT run `npm audit fix --force` — it downgrades `next-pwa` to v2 which breaks `next.config.js` (different API)
+- Safe to run `npm audit fix` (without `--force`) — it won't touch `next-pwa`
+
 ## Patterns
 
 - Roll status (derived from timestamps): `archived > uploaded > processed > scanned > lab > fridge > loaded`
