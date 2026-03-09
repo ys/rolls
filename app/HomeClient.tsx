@@ -13,6 +13,40 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 
+// Box art gradients keyed by film slug [from, to]
+const FILM_GRADIENTS: Record<string, [string, string]> = {
+  "adox-color-mission-200": ["#f97316", "#2d7d6e"],   // orange → teal (Adox Color Mission box)
+  "berlin-400":             ["#1e3a5f", "#0f172a"],   // dark navy
+  "cinestill-400d":         ["#7c3aed", "#09090b"],   // purple → black (CineStill 400D box)
+  "color-plus":             ["#fde047", "#facc15"],   // bright yellow
+  "earl-grey":              ["#a1a1aa", "#71717a"],   // zinc gray
+  "ektar-100":              ["#dc2626", "#991b1b"],   // deep red
+  "foma-400":               ["#71717a", "#52525b"],   // dark gray
+  "fuji-c200":              ["#4ade80", "#16a34a"],   // green
+  "fuji-superia-200":       ["#4ade80", "#16a34a"],   // green
+  "fuji-superia-400":       ["#22c55e", "#15803d"],   // deeper green
+  "gold-200":               ["#fbbf24", "#f59e0b"],   // gold
+  "ilford-hp5":             ["#4ade80", "#e4e4e7"],   // green → white/gray (HP5 box)
+  "kentmere-100":           ["#60a5fa", "#93c5fd"],   // blue → light blue (Pan 100 box)
+  "kentmere-400":           ["#7c3aed", "#ec4899"],   // purple → pink (Pan 400 box)
+  "kiro-400":               ["#f472b6", "#ec4899"],   // pink
+  "lomo-400":               ["#22d3ee", "#06b6d4"],   // cyan
+  "lomo-800":               ["#c084fc", "#a855f7"],   // purple
+  "portra-160":             ["#fed7aa", "#fdba74"],   // pale peach
+  "portra-400":             ["#fdba74", "#fb923c"],   // peach
+  "portra-800":             ["#fb923c", "#f97316"],   // deeper peach
+  "psych-blue":             ["#818cf8", "#6366f1"],   // indigo
+  "redscale-50":            ["#f97316", "#dc2626"],   // red-orange
+  "rollei-400s":            ["#78716c", "#57534e"],   // stone
+  "rollei-superpan-200":    ["#64748b", "#475569"],   // slate
+  "sensia-50":              ["#16a34a", "#3b82f6"],   // green → blue (Fujichrome Sensia box)
+  "sora-200":               ["#38bdf8", "#0ea5e9"],   // sky blue
+  "trix-400":               ["#3f3f46", "#18181b"],   // near black
+  "ultramax":               ["#ffd700", "#2563eb"],   // yellow → blue (Kodak UltraMax box)
+  "vision3-250d":           ["#fbbf24", "#1c1917"],   // yellow → black (Vision3 cinema can)
+  "xpro-200":               ["#fb923c", "#f97316"],   // orange
+};
+
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
   LOADED: { field: "fridge_at",  label: "To Fridge", color: "bg-cyan-500"   },
   FRIDGE: { field: "lab_at",     label: "To Lab",    color: "bg-orange-500" },
@@ -28,6 +62,7 @@ type RollRow = Roll & {
   film_name:       string | null;
   film_iso:        number | null;
   film_show_iso:   boolean | null;
+  film_slug:       string | null;
 };
 
 interface HomeData { rolls: RollRow[]; }
@@ -67,9 +102,15 @@ function RollItem({ roll, editing, selected, onToggle }: {
     : null;
   const cam  = cameraLabel(roll);
   const film = filmLabel(roll);
+  const gradient = roll.film_slug ? FILM_GRADIENTS[roll.film_slug] : undefined;
+  const stripeStyle: React.CSSProperties = gradient
+    ? { background: `linear-gradient(to bottom, ${gradient[0]}, ${gradient[1]})` }
+    : { background: "#d4d4d8" };
 
   const inner = (
     <>
+      {/* Film color stripe */}
+      <div className="self-stretch w-1 rounded-full shrink-0" style={stripeStyle} />
       {editing && <Checkbox checked={selected} />}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
@@ -77,15 +118,14 @@ function RollItem({ roll, editing, selected, onToggle }: {
           {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
         </div>
         {(cam || film) && (
-          <div className="flex items-center gap-2 mt-0.5 min-w-0">
+          <div className="flex flex-col gap-0.5 mt-0.5">
             {cam && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
                 <Camera size={12} weight="bold" className="shrink-0" />{cam}
               </span>
             )}
-            {cam && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
                 <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
               </span>
             )}
@@ -100,12 +140,12 @@ function RollItem({ roll, editing, selected, onToggle }: {
     </>
   );
 
-  const cls = "flex items-start gap-3 py-3 -mx-4 px-4 transition-colors border-b border-zinc-200 dark:border-zinc-800 last:border-b-0";
+  const cls = "flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70";
 
   if (editing) {
     return (
       <li>
-        <button onClick={() => { onToggle(); haptics.light(); }} className={`${cls} w-full text-left active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+        <button onClick={() => { onToggle(); haptics.light(); }} className={`${cls} w-full text-left`}>
           {inner}
         </button>
       </li>
@@ -113,7 +153,7 @@ function RollItem({ roll, editing, selected, onToggle }: {
   }
   return (
     <li>
-      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}>
+      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block`}>
         {inner}
       </Link>
     </li>
@@ -259,7 +299,7 @@ export default function HomeClient() {
                       </button>
                     )}
                   </div>
-                  <ul>
+                  <ul className="space-y-2">
                     {sectionRolls.map((roll) => (
                       <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
                     ))}

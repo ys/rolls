@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Camera, Film } from "@/lib/db";
+import type { Camera, Film, CatalogFilm } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
+import FilmPickerSheet from "@/components/FilmPickerSheet";
 import { haptics } from "@/lib/haptics";
 
 function cameraLabel(c: Camera): string {
@@ -31,6 +32,7 @@ export default function NewRollPage() {
   const [open, setOpen] = useState(false);
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
   const [allFilms, setAllFilms] = useState<Film[]>([]);
+  const [catalogFilms, setCatalogFilms] = useState<CatalogFilm[]>([]);
   const [suggestedNumber, setSuggestedNumber] = useState("");
   const [rollNumber, setRollNumber] = useState("");
   const [cameraId, setCameraId] = useState("");
@@ -44,6 +46,7 @@ export default function NewRollPage() {
   const [expanded, setExpanded] = useState(false);
   const [showNewCamera, setShowNewCamera] = useState(false);
   const [showNewFilm, setShowNewFilm] = useState(false);
+  const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -55,9 +58,11 @@ export default function NewRollPage() {
       fetch("/api/cameras", { headers: authHeaders }).then((r) => r.json()),
       fetch("/api/films", { headers: authHeaders }).then((r) => r.json()),
       fetch("/api/rolls/next", { headers: authHeaders }).then((r) => r.json()),
-    ]).then(([cams, fils, next]: [Camera[], Film[], { roll_number: string }]) => {
+      fetch("/api/catalog/films").then((r) => r.json()).catch(() => []),
+    ]).then(([cams, fils, next, catalog]: [Camera[], Film[], { roll_number: string }, CatalogFilm[]]) => {
       setAllCameras(cams);
       setAllFilms(fils);
+      setCatalogFilms(catalog);
       setSuggestedNumber(next.roll_number);
       setRollNumber(next.roll_number);
       setOpen(true);
@@ -156,25 +161,20 @@ export default function NewRollPage() {
             <label className={labelCls}>Film</label>
             <button type="button" onClick={() => setShowNewFilm(true)} className={addLinkCls}>+ new</button>
           </div>
-          {films.length === 0 ? (
-            <button type="button" onClick={() => setShowNewFilm(true)} className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
-              + Add a film first
-            </button>
-          ) : (
-            <div className="relative">
-              <select
-                value={filmId}
-                onChange={(e) => setFilmId(e.target.value)}
-                className={selectCls}
-              >
-                <option value="">— select —</option>
-                {films.map((f) => (
-                  <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => setFilmPickerOpen(true)}
+            className={selectCls + " text-left flex items-center justify-between"}
+          >
+            <span className={filmId ? "" : "text-zinc-400"}>
+              {filmId
+                ? (films.find((f) => f.slug === filmId)?.nickname ??
+                   catalogFilms.find((f) => f.slug === filmId)?.nickname ??
+                   filmId)
+                : "— select —"}
+            </span>
+            <span className="text-zinc-500 dark:text-zinc-400">▾</span>
+          </button>
         </div>
 
         {/* Extra fields — revealed by dragging the sheet up */}
@@ -284,6 +284,15 @@ export default function NewRollPage() {
         setFilmId(film.slug);
         setShowNewFilm(false);
       }}
+    />
+
+    <FilmPickerSheet
+      open={filmPickerOpen}
+      onClose={() => setFilmPickerOpen(false)}
+      films={films}
+      catalogFilms={catalogFilms}
+      value={filmId}
+      onChange={setFilmId}
     />
     </>
   );

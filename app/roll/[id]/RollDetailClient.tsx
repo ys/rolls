@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { marked } from "marked";
-import type { Roll, Camera, Film } from "@/lib/db";
+import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
 import { STATUS_COLORS } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
 import BackButton from "@/components/BackButton";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
-import { DotsThreeOutline, CaretDown, Camera as CameraIcon, FilmStrip } from "@phosphor-icons/react";
+import FilmPickerSheet from "@/components/FilmPickerSheet";
+import { DotsThreeOutline, Check, Camera as CameraIcon, FilmStrip } from "@phosphor-icons/react";
 
 declare module "react" {
   namespace JSX {
@@ -57,7 +58,7 @@ function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
 }
 
-function filmLabel(f: Film): string {
+function filmLabel(f: Film | CatalogFilm): string {
   if (f.nickname) return f.nickname;
   const iso = f.show_iso && f.iso ? ` ${f.iso}` : "";
   return `${f.brand} ${f.name}${iso}`;
@@ -68,9 +69,10 @@ interface Props {
   status: string;
   cameras: Camera[];
   films: Film[];
+  catalogFilms: CatalogFilm[];
 }
 
-export default function RollDetailClient({ roll: initialRoll, status: initialStatus, cameras, films }: Props) {
+export default function RollDetailClient({ roll: initialRoll, status: initialStatus, cameras, films, catalogFilms }: Props) {
   const router = useRouter();
   const [roll, setRoll] = useState(initialRoll);
   const [status, setStatus] = useState(initialStatus);
@@ -86,6 +88,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [editAll, setEditAll] = useState(false);
   const [showMetaSheet, setShowMetaSheet] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [metaForm, setMetaForm] = useState({
     camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
     film_id: films.find((f) => f.uuid === initialRoll.film_uuid)?.slug ?? "",
@@ -269,19 +272,20 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
           <div className="space-y-1">
             <label className={labelCls}>Film</label>
-            <div className="relative">
-              <select
-                value={metaForm.film_id}
-                onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
-                className={inputCls + " pr-6"}
-              >
-                <option value="">— none —</option>
-                {films.map((f) => (
-                  <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setFilmPickerOpen(true)}
+              className={inputCls + " pr-6 text-left flex items-center justify-between w-full"}
+            >
+              <span className={metaForm.film_id ? "" : "text-zinc-400"}>
+                {metaForm.film_id
+                  ? (films.find((f) => f.slug === metaForm.film_id)?.nickname ??
+                     catalogFilms.find((f) => f.slug === metaForm.film_id)?.nickname ??
+                     metaForm.film_id)
+                  : "— none —"}
+              </span>
+              <span className="text-zinc-400 text-xs">▾</span>
+            </button>
           </div>
 
           <div className="space-y-1">
@@ -546,19 +550,20 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           </div>
           <div className="space-y-1">
             <label className={labelCls}>Film</label>
-            <div className="relative">
-              <select
-                value={metaForm.film_id}
-                onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
-                className={inputCls + " pr-6"}
-              >
-                <option value="">— none —</option>
-                {films.map((f) => (
-                  <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setFilmPickerOpen(true)}
+              className={inputCls + " pr-6 text-left flex items-center justify-between w-full"}
+            >
+              <span className={metaForm.film_id ? "" : "text-zinc-400"}>
+                {metaForm.film_id
+                  ? (films.find((f) => f.slug === metaForm.film_id)?.nickname ??
+                     catalogFilms.find((f) => f.slug === metaForm.film_id)?.nickname ??
+                     metaForm.film_id)
+                  : "— none —"}
+              </span>
+              <span className="text-zinc-400 text-xs">▾</span>
+            </button>
           </div>
           <div className="space-y-1">
             <label className={labelCls}>Shot at</label>
@@ -821,7 +826,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                   aria-label="Save & Close"
                   title="Save & Close"
                 >
-                  <CaretDown size={20} weight="bold" />
+                  <Check size={20} weight="bold" />
                 </button>
               </div>
             </div>
@@ -1062,6 +1067,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           )}
         </>
       )}
+
+      <FilmPickerSheet
+        open={filmPickerOpen}
+        onClose={() => setFilmPickerOpen(false)}
+        films={films}
+        catalogFilms={catalogFilms}
+        value={metaForm.film_id}
+        onChange={(slug) => setMetaForm((f) => ({ ...f, film_id: slug }))}
+      />
     </div>
   );
 }

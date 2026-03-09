@@ -69,6 +69,7 @@ export type RollWithDetails = Roll & {
   film_name: string | null;
   film_iso: number | null;
   film_show_iso: boolean | null;
+  film_slug: string | null;
 };
 
 export async function getRollsWithDetails(
@@ -84,7 +85,8 @@ export async function getRollsWithDetails(
       f.brand     AS film_brand,
       f.name      AS film_name,
       f.iso       AS film_iso,
-      f.show_iso  AS film_show_iso
+      f.show_iso  AS film_show_iso,
+      f.slug      AS film_slug
     FROM rolls r
     LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
     LEFT JOIN films   f ON f.uuid = r.film_uuid AND f.user_id = ${userId}

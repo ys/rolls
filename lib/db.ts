@@ -83,6 +83,18 @@ export interface Film {
   roll_count?: number;
 }
 
+export interface CatalogFilm {
+  slug: string;
+  brand: string;
+  name: string;
+  nickname: string | null;
+  iso: number | null;
+  color: boolean;
+  show_iso: boolean;
+  gradient_from: string | null;
+  gradient_to: string | null;
+}
+
 export interface Roll {
   uuid: string;
   roll_number: string;

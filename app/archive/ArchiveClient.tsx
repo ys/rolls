@@ -40,6 +40,40 @@ type RollRow = Roll & {
   film_name: string | null;
   film_iso: number | null;
   film_show_iso: boolean | null;
+  film_slug: string | null;
+};
+
+const FILM_GRADIENTS: Record<string, [string, string]> = {
+  "adox-color-mission-200": ["#f97316", "#2d7d6e"],
+  "berlin-400":             ["#1e3a5f", "#0f172a"],
+  "cinestill-400d":         ["#7c3aed", "#09090b"],
+  "color-plus":             ["#fde047", "#facc15"],
+  "earl-grey":              ["#a1a1aa", "#71717a"],
+  "ektar-100":              ["#dc2626", "#991b1b"],
+  "foma-400":               ["#71717a", "#52525b"],
+  "fuji-c200":              ["#4ade80", "#16a34a"],
+  "fuji-superia-200":       ["#4ade80", "#16a34a"],
+  "fuji-superia-400":       ["#22c55e", "#15803d"],
+  "gold-200":               ["#fbbf24", "#f59e0b"],
+  "ilford-hp5":             ["#4ade80", "#e4e4e7"],
+  "kentmere-100":           ["#60a5fa", "#93c5fd"],
+  "kentmere-400":           ["#7c3aed", "#ec4899"],
+  "kiro-400":               ["#f472b6", "#ec4899"],
+  "lomo-400":               ["#22d3ee", "#06b6d4"],
+  "lomo-800":               ["#c084fc", "#a855f7"],
+  "portra-160":             ["#fed7aa", "#fdba74"],
+  "portra-400":             ["#fdba74", "#fb923c"],
+  "portra-800":             ["#fb923c", "#f97316"],
+  "psych-blue":             ["#818cf8", "#6366f1"],
+  "redscale-50":            ["#f97316", "#dc2626"],
+  "rollei-400s":            ["#78716c", "#57534e"],
+  "rollei-superpan-200":    ["#64748b", "#475569"],
+  "sensia-50":              ["#16a34a", "#3b82f6"],
+  "sora-200":               ["#38bdf8", "#0ea5e9"],
+  "trix-400":               ["#3f3f46", "#18181b"],
+  "ultramax":               ["#ffd700", "#2563eb"],
+  "vision3-250d":           ["#fbbf24", "#1c1917"],
+  "xpro-200":               ["#fb923c", "#f97316"],
 };
 
 interface ArchiveData {
@@ -240,14 +274,16 @@ function ListRow({
       })
     : null;
 
+  const gradient = roll.film_slug ? FILM_GRADIENTS[roll.film_slug] : undefined;
+  const stripeStyle: React.CSSProperties = gradient
+    ? { background: `linear-gradient(to bottom, ${gradient[0]}, ${gradient[1]})` }
+    : { background: "#d4d4d8" };
+
   const content = (
     <>
+      {/* Film color stripe */}
+      <div className="self-stretch w-1 rounded-full shrink-0" style={stripeStyle} />
       {editing && <Checkbox checked={selected} />}
-      {!editing && (
-        <div
-          className={`w-2 h-2 rounded-full shrink-0 mt-[5px] ${STATUS_DOT[status] ?? "bg-zinc-300"}`}
-        />
-      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <span className="font-semibold text-[15px] truncate">
@@ -260,26 +296,25 @@ function ListRow({
           )}
         </div>
         {(camera || film) && (
-          <div className="flex items-center gap-2 mt-0.5 min-w-0">
+          <div className="flex flex-col gap-0.5 mt-0.5">
             {camera && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
                 <Camera size={12} weight="bold" className="shrink-0" />{camera}
               </span>
             )}
-            {camera && film && <span className="text-zinc-300 dark:text-zinc-600 text-[11px] shrink-0">·</span>}
             {film && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-300 truncate">
+              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
                 <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
-              </span>
-            )}
-            {roll.push_pull != null && (
-              <span className="text-[12px] font-mono text-zinc-400 dark:text-zinc-500 shrink-0">
-                {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+                {roll.push_pull != null && (
+                  <span className="text-[12px] font-mono text-zinc-400 dark:text-zinc-500 shrink-0">
+                    {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+                  </span>
+                )}
               </span>
             )}
           </div>
         )}
-        <div className="text-[13px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+        <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 uppercase tracking-wide">
           {status}
         </div>
       </div>
@@ -309,7 +344,7 @@ function ListRow({
     </>
   );
 
-  const cls = `flex items-start gap-3 py-3 -mx-4 px-4 transition-colors border-b border-zinc-200 dark:border-zinc-800 last:border-b-0`;
+  const cls = `flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70`;
 
   if (editing) {
     return (
@@ -668,7 +703,7 @@ export default function ArchiveClient() {
                       ))}
                     </div>
                   ) : (
-                    <ul>
+                    <ul className="space-y-2">
                       {yearRolls.map((roll) => (
                         <ListRow
                           key={roll.roll_number}

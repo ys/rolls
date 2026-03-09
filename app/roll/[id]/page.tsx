@@ -1,6 +1,6 @@
 import { sql } from "@/lib/db";
 import { rollStatus } from "@/lib/status";
-import type { Roll, Camera, Film } from "@/lib/db";
+import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { getUserId } from "@/lib/request-context";
 import RollDetailClient from "./RollDetailClient";
@@ -15,7 +15,7 @@ export default async function RollDetailPage({
   const { id } = await params;
   const userId = await getUserId();
 
-  const [rolls, cameras, films] = await Promise.all([
+  const [rolls, cameras, films, catalogFilms] = await Promise.all([
     sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}`,
     sql<Camera[]>`
       SELECT c.*, COUNT(r.roll_number)::int AS roll_count
@@ -31,6 +31,7 @@ export default async function RollDetailPage({
       WHERE f.user_id = ${userId}
       GROUP BY f.uuid ORDER BY COUNT(r.roll_number) DESC
     `,
+    sql<CatalogFilm[]>`SELECT * FROM catalog_films ORDER BY brand, name, iso`.catch(() => [] as CatalogFilm[]),
   ]);
 
   if (rolls.length === 0) notFound();
@@ -44,6 +45,7 @@ export default async function RollDetailPage({
       status={status}
       cameras={cameras}
       films={films}
+      catalogFilms={catalogFilms}
     />
   );
 }
