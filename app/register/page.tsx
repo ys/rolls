@@ -141,7 +141,7 @@ function RegisterForm() {
       const { options: optionsJSON, challenge } = await optionsResp.json();
 
       // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
-      const response = await startRegistration({ optionsJSON });
+      const response = await startRegistration(optionsJSON);
 
       // Step 3: Verify registration with server
       const verifyResp = await fetch("/api/auth/webauthn/register-verify", {
