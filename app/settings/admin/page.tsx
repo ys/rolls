@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/request-context";
 import { sql } from "@/lib/db";
-import Link from "next/link";
 import BackButton from "@/components/BackButton";
-import AdminUsersClient from "./AdminUsersClient";
 
 export const dynamic = "force-dynamic";
 
@@ -41,41 +39,6 @@ async function getStats() {
   };
 }
 
-async function getUsers(page = 1, limit = 20) {
-  const offset = (page - 1) * limit;
-  const [{ total }] = await sql<{ total: string }[]>`SELECT COUNT(*) AS total FROM users`;
-  const users = await sql<{
-    id: string;
-    email: string;
-    name: string | null;
-    role: string;
-    created_at: string;
-    last_seen_at: string | null;
-    roll_count: string;
-  }[]>`
-    SELECT
-      u.id,
-      u.email,
-      u.name,
-      u.role,
-      u.created_at,
-      u.last_seen_at,
-      COUNT(r.roll_number) AS roll_count
-    FROM users u
-    LEFT JOIN rolls r ON r.user_id = u.id
-    GROUP BY u.id
-    ORDER BY u.created_at DESC
-    LIMIT ${limit} OFFSET ${offset}
-  `;
-  const totalCount = Number(total);
-  return {
-    users: users.map((u) => ({ ...u, roll_count: Number(u.roll_count) })),
-    total: totalCount,
-    page,
-    pages: Math.ceil(totalCount / limit),
-  };
-}
-
 function StatCard({ label, value, sub }: { label: string; value: number; sub?: string }) {
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-2xl px-4 py-4">
@@ -90,7 +53,7 @@ export default async function AdminPage() {
   const { role } = await getUser();
   if (role !== "admin") redirect("/settings");
 
-  const [stats, usersData] = await Promise.all([getStats(), getUsers()]);
+  const stats = await getStats();
 
   return (
     <div className="space-y-8">
@@ -126,30 +89,6 @@ export default async function AdminPage() {
         <div className="grid grid-cols-3 gap-2">
           <StatCard label="Active (30d)" value={stats.active_users_30d} sub="seen in last 30 days" />
         </div>
-      </section>
-
-      <section className="space-y-2">
-        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
-          Catalog
-        </p>
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
-          <li>
-            <Link
-              href="/settings/admin/catalog-films"
-              className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
-            >
-              <span className="text-[15px]">Films</span>
-              <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
-            </Link>
-          </li>
-        </ul>
-      </section>
-
-      <section className="space-y-2">
-        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
-          Users
-        </p>
-        <AdminUsersClient initialData={usersData} />
       </section>
     </div>
   );
