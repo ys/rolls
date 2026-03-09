@@ -8,6 +8,8 @@ import { STATUS_COLORS } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
 import BackButton from "@/components/BackButton";
 import FormButton from "@/components/FormButton";
+import Sheet from "@/components/Sheet";
+import { DotsThreeOutline, CaretDown } from "@phosphor-icons/react";
 
 declare module "react" {
   namespace JSX {
@@ -82,6 +84,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [notesMode, setNotesMode] = useState<"edit" | "preview">("edit");
   const [editMeta, setEditMeta] = useState(false);
   const [editAll, setEditAll] = useState(false);
+  const [showMetaSheet, setShowMetaSheet] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [metaForm, setMetaForm] = useState({
     camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
     film_id: films.find((f) => f.uuid === initialRoll.film_uuid)?.slug ?? "",
@@ -638,28 +642,27 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   );
 
   return (
-    <div>
-      <BackButton />
-
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
-          <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
-            {status}
-          </span>
-        </div>
-        {isPostScan && (
-          <button
-            onClick={() => setEditAll((v) => !v)}
-            className="mt-1 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-          >
-            {editAll ? "Done" : "Edit"}
-          </button>
-        )}
-      </div>
-
+    <div className={isPostScan ? "" : "flex flex-col h-[calc(100vh-2rem)]"}>
       {isPostScan ? (
+        // POST-SCAN VIEW (existing layout)
         <>
+          <BackButton />
+
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-mono font-bold">{roll.roll_number}</h1>
+              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[status]}`}>
+                {status}
+              </span>
+            </div>
+            <button
+              onClick={() => setEditAll((v) => !v)}
+              className="mt-1 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              {editAll ? "Done" : "Edit"}
+            </button>
+          </div>
+
           {/* Contact sheet — always visible */}
           {roll.contact_sheet_url && (
             <div className="mb-4">
@@ -688,44 +691,364 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               {viewCard}
             </>
           )}
+
+          {/* Delete */}
+          <div className="mt-2 mb-8 flex justify-center">
+            {confirmDelete ? (
+              <div className="flex gap-3 items-center">
+                <span className="text-xs text-zinc-400">Delete this roll?</span>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors"
+                >
+                  {deleting ? "Deleting…" : "Yes, delete"}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="text-xs text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              >
+                Delete roll
+              </button>
+            )}
+          </div>
         </>
       ) : (
+        // PRE-SCAN VIEW (Notes-app style)
         <>
-          {actionButton}
-          {notesEditor}
-          {metaSection}
-          {datesSection}
+          {/* Header bar */}
+          <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
+            <div className="flex items-center justify-end mb-2">
+              <div className="flex items-center gap-2 relative">
+              {/* Three dots menu - opens actions dropdown */}
+              <button
+                onClick={() => setShowActionsMenu(!showActionsMenu)}
+                className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                aria-label="Menu"
+              >
+                <DotsThreeOutline size={20} weight="regular" />
+              </button>
+
+              {/* Actions dropdown */}
+              {showActionsMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowActionsMenu(false)}
+                  />
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 py-1 z-50">
+                    {nextAction && (
+                      <button
+                        onClick={async () => {
+                          const patch: Partial<Roll> = {
+                            notes,
+                            [nextAction.field]: nowValue(nextAction.isDate)
+                          };
+                          if (status === "FRIDGE" && labName) patch.lab_name = labName;
+                          setShowActionsMenu(false);
+                          const ok = await save(patch);
+                          if (ok) {
+                            router.push("/");
+                          }
+                        }}
+                        disabled={saving}
+                        className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                      >
+                        {saving ? "Saving…" : nextAction.label}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowMetaSheet(true);
+                        setShowActionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      Edit info
+                    </button>
+                    <button
+                      onClick={() => {
+                        setConfirmDelete(true);
+                        setShowActionsMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      Delete roll
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Chevron down - save button */}
+              <button
+                onClick={async () => {
+                  const ok = await save({ notes });
+                  if (ok) {
+                    router.push("/");
+                  }
+                }}
+                disabled={saving}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 text-white shadow-lg shadow-amber-400/40 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Save & Close"
+                title="Save & Close"
+              >
+                <CaretDown size={20} weight="bold" />
+              </button>
+              </div>
+            </div>
+
+            {/* Roll number and status */}
+            <div>
+              <h1 className="text-xl font-mono font-bold">{roll.roll_number}</h1>
+              <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[status]}`}>
+                {status}
+              </span>
+            </div>
+          </div>
+
+          {/* Lab name input for FRIDGE status */}
+          {status === "FRIDGE" && (
+            <div className="mb-3 flex-shrink-0">
+              <input
+                type="text"
+                value={labName}
+                onChange={(e) => setLabName(e.target.value)}
+                placeholder="Lab name (optional)"
+                className="w-full appearance-none rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all"
+              />
+            </div>
+          )}
+
+          {/* Full-height notes editor */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <textarea
+              id="notes-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              onBlur={() => save({ notes })}
+              placeholder="Write your notes here..."
+              className="flex-1 w-full bg-transparent text-sm focus:outline-none resize-none leading-relaxed"
+            />
+          </div>
+
+          {/* Metadata Sheet */}
+          <Sheet open={showMetaSheet} onClose={() => setShowMetaSheet(false)} title="Roll Info">
+            <div className="space-y-4 pb-6">
+              {/* Camera */}
+              <div className="space-y-1">
+                <label className={labelCls}>Camera</label>
+                <div className="relative">
+                  <select
+                    value={metaForm.camera_id}
+                    onChange={(e) => setMetaForm((f) => ({ ...f, camera_id: e.target.value }))}
+                    className={inputCls + " pr-6"}
+                  >
+                    <option value="">— none —</option>
+                    {cameras.map((c) => (
+                      <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+                </div>
+              </div>
+
+              {/* Film */}
+              <div className="space-y-1">
+                <label className={labelCls}>Film</label>
+                <div className="relative">
+                  <select
+                    value={metaForm.film_id}
+                    onChange={(e) => setMetaForm((f) => ({ ...f, film_id: e.target.value }))}
+                    className={inputCls + " pr-6"}
+                  >
+                    <option value="">— none —</option>
+                    {films.map((f) => (
+                      <option key={f.slug} value={f.slug}>{filmLabel(f)}</option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">▾</span>
+                </div>
+              </div>
+
+              {/* Shot at */}
+              <div className="space-y-1">
+                <label className={labelCls}>Shot at</label>
+                <input
+                  type="date"
+                  value={metaForm.shot_at}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, shot_at: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Album */}
+              <div className="space-y-1">
+                <label className={labelCls}>Album</label>
+                <input
+                  type="text"
+                  value={metaForm.album_name}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, album_name: e.target.value }))}
+                  placeholder="Album name"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Tags */}
+              <div className="space-y-1">
+                <label className={labelCls}>Tags</label>
+                <input
+                  type="text"
+                  value={metaForm.tags}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, tags: e.target.value }))}
+                  placeholder="travel, street"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Push/Pull */}
+              <div className="space-y-2">
+                <label className={labelCls}>Push / Pull</label>
+                <div className="flex gap-1 flex-wrap">
+                  {[-2, -1, 0, 1, 2].map((v) => {
+                    const label = v > 0 ? `+${v}` : `${v}`;
+                    const active = metaForm.push_pull === v && metaForm.push_pull_custom === "";
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => {
+                          if (active) {
+                            setMetaForm((f) => ({ ...f, push_pull: null, push_pull_custom: "" }));
+                          } else {
+                            setMetaForm((f) => ({ ...f, push_pull: v, push_pull_custom: "" }));
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-mono border transition-colors ${
+                          active
+                            ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white"
+                            : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={metaForm.push_pull_custom}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setMetaForm((f) => ({
+                        ...f,
+                        push_pull_custom: raw,
+                        push_pull: raw !== "" ? parseFloat(raw) : null,
+                      }));
+                    }}
+                    placeholder="other"
+                    className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-xs text-center font-mono focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                <span className="block text-[10px] uppercase tracking-widest text-zinc-400 mb-3">Dates</span>
+                <div className="space-y-4">
+                  {TIMESTAMP_FIELDS.map(({ key, label, type }) => (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</label>
+                        {roll[key] ? (
+                          <button
+                            onClick={() => save({ [key]: null })}
+                            className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            Clear
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => save({ [key]: nowValue(type === "date") })}
+                            className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                          >
+                            Now
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type={type}
+                        key={roll[key] ?? "empty"}
+                        defaultValue={roll[key] ? (type === "date" ? roll[key]!.slice(0, 10) : roll[key]!.slice(0, 16)) : ""}
+                        onBlur={(e) => {
+                          if (e.target.value) save({ [key]: e.target.value });
+                        }}
+                        className={inputCls}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save button */}
+              <FormButton
+                onClick={async () => {
+                  const ok = await save({
+                    camera_id: metaForm.camera_id || null,
+                    film_id: metaForm.film_id || null,
+                    shot_at: metaForm.shot_at || null,
+                    album_name: metaForm.album_name || null,
+                    tags: metaForm.tags ? metaForm.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                    push_pull: metaForm.push_pull,
+                  });
+                  if (ok) setShowMetaSheet(false);
+                }}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Save Info"}
+              </FormButton>
+            </div>
+          </Sheet>
+
+          {/* Delete confirmation modal */}
+          {confirmDelete && (
+            <>
+              <div
+                className="fixed inset-0 bg-black/50 z-50"
+                onClick={() => setConfirmDelete(false)}
+              />
+              <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 rounded-xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800 z-50 max-w-sm w-full mx-4">
+                <h2 className="text-lg font-semibold mb-2">Delete Roll?</h2>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                  This will permanently delete roll {roll.roll_number}. This action cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="flex-1 px-4 py-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex-1 px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                  >
+                    {deleting ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
-
-      {/* Delete */}
-      <div className="mt-2 mb-8 flex justify-center">
-        {confirmDelete ? (
-          <div className="flex gap-3 items-center">
-            <span className="text-xs text-zinc-400">Delete this roll?</span>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors"
-            >
-              {deleting ? "Deleting…" : "Yes, delete"}
-            </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-xs text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-          >
-            Delete roll
-          </button>
-        )}
-      </div>
     </div>
   );
 }
