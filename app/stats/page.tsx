@@ -1,9 +1,12 @@
 import { sql } from "@/lib/db";
+import { getUserId } from "@/lib/request-context";
 import StatsClient from "./StatsClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function StatsPage() {
+  const userId = await getUserId();
+
   const [rollsPerYear, topCameras, topFilms, statusCounts] = await Promise.all([
     sql<{ year: string; count: number }[]>`
       SELECT
@@ -11,6 +14,7 @@ export default async function StatsPage() {
         COUNT(*)::int AS count
       FROM rolls
       WHERE roll_number ~ '^[0-9]{2}x'
+        AND user_id = ${userId}
       GROUP BY 1
       ORDER BY 1 DESC
     `,
@@ -22,6 +26,7 @@ export default async function StatsPage() {
       FROM rolls r
       JOIN cameras c ON c.uuid = r.camera_uuid
       WHERE r.camera_uuid IS NOT NULL
+        AND r.user_id = ${userId}
       GROUP BY c.uuid, c.nickname, c.brand, c.model
       ORDER BY count DESC
       LIMIT 10
@@ -34,6 +39,7 @@ export default async function StatsPage() {
       FROM rolls r
       JOIN films f ON f.uuid = r.film_uuid
       WHERE r.film_uuid IS NOT NULL
+        AND r.user_id = ${userId}
       GROUP BY f.uuid, f.nickname, f.brand, f.name
       ORDER BY count DESC
       LIMIT 10
@@ -52,6 +58,7 @@ export default async function StatsPage() {
         END AS status,
         COUNT(*)::int AS count
       FROM rolls
+      WHERE user_id = ${userId}
       GROUP BY 1
     `,
   ]);
