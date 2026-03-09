@@ -13,39 +13,7 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 
-// Box art gradients keyed by film slug [from, to]
-const FILM_GRADIENTS: Record<string, [string, string]> = {
-  "adox-color-mission-200": ["#f97316", "#2d7d6e"],   // orange → teal (Adox Color Mission box)
-  "berlin-400":             ["#1e3a5f", "#0f172a"],   // dark navy
-  "cinestill-400d":         ["#7c3aed", "#09090b"],   // purple → black (CineStill 400D box)
-  "color-plus":             ["#fde047", "#facc15"],   // bright yellow
-  "earl-grey":              ["#a1a1aa", "#71717a"],   // zinc gray
-  "ektar-100":              ["#dc2626", "#991b1b"],   // deep red
-  "foma-400":               ["#71717a", "#52525b"],   // dark gray
-  "fuji-c200":              ["#4ade80", "#16a34a"],   // green
-  "fuji-superia-200":       ["#4ade80", "#16a34a"],   // green
-  "fuji-superia-400":       ["#22c55e", "#15803d"],   // deeper green
-  "gold-200":               ["#fbbf24", "#f59e0b"],   // gold
-  "ilford-hp5":             ["#4ade80", "#e4e4e7"],   // green → white/gray (HP5 box)
-  "kentmere-100":           ["#60a5fa", "#93c5fd"],   // blue → light blue (Pan 100 box)
-  "kentmere-400":           ["#7c3aed", "#ec4899"],   // purple → pink (Pan 400 box)
-  "kiro-400":               ["#f472b6", "#ec4899"],   // pink
-  "lomo-400":               ["#22d3ee", "#06b6d4"],   // cyan
-  "lomo-800":               ["#c084fc", "#a855f7"],   // purple
-  "portra-160":             ["#fed7aa", "#fdba74"],   // pale peach
-  "portra-400":             ["#fdba74", "#fb923c"],   // peach
-  "portra-800":             ["#fb923c", "#f97316"],   // deeper peach
-  "psych-blue":             ["#818cf8", "#6366f1"],   // indigo
-  "redscale-50":            ["#f97316", "#dc2626"],   // red-orange
-  "rollei-400s":            ["#78716c", "#57534e"],   // stone
-  "rollei-superpan-200":    ["#64748b", "#475569"],   // slate
-  "sensia-50":              ["#16a34a", "#3b82f6"],   // green → blue (Fujichrome Sensia box)
-  "sora-200":               ["#38bdf8", "#0ea5e9"],   // sky blue
-  "trix-400":               ["#3f3f46", "#18181b"],   // near black
-  "ultramax":               ["#ffd700", "#2563eb"],   // yellow → blue (Kodak UltraMax box)
-  "vision3-250d":           ["#fbbf24", "#1c1917"],   // yellow → black (Vision3 cinema can)
-  "xpro-200":               ["#fb923c", "#f97316"],   // orange
-};
+import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
   LOADED: { field: "fridge_at",  label: "To Fridge", color: "bg-cyan-500"   },

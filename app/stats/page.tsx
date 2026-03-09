@@ -32,15 +32,16 @@ export default async function StatsPage() {
       LIMIT 10
     `,
 
-    sql<{ label: string; count: number }[]>`
+    sql<{ label: string; count: number; slug: string }[]>`
       SELECT
         COALESCE(f.nickname, f.brand || ' ' || f.name) AS label,
-        COUNT(*)::int AS count
+        COUNT(*)::int AS count,
+        f.slug
       FROM rolls r
       JOIN films f ON f.uuid = r.film_uuid
       WHERE r.film_uuid IS NOT NULL
         AND r.user_id = ${userId}
-      GROUP BY f.uuid, f.nickname, f.brand, f.name
+      GROUP BY f.uuid, f.nickname, f.brand, f.name, f.slug
       ORDER BY count DESC
       LIMIT 10
     `,
@@ -68,7 +69,7 @@ export default async function StatsPage() {
       initialData={{
         rollsPerYear: rollsPerYear as { year: string; count: number }[],
         topCameras: topCameras as { label: string; count: number }[],
-        topFilms: topFilms as { label: string; count: number }[],
+        topFilms: topFilms as { label: string; count: number; slug: string }[],
         statusCounts: statusCounts as { status: string; count: number }[],
       }}
     />

@@ -33,7 +33,7 @@ INSERT INTO catalog_films (slug, brand, name, nickname, iso, color, show_iso, gr
   ('lomo-400',               'Lomography',     'Color Negative', 'Lomography Color Negative 400',  400, true,  true,  '#22d3ee', '#06b6d4'),
   ('lomo-800',               'Lomography',     'Color Negative', 'Lomography Color Negative 800',  800, true,  true,  '#c084fc', '#a855f7'),
   ('portra-160',             'Kodak',          'Portra',         'Kodak Portra 160',               160, true,  true,  '#fed7aa', '#fdba74'),
-  ('portra-400',             'Kodak',          'Portra',         'Kodak Portra 400',               400, true,  true,  '#fdba74', '#fb923c'),
+  ('portra-400',             'Kodak',          'Portra',         'Kodak Portra 400',               400, true,  true,  '#f5c518', '#6d28d9'),
   ('portra-800',             'Kodak',          'Portra',         'Kodak Portra 800',               800, true,  true,  '#fb923c', '#f97316'),
   ('psych-blue',             'Psych',          'Blue',           'Psych Blue',                     0,   true,  false, '#818cf8', '#6366f1'),
   ('redscale-50',            'Lomography',     'Redscale',       'Lomography Redscale 50',         50,  true,  true,  '#f97316', '#dc2626'),

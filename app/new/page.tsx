@@ -9,6 +9,7 @@ import Sheet from "@/components/Sheet";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
 import FilmPickerSheet from "@/components/FilmPickerSheet";
+import CameraPickerSheet from "@/components/CameraPickerSheet";
 import { haptics } from "@/lib/haptics";
 
 function cameraLabel(c: Camera): string {
@@ -47,6 +48,7 @@ export default function NewRollPage() {
   const [showNewCamera, setShowNewCamera] = useState(false);
   const [showNewFilm, setShowNewFilm] = useState(false);
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
+  const [cameraPickerOpen, setCameraPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -140,19 +142,18 @@ export default function NewRollPage() {
               + Add a camera first
             </button>
           ) : (
-            <div className="relative">
-              <select
-                value={cameraId}
-                onChange={(e) => setCameraId(e.target.value)}
-                className={selectCls}
-              >
-                <option value="">— select —</option>
-                {cameras.map((c) => (
-                  <option key={c.slug} value={c.slug}>{cameraLabel(c)}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setCameraPickerOpen(true)}
+              className={selectCls + " text-left flex items-center justify-between"}
+            >
+              <span className={cameraId ? "" : "text-zinc-400"}>
+                {cameraId
+                  ? (cameras.find((c) => c.slug === cameraId) ? cameraLabel(cameras.find((c) => c.slug === cameraId)!) : cameraId)
+                  : "— select —"}
+              </span>
+              <span className="text-zinc-500 dark:text-zinc-400">▾</span>
+            </button>
           )}
         </div>
 
@@ -293,6 +294,14 @@ export default function NewRollPage() {
       catalogFilms={catalogFilms}
       value={filmId}
       onChange={setFilmId}
+    />
+
+    <CameraPickerSheet
+      open={cameraPickerOpen}
+      onClose={() => setCameraPickerOpen(false)}
+      cameras={cameras}
+      value={cameraId}
+      onChange={setCameraId}
     />
     </>
   );

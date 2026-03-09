@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import PullToRefresh from "@/components/PullToRefresh";
 import { STATUS_ORDER } from "@/lib/status";
+import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 // Solid bar colors per status
 const STATUS_BAR: Record<string, string> = {
@@ -28,7 +29,7 @@ const STATUS_LABEL_COLOR: Record<string, string> = {
 interface StatsData {
   rollsPerYear: { year: string; count: number }[];
   topCameras: { label: string; count: number }[];
-  topFilms: { label: string; count: number }[];
+  topFilms: { label: string; count: number; slug: string }[];
   statusCounts: { status: string; count: number }[];
 }
 
@@ -164,7 +165,7 @@ export default function StatsClient({
         {data.topFilms.length > 0 && (
           <section>
             <SectionTitle>Top Films</SectionTitle>
-            <RankedList items={data.topFilms} max={maxFilm} />
+            <RankedList items={data.topFilms} max={maxFilm} useFilmGradient />
           </section>
         )}
       </div>
@@ -194,33 +195,41 @@ function HeroStat({ label, value }: { label: string; value: string | number }) {
 function RankedList({
   items,
   max,
+  useFilmGradient,
 }: {
-  items: { label: string; count: number }[];
+  items: { label: string; count: number; slug?: string }[];
   max: number;
+  useFilmGradient?: boolean;
 }) {
   return (
     <div className="space-y-2.5">
-      {items.map((r, i) => (
-        <div key={r.label} className="flex items-center gap-3">
-          <span className="text-[11px] text-zinc-400 w-4 text-right shrink-0 tabular-nums">
-            {i + 1}
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-medium truncate">{r.label}</span>
-              <span className="text-sm font-semibold text-zinc-500 shrink-0 tabular-nums ml-auto">
-                {r.count}
-              </span>
-            </div>
-            <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-amber-400 rounded-full transition-all"
-                style={{ width: `${(r.count / max) * 100}%` }}
-              />
+      {items.map((r, i) => {
+        const gradient = useFilmGradient && r.slug ? FILM_GRADIENTS[r.slug] : undefined;
+        const barStyle: React.CSSProperties = gradient
+          ? { width: `${(r.count / max) * 100}%`, background: `linear-gradient(to right, ${gradient[0]}, ${gradient[1]})` }
+          : { width: `${(r.count / max) * 100}%` };
+        return (
+          <div key={r.label} className="flex items-center gap-3">
+            <span className="text-[11px] text-zinc-400 w-4 text-right shrink-0 tabular-nums">
+              {i + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-medium truncate">{r.label}</span>
+                <span className="text-sm font-semibold text-zinc-500 shrink-0 tabular-nums ml-auto">
+                  {r.count}
+                </span>
+              </div>
+              <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${gradient ? "" : "bg-amber-400"}`}
+                  style={barStyle}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
