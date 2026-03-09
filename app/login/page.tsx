@@ -40,7 +40,7 @@ function LoginForm() {
         const { options: optionsJSON, challenge } = await resp.json();
 
         // useBrowserAutofill=true: passkey appears in the email input's autocomplete
-        const response = await startAuthentication(optionsJSON, { useBrowserAutofill: true });
+        const response = await startAuthentication({ optionsJSON, useBrowserAutofill: true });
         if (abort.signal.aborted) return;
 
         const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
@@ -91,7 +91,7 @@ function LoginForm() {
       const { options: optionsJSON, challenge, userId } = await optionsResp.json();
 
       // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
-      const response = await startAuthentication(optionsJSON);
+      const response = await startAuthentication({ optionsJSON });
 
       // Step 3: Verify authentication with server
       const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
