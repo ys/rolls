@@ -9,7 +9,7 @@ import { invalidateCache } from "@/lib/cache";
 import BackButton from "@/components/BackButton";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
-import { DotsThreeOutline, CaretDown } from "@phosphor-icons/react";
+import { DotsThreeOutline, CaretDown, Camera, FilmStrip } from "@phosphor-icons/react";
 
 declare module "react" {
   namespace JSX {
@@ -726,91 +726,104 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         <>
           {/* Header bar */}
           <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
-            <div className="flex items-center justify-end mb-2">
-              <div className="flex items-center gap-2 relative">
-              {/* Three dots menu - opens actions dropdown */}
-              <button
-                onClick={() => setShowActionsMenu(!showActionsMenu)}
-                className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-                aria-label="Menu"
-              >
-                <DotsThreeOutline size={20} weight="regular" />
-              </button>
-
-              {/* Actions dropdown */}
-              {showActionsMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowActionsMenu(false)}
-                  />
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 py-1 z-50">
-                    {nextAction && (
-                      <button
-                        onClick={async () => {
-                          const patch: Partial<Roll> = {
-                            notes,
-                            [nextAction.field]: nowValue(nextAction.isDate)
-                          };
-                          if (status === "FRIDGE" && labName) patch.lab_name = labName;
-                          setShowActionsMenu(false);
-                          const ok = await save(patch);
-                          if (ok) {
-                            router.push("/");
-                          }
-                        }}
-                        disabled={saving}
-                        className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-                      >
-                        {saving ? "Saving…" : nextAction.label}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setShowMetaSheet(true);
-                        setShowActionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                      Edit info
-                    </button>
-                    <button
-                      onClick={() => {
-                        setConfirmDelete(true);
-                        setShowActionsMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                      Delete roll
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Chevron down - save button */}
-              <button
-                onClick={async () => {
-                  const ok = await save({ notes });
-                  if (ok) {
-                    router.push("/");
-                  }
-                }}
-                disabled={saving}
-                className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 text-white shadow-lg shadow-amber-400/40 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Save & Close"
-                title="Save & Close"
-              >
-                <CaretDown size={20} weight="bold" />
-              </button>
+            <div className="flex items-center justify-between">
+              {/* Roll number, status, camera, and film */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-mono font-bold">{roll.roll_number}</h1>
+                {currentCamera && (
+                  <span className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <Camera size={14} weight="regular" />
+                    {cameraLabel(currentCamera)}
+                  </span>
+                )}
+                {currentFilm && (
+                  <span className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <FilmStrip size={14} weight="regular" />
+                    {filmLabel(currentFilm)}
+                  </span>
+                )}
+                <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[status]}`}>
+                  {status}
+                </span>
               </div>
-            </div>
 
-            {/* Roll number and status */}
-            <div>
-              <h1 className="text-xl font-mono font-bold">{roll.roll_number}</h1>
-              <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[status]}`}>
-                {status}
-              </span>
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 relative">
+                {/* Three dots menu - opens actions dropdown */}
+                <button
+                  onClick={() => setShowActionsMenu(!showActionsMenu)}
+                  className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  aria-label="Menu"
+                >
+                  <DotsThreeOutline size={20} weight="regular" />
+                </button>
+
+                {/* Actions dropdown */}
+                {showActionsMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowActionsMenu(false)}
+                    />
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-800 py-1 z-50">
+                      {nextAction && (
+                        <button
+                          onClick={async () => {
+                            const patch: Partial<Roll> = {
+                              notes,
+                              [nextAction.field]: nowValue(nextAction.isDate)
+                            };
+                            if (status === "FRIDGE" && labName) patch.lab_name = labName;
+                            setShowActionsMenu(false);
+                            const ok = await save(patch);
+                            if (ok) {
+                              router.push("/");
+                            }
+                          }}
+                          disabled={saving}
+                          className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                        >
+                          {saving ? "Saving…" : nextAction.label}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setShowMetaSheet(true);
+                          setShowActionsMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Edit info
+                      </button>
+                      <button
+                        onClick={() => {
+                          setConfirmDelete(true);
+                          setShowActionsMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Delete roll
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Chevron down - save button */}
+                <button
+                  onClick={async () => {
+                    const ok = await save({ notes });
+                    if (ok) {
+                      router.push("/");
+                    }
+                  }}
+                  disabled={saving}
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-500 text-white shadow-lg shadow-amber-400/40 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Save & Close"
+                  title="Save & Close"
+                >
+                  <CaretDown size={20} weight="bold" />
+                </button>
+              </div>
             </div>
           </div>
 
