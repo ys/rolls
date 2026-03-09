@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -285,6 +287,20 @@ func (roll *Roll) Archive(cfg *Config, forceExif bool) error {
 	if err != nil {
 		return err
 	}
+
+	// Sort files by the trailing number in their name (natural sort) so that
+	// e.g. "Photo-9.jpg" comes before "Photo-10.jpg" regardless of lexicographic order.
+	trailingNum := regexp.MustCompile(`(\d+)\.[^.]+$`)
+	sort.SliceStable(files, func(i, j int) bool {
+		mi := trailingNum.FindStringSubmatch(files[i].Name())
+		mj := trailingNum.FindStringSubmatch(files[j].Name())
+		if mi != nil && mj != nil {
+			ni, _ := strconv.Atoi(mi[1])
+			nj, _ := strconv.Atoi(mj[1])
+			return ni < nj
+		}
+		return files[i].Name() < files[j].Name()
+	})
 
 	// Count valid files for progress bar
 	validFiles := 0
