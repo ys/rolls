@@ -221,7 +221,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             onChange={(e) => setNotes(e.target.value)}
             rows={8}
             placeholder="Write notes in markdown…"
-            className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-sm focus:outline-none transition-colors resize-none font-mono"
+            className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors resize-none font-mono"
           />
         </>
       ) : notesPreview}
@@ -848,7 +848,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               onChange={(e) => setNotes(e.target.value)}
               onBlur={() => save({ notes })}
               placeholder="Write your notes here..."
-              className="flex-1 w-full bg-transparent text-sm focus:outline-none resize-none leading-relaxed"
+              className="flex-1 w-full bg-transparent text-base focus:outline-none resize-none leading-relaxed"
             />
           </div>
 
