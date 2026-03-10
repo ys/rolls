@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { marked } from "marked";
 import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
@@ -89,6 +90,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [showMetaSheet, setShowMetaSheet] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [metaForm, setMetaForm] = useState({
     roll_number: initialRoll.roll_number,
     camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
@@ -118,12 +120,20 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
   useEffect(() => {
     import("@github/markdown-toolbar-element");
+    setMounted(true);
   }, []);
 
   const nextAction = NEXT_ACTION[status];
   const currentCamera = cameras.find((c) => c.uuid === roll.camera_uuid) ?? null;
   const currentFilm = films.find((f) => f.uuid === roll.film_uuid) ?? null;
   const isPostScan = ["SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED"].includes(status);
+
+  // Hide bottom nav and replace with editor toolbar when in pre-scan notes view
+  useEffect(() => {
+    if (isPostScan) return;
+    document.body.setAttribute("data-notes-edit", "");
+    return () => { document.body.removeAttribute("data-notes-edit"); };
+  }, [isPostScan]);
 
   async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[]; push_pull?: number | null }): Promise<boolean> {
     setSaving(true);
@@ -523,19 +533,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             ))}
           </div>
         )}
-        {TIMESTAMP_FIELDS.some(({ key }) => roll[key]) && (
-          <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
-            {TIMESTAMP_FIELDS.map(({ key, label, type }) => roll[key] ? (
-              <Row
-                key={key}
-                label={label}
-                value={type === "date"
-                  ? new Date(roll[key]!).toLocaleDateString()
-                  : new Date(roll[key]!).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-              />
-            ) : null)}
-          </div>
-        )}
+        {/* Status timeline */}
+        <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <RollTimeline roll={roll} />
+        </div>
       </div>
     </div>
   );
@@ -863,14 +864,14 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           )}
 
           {/* Full-height notes editor */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 pb-16">
             <textarea
               id="notes-textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={() => save({ notes })}
-              placeholder="Write your notes here..."
-              className="flex-1 w-full bg-transparent text-base focus:outline-none resize-none leading-relaxed"
+              placeholder="Notes…"
+              className="flex-1 w-full bg-transparent text-base focus:outline-none resize-none leading-relaxed caret-amber-400"
             />
           </div>
 
@@ -1105,6 +1106,36 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         value={metaForm.film_id}
         onChange={(slug) => setMetaForm((f) => ({ ...f, film_id: slug }))}
       />
+
+      {/* Markdown editor toolbar — replaces bottom nav in pre-scan view */}
+      {!isPostScan && mounted && createPortal(
+        <div
+          className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-200/70 dark:border-zinc-800"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
+          <markdown-toolbar for="notes-textarea" className="flex items-center h-[52px] px-2">
+            <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
+            <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>
+            <md-strikethrough><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl line-through text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">S</button></md-strikethrough>
+            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
+            <md-unordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+            </button></md-unordered-list>
+            <md-ordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="1" y="9" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">1.</text><text x="1" y="15" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">2.</text><text x="1" y="21" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">3.</text></svg>
+            </button></md-ordered-list>
+            <md-task-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><polyline points="5 8 6.5 9.5 9 6.5" strokeWidth="1.5"/><line x1="13" y1="8" x2="21" y2="8"/><rect x="3" y="15" width="6" height="6" rx="1"/><line x1="13" y1="18" x2="21" y2="18"/></svg>
+            </button></md-task-list>
+            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
+            <md-quote><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5H3V9zm11 0c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5h-5V9z"/></svg>
+            </button></md-quote>
+            <md-code><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-mono text-[13px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">&lt;/&gt;</button></md-code>
+          </markdown-toolbar>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
@@ -1114,6 +1145,53 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between">
       <span className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</span>
       <span className="text-sm font-medium">{value}</span>
+    </div>
+  );
+}
+
+const TIMELINE_STEPS: Array<{ key: keyof Roll; label: string; type: "date" | "datetime" }> = [
+  { key: "fridge_at",    label: "Fridge",    type: "datetime" },
+  { key: "lab_at",       label: "Lab",       type: "datetime" },
+  { key: "scanned_at",   label: "Scanned",   type: "date"     },
+  { key: "processed_at", label: "Processed", type: "datetime" },
+  { key: "uploaded_at",  label: "Uploaded",  type: "datetime" },
+  { key: "archived_at",  label: "Archived",  type: "datetime" },
+];
+
+function RollTimeline({ roll }: { roll: Roll }) {
+  const steps = TIMELINE_STEPS.map((s) => ({ ...s, ts: roll[s.key] as string | null }));
+  const lastDone = steps.reduce((acc, s, i) => (s.ts ? i : acc), -1);
+
+  return (
+    <div className="pt-2 space-y-1">
+      {steps.map((step, i) => {
+        const done = !!step.ts;
+        const isCurrent = i === lastDone;
+        return (
+          <div key={step.key} className="flex gap-3 items-start">
+            {/* Dot + line */}
+            <div className="flex flex-col items-center shrink-0 w-4 mt-0.5">
+              <div className={`w-2.5 h-2.5 rounded-full border-2 transition-colors ${done ? (isCurrent ? "bg-amber-400 border-amber-400" : "bg-zinc-400 border-zinc-400 dark:bg-zinc-500 dark:border-zinc-500") : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"}`} />
+              {i < steps.length - 1 && (
+                <div className={`w-px flex-1 min-h-[10px] mt-0.5 ${done && steps[i + 1]?.ts ? "bg-zinc-400 dark:bg-zinc-500" : "bg-zinc-200 dark:bg-zinc-800"}`} />
+              )}
+            </div>
+            {/* Label + date */}
+            <div className="flex justify-between flex-1 pb-1.5">
+              <span className={`text-[11px] uppercase tracking-wide font-medium ${done ? (isCurrent ? "text-amber-600 dark:text-amber-400" : "text-zinc-600 dark:text-zinc-400") : "text-zinc-300 dark:text-zinc-700"}`}>
+                {step.label}
+              </span>
+              {step.ts && (
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
+                  {step.type === "date"
+                    ? new Date(step.ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                    : new Date(step.ts).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -406,6 +406,8 @@ export default function ArchiveClient() {
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -505,8 +507,27 @@ export default function ArchiveClient() {
     );
   }
 
+  // Search + tag filtering
+  const searchQuery = search.trim().toLowerCase();
+  const filteredRolls = data.rolls.filter((r) => {
+    if (selectedTag && !(r.tags ?? []).includes(selectedTag)) return false;
+    if (!searchQuery) return true;
+    return (
+      r.roll_number.toLowerCase().includes(searchQuery) ||
+      cameraLabel(r).toLowerCase().includes(searchQuery) ||
+      filmLabel(r).toLowerCase().includes(searchQuery) ||
+      (r.notes?.toLowerCase().includes(searchQuery) ?? false) ||
+      (r.tags?.some((t) => t.toLowerCase().includes(searchQuery)) ?? false)
+    );
+  });
+
+  // Collect all unique tags across all rolls
+  const allTags = Array.from(
+    new Set(data.rolls.flatMap((r) => r.tags ?? []))
+  ).sort();
+
   const byYear = new Map<number, RollRow[]>();
-  for (const roll of data.rolls) {
+  for (const roll of filteredRolls) {
     const y = rollYear(roll);
     if (!byYear.has(y)) byYear.set(y, []);
     byYear.get(y)!.push(roll);
@@ -580,6 +601,44 @@ export default function ArchiveClient() {
             </div>
           </div>
 
+          {/* Search */}
+          {!editing && (
+            <div className="relative mb-4">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search archive…"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-shadow"
+              />
+            </div>
+          )}
+
+          {/* Tag filter chips */}
+          {allTags.length > 0 && !editing && (
+            <div className="flex gap-2 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    setSelectedTag(selectedTag === tag ? null : tag);
+                    haptics.light();
+                  }}
+                  className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium transition-colors shrink-0 ${
+                    selectedTag === tag
+                      ? "bg-amber-500 dark:bg-amber-400 text-white dark:text-zinc-900"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Year slider */}
           {years.length > 1 && !editing && (
             <div className="mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
@@ -620,10 +679,18 @@ export default function ArchiveClient() {
             </div>
           )}
 
+          {/* No results */}
+          {filteredRolls.length === 0 && (searchQuery || selectedTag) && (
+            <p className="text-zinc-400 text-center py-12 text-sm">
+              No rolls match {selectedTag ? `#${selectedTag}` : `"${search}"`}
+            </p>
+          )}
+
           {/* Content */}
           <div className="space-y-8">
             {yearsToShow.map((year) => {
-              const yearRolls = byYear.get(year)!;
+              const yearRolls = byYear.get(year);
+              if (!yearRolls) return null;
               const yearNums = yearRolls.map((r) => r.roll_number);
               const allYearSelected = yearNums.every((n) => selected.has(n));
               function toggleYear() {

@@ -178,6 +178,13 @@ export default function NewRollPage() {
           </button>
         </div>
 
+        {/* Hint to drag up for more options */}
+        {!expanded && (
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center -mt-2">
+            Drag up for date, notes, tags &amp; more
+          </p>
+        )}
+
         {/* Extra fields — revealed by dragging the sheet up */}
         {expanded && (
           <>

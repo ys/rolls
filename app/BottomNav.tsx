@@ -23,7 +23,7 @@ export default function BottomNav() {
     let timer: ReturnType<typeof setTimeout>;
     const observer = new MutationObserver(() => {
       clearTimeout(timer);
-      if (document.body.hasAttribute("data-mass-edit")) {
+      if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
         setAnim("hiding");
         timer = setTimeout(() => setAnim("hidden"), 240);
       } else {
@@ -31,7 +31,7 @@ export default function BottomNav() {
         timer = setTimeout(() => setAnim("idle"), 240);
       }
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ["data-mass-edit"] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-mass-edit", "data-notes-edit"] });
     return () => { observer.disconnect(); clearTimeout(timer); };
   }, []);
 

@@ -21,7 +21,7 @@ describe("User Data Isolation Integration Tests", () => {
   const user2Id = "user-002";
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe("Camera isolation", () => {
@@ -129,11 +129,11 @@ describe("User Data Isolation Integration Tests", () => {
 
   describe("Invite isolation", () => {
     it("should not allow deleting another user's invite", async () => {
-      const { getUserId } = await import("@/lib/request-context");
+      const { getUser } = await import("@/lib/request-context");
       const { sql } = await import("@/lib/db");
       const { DELETE } = await import("@/app/api/auth/invites/[id]/route");
 
-      (getUserId as any).mockResolvedValueOnce(user1Id);
+      (getUser as any).mockResolvedValueOnce({ id: user1Id, email: "user1@example.com", role: "user" });
       (sql as any).mockResolvedValueOnce([]); // No results due to created_by filter
 
       const request = new Request("http://localhost/api/auth/invites/user2-invite") as unknown as NextRequest;
