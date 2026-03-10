@@ -221,7 +221,12 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             );
           })}
           {films.length === 0 && (
-            <li className="text-zinc-500 text-sm text-center py-8">No films yet.</li>
+            <li className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+              <svg className="w-10 h-10 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125a1.125 1.125 0 00-1.125-1.125v-1.5c0-.621.504-1.125 1.125-1.125m0 3.75v-3.75M6 18.375V7.875c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v10.5c0 .621-.504 1.125-1.125 1.125M6 18.375H3.375m14.25 0H18.75M18.75 19.5h-1.5c-.621 0-1.125-.504-1.125-1.125M18.75 19.5a1.125 1.125 0 001.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75v-3.75" />
+              </svg>
+              <p className="text-sm text-zinc-500">No films yet.<br />Add your first film to get started.</p>
+            </li>
           )}
         </ul>
 

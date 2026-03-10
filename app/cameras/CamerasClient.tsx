@@ -26,6 +26,14 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Merge mode state
+  const [merging, setMerging] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [targetId, setTargetId] = useState("");
+  const [mergeError, setMergeError] = useState("");
+  const [mergeSaving, setMergeSaving] = useState(false);
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers = (extra?: Record<string, string>): HeadersInit => ({
@@ -44,6 +52,13 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
       setAllCameras(cameras);
       router.refresh();
     }
+  }
+
+  function showSuccessMsg(msg: string) {
+    setSuccessMessage(msg);
+    setShowSuccess(true);
+    haptics.success();
+    setTimeout(() => setShowSuccess(false), 2000);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -68,20 +83,58 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
     const camera = await resp.json();
     setAllCameras((prev) => [...prev.filter((c) => c.slug !== camera.slug), camera]);
 
-    // Invalidate rolls cache since camera data changed
     invalidateCache("rolls");
 
     setForm({ id: "", brand: "", model: "", nickname: "", format: "135" });
     setSaving(false);
     setShowForm(false);
-    setShowSuccess(true);
-    haptics.success();
-
-    // Hide success message after 2 seconds
-    setTimeout(() => setShowSuccess(false), 2000);
+    showSuccessMsg("Camera saved!");
 
     router.refresh();
   }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function handleMerge() {
+    if (!targetId || selected.size < 2) return;
+    setMergeSaving(true);
+    setMergeError("");
+
+    const source_ids = [...selected].filter((id) => id !== targetId);
+    const resp = await fetch("/api/cameras/merge", {
+      method: "POST",
+      headers: headers({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ target_id: targetId, source_ids }),
+    });
+
+    if (!resp.ok) {
+      const data = await resp.json();
+      setMergeError(data.error ?? "Merge failed");
+      setMergeSaving(false);
+      haptics.error();
+      return;
+    }
+
+    const updated = await fetch("/api/cameras", { headers: headers() }).then((r) => r.json());
+    setAllCameras(updated);
+
+    invalidateCache("rolls");
+
+    setSelected(new Set());
+    setTargetId("");
+    setMerging(false);
+    setMergeSaving(false);
+    showSuccessMsg(`Cameras merged into ${targetId}!`);
+    router.refresh();
+  }
+
+  const selectedCameras = allCameras.filter((c) => selected.has(c.slug));
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -89,86 +142,163 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
         <BackButton label="Settings" />
         {showSuccess && (
           <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-            <SuccessMessage message="Camera saved!" />
+            <SuccessMessage message={successMessage} />
           </div>
         )}
 
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Cameras</h1>
-          <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+          <div className="flex gap-2 items-center">
+            {!merging && (
+              <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+                <button
+                  onClick={() => { setSortBy("usage"); haptics.light(); }}
+                  className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
+                >
+                  By usage
+                </button>
+                <button
+                  onClick={() => { setSortBy("alpha"); haptics.light(); }}
+                  className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
+                >
+                  A–Z
+                </button>
+              </div>
+            )}
             <button
-              onClick={() => { setSortBy("usage"); haptics.light(); }}
-              className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
+              onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
+              className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
-              By usage
-            </button>
-            <button
-              onClick={() => { setSortBy("alpha"); haptics.light(); }}
-              className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
-            >
-              A–Z
+              {merging ? "Cancel" : "Merge"}
             </button>
           </div>
         </div>
 
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-8">
-          {cameras.map((c) => (
-            <li key={c.slug}>
-              <Link
-                href={`/cameras/${encodeURIComponent(c.slug)}`}
-                onClick={() => haptics.light()}
-                className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
-              >
-                <div>
-                  <div className="font-medium">{cameraLabel(c)}</div>
-                  <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-                    {c.slug} · {c.format}mm
-                    {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
+        <ul className={merging ? "space-y-2 mb-4" : "divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-8"}>
+          {cameras.map((c) => {
+            if (merging) {
+              const isSelected = selected.has(c.slug);
+              return (
+                <li key={c.slug}>
+                  <button
+                    onClick={() => { toggleSelect(c.slug); haptics.light(); }}
+                    className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-500" : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-400 dark:border-zinc-600"}`}>
+                      {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <div>
+                      <div className="font-medium">{cameraLabel(c)}</div>
+                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        {c.slug} · {c.format}mm{c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            }
+
+            return (
+              <li key={c.slug}>
+                <Link
+                  href={`/cameras/${encodeURIComponent(c.slug)}`}
+                  onClick={() => haptics.light()}
+                  className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
+                >
+                  <div>
+                    <div className="font-medium">{cameraLabel(c)}</div>
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      {c.slug} · {c.format}mm
+                      {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
+                    </div>
                   </div>
-                </div>
-                <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
-              </Link>
-            </li>
-          ))}
+                  <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+                </Link>
+              </li>
+            );
+          })}
           {cameras.length === 0 && (
-            <li className="text-zinc-500 text-sm text-center py-8">No cameras yet.</li>
+            <li className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+              <svg className="w-10 h-10 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+              </svg>
+              <p className="text-sm text-zinc-500">No cameras yet.<br />Add your first camera to get started.</p>
+            </li>
           )}
         </ul>
 
-        <button
-          onClick={() => { setShowForm(true); setError(""); haptics.light(); }}
-          className="w-full flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-        >
-          <span>Add Camera</span>
-          <span className="text-sm leading-none">+</span>
-        </button>
-
-        <Sheet open={showForm} onClose={() => { setShowForm(false); setError(""); }} title="Add Camera">
-          <form onSubmit={async (e) => { await handleSubmit(e); }} className="space-y-6">
-            <FormField label="ID (slug)" value={form.id} onChange={(v) => setForm((f) => ({ ...f, id: v }))} placeholder="leica-m6" required />
-            <FormField label="Brand"    value={form.brand} onChange={(v) => setForm((f) => ({ ...f, brand: v }))} placeholder="Leica" required />
-            <FormField label="Model"    value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
-            <FormField label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="optional" />
-            <div className="space-y-1">
-              <label className="block text-[10px] uppercase tracking-widest text-zinc-400">Format</label>
-              <div className="relative">
-                <select
-                  value={form.format}
-                  onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
-                  className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6"
-                >
-                  <option value="135">135</option>
-                  <option value="120">120</option>
-                </select>
-                <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
-              </div>
+        {/* Merge panel */}
+        {merging && selected.size >= 2 && (
+          <div className="mb-6 space-y-4 border-t border-zinc-200 dark:border-zinc-800 pt-4">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-400">{selected.size} cameras selected — keep which one?</p>
+            <div className="space-y-2">
+              {selectedCameras.map((c) => (
+                <label key={c.slug} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="target"
+                    value={c.slug}
+                    checked={targetId === c.slug}
+                    onChange={() => setTargetId(c.slug)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">
+                    {cameraLabel(c)}
+                    <span className="text-zinc-500 ml-1">({c.slug})</span>
+                  </span>
+                </label>
+              ))}
             </div>
-            {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
-            <FormButton type="submit" disabled={saving}>
-              {saving ? "Saving…" : "Add Camera"}
-            </FormButton>
-          </form>
-        </Sheet>
+            {mergeError && <p className="text-red-400 text-xs tracking-wide">{mergeError}</p>}
+            <button
+              onClick={handleMerge}
+              disabled={!targetId || mergeSaving}
+              className="w-full border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 py-3 text-xs tracking-widest uppercase font-medium hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {mergeSaving ? "Merging…" : `Merge ${selected.size - 1} into ${targetId || "…"}`}
+            </button>
+          </div>
+        )}
+
+        {!merging && (
+          <>
+            <button
+              onClick={() => { setShowForm(true); setError(""); haptics.light(); }}
+              className="w-full flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              <span>Add Camera</span>
+              <span className="text-sm leading-none">+</span>
+            </button>
+
+            <Sheet open={showForm} onClose={() => { setShowForm(false); setError(""); }} title="Add Camera">
+              <form onSubmit={async (e) => { await handleSubmit(e); }} className="space-y-6">
+                <FormField label="ID (slug)" value={form.id} onChange={(v) => setForm((f) => ({ ...f, id: v }))} placeholder="leica-m6" required />
+                <FormField label="Brand"    value={form.brand} onChange={(v) => setForm((f) => ({ ...f, brand: v }))} placeholder="Leica" required />
+                <FormField label="Model"    value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
+                <FormField label="Nickname" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="optional" />
+                <div className="space-y-1">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-400">Format</label>
+                  <div className="relative">
+                    <select
+                      value={form.format}
+                      onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
+                      className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6"
+                    >
+                      <option value="135">135</option>
+                      <option value="120">120</option>
+                    </select>
+                    <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
+                  </div>
+                </div>
+                {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
+                <FormButton type="submit" disabled={saving}>
+                  {saving ? "Saving…" : "Add Camera"}
+                </FormButton>
+              </form>
+            </Sheet>
+          </>
+        )}
       </div>
     </PullToRefresh>
   );

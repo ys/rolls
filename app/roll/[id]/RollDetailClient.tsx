@@ -523,19 +523,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
             ))}
           </div>
         )}
-        {TIMESTAMP_FIELDS.some(({ key }) => roll[key]) && (
-          <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
-            {TIMESTAMP_FIELDS.map(({ key, label, type }) => roll[key] ? (
-              <Row
-                key={key}
-                label={label}
-                value={type === "date"
-                  ? new Date(roll[key]!).toLocaleDateString()
-                  : new Date(roll[key]!).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-              />
-            ) : null)}
-          </div>
-        )}
+        {/* Status timeline */}
+        <div className="pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <RollTimeline roll={roll} />
+        </div>
       </div>
     </div>
   );
@@ -1114,6 +1105,53 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between">
       <span className="text-[10px] uppercase tracking-widest text-zinc-400">{label}</span>
       <span className="text-sm font-medium">{value}</span>
+    </div>
+  );
+}
+
+const TIMELINE_STEPS: Array<{ key: keyof Roll; label: string; type: "date" | "datetime" }> = [
+  { key: "fridge_at",    label: "Fridge",    type: "datetime" },
+  { key: "lab_at",       label: "Lab",       type: "datetime" },
+  { key: "scanned_at",   label: "Scanned",   type: "date"     },
+  { key: "processed_at", label: "Processed", type: "datetime" },
+  { key: "uploaded_at",  label: "Uploaded",  type: "datetime" },
+  { key: "archived_at",  label: "Archived",  type: "datetime" },
+];
+
+function RollTimeline({ roll }: { roll: Roll }) {
+  const steps = TIMELINE_STEPS.map((s) => ({ ...s, ts: roll[s.key] as string | null }));
+  const lastDone = steps.reduce((acc, s, i) => (s.ts ? i : acc), -1);
+
+  return (
+    <div className="pt-2 space-y-1">
+      {steps.map((step, i) => {
+        const done = !!step.ts;
+        const isCurrent = i === lastDone;
+        return (
+          <div key={step.key} className="flex gap-3 items-start">
+            {/* Dot + line */}
+            <div className="flex flex-col items-center shrink-0 w-4 mt-0.5">
+              <div className={`w-2.5 h-2.5 rounded-full border-2 transition-colors ${done ? (isCurrent ? "bg-amber-400 border-amber-400" : "bg-zinc-400 border-zinc-400 dark:bg-zinc-500 dark:border-zinc-500") : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"}`} />
+              {i < steps.length - 1 && (
+                <div className={`w-px flex-1 min-h-[10px] mt-0.5 ${done && steps[i + 1]?.ts ? "bg-zinc-400 dark:bg-zinc-500" : "bg-zinc-200 dark:bg-zinc-800"}`} />
+              )}
+            </div>
+            {/* Label + date */}
+            <div className="flex justify-between flex-1 pb-1.5">
+              <span className={`text-[11px] uppercase tracking-wide font-medium ${done ? (isCurrent ? "text-amber-600 dark:text-amber-400" : "text-zinc-600 dark:text-zinc-400") : "text-zinc-300 dark:text-zinc-700"}`}>
+                {step.label}
+              </span>
+              {step.ts && (
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">
+                  {step.type === "date"
+                    ? new Date(step.ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                    : new Date(step.ts).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

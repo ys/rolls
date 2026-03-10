@@ -16,9 +16,9 @@ import { haptics } from "@/lib/haptics";
 import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
-  LOADED: { field: "fridge_at",  label: "To Fridge", color: "bg-cyan-500"   },
-  FRIDGE: { field: "lab_at",     label: "To Lab",    color: "bg-orange-500" },
-  LAB:    { field: "scanned_at", label: "Scanned",   color: "bg-green-500"  },
+  LOADED: { field: "fridge_at",  label: "→ Fridge", color: "bg-cyan-500"   },
+  FRIDGE: { field: "lab_at",     label: "→ Lab",    color: "bg-orange-500" },
+  LAB:    { field: "scanned_at", label: "Scanned",  color: "bg-green-500"  },
 };
 
 type RollRow = Roll & {
@@ -50,6 +50,18 @@ function filmLabel(roll: RollRow): string {
   return "";
 }
 
+function firstNotesLine(notes: string | null): string | null {
+  if (!notes) return null;
+  const line = notes.split("\n").find((l) => l.trim());
+  if (!line) return null;
+  return line
+    .replace(/^#+\s+/, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .trim();
+}
+
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}>
@@ -62,9 +74,12 @@ function Checkbox({ checked }: { checked: boolean }) {
   );
 }
 
-function RollItem({ roll, editing, selected, onToggle }: {
-  roll: RollRow; editing: boolean; selected: boolean; onToggle: () => void;
+function RollItem({ roll, editing, selected, onToggle, onAdvance }: {
+  roll: RollRow; editing: boolean; selected: boolean;
+  onToggle: () => void; onAdvance: (field: string) => void;
 }) {
+  const status = rollStatus(roll);
+  const next = editing ? undefined : STATUS_NEXT[status];
   const dateStr = roll.shot_at
     ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
@@ -74,10 +89,12 @@ function RollItem({ roll, editing, selected, onToggle }: {
   const stripeStyle: React.CSSProperties = gradient
     ? { background: `linear-gradient(to bottom, ${gradient[0]}, ${gradient[1]})` }
     : { background: "#d4d4d8" };
+  const notePreview = firstNotesLine(roll.notes);
 
-  const inner = (
+  const cardBase = "rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800";
+
+  const mainContent = (
     <>
-      {/* Film color stripe */}
       <div className="self-stretch w-1 rounded-full shrink-0" style={stripeStyle} />
       {editing && <Checkbox checked={selected} />}
       <div className="flex-1 min-w-0">
@@ -99,31 +116,57 @@ function RollItem({ roll, editing, selected, onToggle }: {
             )}
           </div>
         )}
+        {notePreview && (
+          <p className="text-[12px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5 italic">{notePreview}</p>
+        )}
       </div>
-      {!editing && (
-        <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0 mt-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <path d="M9 18l6-6-6-6" />
-        </svg>
-      )}
     </>
   );
-
-  const cls = "flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70";
 
   if (editing) {
     return (
       <li>
-        <button onClick={() => { onToggle(); haptics.light(); }} className={`${cls} w-full text-left`}>
-          {inner}
+        <button
+          onClick={() => { onToggle(); haptics.light(); }}
+          className={`${cardBase} flex items-center gap-3 p-3 w-full text-left transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70`}
+        >
+          {mainContent}
         </button>
       </li>
     );
   }
+
   return (
     <li>
-      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} className={`${cls} block`}>
-        {inner}
-      </Link>
+      <div className={`${cardBase} flex items-center overflow-hidden`}>
+        <Link
+          href={`/roll/${roll.roll_number}`}
+          onClick={() => haptics.light()}
+          className="flex items-center gap-3 p-3 flex-1 min-w-0 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70"
+        >
+          {mainContent}
+          {roll.contact_sheet_url && (
+            <div className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 shrink-0 ml-1">
+              <img src={roll.contact_sheet_url} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          {!next && !roll.contact_sheet_url && (
+            <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          )}
+        </Link>
+        {next && (
+          <div className="pr-3 pl-1">
+            <button
+              onClick={() => { onAdvance(next.field); haptics.medium(); }}
+              className={`${next.color} text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform`}
+            >
+              {next.label}
+            </button>
+          </div>
+        )}
+      </div>
     </li>
   );
 }
@@ -148,6 +191,7 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted]   = useState(false);
+  const [search, setSearch]     = useState("");
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -186,6 +230,17 @@ export default function HomeClient() {
     router.refresh();
   }
 
+  async function advanceSingle(rollNumber: string, field: string) {
+    await fetch("/api/rolls/bulk-update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...headers },
+      body: JSON.stringify({ roll_numbers: [rollNumber], field, value: new Date().toISOString() }),
+    });
+    invalidateCache("rolls");
+    haptics.success();
+    router.refresh();
+  }
+
   if (!mounted || (isLoading && !data)) {
     return (
       <div className="space-y-4">
@@ -200,9 +255,22 @@ export default function HomeClient() {
   }
 
   const { rolls } = data;
-  const loaded   = rolls.filter((r) => rollStatus(r) === "LOADED");
-  const inFridge = rolls.filter((r) => rollStatus(r) === "FRIDGE");
-  const atLab    = rolls.filter((r) => rollStatus(r) === "LAB");
+
+  // Search filtering
+  const searchQuery = search.trim().toLowerCase();
+  const filteredRolls = searchQuery
+    ? rolls.filter((r) =>
+        r.roll_number.toLowerCase().includes(searchQuery) ||
+        cameraLabel(r).toLowerCase().includes(searchQuery) ||
+        filmLabel(r).toLowerCase().includes(searchQuery) ||
+        (r.notes?.toLowerCase().includes(searchQuery) ?? false) ||
+        (r.tags?.some((t) => t.toLowerCase().includes(searchQuery)) ?? false)
+      )
+    : rolls;
+
+  const loaded   = filteredRolls.filter((r) => rollStatus(r) === "LOADED");
+  const inFridge = filteredRolls.filter((r) => rollStatus(r) === "FRIDGE");
+  const atLab    = filteredRolls.filter((r) => rollStatus(r) === "LAB");
 
   // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));
@@ -222,7 +290,7 @@ export default function HomeClient() {
     <>
       <PullToRefresh onRefresh={async () => { router.refresh(); }}>
         <div>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold">Rolls</h1>
             {rolls.length > 0 && !editing && (
               <button
@@ -234,46 +302,93 @@ export default function HomeClient() {
             )}
           </div>
 
+          {/* Search */}
+          {rolls.length > 0 && !editing && (
+            <div className="relative mb-6">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search rolls…"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-shadow"
+              />
+            </div>
+          )}
+
           {rolls.length === 0 ? (
-            <p className="text-zinc-500 text-center py-16">No active rolls. Tap + to create one!</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <svg className="w-12 h-12 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25" />
+              </svg>
+              <p className="text-zinc-400 text-center text-sm">No active rolls.<br />Tap <strong className="text-zinc-600 dark:text-zinc-300">+</strong> to load a new roll.</p>
+            </div>
+          ) : searchQuery && filteredRolls.length === 0 ? (
+            <p className="text-zinc-400 text-center py-16 text-sm">No rolls match &ldquo;{search}&rdquo;</p>
           ) : (
             <div className="space-y-8">
-              {[
-                { label: "Loaded",        rolls: loaded   },
-                { label: "In the Fridge", rolls: inFridge },
-                { label: "At the Lab",    rolls: atLab    },
-              ].map(({ label, rolls: sectionRolls }) => sectionRolls.length > 0 && (
-                <section key={label}>
-                  <div className="flex items-baseline justify-between mb-3">
-                    <div className="flex items-baseline gap-2">
-                      <h2 className="text-lg font-bold">{label}</h2>
-                      <span className="text-sm text-zinc-500">{sectionRolls.length}</span>
+              {searchQuery ? (
+                // Flat search results
+                <ul className="space-y-2">
+                  {filteredRolls.map((roll) => (
+                    <RollItem
+                      key={roll.roll_number}
+                      roll={roll}
+                      editing={false}
+                      selected={false}
+                      onToggle={() => {}}
+                      onAdvance={(field) => advanceSingle(roll.roll_number, field)}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                // Grouped by status
+                [
+                  { label: "Loaded",        rolls: loaded   },
+                  { label: "In the Fridge", rolls: inFridge },
+                  { label: "At the Lab",    rolls: atLab    },
+                ].map(({ label, rolls: sectionRolls }) => sectionRolls.length > 0 && (
+                  <section key={label}>
+                    <div className="flex items-baseline justify-between mb-3">
+                      <div className="flex items-baseline gap-2">
+                        <h2 className="text-lg font-bold">{label}</h2>
+                        <span className="text-sm text-zinc-500">{sectionRolls.length}</span>
+                      </div>
+                      {editing && (
+                        <button
+                          onClick={() => {
+                            const nums = sectionRolls.map((r) => r.roll_number);
+                            const allSel = nums.every((n) => selected.has(n));
+                            setSelected((prev) => {
+                              const s = new Set(prev);
+                              if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
+                              else { nums.forEach((n) => s.add(n)); haptics.medium(); }
+                              return s;
+                            });
+                          }}
+                          className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        >
+                          {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
+                        </button>
+                      )}
                     </div>
-                    {editing && (
-                      <button
-                        onClick={() => {
-                          const nums = sectionRolls.map((r) => r.roll_number);
-                          const allSel = nums.every((n) => selected.has(n));
-                          setSelected((prev) => {
-                            const s = new Set(prev);
-                            if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
-                            else { nums.forEach((n) => s.add(n)); haptics.medium(); }
-                            return s;
-                          });
-                        }}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
-                      >
-                        {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
-                      </button>
-                    )}
-                  </div>
-                  <ul className="space-y-2">
-                    {sectionRolls.map((roll) => (
-                      <RollItem key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
-                    ))}
-                  </ul>
-                </section>
-              ))}
+                    <ul className="space-y-2">
+                      {sectionRolls.map((roll) => (
+                        <RollItem
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                          onAdvance={(field) => advanceSingle(roll.roll_number, field)}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                ))
+              )}
             </div>
           )}
         </div>
