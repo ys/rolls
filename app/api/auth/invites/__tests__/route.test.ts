@@ -121,7 +121,8 @@ describe("Invite Management Routes", () => {
         created_at: new Date().toISOString(),
       };
 
-      (sql as any).mockResolvedValueOnce([mockInvite]);
+      (sql as any).mockResolvedValueOnce([{ invite_quota: null, invites_sent: 0 }]); // user query
+      (sql as any).mockResolvedValueOnce([mockInvite]); // insert
 
       const request = new Request("http://localhost/api/auth/invites", {
         method: "POST",
@@ -151,7 +152,8 @@ describe("Invite Management Routes", () => {
         created_at: new Date().toISOString(),
       };
 
-      (sql as any).mockResolvedValueOnce([mockInvite]);
+      (sql as any).mockResolvedValueOnce([{ invite_quota: null, invites_sent: 0 }]); // user query
+      (sql as any).mockResolvedValueOnce([mockInvite]); // insert
 
       const request = new Request("http://localhost/api/auth/invites", {
         method: "POST",
@@ -178,7 +180,8 @@ describe("Invite Management Routes", () => {
         created_at: new Date().toISOString(),
       };
 
-      (sql as any).mockResolvedValueOnce([mockInvite]);
+      (sql as any).mockResolvedValueOnce([{ invite_quota: null, invites_sent: 0 }]); // user query
+      (sql as any).mockResolvedValueOnce([mockInvite]); // insert
 
       const request = new Request("http://localhost/api/auth/invites", {
         method: "POST",
