@@ -34,8 +34,12 @@
   font-display: swap;
 }
 
-html, body {
-  overflow-x: hidden;
+html {
+  overflow-x: clip; /* clip (not hidden) avoids creating a scroll container that breaks position:fixed on iOS Safari */
+}
+
+body {
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -64,7 +68,7 @@ body {
 /* Page enter animation */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; } /* explicit 'none' prevents iOS Safari from creating a fixed-position containing block after fill-mode freezes the final frame */
 }
 .page-enter {
   animation: page-enter 0.15s ease-out both;
