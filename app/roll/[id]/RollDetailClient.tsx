@@ -1113,7 +1113,6 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-200/70 dark:border-zinc-800"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          {/* @ts-expect-error custom element */}
           <markdown-toolbar for="notes-textarea" className="flex items-center h-[52px] px-2">
             <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
             <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>
@@ -1133,7 +1132,6 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5H3V9zm11 0c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5h-5V9z"/></svg>
             </button></md-quote>
             <md-code><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-mono text-[13px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">&lt;/&gt;</button></md-code>
-            {/* @ts-expect-error custom element */}
           </markdown-toolbar>
         </div>,
         document.body
