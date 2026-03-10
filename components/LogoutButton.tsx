@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SignOut } from "@phosphor-icons/react";
+import { invalidateCache } from "@/lib/cache";
 
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);
@@ -11,6 +12,9 @@ export default function LogoutButton() {
 
     setLoading(true);
     try {
+      // Clear all cached data before logout
+      invalidateCache();
+
       const resp = await fetch("/api/auth/logout", {
         method: "POST",
       });
