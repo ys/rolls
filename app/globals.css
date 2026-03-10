@@ -34,6 +34,11 @@
   font-display: swap;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: "iA Writer Mono", ui-monospace, monospace;
 }
