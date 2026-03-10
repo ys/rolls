@@ -128,11 +128,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const currentFilm = films.find((f) => f.uuid === roll.film_uuid) ?? null;
   const isPostScan = ["SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED"].includes(status);
 
-  // Hide bottom nav and replace with editor toolbar when in pre-scan notes view
+  // Lock page scroll and replace nav when in pre-scan notes view
   useEffect(() => {
     if (isPostScan) return;
     document.body.setAttribute("data-notes-edit", "");
-    return () => { document.body.removeAttribute("data-notes-edit"); };
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.removeAttribute("data-notes-edit");
+      document.body.style.overflow = "";
+    };
   }, [isPostScan]);
 
   async function save(patch: Partial<Roll> | { camera_id?: string | null; film_id?: string | null; shot_at?: string | null; album_name?: string | null; tags?: string[]; push_pull?: number | null }): Promise<boolean> {
@@ -665,7 +669,10 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   );
 
   return (
-    <div className={isPostScan ? "" : "flex flex-col h-[calc(100vh-2rem)]"}>
+    <div
+      className={isPostScan ? "" : "fixed inset-0 z-30 flex flex-col overflow-hidden bg-gray-50 dark:bg-zinc-950 px-4"}
+      style={isPostScan ? {} : { paddingTop: "calc(1rem + env(safe-area-inset-top))" }}
+    >
       {isPostScan ? (
         // POST-SCAN VIEW (existing layout)
         <>
