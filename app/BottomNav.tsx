@@ -66,6 +66,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch={true}
               aria-label={label}
               onClick={() => haptics.light()}
               className="relative flex items-center justify-center transition-all duration-200 active:scale-90"

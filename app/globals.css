@@ -56,6 +56,18 @@ body {
   100% { opacity: 0; transform: perspective(500px) rotateX(22deg)  scale(0.93); }
 }
 
+/* Page enter animation */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: page-enter 0.15s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}
+
 /* Shimmer animation for skeleton loading screens */
 @keyframes shimmer {
   0% {
