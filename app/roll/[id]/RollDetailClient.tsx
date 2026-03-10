@@ -871,14 +871,14 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           )}
 
           {/* Full-height notes editor */}
-          <div className="flex-1 flex flex-col min-h-0 pb-16">
+          <div className="flex-1 flex flex-col min-h-0" style={{ paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
             <textarea
               id="notes-textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={() => save({ notes })}
               placeholder="Notes…"
-              className="flex-1 w-full bg-transparent text-base focus:outline-none resize-none leading-relaxed caret-amber-400"
+              className="flex-1 w-full bg-transparent text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed caret-amber-400"
             />
           </div>
 
