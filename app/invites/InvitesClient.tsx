@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Invite } from "@/lib/db";
 import BackButton from "@/components/BackButton";
@@ -43,6 +43,44 @@ function CopyButton({ text }: { text: string }) {
       className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors font-mono"
     >
       {copied ? "Copied!" : text}
+    </button>
+  );
+}
+
+function ShareButton({ inviteCode }: { inviteCode: string }) {
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && !!navigator.share);
+  }, []);
+
+  async function handleShare() {
+    const url = `${window.location.origin}/register?invite=${inviteCode}`;
+
+    try {
+      await navigator.share({
+        title: "Join Rolls",
+        text: "You've been invited to join Rolls, an analog film roll tracker.",
+        url,
+      });
+      haptics.success();
+    } catch (err: any) {
+      // AbortError means user cancelled, which is fine
+      if (err.name !== "AbortError") {
+        console.error("Share failed:", err);
+        haptics.error();
+      }
+    }
+  }
+
+  if (!canShare) return null;
+
+  return (
+    <button
+      onClick={handleShare}
+      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+    >
+      Share
     </button>
   );
 }
@@ -199,19 +237,22 @@ export default function InvitesClient({
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {valid && (
-                    <button
-                      onClick={() => {
-                        setSendingCode(sendingCode === invite.code ? null : invite.code);
-                        setSendEmail("");
-                        setSendMessage("");
-                        setSendError("");
-                        setSendSuccess("");
-                        haptics.light();
-                      }}
-                      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-                    >
-                      Send
-                    </button>
+                    <>
+                      <ShareButton inviteCode={invite.code} />
+                      <button
+                        onClick={() => {
+                          setSendingCode(sendingCode === invite.code ? null : invite.code);
+                          setSendEmail("");
+                          setSendMessage("");
+                          setSendError("");
+                          setSendSuccess("");
+                          haptics.light();
+                        }}
+                        className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                      >
+                        Send
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => handleDelete(invite)}
