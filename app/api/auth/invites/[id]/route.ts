@@ -1,27 +1,41 @@
 import { NextResponse } from "next/server";
-import { getUserId } from "@/lib/request-context";
-import { sql } from "@/lib/db";
+import { getUser } from "@/lib/request-context";
+import { sql, type Invite } from "@/lib/db";
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserId();
+    const { id: userId, role } = await getUser();
     const { id } = await params;
 
-    // Delete invite (only if owned by user)
-    const result = await sql`
-      DELETE FROM invites
+    // Get invite before deleting to check if it was unused
+    const [invite] = await sql<Invite[]>`
+      SELECT used_count FROM invites
       WHERE id = ${id} AND created_by = ${userId}
-      RETURNING id
     `;
 
-    if (result.length === 0) {
+    if (!invite) {
       return NextResponse.json(
         { error: "Invite not found" },
         { status: 404 }
       );
+    }
+
+    // Delete invite (only if owned by user)
+    await sql`
+      DELETE FROM invites
+      WHERE id = ${id} AND created_by = ${userId}
+    `;
+
+    // If invite was unused and user is not admin, decrement invites_sent
+    if (invite.used_count === 0 && role !== "admin") {
+      await sql`
+        UPDATE users
+        SET invites_sent = GREATEST(0, invites_sent - 1)
+        WHERE id = ${userId}
+      `;
     }
 
     return NextResponse.json({

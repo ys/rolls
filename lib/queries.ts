@@ -1,5 +1,5 @@
 import "server-only";
-import { sql, type Camera, type Film, type Roll } from "./db";
+import { sql, type Camera, type Film, type Roll, type User } from "./db";
 
 // ============================================================================
 // Cameras
@@ -54,6 +54,16 @@ export async function getInviteCount(userId: string): Promise<number> {
     SELECT COUNT(*)::int AS count FROM invites WHERE created_by = ${userId}
   `;
   return row?.count ?? 0;
+}
+
+export async function getRemainingInvites(userId: string): Promise<number | null> {
+  const [user] = await sql<User[]>`
+    SELECT invite_quota, invites_sent FROM users WHERE id = ${userId}
+  `;
+  if (!user || user.invite_quota === null) {
+    return null; // Unlimited (admin)
+  }
+  return Math.max(0, user.invite_quota - user.invites_sent);
 }
 
 // ============================================================================

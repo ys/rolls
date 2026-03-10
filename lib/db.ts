@@ -23,6 +23,8 @@ export interface User {
   email: string;
   email_notifications: boolean;
   role: string;
+  invite_quota: number | null;
+  invites_sent: number;
   created_at: string;
 }
 

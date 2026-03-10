@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/request-context";
-import { sql, type Invite } from "@/lib/db";
+import { sql, type Invite, type User } from "@/lib/db";
 import crypto from "crypto";
 
 export async function GET(request: Request) {
   try {
-    const { id: userId, role } = await getUser();
-    if (role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { id: userId } = await getUser();
 
     // Get all invites created by this user
     const invites = await sql<Invite[]>`
@@ -38,11 +35,32 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { id: userId, role } = await getUser();
-    if (role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    // Get user's invite quota
+    const [user] = await sql<User[]>`
+      SELECT invite_quota, invites_sent FROM users
+      WHERE id = ${userId}
+    `;
+
+    const isAdmin = role === "admin";
+    const remainingInvites = user.invite_quota !== null ? user.invite_quota - user.invites_sent : null;
+
+    // Check if user has invites remaining (admins have unlimited)
+    if (!isAdmin && (remainingInvites === null || remainingInvites <= 0)) {
+      return NextResponse.json(
+        { error: "You have no invites remaining" },
+        { status: 403 }
+      );
     }
+
     const body = await request.json();
-    const { max_uses, expires_in_days } = body;
+    let { max_uses, expires_in_days } = body;
+
+    // Normal users get single-use invites only
+    if (!isAdmin) {
+      max_uses = 1;
+      expires_in_days = null;
+    }
 
     // Generate unique invite code (8 chars, URL-safe)
     const code = crypto.randomBytes(6).toString("base64url").slice(0, 8);
@@ -59,6 +77,15 @@ export async function POST(request: Request) {
       VALUES (${code}, ${userId}, ${max_uses || null}, ${expiresAt})
       RETURNING *
     `;
+
+    // Increment invites_sent counter for normal users
+    if (!isAdmin) {
+      await sql`
+        UPDATE users
+        SET invites_sent = invites_sent + 1
+        WHERE id = ${userId}
+      `;
+    }
 
     return NextResponse.json({
       invite: {

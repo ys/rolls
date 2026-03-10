@@ -87,8 +87,14 @@ function ShareButton({ inviteCode }: { inviteCode: string }) {
 
 export default function InvitesClient({
   initialInvites,
+  isAdmin,
+  inviteQuota,
+  invitesSent,
 }: {
   initialInvites: Invite[];
+  isAdmin: boolean;
+  inviteQuota: number | null;
+  invitesSent: number;
 }) {
   const router = useRouter();
   const [invites, setInvites] = useState(initialInvites);
@@ -196,6 +202,101 @@ export default function InvitesClient({
     setDeletingId(null);
   }
 
+  const remainingInvites = inviteQuota !== null ? inviteQuota - invitesSent : null;
+  const canCreateInvite = isAdmin || (remainingInvites !== null && remainingInvites > 0);
+
+  // Normal user view
+  if (!isAdmin) {
+    return (
+      <div>
+        <BackButton label="Settings" />
+        <h1 className="text-3xl font-bold mb-6">Invitations</h1>
+
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 mb-6">
+          <div className="text-center mb-6">
+            <div className="text-5xl font-bold mb-2">
+              {remainingInvites !== null ? remainingInvites : "∞"}
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {remainingInvites !== null
+                ? `invite${remainingInvites !== 1 ? "s" : ""} remaining`
+                : "unlimited invites"}
+            </p>
+          </div>
+
+          {canCreateInvite && (
+            <button
+              onClick={() => {
+                setShowCreate(true);
+                setCreateError("");
+                haptics.light();
+              }}
+              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+            >
+              Create Invite
+            </button>
+          )}
+
+          {!canCreateInvite && remainingInvites === 0 && (
+            <p className="text-sm text-center text-zinc-500 dark:text-zinc-400">
+              You've used all your invites
+            </p>
+          )}
+        </div>
+
+        {invites.length > 0 && (
+          <>
+            <h2 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Your Invites</h2>
+            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-6">
+              {invites.map((invite) => {
+                const valid = isValid(invite);
+                return (
+                  <li key={invite.id} className="px-4 py-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <CopyButton text={invite.code} />
+                        <span
+                          className={`text-[10px] uppercase tracking-widest font-medium ${
+                            valid
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-zinc-400 dark:text-zinc-500"
+                          }`}
+                        >
+                          {valid ? "valid" : "used"}
+                        </span>
+                      </div>
+                      {valid && <ShareButton inviteCode={invite.code} />}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        <Sheet
+          open={showCreate}
+          onClose={() => {
+            setShowCreate(false);
+            setCreateError("");
+          }}
+          title="Create Invite"
+        >
+          <form onSubmit={handleCreate} className="space-y-6">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              This will create a single-use invite that you can share with a friend.
+            </p>
+            {createError && <p className="text-red-400 text-xs tracking-wide">{createError}</p>}
+            <FormButton type="submit" disabled={creating}>
+              {creating ? "Creating…" : "Create Invite"}
+            </FormButton>
+          </form>
+        </Sheet>
+      </div>
+    );
+  }
+
+  // Admin view
   return (
     <div>
       <BackButton label="Settings" />

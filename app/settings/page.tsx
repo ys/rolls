@@ -1,5 +1,5 @@
 import { getUser } from "@/lib/request-context";
-import { getCameraCount, getFilmCount, getInviteCount } from "@/lib/queries";
+import { getCameraCount, getFilmCount, getRemainingInvites } from "@/lib/queries";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import LogoutButton from "@/components/LogoutButton";
@@ -45,7 +45,7 @@ function SettingsRow({
 }: {
   href: string;
   label: string;
-  value?: string | number;
+  value?: string | number | null;
 }) {
   return (
     <li>
@@ -55,10 +55,13 @@ function SettingsRow({
       >
         <span className="text-[15px]">{label}</span>
         <div className="flex items-center gap-2">
-          {value !== undefined && (
+          {value !== undefined && value !== null && (
             <span className="text-[15px] text-zinc-400 dark:text-zinc-500 tabular-nums">
               {value}
             </span>
+          )}
+          {value === null && (
+            <span className="text-[15px] text-zinc-400 dark:text-zinc-500">∞</span>
           )}
           <Chevron />
         </div>
@@ -70,10 +73,10 @@ function SettingsRow({
 export default async function SettingsPage() {
   const { id: userId, role } = await getUser();
 
-  const [camera_count, film_count, invite_count] = await Promise.all([
+  const [camera_count, film_count, remaining_invites] = await Promise.all([
     getCameraCount(userId),
     getFilmCount(userId),
-    role === "admin" ? getInviteCount(userId) : Promise.resolve(0),
+    getRemainingInvites(userId),
   ]);
 
   return (
@@ -84,9 +87,7 @@ export default async function SettingsPage() {
       <SettingsGroup label="Library">
         <SettingsRow href="/cameras" label="Cameras" value={camera_count} />
         <SettingsRow href="/films" label="Films" value={film_count} />
-        {role === "admin" && (
-          <SettingsRow href="/invites" label="Invitations" value={invite_count} />
-        )}
+        <SettingsRow href="/invites" label="Invitations" value={remaining_invites} />
       </SettingsGroup>
 
       {role === "admin" && (
