@@ -90,6 +90,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [metaForm, setMetaForm] = useState({
+    roll_number: initialRoll.roll_number,
     camera_id: cameras.find((c) => c.uuid === initialRoll.camera_uuid)?.slug ?? "",
     film_id: films.find((f) => f.uuid === initialRoll.film_uuid)?.slug ?? "",
     shot_at: initialRoll.shot_at ? String(initialRoll.shot_at).slice(0, 10) : "",
@@ -103,6 +104,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   useEffect(() => {
     setMetaForm((f) => ({
       ...f,
+      roll_number: roll.roll_number,
       camera_id: cameras.find((c) => c.uuid === roll.camera_uuid)?.slug ?? "",
       film_id: films.find((fi) => fi.uuid === roll.film_uuid)?.slug ?? "",
       shot_at: roll.shot_at ? String(roll.shot_at).slice(0, 10) : "",
@@ -153,7 +155,11 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       // Invalidate rolls cache so home page refreshes
       invalidateCache("rolls");
 
-      router.refresh();
+      if (updated.roll_number !== roll.roll_number) {
+        router.replace(`/roll/${updated.roll_number}`);
+      } else {
+        router.refresh();
+      }
       ok = true;
     }
     setSaving(false);
@@ -253,6 +259,16 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
       {editMeta ? (
         <div className="px-4 pb-4 pt-2 space-y-4">
+          <div className="space-y-1">
+            <label className={labelCls}>Roll number</label>
+            <input
+              type="text"
+              value={metaForm.roll_number}
+              onChange={(e) => setMetaForm((f) => ({ ...f, roll_number: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
+
           <div className="space-y-1">
             <label className={labelCls}>Camera</label>
             <div className="relative">
@@ -368,6 +384,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           <FormButton
             onClick={async () => {
               const ok = await save({
+                roll_number: metaForm.roll_number || roll.roll_number,
                 camera_id: metaForm.camera_id || null,
                 film_id: metaForm.film_id || null,
                 shot_at: metaForm.shot_at || null,
@@ -860,6 +877,17 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           {/* Metadata Sheet */}
           <Sheet open={showMetaSheet} onClose={() => setShowMetaSheet(false)} title="Roll Info">
             <div className="space-y-4 pb-6">
+              {/* Roll number */}
+              <div className="space-y-1">
+                <label className={labelCls}>Roll number</label>
+                <input
+                  type="text"
+                  value={metaForm.roll_number}
+                  onChange={(e) => setMetaForm((f) => ({ ...f, roll_number: e.target.value }))}
+                  className={inputCls}
+                />
+              </div>
+
               {/* Camera */}
               <div className="space-y-1">
                 <label className={labelCls}>Camera</label>
@@ -1019,6 +1047,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               <FormButton
                 onClick={async () => {
                   const ok = await save({
+                    roll_number: metaForm.roll_number || roll.roll_number,
                     camera_id: metaForm.camera_id || null,
                     film_id: metaForm.film_id || null,
                     shot_at: metaForm.shot_at || null,
