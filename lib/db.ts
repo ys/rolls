@@ -9,7 +9,7 @@ if (!dbUrl) {
 
 const pg = postgres(dbUrl, {
   ssl: dbUrl.includes("localhost") ? false : { rejectUnauthorized: false },
-  max: 10,
+  max: 18, // Leave 2 connections for migrations/admin tasks (Heroku hobby has 20 max)
   idle_timeout: 20,
   connect_timeout: 60, // Extended timeout for reliable Heroku-to-RDS connections
 });
