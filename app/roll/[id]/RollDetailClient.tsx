@@ -88,6 +88,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [editMeta, setEditMeta] = useState(false);
   const [editAll, setEditAll] = useState(false);
   const [showMetaSheet, setShowMetaSheet] = useState(false);
+  const [showLabSheet, setShowLabSheet] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -878,12 +879,17 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                       {nextAction && (
                         <button
                           onClick={async () => {
+                            setShowActionsMenu(false);
+                            // If FRIDGE status, open lab sheet first
+                            if (status === "FRIDGE") {
+                              setShowLabSheet(true);
+                              return;
+                            }
+                            // For other statuses, save immediately
                             const patch: Partial<Roll> = {
                               notes,
                               [nextAction.field]: nowValue(nextAction.isDate)
                             };
-                            if (status === "FRIDGE" && labName) patch.lab_name = labName;
-                            setShowActionsMenu(false);
                             const ok = await save(patch);
                             if (ok) {
                               router.push("/");
@@ -935,19 +941,6 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               </div>
             </div>
           </div>
-
-          {/* Lab name input for FRIDGE status */}
-          {status === "FRIDGE" && (
-            <div className="mb-3 flex-shrink-0">
-              <input
-                type="text"
-                value={labName}
-                onChange={(e) => setLabName(e.target.value)}
-                placeholder="Lab name (optional)"
-                className="w-full appearance-none rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all"
-              />
-            </div>
-          )}
 
           {/* Full-height notes editor */}
           <div className="flex-1 flex flex-col pb-20">
@@ -1193,6 +1186,40 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         value={metaForm.film_id}
         onChange={(slug) => setMetaForm((f) => ({ ...f, film_id: slug }))}
       />
+
+      {/* Lab name sheet — for FRIDGE status when sending to lab */}
+      <Sheet open={showLabSheet} onClose={() => setShowLabSheet(false)} title="Send to Lab">
+        <div className="space-y-4 pb-6">
+          <div className="space-y-1">
+            <label className={labelCls}>Lab name</label>
+            <input
+              type="text"
+              value={labName}
+              onChange={(e) => setLabName(e.target.value)}
+              placeholder="optional"
+              className={inputCls}
+              autoFocus
+            />
+          </div>
+          <FormButton
+            onClick={async () => {
+              const patch: Partial<Roll> = {
+                notes,
+                lab_at: nowValue(false)
+              };
+              if (labName) patch.lab_name = labName;
+              setShowLabSheet(false);
+              const ok = await save(patch);
+              if (ok) {
+                router.push("/");
+              }
+            }}
+            disabled={saving}
+          >
+            {saving ? "Saving…" : "Send to Lab"}
+          </FormButton>
+        </div>
+      </Sheet>
 
       {/* Markdown editor toolbar — replaces bottom nav in pre-scan view */}
       {!isPostScan && mounted && createPortal(
