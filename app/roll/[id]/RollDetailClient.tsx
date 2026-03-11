@@ -671,7 +671,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   return (
     <div
       className={isPostScan ? "" : "fixed inset-0 z-30 flex flex-col overflow-hidden bg-gray-50 dark:bg-zinc-950 px-4"}
-      style={isPostScan ? {} : { paddingTop: "calc(1.5rem + env(safe-area-inset-top))" }}
+      style={isPostScan ? {} : { paddingTop: "calc(3rem + env(safe-area-inset-top))" }}
     >
       {isPostScan ? (
         // POST-SCAN VIEW (existing layout)
@@ -755,7 +755,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         // PRE-SCAN VIEW (Notes-app style)
         <>
           {/* Header bar */}
-          <div className="pt-2 pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
+          <div className="pt-6 pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               {/* Roll number, status, camera, and film */}
               <div className="flex items-center gap-2 flex-wrap">
