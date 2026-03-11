@@ -671,7 +671,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   return (
     <div
       className={isPostScan ? "" : "fixed inset-0 z-30 flex flex-col overflow-hidden bg-gray-50 dark:bg-zinc-950 px-4"}
-      style={isPostScan ? {} : { paddingTop: "calc(1rem + env(safe-area-inset-top))" }}
+      style={isPostScan ? {} : { paddingTop: "calc(1.5rem + env(safe-area-inset-top))" }}
     >
       {isPostScan ? (
         // POST-SCAN VIEW (existing layout)
@@ -755,7 +755,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         // PRE-SCAN VIEW (Notes-app style)
         <>
           {/* Header bar */}
-          <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
+          <div className="pt-2 pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               {/* Roll number, status, camera, and film */}
               <div className="flex items-center gap-2 flex-wrap">
@@ -1117,29 +1117,31 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       {/* Markdown editor toolbar — replaces bottom nav in pre-scan view */}
       {!isPostScan && mounted && createPortal(
         <div
-          className="fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-200/70 dark:border-zinc-800"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          className="fixed bottom-0 inset-x-0 z-40 flex justify-center items-end pointer-events-none px-4"
+          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          <markdown-toolbar for="notes-textarea" className="flex items-center h-[52px] px-2">
-            <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
-            <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>
-            <md-strikethrough><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl line-through text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">S</button></md-strikethrough>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
-            <md-unordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
-            </button></md-unordered-list>
-            <md-ordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="1" y="9" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">1.</text><text x="1" y="15" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">2.</text><text x="1" y="21" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">3.</text></svg>
-            </button></md-ordered-list>
-            <md-task-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><polyline points="5 8 6.5 9.5 9 6.5" strokeWidth="1.5"/><line x1="13" y1="8" x2="21" y2="8"/><rect x="3" y="15" width="6" height="6" rx="1"/><line x1="13" y1="18" x2="21" y2="18"/></svg>
-            </button></md-task-list>
-            <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
-            <md-quote><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5H3V9zm11 0c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5h-5V9z"/></svg>
-            </button></md-quote>
-            <md-code><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-mono text-[13px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">&lt;/&gt;</button></md-code>
-          </markdown-toolbar>
+          <div className="pointer-events-auto bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60 overflow-x-auto">
+            <markdown-toolbar for="notes-textarea" className="flex items-center h-14 px-2">
+              <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
+              <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>
+              <md-strikethrough><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl line-through text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">S</button></md-strikethrough>
+              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
+              <md-unordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+              </button></md-unordered-list>
+              <md-ordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="1" y="9" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">1.</text><text x="1" y="15" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">2.</text><text x="1" y="21" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">3.</text></svg>
+              </button></md-ordered-list>
+              <md-task-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><polyline points="5 8 6.5 9.5 9 6.5" strokeWidth="1.5"/><line x1="13" y1="8" x2="21" y2="8"/><rect x="3" y="15" width="6" height="6" rx="1"/><line x1="13" y1="18" x2="21" y2="18"/></svg>
+              </button></md-task-list>
+              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
+              <md-quote><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5H3V9zm11 0c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5h-5V9z"/></svg>
+              </button></md-quote>
+              <md-code><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-mono text-[13px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">&lt;/&gt;</button></md-code>
+            </markdown-toolbar>
+          </div>
         </div>,
         document.body
       )}
