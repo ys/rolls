@@ -89,6 +89,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const [editAll, setEditAll] = useState(false);
   const [showMetaSheet, setShowMetaSheet] = useState(false);
   const [showLabSheet, setShowLabSheet] = useState(false);
+  const [showNotesPreview, setShowNotesPreview] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -903,6 +904,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
                       )}
                       <button
                         onClick={() => {
+                          setShowNotesPreview(true);
+                          setShowActionsMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        Preview notes
+                      </button>
+                      <button
+                        onClick={() => {
                           setShowMetaSheet(true);
                           setShowActionsMenu(false);
                         }}
@@ -1218,6 +1228,13 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           >
             {saving ? "Saving…" : "Send to Lab"}
           </FormButton>
+        </div>
+      </Sheet>
+
+      {/* Notes preview sheet */}
+      <Sheet open={showNotesPreview} onClose={() => setShowNotesPreview(false)} title="Preview">
+        <div className="pb-6">
+          {notesPreview}
         </div>
       </Sheet>
 
