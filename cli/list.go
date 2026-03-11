@@ -19,11 +19,16 @@ Use --year to filter by year.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		year, err := cmd.Flags().GetInt("year")
 		cobra.CheckErr(err)
+		toProcess, err := cmd.Flags().GetBool("to-process")
+		cobra.CheckErr(err)
 
 		root := cfg.ScansPath
 		fmt.Println(RenderTitle("📚", fmt.Sprintf("Reading rolls from: %s", root)))
 		rolls, err := roll.GetRolls(root)
 		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
+			if toProcess {
+				return roll.Metadata.ScannedAtSet && roll.Metadata.ProcessedAt.IsZero()
+			}
 			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
 				(roll.Metadata.ScannedAt.Year() == year)
 		})
@@ -171,4 +176,5 @@ func init() {
 	// is called directly, e.g.:
 	listCmd.Flags().Int("year", 0, "Filter by year")
 	listCmd.Flags().Bool("compact", false, "One per line")
+	listCmd.Flags().Bool("to-process", false, "Show only scanned rolls that haven't been processed yet")
 }

@@ -345,11 +345,11 @@ export async function sendInviteEmail(
             },
           ],
           Subject: `${inviterName} invited you to join Rolls`,
-          TextPart: `${inviterName} has invited you to join Rolls, a film photography roll tracker.\n\n${message || ""}\n\nClick here to register: ${registrationLink}\n\n— The Rolls Team`,
+          TextPart: `${inviterName} has invited you to join Rolls.\n\n${message ? `"${message}"\n\n` : ""}Rolls is a film photography tracker. Log every roll you shoot — camera, film stock, dates, and notes — then sync it all with a CLI tool that reads from your local files. Keep your archive organized and accessible from anywhere.\n\nClick here to register: ${registrationLink}\n\n— The Rolls Team`,
           HTMLPart: `
             <h2>${inviterName} invited you to join Rolls</h2>
-            <p>${inviterName} has invited you to join Rolls, a film photography roll tracker.</p>
             ${message ? `<p><em>"${message}"</em></p>` : ""}
+            <p>Rolls is a film photography tracker. Log every roll you shoot — camera, film stock, dates, and notes — then sync it all with a CLI tool that reads from your local files. Keep your archive organized and accessible from anywhere.</p>
             <p><a href="${registrationLink}" style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 4px;">Register Now</a></p>
             <p style="color: #666; font-size: 12px;">Or copy this link: ${registrationLink}</p>
             <p>— The Rolls Team</p>

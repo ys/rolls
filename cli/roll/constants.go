@@ -60,7 +60,10 @@ func ParseDate(s string) (time.Time, error) {
 	return time.Parse(DateFormat, s)
 }
 
-// ParseDateTime parses a YYYY-MM-DD HH:MM:SS string into a time.Time
+// ParseDateTime parses a datetime string in either YYYY-MM-DD HH:MM:SS or RFC3339 format
 func ParseDateTime(s string) (time.Time, error) {
-	return time.Parse(DateTimeFormat, s)
+	if t, err := time.Parse(DateTimeFormat, s); err == nil {
+		return t, nil
+	}
+	return time.Parse(time.RFC3339, s)
 }
