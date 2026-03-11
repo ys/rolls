@@ -128,6 +128,85 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
   const currentFilm = films.find((f) => f.uuid === roll.film_uuid) ?? null;
   const isPostScan = ["SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED"].includes(status);
 
+  // Smart markdown list continuation
+  function handleNotesKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    const textarea = e.currentTarget;
+    const { value, selectionStart } = textarea;
+
+    // Enter key - continue lists
+    if (e.key === "Enter" && !e.shiftKey) {
+      const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
+      const currentLine = value.slice(lineStart, selectionStart);
+
+      // Ordered list: 1. item
+      const orderedMatch = currentLine.match(/^(\s*)(\d+)\.\s/);
+      if (orderedMatch) {
+        const [, indent, num] = orderedMatch;
+        const nextNum = parseInt(num) + 1;
+        const continuation = `\n${indent}${nextNum}. `;
+        e.preventDefault();
+        const newValue = value.slice(0, selectionStart) + continuation + value.slice(selectionStart);
+        setNotes(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = selectionStart + continuation.length;
+        }, 0);
+        return;
+      }
+
+      // Unordered list: - item or * item
+      const unorderedMatch = currentLine.match(/^(\s*)([-*])\s/);
+      if (unorderedMatch) {
+        const [, indent, bullet] = unorderedMatch;
+        const continuation = `\n${indent}${bullet} `;
+        e.preventDefault();
+        const newValue = value.slice(0, selectionStart) + continuation + value.slice(selectionStart);
+        setNotes(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = selectionStart + continuation.length;
+        }, 0);
+        return;
+      }
+
+      // Task list: - [ ] item or - [x] item
+      const taskMatch = currentLine.match(/^(\s*)- \[([ x])\]\s/);
+      if (taskMatch) {
+        const [, indent] = taskMatch;
+        const continuation = `\n${indent}- [ ] `;
+        e.preventDefault();
+        const newValue = value.slice(0, selectionStart) + continuation + value.slice(selectionStart);
+        setNotes(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = selectionStart + continuation.length;
+        }, 0);
+        return;
+      }
+    }
+
+    // Backspace on empty list item - remove it
+    if (e.key === "Backspace") {
+      const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
+      const currentLine = value.slice(lineStart, selectionStart);
+      const afterCursor = value.slice(selectionStart, value.indexOf("\n", selectionStart));
+
+      // Check if we're at the end of an empty list item
+      if (afterCursor === "" || afterCursor.match(/^\s*$/)) {
+        const emptyOrdered = currentLine.match(/^(\s*)\d+\.\s$/);
+        const emptyUnordered = currentLine.match(/^(\s*)[-*]\s$/);
+        const emptyTask = currentLine.match(/^(\s*)- \[ \]\s$/);
+
+        if (emptyOrdered || emptyUnordered || emptyTask) {
+          e.preventDefault();
+          const newValue = value.slice(0, lineStart) + value.slice(selectionStart);
+          setNotes(newValue);
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = lineStart;
+          }, 0);
+          return;
+        }
+      }
+    }
+  }
+
   // Lock page scroll and replace nav when in pre-scan notes view
   useEffect(() => {
     if (isPostScan) return;
@@ -755,7 +834,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
         // PRE-SCAN VIEW (Notes-app style)
         <>
           {/* Header bar */}
-          <div className="pt-12 pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
+          <div className="pt-6 pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               {/* Roll number, status, camera, and film */}
               <div className="flex items-center gap-2 flex-wrap">
@@ -876,6 +955,7 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               id="notes-textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              onKeyDown={handleNotesKeyDown}
               onBlur={() => save({ notes })}
               placeholder="Notes…"
               className="flex-1 h-full w-full bg-transparent text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed caret-amber-400"
@@ -1126,25 +1206,17 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
               boxShadow: "0 8px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
             }}
           >
-            <markdown-toolbar for="notes-textarea" className="flex items-center h-14 px-2">
+            <markdown-toolbar for="notes-textarea" className="flex items-center h-14 px-3 gap-0.5">
               <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
               <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>
               <md-strikethrough><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl line-through text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">S</button></md-strikethrough>
-              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
+              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-1 shrink-0" />
               <md-unordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
               </button></md-unordered-list>
-              <md-ordered-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="1" y="9" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">1.</text><text x="1" y="15" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">2.</text><text x="1" y="21" fontSize="7" fill="currentColor" stroke="none" fontFamily="monospace">3.</text></svg>
-              </button></md-ordered-list>
               <md-task-list><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><polyline points="5 8 6.5 9.5 9 6.5" strokeWidth="1.5"/><line x1="13" y1="8" x2="21" y2="8"/><rect x="3" y="15" width="6" height="6" rx="1"/><line x1="13" y1="18" x2="21" y2="18"/></svg>
               </button></md-task-list>
-              <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-0.5 shrink-0" />
-              <md-quote><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5H3V9zm11 0c0-3.3 2.7-5 5-5v2c-1.7 0-3 1-3 3h3v5h-5V9z"/></svg>
-              </button></md-quote>
-              <md-code><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-mono text-[13px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">&lt;/&gt;</button></md-code>
             </markdown-toolbar>
           </div>
         </div>,
