@@ -148,7 +148,7 @@ scans_path must be set to write roll files.`,
 
 		written, newFiles, changed, unchanged := 0, 0, 0, 0
 		for _, r := range data.Rolls {
-			if r.RollNumber == "" {
+			if r.RollNumber == "" || r.ScannedAt == nil {
 				continue
 			}
 

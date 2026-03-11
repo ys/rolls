@@ -48,6 +48,11 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 			return err
 		}
 
+		pending, err := cmd.Flags().GetBool("pending")
+		if err != nil {
+			return err
+		}
+
 		// Get all rolls to process
 		var rollsToProcess []roll.Roll
 
@@ -66,6 +71,13 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 			if err != nil {
 				return err
 			}
+		}
+
+		// Filter to unprocessed rolls if --pending
+		if pending {
+			rollsToProcess = roll.Filter(rollsToProcess, func(r roll.Roll) bool {
+				return r.Metadata.ScannedAtSet && r.Metadata.ProcessedAt.IsZero()
+			})
 		}
 
 		// Filter by year if specified
@@ -237,4 +249,5 @@ func init() {
 	processCmd.Flags().Bool("exif-only", false, "Only update EXIF data for already processed rolls")
 	processCmd.Flags().BoolP("yes", "y", false, "Skip confirmation prompt")
 	processCmd.Flags().Bool("local-only", false, "Skip web publish (contact sheet upload and processed_at)")
+	processCmd.Flags().Bool("pending", false, "Process only scanned rolls that haven't been processed yet")
 }
