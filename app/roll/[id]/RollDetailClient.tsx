@@ -670,8 +670,8 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
 
   return (
     <div
-      className={isPostScan ? "" : "fixed inset-0 z-30 flex flex-col overflow-hidden bg-gray-50 dark:bg-zinc-950 px-4"}
-      style={isPostScan ? {} : { paddingTop: "env(safe-area-inset-top)" }}
+      className={isPostScan ? "" : "fixed inset-0 z-30 flex flex-col bg-gray-50 dark:bg-zinc-950 px-4"}
+      style={isPostScan ? {} : { paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {isPostScan ? (
         // POST-SCAN VIEW (existing layout)
@@ -871,14 +871,14 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
           )}
 
           {/* Full-height notes editor */}
-          <div className="flex-1 flex flex-col min-h-0" style={{ paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" }}>
+          <div className="flex-1 flex flex-col pb-20">
             <textarea
               id="notes-textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={() => save({ notes })}
               placeholder="Notes…"
-              className="flex-1 w-full bg-transparent text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed caret-amber-400"
+              className="flex-1 h-full w-full bg-transparent text-base text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none resize-none leading-relaxed caret-amber-400"
             />
           </div>
 
@@ -1117,10 +1117,15 @@ export default function RollDetailClient({ roll: initialRoll, status: initialSta
       {/* Markdown editor toolbar — replaces bottom nav in pre-scan view */}
       {!isPostScan && mounted && createPortal(
         <div
-          className="fixed bottom-0 inset-x-0 z-40 flex justify-center items-end pointer-events-none px-4"
+          className="fixed bottom-0 inset-x-0 z-[100] flex justify-center items-end pointer-events-none px-4"
           style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
         >
-          <div className="pointer-events-auto bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60 overflow-x-auto">
+          <div
+            className="pointer-events-auto bg-white/40 dark:bg-zinc-900/60 backdrop-blur-3xl rounded-[2.5rem] border border-white/60 dark:border-white/10 overflow-x-auto"
+            style={{
+              boxShadow: "0 8px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
+            }}
+          >
             <markdown-toolbar for="notes-textarea" className="flex items-center h-14 px-2">
               <md-bold><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl font-bold text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">B</button></md-bold>
               <md-italic><button type="button" className="flex items-center justify-center w-11 h-11 rounded-xl italic text-[17px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors">I</button></md-italic>

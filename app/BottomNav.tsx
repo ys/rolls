@@ -21,6 +21,12 @@ export default function BottomNav() {
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
+
+    // Check initial state
+    if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
+      setAnim("hidden");
+    }
+
     const observer = new MutationObserver(() => {
       clearTimeout(timer);
       if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
