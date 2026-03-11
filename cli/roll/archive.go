@@ -132,10 +132,14 @@ func (roll *Roll) processFiles(files []os.DirEntry, camera *Camera, film *Film, 
 		}
 
 		filePath := path.Join(roll.Folder, file.Name())
-		fmt.Print(style.ProgressStyle.Render(fmt.Sprintf("Processing %s %s", file.Name(), style.RenderProgressBar(processed+1, validFiles))))
-		workChan <- workItem{file: file, index: processed, filePath: filePath}
 		processed++
-		time.Sleep(50 * time.Millisecond)
+
+		// Update progress on a single terminal line to avoid log spam
+		fmt.Print("\r" + style.ProgressStyle.Render(
+			fmt.Sprintf("Processing %s %s", file.Name(), style.RenderProgressBar(processed, validFiles)),
+		))
+
+		workChan <- workItem{file: file, index: processed - 1, filePath: filePath}
 	}
 	close(workChan)
 

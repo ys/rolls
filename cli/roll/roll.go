@@ -202,6 +202,10 @@ func FromMarkdown(path string) (Roll, error) {
 			if t, err := ParseDateTime(value); err == nil {
 				metadata.ProcessedAt = t
 			}
+		case "uploaded_at":
+			if t, err := ParseDateTime(value); err == nil {
+				metadata.UploadedAt = t
+			}
 		case "archived_at":
 			if t, err := ParseDateTime(value); err == nil {
 				metadata.ArchivedAt = t
@@ -213,6 +217,8 @@ func FromMarkdown(path string) (Roll, error) {
 			}
 		case "contact_sheet_url":
 			metadata.ContactSheetURL = value
+		case "album_name":
+			metadata.AlbumName = value
 		case "push_pull":
 			if v, err := strconv.ParseFloat(value, 64); err == nil {
 				metadata.PushPull = &v

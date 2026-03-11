@@ -9,28 +9,35 @@ import (
 	"github.com/ys/rolls/cli/roll"
 )
 
-// listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all the rolls",
 	Long: `Displays all rolls from scans_path with their camera, film, shot date, and status.
 Use --compact for a condensed one-line-per-roll view.
-Use --year to filter by year.`,
+Use --year to filter by year.
+Use --to-process to see scanned-but-unprocessed rolls.
+Use --to-upload to see rolls that haven't been uploaded yet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		year, err := cmd.Flags().GetInt("year")
 		cobra.CheckErr(err)
 		toProcess, err := cmd.Flags().GetBool("to-process")
 		cobra.CheckErr(err)
+		toUpload, err := cmd.Flags().GetBool("to-upload")
+		cobra.CheckErr(err)
 
 		root := cfg.ScansPath
 		fmt.Println(RenderTitle("📚", fmt.Sprintf("Reading rolls from: %s", root)))
 		rolls, err := roll.GetRolls(root)
-		rolls = roll.Filter(rolls, func(roll roll.Roll) bool {
+		rolls = roll.Filter(rolls, func(r roll.Roll) bool {
 			if toProcess {
-				return roll.Metadata.ScannedAtSet && roll.Metadata.ProcessedAt.IsZero()
+				return r.Metadata.ScannedAtSet && r.Metadata.ProcessedAt.IsZero()
 			}
-			return year == 0 || (roll.Metadata.ShotAt.Year() == year) ||
-				(roll.Metadata.ScannedAt.Year() == year)
+			if toUpload {
+				// Rolls that have never been uploaded (e.g. to Lightroom)
+				return r.Metadata.UploadedAt.IsZero()
+			}
+			return year == 0 || (r.Metadata.ShotAt.Year() == year) ||
+				(r.Metadata.ScannedAt.Year() == year)
 		})
 		cobra.CheckErr(err)
 		compact, err := cmd.Flags().GetBool("compact")
@@ -177,4 +184,5 @@ func init() {
 	listCmd.Flags().Int("year", 0, "Filter by year")
 	listCmd.Flags().Bool("compact", false, "One per line")
 	listCmd.Flags().Bool("to-process", false, "Show only scanned rolls that haven't been processed yet")
+	listCmd.Flags().Bool("to-upload", false, "Show only rolls that haven't been uploaded yet")
 }
