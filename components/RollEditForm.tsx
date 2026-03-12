@@ -69,7 +69,7 @@ export default function RollEditForm({
   const [albumName, setAlbumName] = useState(roll.album_name ?? "");
   const [pushPull, setPushPull] = useState<number | null>(roll.push_pull ?? null);
   const [pushPullCustom, setPushPullCustom] = useState(
-    roll.push_pull !== null && ![−2, −1, 0, 1, 2].includes(roll.push_pull)
+    roll.push_pull !== null && ![-2, -1, 0, 1, 2].includes(roll.push_pull)
       ? String(roll.push_pull)
       : ""
   );
@@ -296,7 +296,7 @@ export default function RollEditForm({
               <div className="space-y-2">
                 <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Push / Pull</label>
                 <div className="flex gap-1 flex-wrap">
-                  {[−2, −1, 0, 1, 2].map((v) => {
+                  {[-2, -1, 0, 1, 2].map((v) => {
                     const label = v > 0 ? `+${v}` : `${v}`;
                     const active = pushPull === v && pushPullCustom === "";
                     return (
