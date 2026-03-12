@@ -45,9 +45,11 @@ export async function POST(request: Request) {
     // Validate invite code (skip during bootstrap)
     let invite: Invite | undefined;
     if (!isBootstrap) {
-      const [found] = await sql<Invite[]>`
-        SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
-      `;
+      if (invite_code) {
+        const [found] = await sql<Invite[]>`
+          SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
+        `;
+      }
 
       if (!found) {
         return NextResponse.json({ error: "Invalid invite code" } satisfies ErrorResponse, { status: 400 });
