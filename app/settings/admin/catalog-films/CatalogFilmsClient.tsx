@@ -209,8 +209,8 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
             <div className="flex items-center gap-3">
               <GradientSwatch from={form.gradient_from || null} to={form.gradient_to || null} />
               <div className="flex-1 space-y-2">
-                <input type="text" value={form.gradient_from} onChange={(e) => set("gradient_from", e.target.value)} className={inputCls + " font-mono text-sm"} placeholder="#fbbf24 (top)" />
-                <input type="text" value={form.gradient_to} onChange={(e) => set("gradient_to", e.target.value)} className={inputCls + " font-mono text-sm"} placeholder="#f59e0b (bottom)" />
+                <input type="text" value={form.gradient_from} onChange={(e) => set("gradient_from", e.target.value)} className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors font-mono text-sm" placeholder="#fbbf24 (top)" />
+                <input type="text" value={form.gradient_to} onChange={(e) => set("gradient_to", e.target.value)} className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors font-mono text-sm" placeholder="#f59e0b (bottom)" />
               </div>
             </div>
           </div>

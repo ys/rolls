@@ -145,7 +145,7 @@ export default function NewRollPage() {
             <button
               type="button"
               onClick={() => setCameraPickerOpen(true)}
-              className={selectCls + " text-left flex items-center justify-between"}
+              className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
             >
               <span className={cameraId ? "" : "text-zinc-400"}>
                 {cameraId
@@ -165,7 +165,7 @@ export default function NewRollPage() {
           <button
             type="button"
             onClick={() => setFilmPickerOpen(true)}
-            className={selectCls + " text-left flex items-center justify-between"}
+            className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
           >
             <span className={filmId ? "" : "text-zinc-400"}>
               {filmId
