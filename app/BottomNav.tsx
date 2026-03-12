@@ -71,11 +71,10 @@ export default function BottomNav() {
           borderColor: "var(--darkroom-border)",
           backgroundColor: "var(--darkroom-bg)",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr",
-          position: "relative",
+          gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
         }}
       >
-        {TABS.map(({ href, icon: Icon, match }) => {
+        {TABS.slice(0, 2).map(({ href, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <Link
@@ -96,25 +95,47 @@ export default function BottomNav() {
           );
         })}
 
-        {/* FAB in center position */}
+        {/* FAB in center */}
         <Link
           href="/new"
           aria-label="New roll"
           onClick={() => haptics.medium()}
-          className="absolute left-1/2 flex-shrink-0 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-          style={{
-            ...animStyle,
-            width: 48,
-            height: 48,
-            marginLeft: -24,
-            top: "50%",
-            marginTop: -24,
-            background: "var(--darkroom-accent)",
-            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.3)",
-          }}
+          className="flex items-center justify-center active:scale-90 transition-transform"
+          style={{ height: 64 }}
         >
-          <Plus size={26} weight="bold" color="#000" />
+          <div
+            className="flex items-center justify-center rounded-full"
+            style={{
+              width: 48,
+              height: 48,
+              background: "var(--darkroom-accent)",
+              boxShadow: "0 4px 12px rgba(251, 191, 36, 0.3)",
+            }}
+          >
+            <Plus size={26} weight="bold" color="#000" />
+          </div>
         </Link>
+
+        {TABS.slice(2).map(({ href, icon: Icon, match }) => {
+          const active = match(pathname);
+          return (
+            <Link
+              key={href}
+              href={href}
+              prefetch={true}
+              aria-label={href.slice(1) || "rolls"}
+              onClick={() => haptics.light()}
+              className="flex items-center justify-center transition-colors duration-200 active:scale-90"
+              style={{ height: 64 }}
+            >
+              <Icon
+                size={22}
+                weight={active ? "fill" : "regular"}
+                style={{ color: active ? "var(--darkroom-accent)" : "var(--darkroom-text-tertiary)" }}
+              />
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
