@@ -21,41 +21,59 @@ export async function POST(request: Request) {
     const { username, email, name, invite_code } = body;
 
     // Check if this is a bootstrap registration (no users exist yet)
-    const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM users`;
+    const [{ count }] = await sql<
+      { count: string }[]
+    >`SELECT COUNT(*) as count FROM users`;
     const isBootstrap = parseInt(count) === 0;
 
     // Validate required fields (invite_code optional during bootstrap)
     if (!username || !email || (!isBootstrap && !invite_code)) {
       return NextResponse.json(
-        { error: isBootstrap ? "Username and email are required" : "Username, email, and invite code are required" },
-        { status: 400 }
+        {
+          error: isBootstrap
+            ? "Username and email are required"
+            : "Username, email, and invite code are required",
+        },
+        { status: 400 },
       );
     }
 
     // Validate username format
     if (!/^[a-zA-Z0-9_-]{3,20}$/.test(username)) {
       return NextResponse.json(
-        { error: "Username must be 3-20 characters, alphanumeric with underscores/hyphens only" } satisfies ErrorResponse,
-        { status: 400 }
+        {
+          error:
+            "Username must be 3-20 characters, alphanumeric with underscores/hyphens only",
+        } satisfies ErrorResponse,
+        { status: 400 },
       );
     }
 
     // Validate invite code (skip during bootstrap)
     if (!isBootstrap) {
-      const [invite] = await sql<Invite[]>`
-        SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
-      `;
+      const [invite] = await sql<
+        Invite[]
+      >`SELECT * FROM invites WHERE code = ${invite_code ?? "LOLTHISISCRAP"} LIMIT 1`;
 
       if (!invite) {
-        return NextResponse.json({ error: "Invalid invite code" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid invite code" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
 
       if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-        return NextResponse.json({ error: "Invite code has expired" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invite code has expired" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
 
       if (invite.max_uses !== null && invite.used_count >= invite.max_uses) {
-        return NextResponse.json({ error: "Invite code has been fully used" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invite code has been fully used" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
     }
 
@@ -69,7 +87,7 @@ export async function POST(request: Request) {
     if (existingUser.length > 0) {
       return NextResponse.json(
         { error: "Username or email already in use" } satisfies ErrorResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -85,8 +103,10 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Registration options error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate registration options" } satisfies ErrorResponse,
-      { status: 500 }
+      {
+        error: error.message || "Failed to generate registration options",
+      } satisfies ErrorResponse,
+      { status: 500 },
     );
   }
 }
