@@ -143,7 +143,7 @@ export async function POST(request: Request) {
         SET used_count = used_count + 1,
             used_by = ${user.id},
             used_at = NOW()
-        WHERE code = ${invite_code}
+        WHERE code = ${invite.code}
       `;
     }
 
