@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { haptics } from "../lib/haptics";
-import { Image, ChartLine, Gear, Plus, Camera } from "@phosphor-icons/react";
+import { FilmStrip, Archive, ChartBar, Gear, Plus } from "@phosphor-icons/react";
 
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
 const TABS = [
-  { href: "/",         icon: Image,     match: (p: string) => p === "/" || p.startsWith("/roll/") },
-  { href: "/stats",    icon: ChartLine, match: (p: string) => p === "/stats" },
-  { href: "/cameras",  icon: Camera,    match: (p: string) => p.startsWith("/cameras") || p.startsWith("/films") },
+  { href: "/",         icon: FilmStrip, match: (p: string) => p === "/" || p.startsWith("/roll/") },
+  { href: "/archive",  icon: Archive,   match: (p: string) => p === "/archive" },
+  { href: "/stats",    icon: ChartBar,  match: (p: string) => p === "/stats" },
   { href: "/settings", icon: Gear,      match: (p: string) => p.startsWith("/settings") },
 ];
 
