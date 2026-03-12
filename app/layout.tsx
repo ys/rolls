@@ -45,10 +45,10 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
         />
-        {/* Theme color */}
-        <meta name="theme-color" content="#FF9500" />
+        {/* Theme color - darkroom aesthetic */}
+        <meta name="theme-color" content="#0f0f0f" />
         {/* Microsoft */}
-        <meta name="msapplication-TileColor" content="#FF9500" />
+        <meta name="msapplication-TileColor" content="#0f0f0f" />
         <meta
           name="msapplication-square150x150logo"
           content="/api/icon?size=150"
@@ -58,14 +58,8 @@ export default function RootLayout({
           content="/api/icon?size=310"
         />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        {/* Restore theme preference before paint to avoid flash */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}})()`,
-          }}
-        />
       </head>
-      <body className="bg-gray-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+      <body className="min-h-screen" style={{ backgroundColor: "var(--darkroom-bg)", color: "var(--darkroom-text-primary)" }}>
         <OfflineIndicator />
         <SwipeNavigation />
         <main
