@@ -74,7 +74,7 @@ function filmLabel(roll: RollRow): string {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-600"}`}
     >
       {checked && (
         <svg
@@ -203,7 +203,7 @@ function GridCard({
           onToggle();
           haptics.light();
         }}
-        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-gray-50 dark:ring-offset-zinc-950" : ""}`}
+        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
       >
         {inner}
       </button>
@@ -484,12 +484,12 @@ export default function ArchiveClient() {
   if (isLoading && !data) {
     return (
       <div>
-        <div className="h-8 w-16 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse mb-6" />
+        <div className="h-8 w-16 rounded animate-pulse mb-6" style={{ backgroundColor: "var(--darkroom-border)" }} />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="w-full aspect-[3/2] rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse"
+              className="w-full aspect-[3/2] rounded-xl animate-pulse" style={{ backgroundColor: "var(--darkroom-border)" }}
             />
           ))}
         </div>
@@ -763,8 +763,8 @@ export default function ArchiveClient() {
             }}
           >
             <div
-              className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
-              style={{
+              className="pointer-events-auto h-14 flex items-center gap-2 px-4 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/60 border"
+              style={{ backgroundColor: "var(--darkroom-card)", borderColor: "var(--darkroom-border)",
                 transformOrigin: "center bottom",
                 animation: exiting
                   ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
@@ -778,7 +778,7 @@ export default function ArchiveClient() {
               >
                 Done
               </button>
-              <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+              <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
               <button
                 onClick={selectAll}
                 className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
@@ -787,13 +787,13 @@ export default function ArchiveClient() {
               </button>
               {selected.size > 0 && (
                 <>
-                  <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
                   <span className="text-[13px] text-zinc-500 tabular-nums">
                     {selected.size} selected
                   </span>
                   {availableActions.map(({ label, field, color }) => (
                     <Fragment key={field}>
-                      <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                      <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
