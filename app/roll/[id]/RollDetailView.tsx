@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, PencilSimple, NotePencil, DotsThree } from "@phosphor-icons/react";
+import {
+  Camera,
+  PencilSimple,
+  NotePencil,
+  DotsThree,
+} from "@phosphor-icons/react";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { MarkdownPreview } from "@/components/MarkdownPreview";
 import BackButton from "@/components/BackButton";
@@ -30,7 +35,8 @@ interface RollDetailViewProps {
 
 function cameraLabel(roll: RollDetailViewProps["roll"]): string {
   if (roll.camera_nickname) return roll.camera_nickname;
-  if (roll.camera_brand && roll.camera_model) return `${roll.camera_brand} ${roll.camera_model}`;
+  if (roll.camera_brand && roll.camera_model)
+    return `${roll.camera_brand} ${roll.camera_model}`;
   return "";
 }
 
@@ -43,25 +49,41 @@ function filmLabel(roll: RollDetailViewProps["roll"]): string {
   return "";
 }
 
-export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onMoveToNext, notes, onNotesChange }: RollDetailViewProps) {
+export function RollDetailView({
+  roll,
+  contactSheetUrl,
+  onEdit,
+  onEditNotes,
+  onMoveToNext,
+  notes,
+  onNotesChange,
+}: RollDetailViewProps) {
   const [showMenu, setShowMenu] = useState(false);
   const status = rollStatus(roll);
   const cam = cameraLabel(roll);
   const film = filmLabel(roll);
 
-  const dateField =
-    roll.archived_at ? roll.archived_at :
-    roll.processed_at ? roll.processed_at :
-    roll.scanned_at ? roll.scanned_at :
-    roll.lab_at ? roll.lab_at :
-    roll.fridge_at;
+  const dateField = roll.archived_at
+    ? roll.archived_at
+    : roll.processed_at
+      ? roll.processed_at
+      : roll.scanned_at
+        ? roll.scanned_at
+        : roll.lab_at
+          ? roll.lab_at
+          : roll.fridge_at;
 
   const dateStr = dateField
-    ? new Date(dateField).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+    ? new Date(dateField).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
     : null;
 
   // For LOADED, FRIDGE, or LAB status: show large notes editor
-  const showLargeEditor = status === "LOADED" || status === "FRIDGE" || status === "LAB";
+  const showLargeEditor =
+    status === "LOADED" || status === "FRIDGE" || status === "LAB";
 
   const handleEditRoll = () => {
     setShowMenu(false);
@@ -91,13 +113,22 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
         }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+        <div
+          className="flex items-center gap-3 px-4 py-4 border-b"
+          style={{ borderColor: "var(--darkroom-border)" }}
+        >
           <BackButton />
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm" style={{ color: "var(--darkroom-text-primary)" }}>
+            <div
+              className="font-semibold text-sm"
+              style={{ color: "var(--darkroom-text-primary)" }}
+            >
               {roll.roll_number}
             </div>
-            <div className="text-[9px] uppercase tracking-wide mt-0.5" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            <div
+              className="text-[9px] uppercase tracking-wide mt-0.5"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
               {cam && film ? `${cam} • ${film}` : cam || film || "—"}
             </div>
           </div>
@@ -107,7 +138,11 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
               className="p-2 active:scale-90 transition-transform"
               aria-label="Actions"
             >
-              <DotsThree size={18} weight="bold" style={{ color: "var(--darkroom-accent)" }} />
+              <DotsThree
+                size={18}
+                weight="bold"
+                style={{ color: "var(--darkroom-accent)" }}
+              />
             </button>
             {showMenu && (
               <>
@@ -181,16 +216,25 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
         </div>
 
         {/* Status Pills */}
-        <div className="flex gap-2 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+        <div
+          className="flex gap-2 px-4 py-3 border-t"
+          style={{ borderColor: "var(--darkroom-border)" }}
+        >
           <div
             className="px-2 py-1 text-[10px] font-medium rounded"
             style={{
-              backgroundColor: status === "LOADED" ? "rgba(251, 191, 36, 0.2)" :
-                            status === "FRIDGE" ? "rgba(34, 211, 238, 0.2)" :
-                            "rgba(251, 146, 60, 0.2)",
-              color: status === "LOADED" ? "#fbbf24" :
-                     status === "FRIDGE" ? "#22d3ee" :
-                     "#fb923c",
+              backgroundColor:
+                status === "LOADED"
+                  ? "rgba(251, 191, 36, 0.2)"
+                  : status === "FRIDGE"
+                    ? "rgba(34, 211, 238, 0.2)"
+                    : "rgba(251, 146, 60, 0.2)",
+              color:
+                status === "LOADED"
+                  ? "#fbbf24"
+                  : status === "FRIDGE"
+                    ? "#22d3ee"
+                    : "#fb923c",
             }}
           >
             {status}
@@ -208,21 +252,33 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
           )}
         </div>
       </div>,
-      document.body
+      document.body,
     );
   }
 
   // For SCANNED and beyond: show contact sheet and metadata
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: "var(--darkroom-bg)" }}>
+    <div
+      className="flex flex-col pb-24"
+      style={{ backgroundColor: "var(--darkroom-bg)" }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div
+        className="flex items-center gap-3 px-4 py-4 border-b"
+        style={{ borderColor: "var(--darkroom-border)" }}
+      >
         <BackButton />
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm" style={{ color: "var(--darkroom-text-primary)" }}>
+          <div
+            className="font-semibold text-sm"
+            style={{ color: "var(--darkroom-text-primary)" }}
+          >
             {roll.roll_number}
           </div>
-          <div className="text-[9px] uppercase tracking-wide mt-0.5" style={{ color: "var(--darkroom-text-tertiary)" }}>
+          <div
+            className="text-[9px] uppercase tracking-wide mt-0.5"
+            style={{ color: "var(--darkroom-text-tertiary)" }}
+          >
             {cam && film ? `${cam} • ${film}` : cam || film || "—"}
           </div>
         </div>
@@ -231,7 +287,11 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
           className="p-2 active:scale-90 transition-transform"
           aria-label="Edit roll"
         >
-          <PencilSimple size={18} weight="regular" style={{ color: "var(--darkroom-accent)" }} />
+          <PencilSimple
+            size={18}
+            weight="regular"
+            style={{ color: "var(--darkroom-accent)" }}
+          />
         </button>
       </div>
 
@@ -247,13 +307,23 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
         ) : (
           <div
             className="h-full flex flex-col items-center justify-center"
-            style={{ backgroundColor: "var(--darkroom-card)", borderRadius: 8, border: `1px solid var(--darkroom-border-subtle)` }}
+            style={{
+              backgroundColor: "var(--darkroom-card)",
+              borderRadius: 8,
+              border: `1px solid var(--darkroom-border-subtle)`,
+            }}
           >
             <Camera size={48} weight="thin" style={{ color: "#333" }} />
-            <div className="mt-4 text-xs font-medium tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            <div
+              className="mt-4 text-xs font-medium tracking-wide"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
               NO CONTACT SHEET YET
             </div>
-            <div className="mt-1 text-[9px]" style={{ color: "var(--darkroom-text-disabled)" }}>
+            <div
+              className="mt-1 text-[9px]"
+              style={{ color: "var(--darkroom-text-disabled)" }}
+            >
               Upload via CLI or API
             </div>
           </div>
@@ -261,20 +331,35 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
       </div>
 
       {/* Metadata Strip */}
-      <div className="flex gap-6 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div
+        className="flex gap-6 px-4 py-3 border-t"
+        style={{ borderColor: "var(--darkroom-border)" }}
+      >
         <div className="flex-1">
-          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>
+          <div
+            className="text-[8px] uppercase tracking-wider mb-1"
+            style={{ color: "var(--darkroom-text-tertiary)" }}
+          >
             Status
           </div>
-          <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>
+          <div
+            className="text-[10px]"
+            style={{ color: "var(--darkroom-text-primary)" }}
+          >
             {status}
           </div>
         </div>
         <div className="flex-1">
-          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>
+          <div
+            className="text-[8px] uppercase tracking-wider mb-1"
+            style={{ color: "var(--darkroom-text-tertiary)" }}
+          >
             Date
           </div>
-          <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>
+          <div
+            className="text-[10px]"
+            style={{ color: "var(--darkroom-text-primary)" }}
+          >
             {dateStr || "—"}
           </div>
         </div>
@@ -283,16 +368,25 @@ export function RollDetailView({ roll, contactSheetUrl, onEdit, onEditNotes, onM
           className="flex-[2] min-w-0 text-left active:opacity-60 transition-opacity"
         >
           <div className="flex items-center gap-1 mb-1">
-            <div className="text-[8px] uppercase tracking-wider" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            <div
+              className="text-[8px] uppercase tracking-wider"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
               Notes
             </div>
-            <NotePencil size={10} weight="bold" style={{ color: "var(--darkroom-text-tertiary)" }} />
+            <NotePencil
+              size={10}
+              weight="bold"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            />
           </div>
           <div className="text-[10px] italic truncate line-clamp-2">
             {roll.notes ? (
               <MarkdownPreview content={roll.notes} />
             ) : (
-              <span style={{ color: "var(--darkroom-text-disabled)" }}>Tap to add notes...</span>
+              <span style={{ color: "var(--darkroom-text-disabled)" }}>
+                Tap to add notes...
+              </span>
             )}
           </div>
         </button>

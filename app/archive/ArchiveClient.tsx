@@ -101,10 +101,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
     <div className="w-full h-full flex items-center justify-center bg-zinc-900 select-none relative">
       <div className="absolute top-0 inset-x-0 flex justify-around px-2 py-1">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="w-2 h-1.5 rounded-sm bg-zinc-800"
-          />
+          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-800" />
         ))}
       </div>
       <span className="text-zinc-500 text-[13px] font-mono tracking-widest uppercase">
@@ -112,10 +109,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
       </span>
       <div className="absolute bottom-0 inset-x-0 flex justify-around px-2 py-1">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="w-2 h-1.5 rounded-sm bg-zinc-800"
-          />
+          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-800" />
         ))}
       </div>
     </div>
@@ -171,7 +165,9 @@ function GridCard({
               </div>
               {roll.push_pull != null && (
                 <span className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0">
-                  {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+                  {roll.push_pull > 0
+                    ? `+${roll.push_pull}`
+                    : `${roll.push_pull}`}
                 </span>
               )}
             </div>
@@ -257,19 +253,31 @@ function ListRow({
     <>
       {editing && <Checkbox checked={selected} />}
       <div className="flex-1 min-w-0 pl-3">
-        <div className="font-semibold" style={{ color: "var(--darkroom-text-primary)" }}>
+        <div
+          className="font-semibold"
+          style={{ color: "var(--darkroom-text-primary)" }}
+        >
           {roll.roll_number}
         </div>
-        <div className="text-[10px] uppercase tracking-wide mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
+        <div
+          className="text-[10px] uppercase tracking-wide mt-0.5"
+          style={{ color: "var(--darkroom-text-secondary)" }}
+        >
           {camera && film ? `${camera} • ${film}` : camera || film || "—"}
         </div>
-        <div className="text-[10px] mt-1 uppercase" style={{ color: "var(--darkroom-text-tertiary)" }}>
+        <div
+          className="text-[10px] mt-1 uppercase"
+          style={{ color: "var(--darkroom-text-tertiary)" }}
+        >
           {status}
           {dateStr && ` • ${dateStr}`}
         </div>
       </div>
       {!editing && roll.contact_sheet_url && (
-        <div className="w-16 h-16 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--darkroom-border)" }}>
+        <div
+          className="w-16 h-16 rounded-md overflow-hidden shrink-0"
+          style={{ backgroundColor: "var(--darkroom-border)" }}
+        >
           <img
             src={roll.contact_sheet_url}
             alt=""
@@ -286,7 +294,13 @@ function ListRow({
     return (
       <li>
         <div className={cardBase} style={borderStyle}>
-          <div className="flex items-start gap-3 px-4" onClick={() => { onToggle(); haptics.light(); }}>
+          <div
+            className="flex items-start gap-3 px-4"
+            onClick={() => {
+              onToggle();
+              haptics.light();
+            }}
+          >
             {content}
           </div>
         </div>
@@ -446,12 +460,16 @@ export default function ArchiveClient() {
   if (isLoading && !data) {
     return (
       <div>
-        <div className="h-8 w-16 rounded animate-pulse mb-6" style={{ backgroundColor: "var(--darkroom-border)" }} />
+        <div
+          className="h-8 w-16 rounded animate-pulse mb-6"
+          style={{ backgroundColor: "var(--darkroom-border)" }}
+        />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="w-full aspect-[3/2] rounded-xl animate-pulse" style={{ backgroundColor: "var(--darkroom-border)" }}
+              className="w-full aspect-[3/2] rounded-xl animate-pulse"
+              style={{ backgroundColor: "var(--darkroom-border)" }}
             />
           ))}
         </div>
@@ -488,7 +506,7 @@ export default function ArchiveClient() {
 
   // Collect all unique tags across all rolls
   const allTags = Array.from(
-    new Set(data.rolls.flatMap((r) => r.tags ?? []))
+    new Set(data.rolls.flatMap((r) => r.tags ?? [])),
   ).sort();
 
   const byYear = new Map<number, RollRow[]>();
@@ -529,7 +547,12 @@ export default function ArchiveClient() {
         <div>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>ARCHIVE</h1>
+            <h1
+              className="text-sm font-semibold uppercase tracking-wide"
+              style={{ color: "var(--darkroom-text-primary)" }}
+            >
+              ARCHIVE
+            </h1>
             <div className="flex items-center gap-2">
               {/* View toggle */}
               {!editing && (
@@ -558,7 +581,12 @@ export default function ArchiveClient() {
               {!editing && (
                 <button
                   onClick={enterEdit}
-                  className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--darkroom-text-secondary)", backgroundColor: "transparent", border: "1px solid var(--darkroom-border)" }}
+                  className="text-xs font-medium px-3 py-1.5 transition-colors"
+                  style={{
+                    color: "var(--darkroom-text-secondary)",
+                    backgroundColor: "transparent",
+                    border: "1px solid var(--darkroom-border)",
+                  }}
                 >
                   Edit
                 </button>
@@ -569,15 +597,29 @@ export default function ArchiveClient() {
           {/* Search */}
           {!editing && (
             <div className="relative mb-4">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search archive…"
-                className="w-full pl-10 pr-3 py-2 text-xs border-b bg-transparent focus:outline-none" style={{ color: "var(--darkroom-text-primary)", borderColor: "var(--darkroom-border)", fontFamily: "inherit" }}
+                className="w-full pl-10 pr-3 py-2 text-xs border-b bg-transparent focus:outline-none"
+                style={{
+                  color: "var(--darkroom-text-primary)",
+                  borderColor: "var(--darkroom-border)",
+                  fontFamily: "inherit",
+                }}
               />
             </div>
           )}
@@ -602,9 +644,15 @@ export default function ArchiveClient() {
 
           {/* Year slider */}
           {years.length > 1 && !editing && (
-            <div className="mb-6 pb-4 border-b border" style={{ borderColor: "var(--darkroom-border)" }}>
+            <div
+              className="mb-6 pb-4 border-b border"
+              style={{ borderColor: "var(--darkroom-border)" }}
+            >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>
+                <span
+                  className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--darkroom-text-secondary)" }}
+                >
                   Year
                 </span>
                 {selectedYear && (
@@ -644,7 +692,7 @@ export default function ArchiveClient() {
           )}
 
           {/* Content */}
-          <div className="space-y-8">
+          <div className="space-y-8 pb-24">
             {yearsToShow.map((year) => {
               const yearRolls = byYear.get(year);
               if (!yearRolls) return null;
@@ -726,7 +774,9 @@ export default function ArchiveClient() {
           >
             <div
               className="pointer-events-auto h-14 flex items-center gap-2 px-4 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/60 border"
-              style={{ backgroundColor: "var(--darkroom-card)", borderColor: "var(--darkroom-border)",
+              style={{
+                backgroundColor: "var(--darkroom-card)",
+                borderColor: "var(--darkroom-border)",
                 transformOrigin: "center bottom",
                 animation: exiting
                   ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
@@ -740,7 +790,10 @@ export default function ArchiveClient() {
               >
                 Done
               </button>
-              <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
+              <div
+                className="w-px h-4"
+                style={{ backgroundColor: "var(--darkroom-border)" }}
+              />
               <button
                 onClick={selectAll}
                 className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-400" : "text-zinc-400"}`}
@@ -749,13 +802,19 @@ export default function ArchiveClient() {
               </button>
               {selected.size > 0 && (
                 <>
-                  <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
+                  <div
+                    className="w-px h-4"
+                    style={{ backgroundColor: "var(--darkroom-border)" }}
+                  />
                   <span className="text-[13px] text-zinc-500 tabular-nums">
                     {selected.size} selected
                   </span>
                   {availableActions.map(({ label, field, color }) => (
                     <Fragment key={field}>
-                      <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
+                      <div
+                        className="w-px h-4"
+                        style={{ backgroundColor: "var(--darkroom-border)" }}
+                      />
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
