@@ -7,7 +7,10 @@ import {
 } from "@/lib/auth";
 import { sql, type Invite, type User } from "@/lib/db";
 import type { WebAuthnRegisterVerifyBody } from "@/app/api/_schemas/auth";
-import type { ErrorResponse, SessionAuthSuccessResponse } from "@/app/api/_schemas/common";
+import type {
+  ErrorResponse,
+  SessionAuthSuccessResponse,
+} from "@/app/api/_schemas/common";
 
 /**
  * WebAuthn registration verify
@@ -31,48 +34,66 @@ export async function POST(request: Request) {
     } = body;
 
     // Check if this is a bootstrap registration (no users exist yet)
-    const [{ count }] = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM users`;
+    const [{ count }] = await sql<
+      { count: string }[]
+    >`SELECT COUNT(*) as count FROM users`;
     const isBootstrap = parseInt(count) === 0;
 
     // Validate required fields (invite_code optional during bootstrap)
-    if (!username || !email || (!isBootstrap && !invite_code) || !credentialResponse || !challenge) {
+    if (
+      !username ||
+      !email ||
+      (!isBootstrap && !invite_code) ||
+      !credentialResponse ||
+      !challenge
+    ) {
       return NextResponse.json(
         { error: "Missing required fields" } satisfies ErrorResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate invite code (skip during bootstrap)
     let invite: Invite | undefined;
     if (!isBootstrap) {
-      if (invite_code) {
-        const [found] = await sql<Invite[]>`
-          SELECT * FROM invites WHERE code = ${invite_code} LIMIT 1
+      const [found] = await sql<Invite[]>`
+          SELECT * FROM invites WHERE code = ${invite_code || null} LIMIT 1
         `;
-      }
 
       if (!found) {
-        return NextResponse.json({ error: "Invalid invite code" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid invite code" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
 
       if (found.expires_at && new Date(found.expires_at) < new Date()) {
-        return NextResponse.json({ error: "Invite code has expired" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invite code has expired" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
 
       if (found.max_uses !== null && found.used_count >= found.max_uses) {
-        return NextResponse.json({ error: "Invite code has been fully used" } satisfies ErrorResponse, { status: 400 });
+        return NextResponse.json(
+          { error: "Invite code has been fully used" } satisfies ErrorResponse,
+          { status: 400 },
+        );
       }
 
       invite = found;
     }
 
     // Verify the WebAuthn credential
-    const verification = await verifyRegistrationResponse(credentialResponse, challenge);
+    const verification = await verifyRegistrationResponse(
+      credentialResponse,
+      challenge,
+    );
 
     if (!verification.verified || !verification.registrationInfo) {
       return NextResponse.json(
         { error: "Credential verification failed" } satisfies ErrorResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -128,7 +149,7 @@ export async function POST(request: Request) {
 
     // Send welcome email (async, don't block response)
     sendWelcomeEmail(user).catch((err) =>
-      console.error("Failed to send welcome email:", err)
+      console.error("Failed to send welcome email:", err),
     );
 
     // Create session token
@@ -153,13 +174,13 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
           "Set-Cookie": cookie,
         },
-      }
+      },
     );
   } catch (error: any) {
     console.error("Registration verification error:", error);
     return NextResponse.json(
       { error: error.message || "Registration failed" } satisfies ErrorResponse,
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
