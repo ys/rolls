@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { RollDetailView } from "./RollDetailView";
+import { RollEditSheet } from "@/components/RollEditSheet";
 import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
 
 interface RollDetailClientProps {
@@ -23,17 +25,37 @@ interface RollDetailClientProps {
 
 export default function RollDetailClient({ roll, contactSheetUrl }: RollDetailClientProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
 
-  if (isEditing) {
-    // TODO: Render edit sheet in Phase 3
-    return <div>Edit mode - TODO</div>;
-  }
+  const handleSave = async (updates: Partial<Roll>) => {
+    const res = await fetch(`/api/rolls/${roll.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to update roll");
+    }
+
+    router.refresh();
+  };
 
   return (
-    <RollDetailView
-      roll={roll}
-      contactSheetUrl={contactSheetUrl}
-      onEdit={() => setIsEditing(true)}
-    />
+    <>
+      <RollDetailView
+        roll={roll}
+        contactSheetUrl={contactSheetUrl}
+        onEdit={() => setIsEditing(true)}
+      />
+
+      {isEditing && (
+        <RollEditSheet
+          roll={roll}
+          onClose={() => setIsEditing(false)}
+          onSave={handleSave}
+        />
+      )}
+    </>
   );
 }
