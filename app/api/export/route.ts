@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
-import type { ExportResponse } from "@/app/api/_schemas/import_export";
+import {
+  ExportCamera,
+  ExportFilm,
+  ExportRoll,
+  type ExportResponse,
+} from "@/app/api/_schemas/import_export";
 
 /**
  * Export all user data (CLI sync)
@@ -14,9 +19,13 @@ export async function GET() {
   const userId = await getUserId();
 
   const [cameras, films, rolls] = await Promise.all([
-    sql`SELECT uuid, slug AS id, brand, model, nickname, format FROM cameras WHERE user_id = ${userId} ORDER BY slug`,
-    sql`SELECT uuid, slug AS id, brand, name, nickname, iso, color, show_iso FROM films WHERE user_id = ${userId} ORDER BY slug`,
-    sql`
+    sql<
+      ExportCamera[]
+    >`SELECT uuid, slug AS id, brand, model, nickname, format FROM cameras WHERE user_id = ${userId} ORDER BY slug`,
+    sql<
+      ExportFilm[]
+    >`SELECT uuid, slug AS id, brand, name, nickname, iso, color, show_iso FROM films WHERE user_id = ${userId} ORDER BY slug`,
+    sql<ExportRoll[]>`
       SELECT
         r.roll_number, r.shot_at, r.fridge_at, r.lab_at, r.lab_name,
         r.scanned_at, r.processed_at, r.uploaded_at, r.archived_at,
