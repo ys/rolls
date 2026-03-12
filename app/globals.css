@@ -34,6 +34,19 @@
   font-display: swap;
 }
 
+:root {
+  /* Darkroom color palette */
+  --darkroom-bg: #0f0f0f;
+  --darkroom-card: #0a0a0a;
+  --darkroom-border: #222;
+  --darkroom-border-subtle: #1a1a1a;
+  --darkroom-text-primary: #fff;
+  --darkroom-text-secondary: #888;
+  --darkroom-text-tertiary: #666;
+  --darkroom-text-disabled: #444;
+  --darkroom-accent: #fbbf24;
+}
+
 html {
   overflow-x: clip; /* clip (not hidden) avoids creating a scroll container that breaks position:fixed on iOS Safari */
 }
@@ -41,28 +54,9 @@ html {
 body {
   overflow-x: clip;
   max-width: 100%;
-}
-
-body {
   font-family: "iA Writer Mono", ui-monospace, monospace;
-}
-
-/* Nav ↔ edit bar flip animations */
-@keyframes navFlipOut {
-  0%   { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
-  100% { opacity: 0; transform: perspective(500px) rotateX(-22deg) scale(0.93); }
-}
-@keyframes navFlipIn {
-  0%   { opacity: 0; transform: perspective(500px) rotateX(-22deg) scale(0.93); }
-  100% { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
-}
-@keyframes editBarFlipIn {
-  0%   { opacity: 0; transform: perspective(500px) rotateX(22deg)  scale(0.93); }
-  100% { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
-}
-@keyframes editBarFlipOut {
-  0%   { opacity: 1; transform: perspective(500px) rotateX(0deg)   scale(1);    }
-  100% { opacity: 0; transform: perspective(500px) rotateX(22deg)  scale(0.93); }
+  background-color: var(--darkroom-bg);
+  color: var(--darkroom-text-primary);
 }
 
 /* Page enter animation */
