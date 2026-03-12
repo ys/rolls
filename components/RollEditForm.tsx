@@ -23,7 +23,6 @@ function filmLabel(f: Film): string {
 
 const labelCls = "block text-[9px] uppercase tracking-wider mb-2";
 const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
-const textareaCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors resize-none";
 const addLinkCls = "text-xs transition-colors";
 
 interface RollEditFormProps {
@@ -62,7 +61,6 @@ export default function RollEditForm({
   const [shotAt, setShotAt] = useState(
     roll.shot_at ? new Date(roll.shot_at).toISOString().slice(0, 10) : ""
   );
-  const [notes, setNotes] = useState(roll.notes ?? "");
   const [tags, setTags] = useState(
     roll.tags ? roll.tags.join(", ") : ""
   );
@@ -117,9 +115,6 @@ export default function RollEditForm({
       const currentShotAt = roll.shot_at ? new Date(roll.shot_at).toISOString().slice(0, 10) : "";
       if (shotAt !== currentShotAt) {
         updates.shot_at = shotAt || null;
-      }
-      if (notes !== (roll.notes ?? "")) {
-        updates.notes = notes || null;
       }
       const currentTags = roll.tags ? roll.tags.join(", ") : "";
       if (tags !== currentTags) {
@@ -239,7 +234,7 @@ export default function RollEditForm({
           {/* Hint to drag up for more options */}
           {!expanded && (
             <p className="text-[11px] text-center -mt-2" style={{ color: "var(--darkroom-text-tertiary)" }}>
-              Drag up for date, notes, tags &amp; more
+              Drag up for date, tags &amp; more
             </p>
           )}
 
@@ -253,20 +248,6 @@ export default function RollEditForm({
                   value={shotAt}
                   onChange={(e) => setShotAt(e.target.value)}
                   className={inputCls}
-                  style={{
-                    borderColor: "var(--darkroom-border)",
-                    color: "var(--darkroom-text-primary)",
-                  }}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Notes</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className={textareaCls}
                   style={{
                     borderColor: "var(--darkroom-border)",
                     color: "var(--darkroom-text-primary)",
