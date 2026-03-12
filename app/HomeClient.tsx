@@ -61,9 +61,15 @@ function firstNotesLine(notes: string | null): string | null {
 
 function Checkbox({ checked }: { checked: boolean }) {
   return (
-    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-300 dark:border-zinc-600"}`}>
+    <div
+      className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+      style={{
+        backgroundColor: checked ? "var(--darkroom-accent)" : "transparent",
+        borderColor: checked ? "var(--darkroom-accent)" : "var(--darkroom-border)",
+      }}
+    >
       {checked && (
-        <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: "#000" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       )}
@@ -217,9 +223,15 @@ export default function HomeClient() {
 
   if (!mounted || (isLoading && !data)) {
     return (
-      <div className="space-y-4">
-        <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-800 rounded animate-pulse" />
-        {[1, 2, 3, 4].map((i) => <RollSkeleton key={i} />)}
+      <div className="space-y-6">
+        <div className="h-6 w-24 animate-pulse" style={{ backgroundColor: "var(--darkroom-border)" }} />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="py-4 border-l-2 pl-3" style={{ borderColor: "#444" }}>
+            <div className="h-4 w-16 mb-2 animate-pulse" style={{ backgroundColor: "var(--darkroom-border)" }} />
+            <div className="h-3 w-32 mb-1 animate-pulse" style={{ backgroundColor: "var(--darkroom-border-subtle)" }} />
+            <div className="h-3 w-24 animate-pulse" style={{ backgroundColor: "var(--darkroom-border-subtle)" }} />
+          </div>
+        ))}
       </div>
     );
   }
@@ -290,29 +302,35 @@ export default function HomeClient() {
 
           {/* Search */}
           {rolls.length > 0 && !editing && (
-            <div className="relative mb-6">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-              </svg>
+            <div className="relative mb-6 px-4">
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search rolls…"
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-shadow"
+                className="w-full px-3 py-2 text-xs border-b bg-transparent focus:outline-none"
+                style={{
+                  color: "var(--darkroom-text-primary)",
+                  borderColor: search ? "var(--darkroom-accent)" : "var(--darkroom-border)",
+                  fontFamily: "inherit",
+                }}
               />
             </div>
           )}
 
           {rolls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <svg className="w-12 h-12 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--darkroom-text-disabled)" }}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25" />
               </svg>
-              <p className="text-zinc-400 text-center text-sm">No active rolls.<br />Tap <strong className="text-zinc-600 dark:text-zinc-300">+</strong> to load a new roll.</p>
+              <p className="text-center text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>
+                No active rolls.<br />Tap <strong style={{ color: "var(--darkroom-text-secondary)" }}>+</strong> to load a new roll.
+              </p>
             </div>
           ) : searchQuery && filteredRolls.length === 0 ? (
-            <p className="text-zinc-400 text-center py-16 text-sm">No rolls match &ldquo;{search}&rdquo;</p>
+            <p className="text-center py-16 text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>
+              No rolls match &ldquo;{search}&rdquo;
+            </p>
           ) : (
             <div className="space-y-8">
               {searchQuery ? (
@@ -338,10 +356,14 @@ export default function HomeClient() {
                   { label: "At the Lab",    rolls: atLab    },
                 ].map(({ label, rolls: sectionRolls }) => sectionRolls.length > 0 && (
                   <section key={label}>
-                    <div className="flex items-baseline justify-between mb-3">
+                    <div className="flex items-baseline justify-between mb-3 px-4">
                       <div className="flex items-baseline gap-2">
-                        <h2 className="text-lg font-bold">{label}</h2>
-                        <span className="text-sm text-zinc-500">{sectionRolls.length}</span>
+                        <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>
+                          {label}
+                        </h2>
+                        <span className="text-[10px]" style={{ color: "var(--darkroom-text-tertiary)" }}>
+                          {sectionRolls.length}
+                        </span>
                       </div>
                       {editing && (
                         <button
@@ -355,7 +377,12 @@ export default function HomeClient() {
                               return s;
                             });
                           }}
-                          className={`text-[13px] font-medium active:opacity-50 transition-opacity ${sectionRolls.every((r) => selected.has(r.roll_number)) ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                          className="text-[10px] font-medium uppercase active:opacity-50 transition-opacity"
+                          style={{
+                            color: sectionRolls.every((r) => selected.has(r.roll_number))
+                              ? "var(--darkroom-accent)"
+                              : "var(--darkroom-text-tertiary)"
+                          }}
                         >
                           {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "Select all"}
                         </button>
@@ -386,11 +413,13 @@ export default function HomeClient() {
       {editing && mounted && createPortal(
         <div
           className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
-          style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}
+          style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom) + 64px)" }}
         >
           <div
-            className="pointer-events-auto h-14 flex items-center gap-2 px-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/25 dark:shadow-black/60 border border-zinc-200/70 dark:border-zinc-700/60"
+            className="pointer-events-auto h-12 flex items-center gap-3 px-4 border"
             style={{
+              backgroundColor: "var(--darkroom-card)",
+              borderColor: "var(--darkroom-border)",
               transformOrigin: "center bottom",
               animation: exiting
                 ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
@@ -400,23 +429,33 @@ export default function HomeClient() {
             <button
               onClick={exitEdit}
               disabled={exiting}
-              className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+              className="text-xs font-semibold px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+              style={{ color: "var(--darkroom-accent)" }}
             >
-              Done
+              DONE
             </button>
-            <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+            <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
             {selected.size === 0 ? (
-              <span className="text-[13px] text-zinc-400 px-1">Select rolls…</span>
+              <span className="text-[11px] px-1" style={{ color: "var(--darkroom-text-tertiary)" }}>
+                Select rolls…
+              </span>
             ) : (
               <>
-                <span className="text-[13px] text-zinc-500 tabular-nums">{selected.size} selected</span>
-                {availableActions.map(({ label, field, color }) => (
+                <span className="text-[11px] tabular-nums" style={{ color: "var(--darkroom-text-secondary)" }}>
+                  {selected.size} selected
+                </span>
+                {availableActions.map(({ label, field }) => (
                   <Fragment key={field}>
-                    <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
                     <button
                       onClick={() => applyStatus(field)}
                       disabled={applying}
-                      className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                      className="text-[11px] font-medium px-3 py-1.5 border active:scale-95 transition-transform disabled:opacity-50"
+                      style={{
+                        color: "var(--darkroom-accent)",
+                        borderColor: "var(--darkroom-accent)",
+                        backgroundColor: "transparent",
+                      }}
                     >
                       {applying ? "…" : label}
                     </button>
