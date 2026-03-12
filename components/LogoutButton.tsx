@@ -37,12 +37,13 @@ export default function LogoutButton() {
       <button
         onClick={handleLogout}
         disabled={loading}
-        className="w-full flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors disabled:opacity-50"
+        style={{ borderColor: "var(--darkroom-border)" }}
       >
-        <span className="text-[15px] text-red-500 dark:text-red-400">
+        <span className="text-xs" style={{ color: "#ef4444" }}>
           {loading ? "Logging out..." : "Logout"}
         </span>
-        <SignOut size={20} weight="regular" className="text-red-500 dark:text-red-400" />
+        <SignOut size={16} weight="regular" style={{ color: "#ef4444" }} />
       </button>
     </li>
   );

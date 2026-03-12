@@ -17,13 +17,13 @@ const STATUS_BAR: Record<string, string> = {
 };
 
 const STATUS_LABEL_COLOR: Record<string, string> = {
-  LOADED: "text-amber-600 dark:text-amber-400",
-  FRIDGE: "text-cyan-600 dark:text-cyan-400",
-  LAB: "text-orange-600 dark:text-orange-400",
-  SCANNED: "text-green-600 dark:text-green-400",
-  PROCESSED: "text-purple-600 dark:text-purple-400",
-  UPLOADED: "text-blue-600 dark:text-blue-400",
-  ARCHIVED: "text-zinc-500 dark:text-zinc-400",
+  LOADED: "text-amber-400",
+  FRIDGE: "text-cyan-400",
+  LAB: "text-orange-400",
+  SCANNED: "text-green-400",
+  PROCESSED: "text-purple-400",
+  UPLOADED: "text-blue-400",
+  ARCHIVED: "text-zinc-400",
 };
 
 interface StatsData {
@@ -71,12 +71,16 @@ export default function StatsClient({
         router.refresh();
       }}
     >
-      <div className="space-y-10">
+      <div className="space-y-10 pb-24">
         <div>
-          <h1 className="text-3xl font-bold mb-6">Stats</h1>
+          <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>
+              STATS
+            </h1>
+          </div>
 
           {/* Hero numbers */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4 px-4">
             <HeroStat label="Rolls" value={totalRolls} />
             <HeroStat label="Since" value={firstYear} />
             <HeroStat label="Per year" value={avgPerYear} />
@@ -84,16 +88,16 @@ export default function StatsClient({
 
           {/* Scanned % pill */}
           {totalRolls > 0 && (
-            <div className="bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 flex items-center justify-between border border-zinc-100 dark:border-transparent">
-              <span className="text-sm text-zinc-500">Scanned or beyond</span>
+            <div className="px-4 py-3 flex items-center justify-between border-t border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>Scanned or beyond</span>
               <div className="flex items-center gap-2">
-                <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div className="w-28 h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
                   <div
                     className="h-full bg-green-400 rounded-full"
                     style={{ width: `${pctScanned}%` }}
                   />
                 </div>
-                <span className="text-sm font-semibold text-green-600 dark:text-green-400 w-9 text-right">
+                <span className="text-xs font-semibold text-green-400 w-9 text-right tabular-nums">
                   {pctScanned}%
                 </span>
               </div>
@@ -102,7 +106,7 @@ export default function StatsClient({
         </div>
 
         {/* Status breakdown */}
-        <section>
+        <section className="px-4">
           <SectionTitle>By Status</SectionTitle>
           <div className="space-y-2">
             {STATUS_ORDER.filter((s) => statusMap[s]).map((status) => {
@@ -111,17 +115,17 @@ export default function StatsClient({
               return (
                 <div key={status} className="flex items-center gap-3">
                   <span
-                    className={`text-xs font-semibold w-20 shrink-0 ${STATUS_LABEL_COLOR[status]}`}
+                    className={`text-[10px] font-semibold w-20 shrink-0 uppercase tracking-wide ${STATUS_LABEL_COLOR[status]}`}
                   >
                     {status}
                   </span>
-                  <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-5 overflow-hidden">
+                  <div className="flex-1 rounded-full h-5 overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
                     <div
                       className={`h-full rounded-full transition-all ${STATUS_BAR[status] ?? "bg-zinc-400"}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-sm font-semibold w-6 text-right tabular-nums">
+                  <span className="text-xs font-semibold w-6 text-right tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
                     {count}
                   </span>
                 </div>
@@ -131,21 +135,21 @@ export default function StatsClient({
         </section>
 
         {/* Rolls per year */}
-        <section>
+        <section className="px-4">
           <SectionTitle>By Year</SectionTitle>
           <div className="space-y-2.5">
             {data.rollsPerYear.map((r) => (
               <div key={r.year} className="flex items-center gap-3">
-                <span className="font-mono text-sm w-10 shrink-0 text-zinc-500 dark:text-zinc-400">
+                <span className="font-mono text-xs w-10 shrink-0" style={{ color: "var(--darkroom-text-tertiary)" }}>
                   {r.year}
                 </span>
-                <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-6 overflow-hidden">
+                <div className="flex-1 rounded-full h-6 overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
                   <div
                     className="bg-amber-400 h-full rounded-full transition-all"
                     style={{ width: `${(r.count / maxPerYear) * 100}%` }}
                   />
                 </div>
-                <span className="text-sm font-semibold w-6 text-right tabular-nums">
+                <span className="text-xs font-semibold w-6 text-right tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
                   {r.count}
                 </span>
               </div>
@@ -155,7 +159,7 @@ export default function StatsClient({
 
         {/* Top cameras */}
         {data.topCameras.length > 0 && (
-          <section>
+          <section className="px-4">
             <SectionTitle>Top Cameras</SectionTitle>
             <RankedList items={data.topCameras} max={maxCamera} />
           </section>
@@ -163,7 +167,7 @@ export default function StatsClient({
 
         {/* Top films */}
         {data.topFilms.length > 0 && (
-          <section>
+          <section className="px-4">
             <SectionTitle>Top Films</SectionTitle>
             <RankedList items={data.topFilms} max={maxFilm} useFilmGradient />
           </section>
@@ -175,7 +179,7 @@ export default function StatsClient({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3">
+    <h2 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>
       {children}
     </h2>
   );
@@ -183,9 +187,9 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl px-3 py-4 text-center border border-zinc-100 dark:border-transparent">
-      <div className="text-2xl font-bold tabular-nums">{value}</div>
-      <div className="text-[11px] text-zinc-500 mt-1 uppercase tracking-wide">
+    <div className="px-3 py-4 text-center border" style={{ borderColor: "var(--darkroom-border)", backgroundColor: "var(--darkroom-card)" }}>
+      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</div>
+      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>
         {label}
       </div>
     </div>
@@ -210,17 +214,17 @@ function RankedList({
           : { width: `${(r.count / max) * 100}%` };
         return (
           <div key={r.label} className="flex items-center gap-3">
-            <span className="text-[11px] text-zinc-400 w-4 text-right shrink-0 tabular-nums">
+            <span className="text-[10px] w-4 text-right shrink-0 tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
               {i + 1}
             </span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium truncate">{r.label}</span>
-                <span className="text-sm font-semibold text-zinc-500 shrink-0 tabular-nums ml-auto">
+                <span className="text-xs font-medium truncate" style={{ color: "var(--darkroom-text-primary)" }}>{r.label}</span>
+                <span className="text-xs font-semibold shrink-0 tabular-nums ml-auto" style={{ color: "var(--darkroom-text-tertiary)" }}>
                   {r.count}
                 </span>
               </div>
-              <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
                 <div
                   className={`h-full rounded-full transition-all ${gradient ? "" : "bg-amber-400"}`}
                   style={barStyle}

@@ -8,12 +8,13 @@ export const dynamic = "force-dynamic";
 
 const Chevron = () => (
   <svg
-    className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
+    className="w-4 h-4 shrink-0"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     strokeWidth="2.5"
     strokeLinecap="round"
+    style={{ color: "var(--darkroom-text-tertiary)" }}
   >
     <path d="M9 18l6-6-6-6" />
   </svg>
@@ -28,10 +29,10 @@ function SettingsGroup({
 }) {
   return (
     <section>
-      <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1 mb-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wider px-4 mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>
         {label}
       </p>
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+      <ul className="border-t" style={{ borderColor: "var(--darkroom-border)" }}>
         {children}
       </ul>
     </section>
@@ -51,17 +52,18 @@ function SettingsRow({
     <li>
       <Link
         href={href}
-        className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
+        className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors"
+        style={{ borderColor: "var(--darkroom-border)" }}
       >
-        <span className="text-[15px]">{label}</span>
+        <span className="text-xs" style={{ color: "var(--darkroom-text-primary)" }}>{label}</span>
         <div className="flex items-center gap-2">
           {value !== undefined && value !== null && (
-            <span className="text-[15px] text-zinc-400 dark:text-zinc-500 tabular-nums">
+            <span className="text-xs tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
               {value}
             </span>
           )}
           {value === null && (
-            <span className="text-[15px] text-zinc-400 dark:text-zinc-500">∞</span>
+            <span className="text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>∞</span>
           )}
           <Chevron />
         </div>
@@ -80,9 +82,14 @@ export default async function SettingsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <BackButton />
-      <h1 className="text-3xl font-bold">Settings</h1>
+    <div className="space-y-6 pb-24">
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+        <BackButton />
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>
+          SETTINGS
+        </h1>
+        <div className="w-8" />
+      </div>
 
       <SettingsGroup label="Library">
         <SettingsRow href="/cameras" label="Cameras" value={camera_count} />
