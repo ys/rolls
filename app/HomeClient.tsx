@@ -332,7 +332,7 @@ export default function HomeClient() {
               No rolls match &ldquo;{search}&rdquo;
             </p>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-8 pb-24">
               {searchQuery ? (
                 // Flat search results
                 <ul className="space-y-2">
