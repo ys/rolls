@@ -141,25 +141,25 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
       <div>
         <BackButton label="Settings" />
         {showSuccess && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
+          <div className="mb-4 p-3" style={{ backgroundColor: "var(--darkroom-success-bg)" }}>
             <SuccessMessage message={successMessage} />
           </div>
         )}
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Cameras</h1>
+          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>CAMERAS</h1>
           <div className="flex gap-2 items-center">
             {!merging && (
-              <div className="flex gap-1 text-xs bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+              <div className="flex gap-1 text-xs p-1">
                 <button
                   onClick={() => { setSortBy("usage"); haptics.light(); }}
-                  className={`px-2 py-1 rounded-md transition-colors ${sortBy === "usage" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
+                  className={`px-2 py-1 transition-colors ${sortBy === "usage" ? "text-amber-400 font-medium" : "text-zinc-600"}`}
                 >
                   By usage
                 </button>
                 <button
                   onClick={() => { setSortBy("alpha"); haptics.light(); }}
-                  className={`px-2 py-1 rounded-md transition-colors ${sortBy === "alpha" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white font-medium" : "text-zinc-500 dark:text-zinc-400"}`}
+                  className={`px-2 py-1 transition-colors ${sortBy === "alpha" ? "text-amber-400 font-medium" : "text-zinc-600"}`}
                 >
                   A–Z
                 </button>
@@ -167,14 +167,14 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
             )}
             <button
               onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
-              className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--darkroom-text-secondary)", backgroundColor: "transparent", border: "1px solid var(--darkroom-border)" }}
             >
               {merging ? "Cancel" : "Merge"}
             </button>
           </div>
         </div>
 
-        <ul className={merging ? "space-y-2 mb-4" : "divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-8"}>
+        <ul className={merging ? "space-y-2 mb-4" : "space-y-2 mb-8"}>
           {cameras.map((c) => {
             if (merging) {
               const isSelected = selected.has(c.slug);
@@ -182,14 +182,14 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
                 <li key={c.slug}>
                   <button
                     onClick={() => { toggleSelect(c.slug); haptics.light(); }}
-                    className={`w-full text-left flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${isSelected ? "bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-500" : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
+                    className={`w-full text-left flex items-center gap-3 px-4 py-3 border-b transition-colors ${isSelected ? "border-amber-400" : "border-zinc-600"}`} style={{ borderColor: isSelected ? "var(--darkroom-accent)" : "var(--darkroom-border)" }}
                   >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-500 border-blue-500" : "border-zinc-400 dark:border-zinc-600"}`}>
-                      {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-amber-400 border-amber-400" : "border-zinc-600"}`}>
+                      {isSelected && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                     </div>
                     <div>
                       <div className="font-medium">{cameraLabel(c)}</div>
-                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      <div className="text-xs text-zinc-400 mt-0.5">
                         {c.slug} · {c.format}mm{c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
                       </div>
                     </div>
@@ -203,34 +203,34 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
                 <Link
                   href={`/cameras/${encodeURIComponent(c.slug)}`}
                   onClick={() => haptics.light()}
-                  className="flex items-center justify-between px-4 py-3.5 active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
+                  className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors" style={{ borderColor: "var(--darkroom-border)" }}
                 >
                   <div>
                     <div className="font-medium">{cameraLabel(c)}</div>
-                    <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    <div className="text-xs text-zinc-400 mt-0.5">
                       {c.slug} · {c.format}mm
                       {c.roll_count ? ` · ${c.roll_count} roll${c.roll_count === 1 ? "" : "s"}` : ""}
                     </div>
                   </div>
-                  <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+                  <svg className="w-4 h-4 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
                 </Link>
               </li>
             );
           })}
           {cameras.length === 0 && (
             <li className="flex flex-col items-center justify-center py-12 gap-2 text-center">
-              <svg className="w-10 h-10 text-zinc-300 dark:text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+              <svg className="w-10 h-10 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
               </svg>
-              <p className="text-sm text-zinc-500">No cameras yet.<br />Add your first camera to get started.</p>
+              <p className="text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>No cameras yet.<br />Add your first camera to get started.</p>
             </li>
           )}
         </ul>
 
         {/* Merge panel */}
         {merging && selected.size >= 2 && (
-          <div className="mb-6 space-y-4 border-t border-zinc-200 dark:border-zinc-800 pt-4">
+          <div className="mb-6 space-y-4 border-t pt-4" style={{ borderColor: "var(--darkroom-border)" }}>
             <p className="text-[10px] uppercase tracking-widest text-zinc-400">{selected.size} cameras selected — keep which one?</p>
             <div className="space-y-2">
               {selectedCameras.map((c) => (
@@ -254,7 +254,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
             <button
               onClick={handleMerge}
               disabled={!targetId || mergeSaving}
-              className="w-full border border-red-600 dark:border-red-500 text-red-600 dark:text-red-400 py-3 text-xs tracking-widest uppercase font-medium hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full border border-red-600 text-red-600 py-3 text-xs tracking-widest uppercase font-medium hover:bg-red-600 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {mergeSaving ? "Merging…" : `Merge ${selected.size - 1} into ${targetId || "…"}`}
             </button>
@@ -265,7 +265,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
           <>
             <button
               onClick={() => { setShowForm(true); setError(""); haptics.light(); }}
-              className="w-full flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors" style={{ borderColor: "var(--darkroom-border)" }}
             >
               <span>Add Camera</span>
               <span className="text-sm leading-none">+</span>
@@ -283,12 +283,12 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
                     <select
                       value={form.format}
                       onChange={(e) => setForm((f) => ({ ...f, format: e.target.value }))}
-                      className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6"
+                      className="w-full appearance-none rounded-none bg-transparent border-b focus:border-white py-2 text-base focus:outline-none transition-colors pr-6"
                     >
                       <option value="135">135</option>
                       <option value="120">120</option>
                     </select>
-                    <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
+                    <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
                   </div>
                 </div>
                 {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
