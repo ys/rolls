@@ -16,7 +16,31 @@ export default async function RollDetailPage({
   const userId = await getUserId();
 
   const [rolls, cameras, films, catalogFilms] = await Promise.all([
-    sql<Roll[]>`SELECT * FROM rolls WHERE roll_number = ${id} AND user_id = ${userId}`,
+    sql<(Roll & {
+      camera_nickname: string | null;
+      camera_brand: string | null;
+      camera_model: string | null;
+      film_nickname: string | null;
+      film_brand: string | null;
+      film_name: string | null;
+      film_iso: number | null;
+      film_show_iso: boolean | null;
+    })[]>`
+      SELECT
+        r.*,
+        c.nickname AS camera_nickname,
+        c.brand AS camera_brand,
+        c.model AS camera_model,
+        f.nickname AS film_nickname,
+        f.brand AS film_brand,
+        f.name AS film_name,
+        f.iso AS film_iso,
+        f.show_iso AS film_show_iso
+      FROM rolls r
+      LEFT JOIN cameras c ON r.camera_uuid = c.uuid
+      LEFT JOIN films f ON r.film_uuid = f.uuid
+      WHERE r.roll_number = ${id} AND r.user_id = ${userId}
+    `,
     sql<Camera[]>`
       SELECT c.*, COUNT(r.roll_number)::int AS roll_count
       FROM cameras c
@@ -36,13 +60,22 @@ export default async function RollDetailPage({
 
   if (rolls.length === 0) notFound();
 
-  const roll = JSON.parse(JSON.stringify(rolls[0])) as Roll;
-  const status = rollStatus(roll);
+  const roll = JSON.parse(JSON.stringify(rolls[0])) as Roll & {
+    camera_nickname: string | null;
+    camera_brand: string | null;
+    camera_model: string | null;
+    film_nickname: string | null;
+    film_brand: string | null;
+    film_name: string | null;
+    film_iso: number | null;
+    film_show_iso: boolean | null;
+  };
+  const contactSheetUrl = roll.contact_sheet_url;
 
   return (
     <RollDetailClient
       roll={roll}
-      status={status}
+      contactSheetUrl={contactSheetUrl}
       cameras={cameras}
       films={films}
       catalogFilms={catalogFilms}
