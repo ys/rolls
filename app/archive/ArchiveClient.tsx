@@ -312,7 +312,8 @@ function ListRow({
     </>
   );
 
-  const cls = `flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70`;
+  const clsBase = `flex items-center gap-3 p-3 border-b active:bg-zinc-900/30 transition-colors`;
+  const clsStyle = { borderColor: "var(--darkroom-border)" };
 
   if (editing) {
     return (
@@ -322,7 +323,8 @@ function ListRow({
             onToggle();
             haptics.light();
           }}
-          className={`${cls} w-full text-left active:bg-zinc-100 dark:active:bg-zinc-800/50`}
+          className={`${clsBase} w-full text-left`}
+          style={clsStyle}
         >
           {content}
         </button>
@@ -334,7 +336,8 @@ function ListRow({
       <Link
         href={`/roll/${roll.roll_number}`}
         onClick={() => haptics.light()}
-        className={`${cls} block active:bg-zinc-100 dark:active:bg-zinc-800/50`}
+        className={`${clsBase} block`}
+        style={clsStyle}
       >
         {content}
       </Link>
@@ -568,13 +571,13 @@ export default function ArchiveClient() {
             <div className="flex items-center gap-2">
               {/* View toggle */}
               {!editing && (
-                <div className="flex gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+                <div className="flex gap-0.5 p-1">
                   <button
                     onClick={() => {
                       setView("list");
                       haptics.light();
                     }}
-                    className={`p-1.5 rounded-md transition-colors ${view === "list" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
+                    className={`p-1.5 transition-colors ${view === "list" ? "text-amber-400" : "text-zinc-600"}`}
                   >
                     <ListIcon active={view === "list"} />
                   </button>
@@ -583,7 +586,7 @@ export default function ArchiveClient() {
                       setView("grid");
                       haptics.light();
                     }}
-                    className={`p-1.5 rounded-md transition-colors ${view === "grid" ? "bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500"}`}
+                    className={`p-1.5 transition-colors ${view === "grid" ? "text-amber-400" : "text-zinc-600"}`}
                   >
                     <GridIcon active={view === "grid"} />
                   </button>
@@ -593,7 +596,7 @@ export default function ArchiveClient() {
               {!editing && (
                 <button
                   onClick={enterEdit}
-                  className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--darkroom-text-secondary)", backgroundColor: "transparent", border: "1px solid var(--darkroom-border)" }}
                 >
                   Edit
                 </button>
@@ -627,11 +630,7 @@ export default function ArchiveClient() {
                     setSelectedTag(selectedTag === tag ? null : tag);
                     haptics.light();
                   }}
-                  className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-medium transition-colors shrink-0 ${
-                    selectedTag === tag
-                      ? "bg-amber-500 dark:bg-amber-400 text-white dark:text-zinc-900"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                  }`}
+                  className={`whitespace-nowrap px-3 py-1 text-xs font-medium transition-colors shrink-0 border ${selectedTag === tag ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
                 >
                   #{tag}
                 </button>
@@ -666,11 +665,7 @@ export default function ArchiveClient() {
                       setSelectedYear(year);
                       haptics.light();
                     }}
-                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      (selectedYear ?? years[0]) === year
-                        ? "bg-amber-500 dark:bg-amber-400 text-white dark:text-zinc-900"
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    }`}
+                    className={`whitespace-nowrap px-4 py-2 text-xs font-medium transition-colors border ${(selectedYear ?? years[0]) === year ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
                   >
                     {year}
                   </button>
