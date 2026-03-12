@@ -7,6 +7,9 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    'pb-24',
+  ],
   theme: {
     extend: {
       fontFamily: {
