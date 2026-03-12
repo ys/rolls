@@ -73,6 +73,7 @@ export default function RollEditForm({
       ? String(roll.push_pull)
       : ""
   );
+  const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showNewCamera, setShowNewCamera] = useState(false);
   const [showNewFilm, setShowNewFilm] = useState(false);
@@ -86,6 +87,15 @@ export default function RollEditForm({
 
   const cameras = [...allCameras].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
   const films = [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
+
+  useEffect(() => {
+    setOpen(true);
+  }, []);
+
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(onClose, 300);
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -124,7 +134,7 @@ export default function RollEditForm({
 
       await onSave(updates as Partial<Roll>);
       haptics.success();
-      onClose();
+      handleClose();
     } catch {
       setError("Failed to update roll");
       haptics.error();
@@ -135,7 +145,7 @@ export default function RollEditForm({
 
   return (
     <>
-      <Sheet open={true} onClose={onClose} onExpand={setExpanded} title="Edit Roll">
+      <Sheet open={open} onClose={handleClose} onExpand={setExpanded} title="Edit Roll">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Primary fields */}
           <div className="space-y-1">
