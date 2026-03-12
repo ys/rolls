@@ -19,7 +19,10 @@ export default function FormButton({
         type={type}
         disabled={disabled}
         onClick={onClick}
-        className="w-full text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-2 transition-colors disabled:opacity-40"
+        className="w-full text-[10px] uppercase tracking-widest py-2 transition-colors disabled:opacity-40"
+        style={{
+          color: "var(--darkroom-text-tertiary)",
+        }}
       >
         {children}
       </button>
@@ -31,7 +34,12 @@ export default function FormButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      style={{
+        borderColor: "var(--darkroom-accent)",
+        color: "var(--darkroom-accent)",
+        backgroundColor: "transparent",
+      }}
     >
       {children}
     </button>
