@@ -80,6 +80,8 @@ export type RollWithDetails = Roll & {
   film_iso: number | null;
   film_show_iso: boolean | null;
   film_slug: string | null;
+  film_gradient_from: string | null;
+  film_gradient_to: string | null;
 };
 
 export async function getRollsWithDetails(
@@ -96,10 +98,13 @@ export async function getRollsWithDetails(
       f.name      AS film_name,
       f.iso       AS film_iso,
       f.show_iso  AS film_show_iso,
-      f.slug      AS film_slug
+      f.slug      AS film_slug,
+      cf.gradient_from AS film_gradient_from,
+      cf.gradient_to   AS film_gradient_to
     FROM rolls r
     LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
     LEFT JOIN films   f ON f.uuid = r.film_uuid AND f.user_id = ${userId}
+    LEFT JOIN catalog_films cf ON cf.slug = f.slug
     WHERE r.user_id = ${userId}
       AND r.scanned_at IS ${archived ? sql`NOT NULL` : sql`NULL`}
     ORDER BY ${archived ? sql`r.scanned_at DESC, ` : sql``}r.roll_number DESC

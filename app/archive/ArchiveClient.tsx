@@ -4,14 +4,13 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Camera, FilmStrip } from "@phosphor-icons/react";
+// Icons removed - using text-only layout
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
 import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
 import { haptics } from "@/lib/haptics";
-import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 const STATUS_DOT: Record<string, string> = {
   SCANNED: "bg-green-400",
@@ -42,6 +41,8 @@ type RollRow = Roll & {
   film_iso: number | null;
   film_show_iso: boolean | null;
   film_slug: string | null;
+  film_gradient_from: string | null;
+  film_gradient_to: string | null;
 };
 
 interface ArchiveData {
@@ -97,12 +98,12 @@ function Checkbox({ checked }: { checked: boolean }) {
 
 function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-zinc-800 dark:bg-zinc-900 select-none relative">
+    <div className="w-full h-full flex items-center justify-center bg-zinc-900 select-none relative">
       <div className="absolute top-0 inset-x-0 flex justify-around px-2 py-1">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800"
+            className="w-2 h-1.5 rounded-sm bg-zinc-800"
           />
         ))}
       </div>
@@ -113,7 +114,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="w-2 h-1.5 rounded-sm bg-zinc-700 dark:bg-zinc-800"
+            className="w-2 h-1.5 rounded-sm bg-zinc-800"
           />
         ))}
       </div>
@@ -242,109 +243,70 @@ function ListRow({
       })
     : null;
 
-  const gradient = roll.film_slug ? FILM_GRADIENTS[roll.film_slug] : undefined;
-  const stripeStyle: React.CSSProperties = gradient
-    ? { background: `linear-gradient(to bottom, ${gradient[0]}, ${gradient[1]})` }
-    : { background: "#d4d4d8" };
+  const hasGradient = roll.film_gradient_from && roll.film_gradient_to;
+  const borderStyle = hasGradient
+    ? {
+        borderImage: `linear-gradient(to bottom, ${roll.film_gradient_from}, ${roll.film_gradient_to}) 1`,
+        borderImageSlice: 1,
+      }
+    : {
+        borderColor: "#444",
+      };
 
   const content = (
     <>
-      {/* Film color stripe */}
-      <div className="self-stretch w-1 rounded-full shrink-0" style={stripeStyle} />
       {editing && <Checkbox checked={selected} />}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="font-semibold text-[15px] truncate">
-            {roll.roll_number}
-          </span>
-          {dateStr && (
-            <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">
-              {dateStr}
-            </span>
-          )}
+      <div className="flex-1 min-w-0 pl-3">
+        <div className="font-semibold" style={{ color: "var(--darkroom-text-primary)" }}>
+          {roll.roll_number}
         </div>
-        {(camera || film) && (
-          <div className="flex flex-col gap-0.5 mt-0.5">
-            {camera && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
-                <Camera size={12} weight="bold" className="shrink-0" />{camera}
-              </span>
-            )}
-            {film && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
-                <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
-                {roll.push_pull != null && (
-                  <span className="text-[12px] font-mono text-zinc-400 dark:text-zinc-500 shrink-0">
-                    {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
-                  </span>
-                )}
-              </span>
-            )}
-          </div>
-        )}
-        <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 uppercase tracking-wide">
+        <div className="text-[10px] uppercase tracking-wide mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
+          {camera && film ? `${camera} • ${film}` : camera || film || "—"}
+        </div>
+        <div className="text-[10px] mt-1 uppercase" style={{ color: "var(--darkroom-text-tertiary)" }}>
           {status}
+          {dateStr && ` • ${dateStr}`}
         </div>
       </div>
-      {!editing && (
-        <div className="flex items-center gap-2 shrink-0">
-          {roll.contact_sheet_url && (
-            <div className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 shrink-0">
-              <img
-                src={roll.contact_sheet_url}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          <svg
-            className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+      {!editing && roll.contact_sheet_url && (
+        <div className="w-16 h-16 rounded-md overflow-hidden shrink-0" style={{ backgroundColor: "var(--darkroom-border)" }}>
+          <img
+            src={roll.contact_sheet_url}
+            alt=""
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
     </>
   );
 
-  const clsBase = `flex items-center gap-3 p-3 border-b active:bg-zinc-900/30 transition-colors`;
-  const clsStyle = { borderColor: "var(--darkroom-border)" };
+  const cardBase = "py-4 border-l-2";
 
   if (editing) {
     return (
       <li>
-        <button
-          onClick={() => {
-            onToggle();
-            haptics.light();
-          }}
-          className={`${clsBase} w-full text-left`}
-          style={clsStyle}
-        >
-          {content}
-        </button>
+        <div className={cardBase} style={borderStyle}>
+          <div className="flex items-start gap-3 px-4" onClick={() => { onToggle(); haptics.light(); }}>
+            {content}
+          </div>
+        </div>
       </li>
     );
   }
   return (
     <li>
-      <Link
-        href={`/roll/${roll.roll_number}`}
-        onClick={() => haptics.light()}
-        className={`${clsBase} block`}
-        style={clsStyle}
-      >
-        {content}
-      </Link>
+      <div className={cardBase} style={borderStyle}>
+        <Link
+          href={`/roll/${roll.roll_number}`}
+          onClick={() => haptics.light()}
+          className="flex items-start gap-3 px-4 active:bg-zinc-900/30"
+        >
+          {content}
+        </Link>
+      </div>
     </li>
   );
 }
-
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function GridIcon({ active }: { active: boolean }) {
   return (
@@ -615,7 +577,7 @@ export default function ArchiveClient() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search archive…"
-                className="w-full px-3 py-2 text-xs border-b bg-transparent focus:outline-none" style={{ color: "var(--darkroom-text-primary)", borderColor: "var(--darkroom-border)", fontFamily: "inherit" }}
+                className="w-full pl-10 pr-3 py-2 text-xs border-b bg-transparent focus:outline-none" style={{ color: "var(--darkroom-text-primary)", borderColor: "var(--darkroom-border)", fontFamily: "inherit" }}
               />
             </div>
           )}
@@ -651,7 +613,7 @@ export default function ArchiveClient() {
                       setSelectedYear(null);
                       haptics.light();
                     }}
-                    className="text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                    className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
                   >
                     View All
                   </button>
@@ -714,7 +676,7 @@ export default function ArchiveClient() {
                     {editing && (
                       <button
                         onClick={toggleYear}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-400 dark:text-zinc-500"}`}
+                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-amber-400" : "text-zinc-400"}`}
                       >
                         {allYearSelected ? "Deselect" : "Select all"}
                       </button>
@@ -774,14 +736,14 @@ export default function ArchiveClient() {
               <button
                 onClick={exitEdit}
                 disabled={exiting}
-                className="text-[15px] font-semibold text-amber-500 dark:text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
+                className="text-[15px] font-semibold text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
               >
                 Done
               </button>
               <div className="w-px h-4" style={{ backgroundColor: "var(--darkroom-border)" }} />
               <button
                 onClick={selectAll}
-                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-500 dark:text-amber-400" : "text-zinc-500 dark:text-zinc-400"}`}
+                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-400" : "text-zinc-400"}`}
               >
                 {allSelected ? "Deselect All" : "All"}
               </button>

@@ -1,0 +1,256 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { X, DotsThree } from "@phosphor-icons/react";
+import { haptics } from "@/lib/haptics";
+import { MarkdownEditor } from "./MarkdownEditor";
+import { rollStatus } from "@/lib/status";
+import type { Roll } from "@/lib/db";
+
+interface FullScreenNotesEditorProps {
+  rollNumber: string;
+  initialNotes: string;
+  roll: Roll & {
+    camera_nickname: string | null;
+    camera_brand: string | null;
+    camera_model: string | null;
+    film_nickname: string | null;
+    film_brand: string | null;
+    film_name: string | null;
+    film_iso: number | null;
+    film_show_iso: boolean | null;
+  };
+  onClose: () => void;
+  onSave: (notes: string) => Promise<void>;
+  onEditRoll?: () => void;
+  onMoveToNext?: (labName?: string) => Promise<void>;
+}
+
+export function FullScreenNotesEditor({
+  rollNumber,
+  initialNotes,
+  roll,
+  onClose,
+  onSave,
+  onEditRoll,
+  onMoveToNext,
+}: FullScreenNotesEditorProps) {
+  const [notes, setNotes] = useState(initialNotes);
+  const [showMenu, setShowMenu] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced auto-save
+  const handleNotesChange = (newNotes: string) => {
+    setNotes(newNotes);
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      onSave(newNotes).catch(console.error);
+    }, 1000);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleClose = () => {
+    haptics.light();
+    onClose();
+  };
+
+  const handleEditRoll = () => {
+    haptics.light();
+    setShowMenu(false);
+    onEditRoll?.();
+  };
+
+  const handleMoveToNext = async (requiresLabName: boolean) => {
+    haptics.light();
+    setShowMenu(false);
+
+    if (requiresLabName) {
+      const labName = window.prompt("Enter lab name:");
+      if (labName) {
+        await onMoveToNext?.(labName);
+      }
+    } else {
+      await onMoveToNext?.();
+    }
+  };
+
+  const status = rollStatus(roll);
+  const canMoveToNext = status === "LOADED" || status === "FRIDGE" || status === "LAB";
+
+  const dateField =
+    roll.archived_at ? roll.archived_at :
+    roll.processed_at ? roll.processed_at :
+    roll.scanned_at ? roll.scanned_at :
+    roll.lab_at ? roll.lab_at :
+    roll.fridge_at;
+
+  const dateStr = dateField
+    ? new Date(dateField).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+    : null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{
+        backgroundColor: "var(--darkroom-bg)",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b"
+        style={{ borderColor: "var(--darkroom-border)" }}
+      >
+        <button
+          onClick={handleClose}
+          className="p-2 -ml-2 active:scale-90 transition-transform"
+          aria-label="Close"
+        >
+          <X size={20} weight="bold" style={{ color: "var(--darkroom-text-secondary)" }} />
+        </button>
+        <div className="flex-1 text-center">
+          <div
+            className="text-[11px] font-semibold uppercase tracking-wide"
+            style={{ color: "var(--darkroom-text-primary)" }}
+          >
+            {rollNumber}
+          </div>
+          <div
+            className="text-[9px] uppercase tracking-wider mt-0.5"
+            style={{ color: "var(--darkroom-text-tertiary)" }}
+          >
+            Notes
+          </div>
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 -mr-2 active:scale-90 transition-transform"
+            aria-label="Actions"
+          >
+            <DotsThree size={20} weight="bold" style={{ color: "var(--darkroom-accent)" }} />
+          </button>
+          {showMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowMenu(false)}
+              />
+              <div
+                className="absolute right-0 top-full mt-2 py-1 border z-50"
+                style={{
+                  backgroundColor: "var(--darkroom-card)",
+                  borderColor: "var(--darkroom-border)",
+                  borderRadius: 8,
+                  minWidth: 160,
+                }}
+              >
+                <button
+                  onClick={handleEditRoll}
+                  className="w-full px-4 py-2 text-left text-xs active:opacity-60"
+                  style={{ color: "var(--darkroom-text-primary)" }}
+                >
+                  Edit Roll
+                </button>
+                {canMoveToNext && status === "LOADED" && (
+                  <button
+                    onClick={() => handleMoveToNext(false)}
+                    className="w-full px-4 py-2 text-left text-xs active:opacity-60"
+                    style={{ color: "var(--darkroom-text-primary)" }}
+                  >
+                    Move to Fridge
+                  </button>
+                )}
+                {canMoveToNext && status === "FRIDGE" && (
+                  <button
+                    onClick={() => handleMoveToNext(true)}
+                    className="w-full px-4 py-2 text-left text-xs active:opacity-60"
+                    style={{ color: "var(--darkroom-text-primary)" }}
+                  >
+                    Send to Lab
+                  </button>
+                )}
+                {canMoveToNext && status === "LAB" && (
+                  <button
+                    onClick={() => handleMoveToNext(false)}
+                    className="w-full px-4 py-2 text-left text-xs active:opacity-60"
+                    style={{ color: "var(--darkroom-text-primary)" }}
+                  >
+                    Mark as Scanned
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Editor */}
+      <div className="flex-1 flex flex-col px-4 py-4 overflow-hidden">
+        <MarkdownEditor
+          value={notes}
+          onChange={handleNotesChange}
+          placeholder="Add notes about this roll..."
+          className="text-sm bg-transparent"
+          style={{
+            color: "var(--darkroom-text-primary)",
+            fontFamily: "inherit",
+            lineHeight: "1.6",
+          }}
+          showToolbar={false}
+        />
+      </div>
+
+      {/* Status Pills */}
+      <div className="flex gap-2 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+        <div
+          className="px-2 py-1 text-[10px] font-medium rounded"
+          style={{
+            backgroundColor: status === "LOADED" ? "rgba(251, 191, 36, 0.2)" :
+                          status === "FRIDGE" ? "rgba(34, 211, 238, 0.2)" :
+                          status === "LAB" ? "rgba(251, 146, 60, 0.2)" :
+                          status === "SCANNED" ? "rgba(34, 197, 94, 0.2)" :
+                          status === "PROCESSED" ? "rgba(168, 85, 247, 0.2)" :
+                          status === "UPLOADED" ? "rgba(59, 130, 246, 0.2)" :
+                          "rgba(113, 113, 122, 0.2)",
+            color: status === "LOADED" ? "#fbbf24" :
+                   status === "FRIDGE" ? "#22d3ee" :
+                   status === "LAB" ? "#fb923c" :
+                   status === "SCANNED" ? "#22c55e" :
+                   status === "PROCESSED" ? "#a855f7" :
+                   status === "UPLOADED" ? "#3b82f6" :
+                   "#71717a",
+          }}
+        >
+          {status}
+        </div>
+        {dateStr && (
+          <div
+            className="px-2 py-1 text-[10px] rounded"
+            style={{
+              backgroundColor: "var(--darkroom-card)",
+              color: "var(--darkroom-text-secondary)",
+            }}
+          >
+            {dateStr}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+}

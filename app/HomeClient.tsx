@@ -28,6 +28,8 @@ type RollRow = Roll & {
   film_iso:        number | null;
   film_show_iso:   boolean | null;
   film_slug:       string | null;
+  film_gradient_from: string | null;
+  film_gradient_to:   string | null;
 };
 
 interface HomeData { rolls: RollRow[]; }
@@ -90,8 +92,16 @@ function RollItem({ roll, editing, selected, onToggle, onAdvance, isRecent }: {
   const film = filmLabel(roll);
   const notePreview = firstNotesLine(roll.notes);
 
-  // Determine left border color
-  const borderColor = isRecent ? "var(--darkroom-accent)" : "#444";
+  // Determine left border styling
+  const hasGradient = roll.film_gradient_from && roll.film_gradient_to;
+  const borderStyle = hasGradient
+    ? {
+        borderImage: `linear-gradient(to bottom, ${roll.film_gradient_from}, ${roll.film_gradient_to}) 1`,
+        borderImageSlice: 1,
+      }
+    : {
+        borderColor: isRecent ? "var(--darkroom-accent)" : "#444",
+      };
 
   const cardBase = "py-4 border-l-2";
 
@@ -135,7 +145,7 @@ function RollItem({ roll, editing, selected, onToggle, onAdvance, isRecent }: {
     <li>
       <div
         className={cardBase}
-        style={{ borderColor }}
+        style={borderStyle}
       >
         {editing ? (
           <div className="flex items-start gap-3 px-4" onClick={onToggle}>

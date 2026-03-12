@@ -22,11 +22,9 @@ function filmLabel(f: Film): string {
   return `${f.brand} ${f.name}${iso}`;
 }
 
-const selectCls = "w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6";
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
-const textareaCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors resize-none";
-const addLinkCls = "text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors";
+const labelCls = "block text-[9px] uppercase tracking-wider mb-2";
+const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
+const addLinkCls = "text-xs transition-colors";
 
 export default function NewRollPage() {
   const router = useRouter();
@@ -39,7 +37,6 @@ export default function NewRollPage() {
   const [cameraId, setCameraId] = useState("");
   const [filmId, setFilmId] = useState("");
   const [shotAt, setShotAt] = useState(new Date().toISOString().slice(0, 10));
-  const [notes, setNotes] = useState("");
   const [tags, setTags] = useState("");
   const [albumName, setAlbumName] = useState("");
   const [pushPull, setPushPull] = useState<number | null>(null);
@@ -88,7 +85,6 @@ export default function NewRollPage() {
           camera_id: cameraId || undefined,
           film_id: filmId || undefined,
           shot_at: shotAt || undefined,
-          notes: notes || undefined,
           tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
           album_name: albumName || undefined,
           push_pull: pushPull ?? undefined,
@@ -121,7 +117,7 @@ export default function NewRollPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Primary fields */}
         <div className="space-y-1">
-          <label className={labelCls}>Roll #</label>
+          <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Roll #</label>
           <input
             type="text"
             value={rollNumber}
@@ -129,59 +125,90 @@ export default function NewRollPage() {
             placeholder={suggestedNumber}
             required
             className={inputCls}
+            style={{
+              borderColor: "var(--darkroom-border)",
+              color: "var(--darkroom-text-primary)",
+            }}
           />
         </div>
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className={labelCls}>Camera</label>
-            <button type="button" onClick={() => setShowNewCamera(true)} className={addLinkCls}>+ new</button>
+            <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Camera</label>
+            <button
+              type="button"
+              onClick={() => setShowNewCamera(true)}
+              className={addLinkCls}
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              + new
+            </button>
           </div>
           {cameras.length === 0 ? (
-            <button type="button" onClick={() => setShowNewCamera(true)} className="block py-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+            <button
+              type="button"
+              onClick={() => setShowNewCamera(true)}
+              className="block py-2 text-sm transition-colors"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
               + Add a camera first
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setCameraPickerOpen(true)}
-              className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
+              className="w-full appearance-none rounded-none bg-transparent border-b py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
+              style={{
+                borderColor: "var(--darkroom-border)",
+                color: cameraId ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)",
+              }}
             >
-              <span className={cameraId ? "" : "text-zinc-400"}>
+              <span>
                 {cameraId
                   ? (cameras.find((c) => c.slug === cameraId) ? cameraLabel(cameras.find((c) => c.slug === cameraId)!) : cameraId)
                   : "— select —"}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">▾</span>
+              <span style={{ color: "var(--darkroom-text-tertiary)" }}>▾</span>
             </button>
           )}
         </div>
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className={labelCls}>Film</label>
-            <button type="button" onClick={() => setShowNewFilm(true)} className={addLinkCls}>+ new</button>
+            <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Film</label>
+            <button
+              type="button"
+              onClick={() => setShowNewFilm(true)}
+              className={addLinkCls}
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              + new
+            </button>
           </div>
           <button
             type="button"
             onClick={() => setFilmPickerOpen(true)}
-            className="w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
+            className="w-full appearance-none rounded-none bg-transparent border-b py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
+            style={{
+              borderColor: "var(--darkroom-border)",
+              color: filmId ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)",
+            }}
           >
-            <span className={filmId ? "" : "text-zinc-400"}>
+            <span>
               {filmId
                 ? (films.find((f) => f.slug === filmId)?.nickname ??
                    catalogFilms.find((f) => f.slug === filmId)?.nickname ??
                    filmId)
                 : "— select —"}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">▾</span>
+            <span style={{ color: "var(--darkroom-text-tertiary)" }}>▾</span>
           </button>
         </div>
 
         {/* Hint to drag up for more options */}
         {!expanded && (
-          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center -mt-2">
-            Drag up for date, notes, tags &amp; more
+          <p className="text-[11px] text-center -mt-2" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            Drag up for date, tags &amp; more
           </p>
         )}
 
@@ -189,48 +216,50 @@ export default function NewRollPage() {
         {expanded && (
           <>
             <div className="space-y-1">
-              <label className={labelCls}>Shot date</label>
+              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Shot date</label>
               <input
                 type="date"
                 value={shotAt}
                 onChange={(e) => setShotAt(e.target.value)}
                 className={inputCls}
+                style={{
+                  borderColor: "var(--darkroom-border)",
+                  color: "var(--darkroom-text-primary)",
+                }}
               />
             </div>
 
             <div className="space-y-1">
-              <label className={labelCls}>Notes</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className={textareaCls}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className={labelCls}>Tags</label>
+              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Tags</label>
               <input
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="street, portrait, travel"
                 className={inputCls}
+                style={{
+                  borderColor: "var(--darkroom-border)",
+                  color: "var(--darkroom-text-primary)",
+                }}
               />
             </div>
 
             <div className="space-y-1">
-              <label className={labelCls}>Album name</label>
+              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Album name</label>
               <input
                 type="text"
                 value={albumName}
                 onChange={(e) => setAlbumName(e.target.value)}
                 className={inputCls}
+                style={{
+                  borderColor: "var(--darkroom-border)",
+                  color: "var(--darkroom-text-primary)",
+                }}
               />
             </div>
 
             <div className="space-y-2">
-              <label className={labelCls}>Push / Pull</label>
+              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Push / Pull</label>
               <div className="flex gap-1 flex-wrap">
                 {[-2, -1, 0, 1, 2].map((v) => {
                   const label = v > 0 ? `+${v}` : `${v}`;
@@ -243,7 +272,15 @@ export default function NewRollPage() {
                         if (active) { setPushPull(null); setPushPullCustom(""); }
                         else { setPushPull(v); setPushPullCustom(""); }
                       }}
-                      className={`px-3 py-1 rounded-full text-sm font-mono border transition-colors ${active ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white" : "border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:border-zinc-600 dark:hover:border-zinc-300"}`}
+                      className="px-3 py-1 rounded-full text-sm font-mono border transition-colors"
+                      style={active ? {
+                        backgroundColor: "var(--darkroom-accent)",
+                        borderColor: "var(--darkroom-accent)",
+                        color: "#000",
+                      } : {
+                        borderColor: "var(--darkroom-border)",
+                        color: "var(--darkroom-text-tertiary)",
+                      }}
                     >{label}</button>
                   );
                 })}
@@ -257,14 +294,18 @@ export default function NewRollPage() {
                     setPushPull(raw !== "" ? parseFloat(raw) : null);
                   }}
                   placeholder="other"
-                  className="w-16 appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-1 text-sm text-center font-mono focus:outline-none transition-colors"
+                  className="w-16 appearance-none rounded-none bg-transparent border-b py-1 text-sm text-center font-mono focus:outline-none transition-colors"
+                  style={{
+                    borderColor: "var(--darkroom-border)",
+                    color: "var(--darkroom-text-primary)",
+                  }}
                 />
               </div>
             </div>
           </>
         )}
 
-        {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
+        {error && <p className="text-xs tracking-wide" style={{ color: "var(--error-color, #ef4444)" }}>{error}</p>}
 
         <FormButton type="submit" disabled={saving}>
           {saving ? "Creating…" : "Create Roll"}

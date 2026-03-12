@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { RollDetailView } from "./RollDetailView";
 import { RollEditSheet } from "@/components/RollEditSheet";
+import RollEditForm from "@/components/RollEditForm";
+import { FullScreenNotesEditor } from "@/components/FullScreenNotesEditor";
+import { rollStatus } from "@/lib/status";
 import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
 
 interface RollDetailClientProps {
@@ -23,12 +26,21 @@ interface RollDetailClientProps {
   catalogFilms: CatalogFilm[];
 }
 
-export default function RollDetailClient({ roll, contactSheetUrl }: RollDetailClientProps) {
+export default function RollDetailClient({ roll, contactSheetUrl, cameras, films, catalogFilms }: RollDetailClientProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingFull, setIsEditingFull] = useState(false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [notes, setNotes] = useState(roll.notes || "");
   const router = useRouter();
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync notes state with roll prop when it changes (e.g., after refresh)
+  useEffect(() => {
+    setNotes(roll.notes || "");
+  }, [roll.notes]);
 
   const handleSave = async (updates: Partial<Roll>) => {
-    const res = await fetch(`/api/rolls/${roll.id}`, {
+    const res = await fetch(`/api/rolls/${roll.roll_number}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -41,12 +53,63 @@ export default function RollDetailClient({ roll, contactSheetUrl }: RollDetailCl
     router.refresh();
   };
 
+  const handleSaveNotes = async (notes: string) => {
+    await handleSave({ notes });
+  };
+
+  const handleNotesChange = (newNotes: string) => {
+    setNotes(newNotes);
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Debounce save by 1 second
+    saveTimeoutRef.current = setTimeout(() => {
+      fetch(`/api/rolls/${roll.roll_number}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: newNotes }),
+      }).catch(console.error);
+    }, 1000);
+  };
+
+  const handleMoveToNext = async (labName?: string) => {
+    const status = rollStatus(roll);
+    const updates: Partial<Roll> = {};
+
+    if (status === "LOADED") {
+      updates.fridge_at = new Date().toISOString();
+    } else if (status === "FRIDGE") {
+      updates.lab_at = new Date().toISOString();
+      if (labName) updates.lab_name = labName;
+    } else if (status === "LAB") {
+      updates.scanned_at = new Date().toISOString();
+    }
+
+    await handleSave(updates);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <>
       <RollDetailView
         roll={roll}
         contactSheetUrl={contactSheetUrl}
-        onEdit={() => setIsEditing(true)}
+        onEdit={() => setIsEditingFull(true)}
+        onEditNotes={() => setIsEditingNotes(true)}
+        onMoveToNext={handleMoveToNext}
+        notes={notes}
+        onNotesChange={handleNotesChange}
       />
 
       {isEditing && (
@@ -54,6 +117,30 @@ export default function RollDetailClient({ roll, contactSheetUrl }: RollDetailCl
           roll={roll}
           onClose={() => setIsEditing(false)}
           onSave={handleSave}
+          onMoveToNext={handleMoveToNext}
+        />
+      )}
+
+      {isEditingFull && (
+        <RollEditForm
+          roll={roll}
+          cameras={cameras}
+          films={films}
+          catalogFilms={catalogFilms}
+          onClose={() => setIsEditingFull(false)}
+          onSave={handleSave}
+        />
+      )}
+
+      {isEditingNotes && (
+        <FullScreenNotesEditor
+          rollNumber={roll.roll_number}
+          initialNotes={roll.notes || ""}
+          roll={roll}
+          onClose={() => setIsEditingNotes(false)}
+          onSave={handleSaveNotes}
+          onEditRoll={() => setIsEditingFull(true)}
+          onMoveToNext={handleMoveToNext}
         />
       )}
     </>
