@@ -62,7 +62,7 @@ export default function BottomNav() {
     >
       {/* Icon container */}
       <div
-        className="pointer-events-auto flex items-center border-t"
+        className="pointer-events-auto border-t"
         style={{
           ...animStyle,
           width: "100%",
@@ -70,15 +70,13 @@ export default function BottomNav() {
           height: 64,
           borderColor: "var(--darkroom-border)",
           backgroundColor: "var(--darkroom-bg)",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr 1fr",
           position: "relative",
         }}
       >
-        {TABS.map(({ href, icon: Icon, match }, index) => {
+        {TABS.map(({ href, icon: Icon, match }) => {
           const active = match(pathname);
-          // Position tabs: 0,1 on left, 2,3 on right of FAB
-          const isLeft = index < 2;
-          const position = isLeft ? index : index - 2;
-
           return (
             <Link
               key={href}
@@ -86,14 +84,8 @@ export default function BottomNav() {
               prefetch={true}
               aria-label={href.slice(1) || "rolls"}
               onClick={() => haptics.light()}
-              className="absolute flex items-center justify-center transition-colors duration-200 active:scale-90"
-              style={{
-                width: 64,
-                height: 64,
-                left: isLeft ? `${12.5 + position * 25}%` : undefined,
-                right: !isLeft ? `${12.5 + position * 25}%` : undefined,
-                transform: "translateX(-50%)",
-              }}
+              className="flex items-center justify-center transition-colors duration-200 active:scale-90"
+              style={{ height: 64 }}
             >
               <Icon
                 size={22}
