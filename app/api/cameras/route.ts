@@ -3,24 +3,50 @@ import { sql } from "@/lib/db";
 import type { Camera } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
 import { getCameras } from "@/lib/queries";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+/**
+ * List cameras
+ * @auth bearer
+ * @response Camera[]
+ * @openapi
+ */
 export async function GET() {
   const userId = await getUserId();
   const rows = await getCameras(userId);
   return NextResponse.json(rows);
 }
 
+type CreateCameraBody = {
+  brand: string;
+  model: string;
+  nickname?: string;
+  format?: number;
+};
+
+/**
+ * Create (or upsert) a camera
+ * @description Slug is generated from brand+model. Upserts on (user_id, slug).
+ * @auth bearer
+ * @body CreateCameraBody
+ * @response 201:Camera
+ * @add 400:ErrorResponse
+ * @openapi
+ */
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
-  const body = await request.json();
+  const body: CreateCameraBody = await request.json();
   const { brand, model, nickname, format } = body;
 
   if (!brand || !model) {
-    return NextResponse.json({ error: "brand, model are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "brand, model are required" } satisfies ErrorResponse,
+      { status: 400 }
+    );
   }
 
   // Generate slug server-side

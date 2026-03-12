@@ -1,0 +1,1567 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Rolls API",
+    "version": "1.0.0",
+    "description": "OpenAPI spec generated from Next.js route handlers."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local dev (API base)"
+    },
+    {
+      "url": "https://rolls.yannick.computer/api",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/auth/api-keys": {
+      "get": {
+        "operationId": "get-auth-api-keys",
+        "summary": "List API keys",
+        "description": "Lists API keys for the authenticated user (raw keys are never returned).",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyListResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-auth-api-keys",
+        "summary": "Create API key",
+        "description": "Creates a new API key for the authenticated user. `raw_key` is returned only once.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyCreateResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "get-auth-me",
+        "summary": "Get current user",
+        "description": "Returns the authenticated user's profile and registered WebAuthn credentials.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/webauthn/login-options": {
+      "post": {
+        "operationId": "post-auth-webauthn-login-options",
+        "summary": "WebAuthn login options",
+        "description": "Returns WebAuthn authentication options + the challenge to be echoed to verify.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnLoginOptionsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnLoginOptionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/webauthn/login-verify": {
+      "post": {
+        "operationId": "post-auth-webauthn-login-verify",
+        "summary": "WebAuthn login verify",
+        "description": "Verifies a WebAuthn authentication response and starts a session (via Set-Cookie).",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnLoginVerifyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAuthSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/webauthn/register-options": {
+      "post": {
+        "operationId": "post-auth-webauthn-register-options",
+        "summary": "WebAuthn registration options",
+        "description": "Returns WebAuthn registration options + the challenge to be echoed to verify.",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegisterOptionsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebAuthnRegisterOptionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/webauthn/register-verify": {
+      "post": {
+        "operationId": "post-auth-webauthn-register-verify",
+        "summary": "WebAuthn registration verify",
+        "description": "Verifies a WebAuthn registration response and starts a session (via Set-Cookie).",
+        "tags": [
+          "Auth"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebAuthnRegisterVerifyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAuthSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras": {
+      "get": {
+        "operationId": "get-cameras",
+        "summary": "List cameras",
+        "description": "",
+        "tags": [
+          "Cameras"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Camera"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-cameras",
+        "summary": "Create (or upsert) a camera",
+        "description": "Slug is generated from brand+model. Upserts on (user_id, slug).",
+        "tags": [
+          "Cameras"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCameraBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Camera"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/export": {
+      "get": {
+        "operationId": "get-export",
+        "summary": "Export all user data (CLI sync)",
+        "description": "Returns cameras, films, and rolls for the authenticated user.",
+        "tags": [
+          "Export"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/films": {
+      "get": {
+        "operationId": "get-films",
+        "summary": "List films",
+        "description": "",
+        "tags": [
+          "Films"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Film"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-films",
+        "summary": "Create (or upsert) a film",
+        "description": "Slug is generated from brand+name. Upserts on (user_id, slug).",
+        "tags": [
+          "Films"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFilmBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Film"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/import": {
+      "post": {
+        "operationId": "post-import",
+        "summary": "Import (upsert) cameras, films, and rolls (CLI sync)",
+        "description": "Upserts by slug (id) for cameras/films and roll_number for rolls.",
+        "tags": [
+          "Import"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rolls": {
+      "get": {
+        "operationId": "get-rolls",
+        "summary": "List rolls",
+        "description": "Returns all rolls for the authenticated user, ordered by roll_number desc.",
+        "tags": [
+          "Rolls"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Roll"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-rolls",
+        "summary": "Create a roll",
+        "description": "Creates a new roll for the authenticated user. camera_id and film_id are slugs.",
+        "tags": [
+          "Rolls"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRollBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Roll"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rolls/{id}/contact-sheet": {
+      "get": {
+        "operationId": "get-rolls-{id}-contact-sheet",
+        "summary": "Get a roll contact sheet",
+        "description": "Returns the roll contact sheet image as `image/webp`.",
+        "tags": [
+          "Rolls"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "roll_number"
+            },
+            "required": true,
+            "description": "roll_number",
+            "example": "123"
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/unknown"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "put-rolls-{id}-contact-sheet",
+        "summary": "Upload a roll contact sheet",
+        "description": "Uploads a raw webp payload (request body is the file bytes), stores it in R2, and updates the roll.",
+        "tags": [
+          "Rolls"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "roll_number"
+            },
+            "required": true,
+            "description": "roll_number",
+            "example": "123"
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactSheetUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiKeyListResponse": {
+        "type": "object",
+        "properties": {
+          "api_keys": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "last_used_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "created_at": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ApiKeyCreateBody": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ApiKeyCreateResponse": {
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string",
+                "nullable": true
+              },
+              "created_at": {
+                "type": "string"
+              }
+            }
+          },
+          "raw_key": {
+            "type": "string"
+          }
+        }
+      },
+      "GetMeResponse": {},
+      "WebAuthnLoginOptionsBody": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "nullable": false
+          }
+        }
+      },
+      "WebAuthnLoginOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "type": "object"
+          },
+          "challenge": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          }
+        }
+      },
+      "WebAuthnLoginVerifyBody": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "object",
+            "nullable": false
+          },
+          "challenge": {
+            "type": "string",
+            "nullable": false
+          },
+          "user_id": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SessionAuthSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "UserPublic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "WebAuthnRegisterOptionsBody": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": false
+          },
+          "email": {
+            "type": "string",
+            "nullable": false
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "invite_code": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WebAuthnRegisterOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "type": "object"
+          },
+          "challenge": {
+            "type": "string"
+          }
+        }
+      },
+      "WebAuthnRegisterVerifyBody": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": false
+          },
+          "email": {
+            "type": "string",
+            "nullable": false
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "invite_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "response": {
+            "type": "object",
+            "nullable": false
+          },
+          "challenge": {
+            "type": "string",
+            "nullable": false
+          },
+          "device_name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Camera": {},
+      "CreateCameraBody": {},
+      "ExportResponse": {
+        "type": "object",
+        "properties": {
+          "cameras": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uuid": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "slug"
+                },
+                "brand": {
+                  "type": "string"
+                },
+                "model": {
+                  "type": "string"
+                },
+                "nickname": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "format": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "films": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uuid": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "description": "slug"
+                },
+                "brand": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nickname": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "iso": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "color": {
+                  "type": "boolean"
+                },
+                "show_iso": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "rolls": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "roll_number": {
+                  "type": "string"
+                },
+                "shot_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "fridge_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lab_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lab_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "scanned_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "processed_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "uploaded_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "archived_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "album_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "nullable": true
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "contact_sheet_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "push_pull": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "camera_id": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "film_id": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "ExportCamera": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "slug"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "format": {
+            "type": "number"
+          }
+        }
+      },
+      "ExportFilm": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "slug"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "iso": {
+            "type": "number",
+            "nullable": true
+          },
+          "color": {
+            "type": "boolean"
+          },
+          "show_iso": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ExportRoll": {
+        "type": "object",
+        "properties": {
+          "roll_number": {
+            "type": "string"
+          },
+          "shot_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "fridge_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "scanned_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "processed_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "uploaded_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "archived_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "album_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact_sheet_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "push_pull": {
+            "type": "number",
+            "nullable": true
+          },
+          "camera_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "film_id": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Film": {},
+      "CreateFilmBody": {},
+      "ImportPayload": {
+        "type": "object",
+        "properties": {
+          "cameras": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "slug",
+                  "nullable": false
+                },
+                "brand": {
+                  "type": "string",
+                  "nullable": false
+                },
+                "model": {
+                  "type": "string",
+                  "nullable": false
+                },
+                "nickname": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "format": {
+                  "type": "number",
+                  "nullable": true
+                }
+              }
+            },
+            "nullable": true
+          },
+          "films": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "slug",
+                  "nullable": false
+                },
+                "brand": {
+                  "type": "string",
+                  "nullable": false
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": false
+                },
+                "nickname": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "iso": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "color": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "show_iso": {
+                  "type": "boolean",
+                  "nullable": true
+                }
+              }
+            },
+            "nullable": true
+          },
+          "rolls": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "roll_number": {
+                  "type": "string",
+                  "nullable": false
+                },
+                "camera_id": {
+                  "type": "string",
+                  "description": "camera slug",
+                  "nullable": true
+                },
+                "film_id": {
+                  "type": "string",
+                  "description": "film slug",
+                  "nullable": true
+                },
+                "shot_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "fridge_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lab_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "lab_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "scanned_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "processed_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "uploaded_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "archived_at": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "album_name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "nullable": true
+                },
+                "notes": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "contact_sheet_url": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "push_pull": {
+                  "type": "number",
+                  "nullable": true
+                }
+              }
+            },
+            "nullable": true
+          }
+        }
+      },
+      "ImportCamera": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "slug",
+            "nullable": false
+          },
+          "brand": {
+            "type": "string",
+            "nullable": false
+          },
+          "model": {
+            "type": "string",
+            "nullable": false
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "format": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "ImportFilm": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "slug",
+            "nullable": false
+          },
+          "brand": {
+            "type": "string",
+            "nullable": false
+          },
+          "name": {
+            "type": "string",
+            "nullable": false
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true
+          },
+          "iso": {
+            "type": "number",
+            "nullable": true
+          },
+          "color": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "show_iso": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "ImportRoll": {
+        "type": "object",
+        "properties": {
+          "roll_number": {
+            "type": "string",
+            "nullable": false
+          },
+          "camera_id": {
+            "type": "string",
+            "description": "camera slug",
+            "nullable": true
+          },
+          "film_id": {
+            "type": "string",
+            "description": "film slug",
+            "nullable": true
+          },
+          "shot_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "fridge_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "scanned_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "processed_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "uploaded_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "archived_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "album_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact_sheet_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "push_pull": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "ImportResponse": {
+        "type": "object",
+        "properties": {
+          "cameras": {
+            "type": "number"
+          },
+          "films": {
+            "type": "number"
+          },
+          "rolls": {
+            "type": "number"
+          }
+        }
+      },
+      "RollIdPathParams": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "roll_number"
+          }
+        }
+      },
+      "unknown": {},
+      "ContactSheetUploadResponse": {
+        "type": "object",
+        "properties": {
+          "contact_sheet_url": {
+            "type": "string"
+          }
+        }
+      },
+      "Roll": {},
+      "CreateRollBody": {
+        "type": "object",
+        "properties": {
+          "roll_number": {
+            "type": "string",
+            "nullable": false
+          },
+          "camera_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "film_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "shot_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "fridge_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "lab_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "scanned_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "processed_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "uploaded_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "archived_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "album_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "push_pull": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      }
+    },
+    "responses": {}
+  }
+}

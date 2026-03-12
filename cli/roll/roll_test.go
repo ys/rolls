@@ -155,6 +155,19 @@ func TestFilesPrefix(t *testing.T) {
 	}
 }
 
+// Temporary debugging test to verify uploaded_at parsing from a real roll.md.
+// This ensures --to-upload filtering sees non-zero UploadedAt values.
+func TestDebugUploadedAtParse(t *testing.T) {
+	path := "/Volumes/daily/01 photos/analog/scans/2025/25x06-0324-canon eos 33v-kodak portra 400/roll.md"
+	r, err := FromMarkdown(path)
+	if err != nil {
+		t.Fatalf("FromMarkdown error: %v", err)
+	}
+	if r.Metadata.UploadedAt.IsZero() {
+		t.Fatalf("UploadedAt is zero; frontmatter value was not parsed")
+	}
+}
+
 func TestSet(t *testing.T) {
 	t.Run("Add and ToSlice", func(t *testing.T) {
 		s := make(Set)

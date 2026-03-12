@@ -1,7 +1,33 @@
 import { NextResponse } from "next/server";
 import { getUserId } from "@/lib/request-context";
 import { sql, type User, type WebAuthnCredential } from "@/lib/db";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
+type GetMeResponse = {
+  user: {
+    id: string;
+    username: string;
+    name: string | null;
+    email: string;
+    email_notifications: boolean;
+  };
+  credentials: Array<{
+    id: string;
+    device_name: string | null;
+    last_used_at: string | null;
+    created_at: string;
+  }>;
+};
+
+/**
+ * Get current user
+ * @description Returns the authenticated user's profile and registered WebAuthn credentials.
+ * @auth bearer
+ * @response GetMeResponse
+ * @add 404:ErrorResponse
+ * @add 500:ErrorResponse
+ * @openapi
+ */
 export async function GET() {
   try {
     const userId = await getUserId();
@@ -13,7 +39,7 @@ export async function GET() {
 
     if (!user) {
       return NextResponse.json(
-        { error: "User not found" },
+        { error: "User not found" } satisfies ErrorResponse,
         { status: 404 }
       );
     }
@@ -40,11 +66,11 @@ export async function GET() {
         last_used_at: cred.last_used_at,
         created_at: cred.created_at,
       })),
-    });
+    } satisfies GetMeResponse);
   } catch (error: any) {
     console.error("Get user error:", error);
     return NextResponse.json(
-      { error: "Failed to get user data" },
+      { error: "Failed to get user data" } satisfies ErrorResponse,
       { status: 500 }
     );
   }

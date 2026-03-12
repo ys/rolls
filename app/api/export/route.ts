@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
+import type { ExportResponse } from "@/app/api/_schemas/import_export";
 
+/**
+ * Export all user data (CLI sync)
+ * @description Returns cameras, films, and rolls for the authenticated user.
+ * @auth bearer
+ * @response ExportResponse
+ * @openapi
+ */
 export async function GET() {
   const userId = await getUserId();
 
@@ -23,5 +31,5 @@ export async function GET() {
     `,
   ]);
 
-  return NextResponse.json({ cameras, films, rolls });
+  return NextResponse.json({ cameras, films, rolls } satisfies ExportResponse);
 }

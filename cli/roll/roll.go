@@ -29,6 +29,7 @@ type Metadata struct {
 	Copyright       string
 	ProcessedAt     time.Time `yaml:"processed_at,omitempty"`
 	UploadedAt      time.Time `yaml:"uploaded_at,omitempty"`
+	UploadedAtSet   bool      `yaml:"-"` // true only when uploaded_at was explicit in frontmatter
 	AlbumName       string    `yaml:"album_name,omitempty"`
 	ArchivedAt      time.Time `yaml:"archived_at,omitempty"`
 	ContactSheetURL string    `yaml:"contact_sheet_url,omitempty"`
@@ -205,6 +206,7 @@ func FromMarkdown(path string) (Roll, error) {
 		case "uploaded_at":
 			if t, err := ParseDateTime(value); err == nil {
 				metadata.UploadedAt = t
+				metadata.UploadedAtSet = true
 			}
 		case "archived_at":
 			if t, err := ParseDateTime(value); err == nil {

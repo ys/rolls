@@ -5,15 +5,27 @@ import {
   makeSessionCookie,
   getUserById,
 } from "@/lib/auth";
+import type { WebAuthnLoginVerifyBody } from "@/app/api/_schemas/auth";
+import type { ErrorResponse, SessionAuthSuccessResponse } from "@/app/api/_schemas/common";
 
+/**
+ * WebAuthn login verify
+ * @description Verifies a WebAuthn authentication response and starts a session (via Set-Cookie).
+ * @body WebAuthnLoginVerifyBody
+ * @response SessionAuthSuccessResponse
+ * @add 400:ErrorResponse
+ * @add 401:ErrorResponse
+ * @add 404:ErrorResponse
+ * @openapi
+ */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body: WebAuthnLoginVerifyBody = await request.json();
     const { response: credentialResponse, challenge, user_id: userId } = body;
 
     if (!credentialResponse || !challenge) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields" } satisfies ErrorResponse,
         { status: 400 }
       );
     }
@@ -27,7 +39,7 @@ export async function POST(request: Request) {
 
     if (!verification.verified) {
       return NextResponse.json(
-        { error: "Authentication failed" },
+        { error: "Authentication failed" } satisfies ErrorResponse,
         { status: 401 }
       );
     }
@@ -37,7 +49,7 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "User not found" },
+        { error: "User not found" } satisfies ErrorResponse,
         { status: 404 }
       );
     }
@@ -57,7 +69,7 @@ export async function POST(request: Request) {
           name: user.name,
           email: user.email,
         },
-      }),
+      } satisfies SessionAuthSuccessResponse),
       {
         status: 200,
         headers: {
@@ -69,7 +81,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Login verification error:", error);
     return NextResponse.json(
-      { error: "Authentication failed" },
+      { error: "Authentication failed" } satisfies ErrorResponse,
       { status: 401 }
     );
   }

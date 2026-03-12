@@ -106,7 +106,7 @@ func renderYearNote(year int, rolls []roll.Roll, sheets map[string]bool) string 
 		cam := cameraDisplay(r.Metadata.CameraID)
 		film := filmDisplay(r.Metadata.FilmID)
 
-		fmt.Fprintf(&sb, "## %s %s\n\n", cam, film)
+		fmt.Fprintf(&sb, "## %s\n```\n📷 %s\n🎞️ %s\n```\n\n", r.Metadata.RollNumber, cam, film)
 
 		if sheets[r.Metadata.RollNumber] {
 			fmt.Fprintf(&sb, "![](images/%s.webp)\n\n", r.Metadata.RollNumber)

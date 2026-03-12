@@ -6,10 +6,20 @@ import {
   sendWelcomeEmail,
 } from "@/lib/auth";
 import { sql, type Invite, type User } from "@/lib/db";
+import type { WebAuthnRegisterVerifyBody } from "@/app/api/_schemas/auth";
+import type { ErrorResponse, SessionAuthSuccessResponse } from "@/app/api/_schemas/common";
 
+/**
+ * WebAuthn registration verify
+ * @description Verifies a WebAuthn registration response and starts a session (via Set-Cookie).
+ * @body WebAuthnRegisterVerifyBody
+ * @response SessionAuthSuccessResponse
+ * @add 400:ErrorResponse
+ * @openapi
+ */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body: WebAuthnRegisterVerifyBody = await request.json();
     const {
       username,
       email,
@@ -27,7 +37,7 @@ export async function POST(request: Request) {
     // Validate required fields (invite_code optional during bootstrap)
     if (!username || !email || (!isBootstrap && !invite_code) || !credentialResponse || !challenge) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields" } satisfies ErrorResponse,
         { status: 400 }
       );
     }
@@ -40,15 +50,15 @@ export async function POST(request: Request) {
       `;
 
       if (!found) {
-        return NextResponse.json({ error: "Invalid invite code" }, { status: 400 });
+        return NextResponse.json({ error: "Invalid invite code" } satisfies ErrorResponse, { status: 400 });
       }
 
       if (found.expires_at && new Date(found.expires_at) < new Date()) {
-        return NextResponse.json({ error: "Invite code has expired" }, { status: 400 });
+        return NextResponse.json({ error: "Invite code has expired" } satisfies ErrorResponse, { status: 400 });
       }
 
       if (found.max_uses !== null && found.used_count >= found.max_uses) {
-        return NextResponse.json({ error: "Invite code has been fully used" }, { status: 400 });
+        return NextResponse.json({ error: "Invite code has been fully used" } satisfies ErrorResponse, { status: 400 });
       }
 
       invite = found;
@@ -59,7 +69,7 @@ export async function POST(request: Request) {
 
     if (!verification.verified || !verification.registrationInfo) {
       return NextResponse.json(
-        { error: "Credential verification failed" },
+        { error: "Credential verification failed" } satisfies ErrorResponse,
         { status: 400 }
       );
     }
@@ -134,7 +144,7 @@ export async function POST(request: Request) {
           name: user.name,
           email: user.email,
         },
-      }),
+      } satisfies SessionAuthSuccessResponse),
       {
         status: 200,
         headers: {
@@ -146,7 +156,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Registration verification error:", error);
     return NextResponse.json(
-      { error: error.message || "Registration failed" },
+      { error: error.message || "Registration failed" } satisfies ErrorResponse,
       { status: 500 }
     );
   }

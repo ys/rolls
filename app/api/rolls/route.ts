@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
+import type { CreateRollBody } from "@/app/api/_schemas/rolls";
 
+/**
+ * List rolls
+ * @description Returns all rolls for the authenticated user, ordered by roll_number desc.
+ * @auth bearer
+ * @response Roll[]
+ * @openapi
+ */
 export async function GET() {
   const userId = await getUserId();
   const rows = await sql<Roll[]>`
@@ -11,9 +19,17 @@ export async function GET() {
   return NextResponse.json(rows);
 }
 
+/**
+ * Create a roll
+ * @description Creates a new roll for the authenticated user. camera_id and film_id are slugs.
+ * @auth bearer
+ * @body CreateRollBody
+ * @response 201:Roll
+ * @openapi
+ */
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
-  const body = await request.json();
+  const body: CreateRollBody = await request.json();
   const {
     roll_number,
     camera_id,

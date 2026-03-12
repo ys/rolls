@@ -7,7 +7,17 @@ import {
   sendSecurityNotification,
 } from "@/lib/auth";
 import { sql, type ApiKey } from "@/lib/db";
+import type { ApiKeyCreateBody, ApiKeyCreateResponse, ApiKeyListResponse } from "@/app/api/_schemas/auth";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
+/**
+ * List API keys
+ * @description Lists API keys for the authenticated user (raw keys are never returned).
+ * @auth bearer
+ * @response ApiKeyListResponse
+ * @add 500:ErrorResponse
+ * @openapi
+ */
 export async function GET() {
   try {
     const userId = await getUserId();
@@ -21,20 +31,29 @@ export async function GET() {
 
     return NextResponse.json({
       api_keys: apiKeys,
-    });
+    } satisfies ApiKeyListResponse);
   } catch (error: any) {
     console.error("Get API keys error:", error);
     return NextResponse.json(
-      { error: "Failed to get API keys" },
+      { error: "Failed to get API keys" } satisfies ErrorResponse,
       { status: 500 }
     );
   }
 }
 
+/**
+ * Create API key
+ * @description Creates a new API key for the authenticated user. `raw_key` is returned only once.
+ * @auth bearer
+ * @body ApiKeyCreateBody
+ * @response ApiKeyCreateResponse
+ * @add 500:ErrorResponse
+ * @openapi
+ */
 export async function POST(request: Request) {
   try {
     const userId = await getUserId();
-    const body = await request.json();
+    const body: ApiKeyCreateBody = await request.json();
     const { label } = body;
 
     // Generate new API key
@@ -64,11 +83,11 @@ export async function POST(request: Request) {
         created_at: apiKey.created_at,
       },
       raw_key: rawKey, // Only shown once!
-    });
+    } satisfies ApiKeyCreateResponse);
   } catch (error: any) {
     console.error("Create API key error:", error);
     return NextResponse.json(
-      { error: "Failed to create API key" },
+      { error: "Failed to create API key" } satisfies ErrorResponse,
       { status: 500 }
     );
   }

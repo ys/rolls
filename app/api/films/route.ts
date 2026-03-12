@@ -3,24 +3,52 @@ import { sql } from "@/lib/db";
 import type { Film } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
 import { getFilms } from "@/lib/queries";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+/**
+ * List films
+ * @auth bearer
+ * @response Film[]
+ * @openapi
+ */
 export async function GET() {
   const userId = await getUserId();
   const rows = await getFilms(userId);
   return NextResponse.json(rows);
 }
 
+type CreateFilmBody = {
+  brand: string;
+  name: string;
+  nickname?: string;
+  iso?: number;
+  color?: boolean;
+  show_iso?: boolean;
+};
+
+/**
+ * Create (or upsert) a film
+ * @description Slug is generated from brand+name. Upserts on (user_id, slug).
+ * @auth bearer
+ * @body CreateFilmBody
+ * @response 201:Film
+ * @add 400:ErrorResponse
+ * @openapi
+ */
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
-  const body = await request.json();
+  const body: CreateFilmBody = await request.json();
   const { brand, name, nickname, iso, color, show_iso } = body;
 
   if (!brand || !name) {
-    return NextResponse.json({ error: "brand, name are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "brand, name are required" } satisfies ErrorResponse,
+      { status: 400 }
+    );
   }
 
   // Generate slug server-side

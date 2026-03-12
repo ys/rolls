@@ -3,13 +3,24 @@ import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { r2, R2_BUCKET } from "@/lib/r2";
 import { sql } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
+import type { ContactSheetUploadResponse, RollIdPathParams } from "@/app/api/_schemas/rolls";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
+/**
+ * Get a roll contact sheet
+ * @description Returns the roll contact sheet image as `image/webp`.
+ * @auth bearer
+ * @pathParams RollIdPathParams
+ * @response 200:unknown
+ * @add 404:ErrorResponse
+ * @openapi
+ */
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = await params;
+  const { id: roll_number } = (await params) satisfies RollIdPathParams;
 
   // Verify user owns this roll before serving the image
   const [roll] = await sql<{ roll_number: string }[]>`
@@ -17,7 +28,7 @@ export async function GET(
   `;
 
   if (!roll) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
   }
 
   try {
@@ -27,7 +38,9 @@ export async function GET(
     }));
 
     const stream = obj.Body?.transformToWebStream();
-    if (!stream) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!stream) {
+      return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
+    }
 
     return new NextResponse(stream, {
       headers: {
@@ -36,16 +49,27 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
   }
 }
 
+/**
+ * Upload a roll contact sheet
+ * @description Uploads a raw webp payload (request body is the file bytes), stores it in R2, and updates the roll.
+ * @auth bearer
+ * @pathParams RollIdPathParams
+ * @contentType image/webp
+ * @response ContactSheetUploadResponse
+ * @add 400:ErrorResponse
+ * @add 404:ErrorResponse
+ * @openapi
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = await params;
+  const { id: roll_number } = (await params) satisfies RollIdPathParams;
 
   // Verify user owns this roll before uploading
   const [roll] = await sql<{ roll_number: string }[]>`
@@ -53,12 +77,12 @@ export async function PUT(
   `;
 
   if (!roll) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
   }
 
   const body = await request.arrayBuffer();
   if (!body.byteLength) {
-    return NextResponse.json({ error: "Empty body" }, { status: 400 });
+    return NextResponse.json({ error: "Empty body" } satisfies ErrorResponse, { status: 400 });
   }
 
   await r2.send(new PutObjectCommand({
@@ -79,5 +103,5 @@ export async function PUT(
     WHERE roll_number = ${roll_number} AND user_id = ${userId}
   `;
 
-  return NextResponse.json({ contact_sheet_url: contactSheetUrl });
+  return NextResponse.json({ contact_sheet_url: contactSheetUrl } satisfies ContactSheetUploadResponse);
 }

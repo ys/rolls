@@ -2,49 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
 
-interface ImportCamera {
-  id: string;
-  brand: string;
-  model: string;
-  nickname?: string;
-  format?: number;
-}
+import type { ImportPayload, ImportResponse } from "@/app/api/_schemas/import_export";
 
-interface ImportFilm {
-  id: string;
-  brand: string;
-  name: string;
-  nickname?: string;
-  iso?: number;
-  color?: boolean;
-  show_iso?: boolean;
-}
-
-interface ImportRoll {
-  roll_number: string;
-  camera_id?: string;
-  film_id?: string;
-  shot_at?: string;
-  fridge_at?: string;
-  lab_at?: string;
-  lab_name?: string;
-  scanned_at?: string;
-  processed_at?: string;
-  uploaded_at?: string;
-  archived_at?: string;
-  album_name?: string;
-  tags?: string[];
-  notes?: string;
-  contact_sheet_url?: string;
-  push_pull?: number | null;
-}
-
-interface ImportPayload {
-  cameras?: ImportCamera[];
-  films?: ImportFilm[];
-  rolls?: ImportRoll[];
-}
-
+/**
+ * Import (upsert) cameras, films, and rolls (CLI sync)
+ * @description Upserts by slug (id) for cameras/films and roll_number for rolls.
+ * @auth bearer
+ * @body ImportPayload
+ * @response ImportResponse
+ * @openapi
+ */
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
   const body: ImportPayload = await request.json();
@@ -127,5 +94,5 @@ export async function POST(request: NextRequest) {
     cameras: cameras.length,
     films: films.length,
     rolls: rolls.length,
-  });
+  } satisfies ImportResponse);
 }
