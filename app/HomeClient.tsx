@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Camera, FilmStrip } from "@phosphor-icons/react";
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
@@ -12,8 +11,6 @@ import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
-
-import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string; color: string }>> = {
   LOADED: { field: "fridge_at",  label: "→ Fridge", color: "bg-cyan-500"   },
@@ -74,97 +71,74 @@ function Checkbox({ checked }: { checked: boolean }) {
   );
 }
 
-function RollItem({ roll, editing, selected, onToggle, onAdvance }: {
+function RollItem({ roll, editing, selected, onToggle, onAdvance, isRecent }: {
   roll: RollRow; editing: boolean; selected: boolean;
-  onToggle: () => void; onAdvance: (field: string) => void;
+  onToggle: () => void; onAdvance: (field: string) => void; isRecent: boolean;
 }) {
   const status = rollStatus(roll);
   const next = editing ? undefined : STATUS_NEXT[status];
   const dateStr = roll.shot_at
     ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
-  const cam  = cameraLabel(roll);
+  const cam = cameraLabel(roll);
   const film = filmLabel(roll);
-  const gradient = roll.film_slug ? FILM_GRADIENTS[roll.film_slug] : undefined;
-  const stripeStyle: React.CSSProperties = gradient
-    ? { background: `linear-gradient(to bottom, ${gradient[0]}, ${gradient[1]})` }
-    : { background: "#d4d4d8" };
   const notePreview = firstNotesLine(roll.notes);
 
-  const cardBase = "rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800";
+  // Determine left border color
+  const borderColor = isRecent ? "var(--darkroom-accent)" : "#444";
+
+  const cardBase = "py-4 border-l-2";
 
   const mainContent = (
     <>
-      <div className="self-stretch w-1 rounded-full shrink-0" style={stripeStyle} />
       {editing && <Checkbox checked={selected} />}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="font-semibold text-[15px] truncate">{roll.roll_number}</span>
-          {dateStr && <span className="text-[13px] text-zinc-400 dark:text-zinc-500 shrink-0">{dateStr}</span>}
+      <div className="flex-1 min-w-0 pl-3">
+        <div className="font-semibold" style={{ color: "var(--darkroom-text-primary)" }}>
+          {roll.roll_number}
         </div>
-        {(cam || film) && (
-          <div className="flex flex-col gap-0.5 mt-0.5">
-            {cam && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
-                <Camera size={12} weight="bold" className="shrink-0" />{cam}
-              </span>
-            )}
-            {film && (
-              <span className="flex items-center gap-1 text-[13px] text-zinc-500 dark:text-zinc-400 truncate">
-                <FilmStrip size={12} weight="bold" className="shrink-0" />{film}
-              </span>
-            )}
+        <div className="text-[10px] uppercase tracking-wide mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
+          {cam && film ? `${cam} • ${film}` : cam || film || "—"}
+        </div>
+        <div className="text-[10px] mt-1 uppercase" style={{ color: "var(--darkroom-text-tertiary)" }}>
+          {status}
+          {dateStr && ` • ${dateStr}`}
+        </div>
+        {!editing && notePreview && (
+          <div className="text-[10px] italic mt-1 truncate" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            {notePreview}
           </div>
         )}
-        {notePreview && (
-          <p className="text-[12px] text-zinc-400 dark:text-zinc-500 truncate mt-0.5 italic">{notePreview}</p>
-        )}
       </div>
+      {!editing && next && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdvance(next.field); }}
+          className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors active:scale-95"
+          style={{
+            color: "var(--darkroom-text-primary)",
+            backgroundColor: "transparent",
+            border: `1px solid var(--darkroom-border)`,
+          }}
+        >
+          {next.label}
+        </button>
+      )}
     </>
   );
 
-  if (editing) {
-    return (
-      <li>
-        <button
-          onClick={() => { onToggle(); haptics.light(); }}
-          className={`${cardBase} flex items-center gap-3 p-3 w-full text-left transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70`}
-        >
-          {mainContent}
-        </button>
-      </li>
-    );
-  }
-
   return (
     <li>
-      <div className={`${cardBase} flex items-center overflow-hidden`}>
-        <Link
-          href={`/roll/${roll.roll_number}`}
-          onClick={() => haptics.light()}
-          className="flex items-center gap-3 p-3 flex-1 min-w-0 transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/70"
-        >
-          {mainContent}
-          {roll.contact_sheet_url && (
-            <div className="w-10 h-10 rounded-md overflow-hidden bg-zinc-800 shrink-0 ml-1">
-              <img src={roll.contact_sheet_url} alt="" className="w-full h-full object-cover" />
-            </div>
-          )}
-          {!next && !roll.contact_sheet_url && (
-            <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          )}
-        </Link>
-        {next && (
-          <div className="pr-3 pl-1">
-            <button
-              onClick={() => { onAdvance(next.field); haptics.medium(); }}
-              className={`${next.color} text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform`}
-            >
-              {next.label}
-            </button>
+      <div
+        className={cardBase}
+        style={{ borderColor }}
+      >
+        {editing ? (
+          <div className="flex items-start gap-3 px-4" onClick={onToggle}>
+            {mainContent}
           </div>
+        ) : (
+          <Link href={`/roll/${roll.roll_number}`} className="flex items-start gap-3 px-4 active:bg-zinc-900/30">
+            {mainContent}
+          </Link>
         )}
       </div>
     </li>
@@ -290,16 +264,28 @@ export default function HomeClient() {
     <>
       <PullToRefresh onRefresh={async () => { router.refresh(); }}>
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold">Rolls</h1>
-            {rolls.length > 0 && !editing && (
-              <button
-                onClick={enterEdit}
-                className="text-sm font-medium text-zinc-500 dark:text-zinc-400 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                Edit
-              </button>
-            )}
+          <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>
+              ROLLS
+            </h1>
+            <div className="flex items-center gap-3">
+              <div className="text-xs uppercase" style={{ color: "var(--darkroom-text-tertiary)" }}>
+                {rolls.length} ACTIVE
+              </div>
+              {rolls.length > 0 && !editing && (
+                <button
+                  onClick={enterEdit}
+                  className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  style={{
+                    color: "var(--darkroom-text-secondary)",
+                    backgroundColor: "transparent",
+                    border: `1px solid var(--darkroom-border)`,
+                  }}
+                >
+                  Edit
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Search */}
@@ -340,6 +326,7 @@ export default function HomeClient() {
                       selected={false}
                       onToggle={() => {}}
                       onAdvance={(field) => advanceSingle(roll.roll_number, field)}
+                      isRecent={roll.roll_number === rolls[0]?.roll_number}
                     />
                   ))}
                 </ul>
@@ -383,6 +370,7 @@ export default function HomeClient() {
                           selected={selected.has(roll.roll_number)}
                           onToggle={() => toggleSelect(roll.roll_number)}
                           onAdvance={(field) => advanceSingle(roll.roll_number, field)}
+                          isRecent={roll.roll_number === rolls[0]?.roll_number}
                         />
                       ))}
                     </ul>
