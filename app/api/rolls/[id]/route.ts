@@ -28,19 +28,27 @@ export async function PATCH(
   const body = await request.json();
 
   // Resolve camera_id and film_id slugs to UUIDs if provided
-  if ("camera_id" in body && body.camera_id) {
-    const [cam] = await sql<{ uuid: string }[]>`
-      SELECT uuid FROM cameras WHERE slug = ${body.camera_id} AND user_id = ${userId}
-    `;
-    body.camera_uuid = cam?.uuid ?? null;
+  if ("camera_id" in body) {
+    if (body.camera_id) {
+      const [cam] = await sql<{ uuid: string }[]>`
+        SELECT uuid FROM cameras WHERE slug = ${body.camera_id} AND user_id = ${userId}
+      `;
+      body.camera_uuid = cam?.uuid ?? null;
+    } else {
+      body.camera_uuid = null;
+    }
     delete body.camera_id;
   }
 
-  if ("film_id" in body && body.film_id) {
-    const [film] = await sql<{ uuid: string }[]>`
-      SELECT uuid FROM films WHERE slug = ${body.film_id} AND user_id = ${userId}
-    `;
-    body.film_uuid = film?.uuid ?? null;
+  if ("film_id" in body) {
+    if (body.film_id) {
+      const [film] = await sql<{ uuid: string }[]>`
+        SELECT uuid FROM films WHERE slug = ${body.film_id} AND user_id = ${userId}
+      `;
+      body.film_uuid = film?.uuid ?? null;
+    } else {
+      body.film_uuid = null;
+    }
     delete body.film_id;
   }
 

@@ -23,7 +23,7 @@ function filmLabel(f: Film): string {
 }
 
 const labelCls = "block text-[9px] uppercase tracking-wider mb-2";
-const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
+const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors placeholder:text-zinc-600";
 const addLinkCls = "text-xs transition-colors";
 
 export default function NewRollPage() {

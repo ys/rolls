@@ -102,10 +102,11 @@ export default function Sheet({
       {/* Sheet */}
       <div
         ref={sheetRef}
-        className="relative w-full max-w-lg bg-white dark:bg-zinc-950 rounded-t-3xl shadow-2xl"
+        className="relative w-full max-w-lg rounded-t-3xl shadow-2xl"
         style={{
           transform: "translateY(100%)",
           paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+          backgroundColor: "var(--darkroom-bg)",
         }}
       >
         {/* Handle — drag target */}
@@ -116,15 +117,19 @@ export default function Sheet({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <div className="w-10 h-1 bg-zinc-200 dark:bg-zinc-700 rounded-full" />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "var(--darkroom-border)" }} />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-2">
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 className="text-xl font-bold" style={{ color: "var(--darkroom-text-primary)" }}>{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-xl leading-none"
+            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors text-xl leading-none"
+            style={{
+              backgroundColor: "var(--darkroom-card)",
+              color: "var(--darkroom-text-secondary)",
+            }}
           >
             ×
           </button>
