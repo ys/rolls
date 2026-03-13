@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import PullToRefresh from "@/components/PullToRefresh";
 import { STATUS_ORDER } from "@/lib/status";
+import { FILM_GRADIENTS } from "@/lib/film-gradients";
 
 interface StatsData {
   rollsPerYear: { year: string; count: number }[];
@@ -25,6 +26,10 @@ export default function StatsClient({
     data.rollsPerYear.length > 0
       ? Math.round(totalRolls / data.rollsPerYear.length)
       : 0;
+
+  const maxPerYear = Math.max(...data.rollsPerYear.map((r) => r.count), 1);
+  const maxCamera = Math.max(...data.topCameras.map((r) => r.count), 1);
+  const maxFilm = Math.max(...data.topFilms.map((r) => r.count), 1);
 
   const statusMap = Object.fromEntries(
     data.statusCounts.map((r) => [r.status, r.count]),
@@ -63,7 +68,7 @@ export default function StatsClient({
           {/* Scanned % */}
           {totalRolls > 0 && (
             <div className="px-4 py-2 flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>Scanned or beyond</span>
+              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--darkroom-text-secondary)" }}>Scanned or beyond</span>
               <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
                 {pctScanned}%
               </span>
@@ -77,17 +82,26 @@ export default function StatsClient({
           <div className="space-y-2">
             {STATUS_ORDER.filter((s) => statusMap[s]).map((status) => {
               const count = statusMap[status] ?? 0;
+              const pct = totalRolls > 0 ? (count / totalRolls) * 100 : 0;
               return (
-                <div key={status} className="flex items-center justify-between">
-                  <span
-                    className="text-[10px] uppercase tracking-wide"
-                    style={{ color: "var(--darkroom-text-tertiary)" }}
-                  >
-                    {status}
-                  </span>
-                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
-                    {count}
-                  </span>
+                <div key={status}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className="text-[10px] uppercase tracking-wide"
+                      style={{ color: "var(--darkroom-text-secondary)" }}
+                    >
+                      {status}
+                    </span>
+                    <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                      {count}
+                    </span>
+                  </div>
+                  <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: "var(--darkroom-accent)" }}
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -99,13 +113,21 @@ export default function StatsClient({
           <SectionTitle>By Year</SectionTitle>
           <div className="space-y-2">
             {data.rollsPerYear.map((r) => (
-              <div key={r.year} className="flex items-center justify-between">
-                <span className="font-mono text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>
-                  {r.year}
-                </span>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
-                  {r.count}
-                </span>
+              <div key={r.year}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-mono text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+                    {r.year}
+                  </span>
+                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                    {r.count}
+                  </span>
+                </div>
+                <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${(r.count / maxPerYear) * 100}%`, backgroundColor: "var(--darkroom-accent)" }}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -115,7 +137,7 @@ export default function StatsClient({
         {data.topCameras.length > 0 && (
           <section className="px-4">
             <SectionTitle>Top Cameras</SectionTitle>
-            <RankedList items={data.topCameras} />
+            <RankedList items={data.topCameras} max={maxCamera} />
           </section>
         )}
 
@@ -123,7 +145,7 @@ export default function StatsClient({
         {data.topFilms.length > 0 && (
           <section className="px-4">
             <SectionTitle>Top Films</SectionTitle>
-            <RankedList items={data.topFilms} />
+            <RankedList items={data.topFilms} max={maxFilm} useFilmGradient />
           </section>
         )}
       </div>
@@ -143,7 +165,7 @@ function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="py-2 text-center">
       <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</div>
-      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>
+      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--darkroom-text-secondary)" }}>
         {label}
       </div>
     </div>
@@ -152,24 +174,40 @@ function HeroStat({ label, value }: { label: string; value: string | number }) {
 
 function RankedList({
   items,
+  max,
+  useFilmGradient,
 }: {
   items: { label: string; count: number; slug?: string }[];
+  max: number;
+  useFilmGradient?: boolean;
 }) {
   return (
     <div className="space-y-2">
-      {items.map((r, i) => (
-        <div key={r.label} className="flex items-center gap-3">
-          <span className="text-[10px] w-4 text-right shrink-0 tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
-            {i + 1}
-          </span>
-          <span className="text-xs flex-1 truncate" style={{ color: "var(--darkroom-text-primary)" }}>
-            {r.label}
-          </span>
-          <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
-            {r.count}
-          </span>
-        </div>
-      ))}
+      {items.map((r, i) => {
+        const gradient = useFilmGradient && r.slug ? FILM_GRADIENTS[r.slug] : undefined;
+        const barStyle: React.CSSProperties = gradient
+          ? { width: `${(r.count / max) * 100}%`, background: `linear-gradient(to right, ${gradient[0]}, ${gradient[1]})` }
+          : { width: `${(r.count / max) * 100}%`, backgroundColor: "var(--darkroom-accent)" };
+
+        return (
+          <div key={r.label}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs flex-1 truncate" style={{ color: "var(--darkroom-text-primary)" }}>
+                {r.label}
+              </span>
+              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                {r.count}
+              </span>
+            </div>
+            <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+              <div
+                className="h-full rounded-full transition-all"
+                style={barStyle}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
