@@ -70,9 +70,9 @@ export function RollDetailView({
       : roll.scanned_at
         ? [roll.scanned_at, "Scanned"]
         : roll.lab_at
-          ? [roll.lab_at, "Lab"]
+          ? [roll.lab_at, "At the Lab"]
           : roll.fridge_at
-            ? [roll.fridge_at, "Fridge"]
+            ? [roll.fridge_at, "In the Fridge"]
             : roll.shot_at
               ? [roll.shot_at, "Loaded"]
               : [null, "Date"];
@@ -356,6 +356,54 @@ export function RollDetailView({
         )}
       </div>
 
+      {/* Timeline */}
+      {(() => {
+        const events = [
+          ["Shot", roll.shot_at],
+          ["Fridge", roll.fridge_at],
+          ["Lab", roll.lab_at],
+          ["Scanned", roll.scanned_at],
+          ["Processed", roll.processed_at],
+          ["Archived", roll.archived_at],
+        ].filter(([, d]) => d) as [string, string][];
+        if (events.length === 0) return null;
+        return (
+          <div className="px-4 py-4 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+            <div
+              className="text-[9px] uppercase tracking-wider mb-3"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              Timeline
+            </div>
+            <div className="flex flex-col">
+              {events.map(([label, d], i) => (
+                <div key={label} className="flex items-start gap-3">
+                  <div className="flex flex-col items-center" style={{ width: 12 }}>
+                    <div
+                      className="rounded-full shrink-0"
+                      style={{ width: 6, height: 6, marginTop: 3, backgroundColor: "var(--darkroom-accent)" }}
+                    />
+                    {i < events.length - 1 && (
+                      <div
+                        style={{ width: 1, minHeight: 20, backgroundColor: "var(--darkroom-border)", margin: "2px 0" }}
+                      />
+                    )}
+                  </div>
+                  <div className="pb-3">
+                    <div className="text-[9px] uppercase tracking-wider" style={{ color: "var(--darkroom-text-tertiary)" }}>
+                      {label}
+                    </div>
+                    <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>
+                      {new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Metadata Strip */}
       <div
         className="flex gap-6 px-4 py-3 border-t"
@@ -380,7 +428,7 @@ export function RollDetailView({
             className="text-[8px] uppercase tracking-wider mb-1"
             style={{ color: "var(--darkroom-text-tertiary)" }}
           >
-            Date
+            {dateLabel}
           </div>
           <div
             className="text-[10px]"

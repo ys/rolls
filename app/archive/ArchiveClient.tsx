@@ -131,6 +131,7 @@ function GridCard({
 }) {
   const status = rollStatus(roll);
   const film = filmLabel(roll);
+  const camera = cameraLabel(roll);
   const dateStr = roll.scanned_at
     ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
         month: "short",
@@ -139,15 +140,48 @@ function GridCard({
       })
     : null;
 
-  // Contact sheet cards: natural image height so nothing is cropped.
-  // Placeholder cards: fixed landscape ratio.
   const hasImage = !!roll.contact_sheet_url;
   const containerBase = hasImage
-    ? "relative w-full rounded-xl overflow-hidden bg-zinc-900"
-    : "relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-zinc-800";
+    ? "relative w-full overflow-hidden  mb-8"
+    : "relative w-full aspect-[3/2] overflow-hidden bg-zinc-800";
 
-  const inner = (
-    <>
+  const label = (
+    <div className="flex-1 min-w-0 pl-3 mb-3">
+      <div
+        className="flex gap-3 items-center font-semibold"
+        style={{ color: "var(--darkroom-text-primary)" }}
+      >
+        <span>{roll.roll_number}</span>
+        {roll.push_pull != null && (
+          <span
+            className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0 "
+            style={{
+              color: "var(--darkroom-text-secondary)",
+              backgroundColor: "var(--darkroom-border)",
+            }}
+          >
+            {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+          </span>
+        )}
+      </div>
+      <div
+        className="text-[10px] uppercase tracking-wide mt-0.5"
+        style={{ color: "var(--darkroom-text-secondary)" }}
+      >
+        {camera && film ? `${camera} • ${film}` : camera || film || "—"}
+      </div>
+      <div
+        className="text-[10px] mt-1 uppercase"
+        style={{ color: "var(--darkroom-text-tertiary)" }}
+      >
+        {status}
+        {dateStr && ` • ${dateStr}`}
+      </div>
+    </div>
+  );
+
+  const sheet = (
+    <div className={containerBase}>
       {hasImage ? (
         <img
           src={roll.contact_sheet_url!}
@@ -157,41 +191,12 @@ function GridCard({
       ) : (
         <PlaceholderSheet rollNumber={roll.roll_number} />
       )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent pt-6 pb-2 px-3">
-        <div className="flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <div className="text-white text-[13px] font-semibold font-mono leading-tight truncate">
-                {roll.roll_number}
-              </div>
-              {roll.push_pull != null && (
-                <span className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0">
-                  {roll.push_pull > 0
-                    ? `+${roll.push_pull}`
-                    : `${roll.push_pull}`}
-                </span>
-              )}
-            </div>
-            {film && (
-              <div className="text-white/60 text-[11px] truncate leading-tight mt-0.5">
-                {film}
-              </div>
-            )}
-          </div>
-          {dateStr && (
-            <div className="text-white/50 text-[11px] shrink-0">{dateStr}</div>
-          )}
-        </div>
-      </div>
-      <div
-        className={`absolute top-2 right-2 w-2 h-2 rounded-full ${STATUS_DOT[status] ?? "bg-zinc-400"} shadow-sm`}
-      />
       {editing && (
         <div className="absolute top-2 left-2">
           <Checkbox checked={selected} />
         </div>
       )}
-    </>
+    </div>
   );
 
   if (editing) {
@@ -201,9 +206,10 @@ function GridCard({
           onToggle();
           haptics.light();
         }}
-        className={`${containerBase} transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
+        className={`w-full text-left transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
       >
-        {inner}
+        {label}
+        {sheet}
       </button>
     );
   }
@@ -211,9 +217,10 @@ function GridCard({
     <Link
       href={`/roll/${roll.roll_number}`}
       onClick={() => haptics.light()}
-      className={`block ${containerBase} active:scale-[0.98] transition-transform`}
+      className="block active:scale-[0.98] transition-transform"
     >
-      {inner}
+      {label}
+      {sheet}
     </Link>
   );
 }
@@ -255,10 +262,21 @@ function ListRow({
       {editing && <Checkbox checked={selected} />}
       <div className="flex-1 min-w-0 pl-3">
         <div
-          className="font-semibold"
+          className="flex gap-3 items-center font-semibold"
           style={{ color: "var(--darkroom-text-primary)" }}
         >
-          {roll.roll_number}
+          <span>{roll.roll_number}</span>
+          {roll.push_pull != null && (
+            <span
+              className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0 "
+              style={{
+                color: "var(--darkroom-text-secondary)",
+                backgroundColor: "var(--darkroom-border)",
+              }}
+            >
+              {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
+            </span>
+          )}
         </div>
         <div
           className="text-[10px] uppercase tracking-wide mt-0.5"
@@ -275,10 +293,7 @@ function ListRow({
         </div>
       </div>
       {!editing && roll.contact_sheet_url && (
-        <div
-          className="w-16 h-16 rounded-md overflow-hidden shrink-0"
-          style={{ backgroundColor: "var(--darkroom-border)" }}
-        >
+        <div className="w-16 h-16 rounded-md overflow-hidden shrink-0">
           <img
             src={roll.contact_sheet_url}
             alt=""
@@ -379,7 +394,7 @@ export default function ArchiveClient() {
   );
 
   const router = useRouter();
-  const [view, setView] = useState<"grid" | "list">("list");
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [editing, setEditing] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());

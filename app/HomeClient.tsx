@@ -27,13 +27,13 @@ const STATUS_NEXT: Partial<
 > = {
   LOADED: {
     field: "fridge_at",
-    label: "Fridge",
+    label: "Done",
     icon: <ThermometerColdIcon />,
     color: "bg-cyan-500",
   },
   FRIDGE: {
     field: "lab_at",
-    label: "Lab",
+    label: "Send to Lab",
     icon: <MailboxIcon />,
     color: "bg-orange-500",
   },
@@ -152,7 +152,7 @@ function RollItem({
   const notePreview = firstNotesLine(roll.notes);
 
   // Determine left border styling
-  const hasGradient = roll.film_gradient_from && roll.film_gradient_to;
+  const hasGradient = false; //roll.film_gradient_from && roll.film_gradient_to;
   const borderStyle = hasGradient
     ? {
         borderImage: `linear-gradient(to bottom, ${roll.film_gradient_from}, ${roll.film_gradient_to}) 1`,
@@ -216,7 +216,7 @@ function RollItem({
             border: `1px solid var(--darkroom-border)`,
           }}
         >
-          {next.icon} {next.label}
+          {next.label}
         </button>
       )}
     </>
@@ -264,7 +264,6 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [search, setSearch] = useState("");
   const [labSheetRoll, setLabSheetRoll] = useState<string | null>(null);
   const [labName, setLabName] = useState("");
   const [labSubmitting, setLabSubmitting] = useState(false);
@@ -404,22 +403,9 @@ export default function HomeClient() {
 
   const { rolls } = data;
 
-  // Search filtering
-  const searchQuery = search.trim().toLowerCase();
-  const filteredRolls = searchQuery
-    ? rolls.filter(
-        (r) =>
-          r.roll_number.toLowerCase().includes(searchQuery) ||
-          cameraLabel(r).toLowerCase().includes(searchQuery) ||
-          filmLabel(r).toLowerCase().includes(searchQuery) ||
-          (r.notes?.toLowerCase().includes(searchQuery) ?? false) ||
-          (r.tags?.some((t) => t.toLowerCase().includes(searchQuery)) ?? false),
-      )
-    : rolls;
-
-  const loaded = filteredRolls.filter((r) => rollStatus(r) === "LOADED");
-  const inFridge = filteredRolls.filter((r) => rollStatus(r) === "FRIDGE");
-  const atLab = filteredRolls.filter((r) => rollStatus(r) === "LAB");
+  const loaded = rolls.filter((r) => rollStatus(r) === "LOADED");
+  const inFridge = rolls.filter((r) => rollStatus(r) === "FRIDGE");
+  const atLab = rolls.filter((r) => rollStatus(r) === "LAB");
 
   // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(rolls.map((r) => [r.roll_number, r]));
@@ -480,26 +466,6 @@ export default function HomeClient() {
             </div>
           </div>
 
-          {/* Search */}
-          {rolls.length > 0 && !editing && (
-            <div className="relative mb-6 px-4">
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search rolls…"
-                className="w-full px-3 py-2 text-xs border-b bg-transparent focus:outline-none"
-                style={{
-                  color: "var(--darkroom-text-primary)",
-                  borderColor: search
-                    ? "var(--darkroom-accent)"
-                    : "var(--darkroom-border)",
-                  fontFamily: "inherit",
-                }}
-              />
-            </div>
-          )}
-
           {rolls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <svg
@@ -529,34 +495,9 @@ export default function HomeClient() {
                 to load a new roll.
               </p>
             </div>
-          ) : searchQuery && filteredRolls.length === 0 ? (
-            <p
-              className="text-center py-16 text-xs"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              No rolls match &ldquo;{search}&rdquo;
-            </p>
           ) : (
             <div className="space-y-8 pb-24">
-              {searchQuery ? (
-                // Flat search results
-                <ul className="space-y-2">
-                  {filteredRolls.map((roll) => (
-                    <RollItem
-                      key={roll.roll_number}
-                      roll={roll}
-                      editing={false}
-                      selected={false}
-                      onToggle={() => {}}
-                      onAdvance={(field) =>
-                        advanceSingle(roll.roll_number, field)
-                      }
-                      onLabAction={() => openLabSheet(roll.roll_number)}
-                      isRecent={roll.roll_number === rolls[0]?.roll_number}
-                    />
-                  ))}
-                </ul>
-              ) : (
+              {
                 // Grouped by status
                 [
                   { label: "Loaded", rolls: loaded },
@@ -633,16 +574,14 @@ export default function HomeClient() {
                                 advanceSingle(roll.roll_number, field)
                               }
                               onLabAction={() => openLabSheet(roll.roll_number)}
-                              isRecent={
-                                roll.roll_number === rolls[0]?.roll_number
-                              }
+                              isRecent={rollStatus(roll) === "LOADED"}
                             />
                           ))}
                         </ul>
                       </section>
                     ),
                 )
-              )}
+              }
             </div>
           )}
         </div>
