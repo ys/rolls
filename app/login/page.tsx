@@ -155,14 +155,23 @@ function LoginForm() {
                 required
                 autoFocus
                 autoComplete="username webauthn"
-                className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+                className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
+                style={{
+                  borderColor: "var(--darkroom-border)",
+                  color: "var(--darkroom-text-primary)",
+                }}
               />
             </div>
             {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
             <button
               type="submit"
               disabled={loading || !identifier}
-              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                borderColor: "var(--darkroom-accent)",
+                color: "var(--darkroom-accent)",
+                backgroundColor: "transparent",
+              }}
             >
               {loading ? "Checking..." : "Continue"}
             </button>
@@ -180,7 +189,12 @@ function LoginForm() {
             <button
               onClick={handlePasskeyLogin}
               disabled={loading}
-              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                borderColor: "var(--darkroom-accent)",
+                color: "var(--darkroom-accent)",
+                backgroundColor: "transparent",
+              }}
             >
               {loading ? "Signing in..." : "Sign In with Passkey"}
             </button>
