@@ -3,28 +3,6 @@
 import { useRouter } from "next/navigation";
 import PullToRefresh from "@/components/PullToRefresh";
 import { STATUS_ORDER } from "@/lib/status";
-import { FILM_GRADIENTS } from "@/lib/film-gradients";
-
-// Solid bar colors per status
-const STATUS_BAR: Record<string, string> = {
-  LOADED: "bg-amber-400",
-  FRIDGE: "bg-cyan-400",
-  LAB: "bg-orange-400",
-  SCANNED: "bg-green-400",
-  PROCESSED: "bg-purple-400",
-  UPLOADED: "bg-blue-400",
-  ARCHIVED: "bg-zinc-400",
-};
-
-const STATUS_LABEL_COLOR: Record<string, string> = {
-  LOADED: "text-amber-400",
-  FRIDGE: "text-cyan-400",
-  LAB: "text-orange-400",
-  SCANNED: "text-green-400",
-  PROCESSED: "text-purple-400",
-  UPLOADED: "text-blue-400",
-  ARCHIVED: "text-zinc-400",
-};
 
 interface StatsData {
   rollsPerYear: { year: string; count: number }[];
@@ -47,10 +25,6 @@ export default function StatsClient({
     data.rollsPerYear.length > 0
       ? Math.round(totalRolls / data.rollsPerYear.length)
       : 0;
-
-  const maxPerYear = Math.max(...data.rollsPerYear.map((r) => r.count), 1);
-  const maxCamera = Math.max(...data.topCameras.map((r) => r.count), 1);
-  const maxFilm = Math.max(...data.topFilms.map((r) => r.count), 1);
 
   const statusMap = Object.fromEntries(
     data.statusCounts.map((r) => [r.status, r.count]),
@@ -86,21 +60,13 @@ export default function StatsClient({
             <HeroStat label="Per year" value={avgPerYear} />
           </div>
 
-          {/* Scanned % pill */}
+          {/* Scanned % */}
           {totalRolls > 0 && (
-            <div className="px-4 py-3 flex items-center justify-between border-t border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+            <div className="px-4 py-2 flex items-center justify-between">
               <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>Scanned or beyond</span>
-              <div className="flex items-center gap-2">
-                <div className="w-28 h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
-                  <div
-                    className="h-full bg-green-400 rounded-full"
-                    style={{ width: `${pctScanned}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold text-green-400 w-9 text-right tabular-nums">
-                  {pctScanned}%
-                </span>
-              </div>
+              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                {pctScanned}%
+              </span>
             </div>
           )}
         </div>
@@ -111,21 +77,15 @@ export default function StatsClient({
           <div className="space-y-2">
             {STATUS_ORDER.filter((s) => statusMap[s]).map((status) => {
               const count = statusMap[status] ?? 0;
-              const pct = totalRolls > 0 ? (count / totalRolls) * 100 : 0;
               return (
-                <div key={status} className="flex items-center gap-3">
+                <div key={status} className="flex items-center justify-between">
                   <span
-                    className={`text-[10px] font-semibold w-20 shrink-0 uppercase tracking-wide ${STATUS_LABEL_COLOR[status]}`}
+                    className="text-[10px] uppercase tracking-wide"
+                    style={{ color: "var(--darkroom-text-tertiary)" }}
                   >
                     {status}
                   </span>
-                  <div className="flex-1 rounded-full h-5 overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
-                    <div
-                      className={`h-full rounded-full transition-all ${STATUS_BAR[status] ?? "bg-zinc-400"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-semibold w-6 text-right tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
                     {count}
                   </span>
                 </div>
@@ -137,19 +97,13 @@ export default function StatsClient({
         {/* Rolls per year */}
         <section className="px-4">
           <SectionTitle>By Year</SectionTitle>
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {data.rollsPerYear.map((r) => (
-              <div key={r.year} className="flex items-center gap-3">
-                <span className="font-mono text-xs w-10 shrink-0" style={{ color: "var(--darkroom-text-tertiary)" }}>
+              <div key={r.year} className="flex items-center justify-between">
+                <span className="font-mono text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>
                   {r.year}
                 </span>
-                <div className="flex-1 rounded-full h-6 overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
-                  <div
-                    className="bg-amber-400 h-full rounded-full transition-all"
-                    style={{ width: `${(r.count / maxPerYear) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold w-6 text-right tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
                   {r.count}
                 </span>
               </div>
@@ -161,7 +115,7 @@ export default function StatsClient({
         {data.topCameras.length > 0 && (
           <section className="px-4">
             <SectionTitle>Top Cameras</SectionTitle>
-            <RankedList items={data.topCameras} max={maxCamera} />
+            <RankedList items={data.topCameras} />
           </section>
         )}
 
@@ -169,7 +123,7 @@ export default function StatsClient({
         {data.topFilms.length > 0 && (
           <section className="px-4">
             <SectionTitle>Top Films</SectionTitle>
-            <RankedList items={data.topFilms} max={maxFilm} useFilmGradient />
+            <RankedList items={data.topFilms} />
           </section>
         )}
       </div>
@@ -187,7 +141,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="px-3 py-4 text-center border" style={{ borderColor: "var(--darkroom-border)", backgroundColor: "var(--darkroom-card)" }}>
+    <div className="py-2 text-center">
       <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</div>
       <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--darkroom-text-tertiary)" }}>
         {label}
@@ -198,42 +152,24 @@ function HeroStat({ label, value }: { label: string; value: string | number }) {
 
 function RankedList({
   items,
-  max,
-  useFilmGradient,
 }: {
   items: { label: string; count: number; slug?: string }[];
-  max: number;
-  useFilmGradient?: boolean;
 }) {
   return (
-    <div className="space-y-2.5">
-      {items.map((r, i) => {
-        const gradient = useFilmGradient && r.slug ? FILM_GRADIENTS[r.slug] : undefined;
-        const barStyle: React.CSSProperties = gradient
-          ? { width: `${(r.count / max) * 100}%`, background: `linear-gradient(to right, ${gradient[0]}, ${gradient[1]})` }
-          : { width: `${(r.count / max) * 100}%` };
-        return (
-          <div key={r.label} className="flex items-center gap-3">
-            <span className="text-[10px] w-4 text-right shrink-0 tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
-              {i + 1}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium truncate" style={{ color: "var(--darkroom-text-primary)" }}>{r.label}</span>
-                <span className="text-xs font-semibold shrink-0 tabular-nums ml-auto" style={{ color: "var(--darkroom-text-tertiary)" }}>
-                  {r.count}
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
-                <div
-                  className={`h-full rounded-full transition-all ${gradient ? "" : "bg-amber-400"}`}
-                  style={barStyle}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div className="space-y-2">
+      {items.map((r, i) => (
+        <div key={r.label} className="flex items-center gap-3">
+          <span className="text-[10px] w-4 text-right shrink-0 tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            {i + 1}
+          </span>
+          <span className="text-xs flex-1 truncate" style={{ color: "var(--darkroom-text-primary)" }}>
+            {r.label}
+          </span>
+          <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+            {r.count}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
