@@ -1,0 +1,398 @@
+<h2>Aggressive Minimalism — All Views</h2>
+<p class="subtitle">Click through each view to see how the darkroom aesthetic would look across the app</p>
+
+<div class="cards">
+  <div class="card" data-choice="roll-list" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222;">
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">ROLLS</div>
+          <div style="color: #666; font-size: 10px;">24 ACTIVE</div>
+        </div>
+
+        <!-- Roll cards -->
+        <div style="flex: 1; overflow-y: auto;">
+          <div style="padding: 1rem 0; border-left: 2px solid #fbbf24;">
+            <div style="padding-left: 0.75rem;">
+              <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">024</div>
+              <div style="color: #888; font-size: 10px;">LEICA M6 • PORTRA 400</div>
+              <div style="color: #666; font-size: 10px; margin-top: 4px;">LAB • 2024-01-15</div>
+            </div>
+          </div>
+
+          <div style="padding: 1rem 0; border-left: 2px solid #444; margin-top: 0.5rem;">
+            <div style="padding-left: 0.75rem;">
+              <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">023</div>
+              <div style="color: #888; font-size: 10px;">NIKON F3 • HP5 PLUS</div>
+              <div style="color: #666; font-size: 10px; margin-top: 4px;">SCANNED • 2024-01-12</div>
+            </div>
+          </div>
+
+          <div style="padding: 1rem 0; border-left: 2px solid #444; margin-top: 0.5rem;">
+            <div style="padding-left: 0.75rem;">
+              <div style="color: #fff; font-weight: 600; margin-bottom: 4px;">022</div>
+              <div style="color: #888; font-size: 10px;">CONTAX T2 • EKTAR 100</div>
+              <div style="color: #666; font-size: 10px; margin-top: 4px;">PROCESSED • 2024-01-10</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div style="display: flex; justify-content: space-around; align-items: center; padding: 0.75rem 0; border-top: 1px solid #222; margin-top: auto;">
+          <div style="color: #fbbf24; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📋</div>
+            <div>ROLLS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📊</div>
+            <div>STATS</div>
+          </div>
+          <div style="background: #fbbf24; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -28px; font-size: 18px; color: #000;">+</div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📷</div>
+            <div>CAMERAS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">⚙️</div>
+            <div>SETTINGS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Roll List</h3>
+      <p>Main view with roll cards, status indicators via left border color/weight</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="roll-detail" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Header with back button -->
+        <div style="display: flex; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222;">
+          <div style="color: #fbbf24; margin-right: 1rem;">←</div>
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">ROLL 024</div>
+        </div>
+
+        <!-- Contact sheet placeholder -->
+        <div style="background: #0a0a0a; height: 120px; margin-bottom: 1.5rem; border: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px;">
+          CONTACT SHEET
+        </div>
+
+        <!-- Metadata fields -->
+        <div style="flex: 1;">
+          <div style="margin-bottom: 1rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 4px; text-transform: uppercase;">Camera</div>
+            <div style="color: #fff; padding: 0.5rem 0; border-bottom: 1px solid #222;">Leica M6</div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 4px; text-transform: uppercase;">Film</div>
+            <div style="color: #fff; padding: 0.5rem 0; border-bottom: 1px solid #222;">Kodak Portra 400</div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 4px; text-transform: uppercase;">Status</div>
+            <div style="color: #fff; padding: 0.5rem 0; border-bottom: 1px solid #222;">Lab</div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 4px; text-transform: uppercase;">Lab Date</div>
+            <div style="color: #fff; padding: 0.5rem 0; border-bottom: 1px solid #222;">2024-01-15</div>
+          </div>
+
+          <div>
+            <div style="color: #666; font-size: 9px; margin-bottom: 4px; text-transform: uppercase;">Notes</div>
+            <div style="color: #888; padding: 0.5rem 0; border-bottom: 1px solid #222; font-style: italic;">Street photography in Tokyo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Roll Detail</h3>
+      <p>Individual roll view with contact sheet and metadata fields, minimal underline inputs</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="settings" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222;">
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">SETTINGS</div>
+        </div>
+
+        <!-- Settings groups -->
+        <div style="flex: 1;">
+          <div style="margin-bottom: 1.5rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Library</div>
+            <div style="border-left: 1px solid #222; padding-left: 0.75rem;">
+              <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center;">
+                <span>Cameras</span>
+                <span style="color: #666;">→</span>
+              </div>
+              <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center;">
+                <span>Films</span>
+                <span style="color: #666;">→</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Data</div>
+            <div style="border-left: 1px solid #222; padding-left: 0.75rem;">
+              <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center;">
+                <span>Export</span>
+                <span style="color: #666;">→</span>
+              </div>
+              <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center;">
+                <span>Import</span>
+                <span style="color: #666;">→</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="color: #666; font-size: 9px; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Account</div>
+            <div style="border-left: 1px solid #222; padding-left: 0.75rem;">
+              <div style="color: #fff; padding: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                <span>API Keys</span>
+                <span style="color: #666;">→</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div style="display: flex; justify-content: space-around; align-items: center; padding: 0.75rem 0; border-top: 1px solid #222; margin-top: auto;">
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📋</div>
+            <div>ROLLS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📊</div>
+            <div>STATS</div>
+          </div>
+          <div style="background: #fbbf24; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -28px; font-size: 18px; color: #000;">+</div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📷</div>
+            <div>CAMERAS</div>
+          </div>
+          <div style="color: #fbbf24; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">⚙️</div>
+            <div>SETTINGS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Settings</h3>
+      <p>Grouped list view with vertical border separator and minimal dividers</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="stats" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222;">
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">STATS</div>
+          <div style="color: #666; font-size: 10px;">2024</div>
+        </div>
+
+        <!-- Stats grid -->
+        <div style="flex: 1;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="border-left: 2px solid #fbbf24; padding-left: 0.75rem;">
+              <div style="color: #666; font-size: 9px; margin-bottom: 4px;">TOTAL ROLLS</div>
+              <div style="color: #fff; font-size: 20px; font-weight: 600;">24</div>
+            </div>
+            <div style="border-left: 2px solid #444; padding-left: 0.75rem;">
+              <div style="color: #666; font-size: 9px; margin-bottom: 4px;">ARCHIVED</div>
+              <div style="color: #fff; font-size: 20px; font-weight: 600;">18</div>
+            </div>
+            <div style="border-left: 2px solid #444; padding-left: 0.75rem;">
+              <div style="color: #666; font-size: 9px; margin-bottom: 4px;">CAMERAS</div>
+              <div style="color: #fff; font-size: 20px; font-weight: 600;">5</div>
+            </div>
+            <div style="border-left: 2px solid #444; padding-left: 0.75rem;">
+              <div style="color: #666; font-size: 9px; margin-bottom: 4px;">FILMS</div>
+              <div style="color: #fff; font-size: 20px; font-weight: 600;">8</div>
+            </div>
+          </div>
+
+          <!-- Simple bar chart -->
+          <div style="margin-top: 2rem;">
+            <div style="color: #666; font-size: 9px; margin-bottom: 0.75rem; text-transform: uppercase;">Monthly Activity</div>
+            <div style="display: flex; gap: 4px; align-items: flex-end; height: 80px;">
+              <div style="flex: 1; background: #1a1a1a; height: 45%; border-top: 2px solid #333;"></div>
+              <div style="flex: 1; background: #1a1a1a; height: 60%; border-top: 2px solid #333;"></div>
+              <div style="flex: 1; background: #1a1a1a; height: 35%; border-top: 2px solid #333;"></div>
+              <div style="flex: 1; background: #1a1a1a; height: 80%; border-top: 2px solid #fbbf24;"></div>
+              <div style="flex: 1; background: #1a1a1a; height: 25%; border-top: 2px solid #333;"></div>
+              <div style="flex: 1; background: #1a1a1a; height: 40%; border-top: 2px solid #333;"></div>
+            </div>
+            <div style="display: flex; gap: 4px; margin-top: 4px;">
+              <div style="flex: 1; color: #444; font-size: 8px; text-align: center;">J</div>
+              <div style="flex: 1; color: #444; font-size: 8px; text-align: center;">F</div>
+              <div style="flex: 1; color: #444; font-size: 8px; text-align: center;">M</div>
+              <div style="flex: 1; color: #fbbf24; font-size: 8px; text-align: center;">A</div>
+              <div style="flex: 1; color: #444; font-size: 8px; text-align: center;">M</div>
+              <div style="flex: 1; color: #444; font-size: 8px; text-align: center;">J</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div style="display: flex; justify-content: space-around; align-items: center; padding: 0.75rem 0; border-top: 1px solid #222; margin-top: auto;">
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📋</div>
+            <div>ROLLS</div>
+          </div>
+          <div style="color: #fbbf24; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📊</div>
+            <div>STATS</div>
+          </div>
+          <div style="background: #fbbf24; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -28px; font-size: 18px; color: #000;">+</div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📷</div>
+            <div>CAMERAS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">⚙️</div>
+            <div>SETTINGS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Stats</h3>
+      <p>Analytics with stat cards using left border accents, minimal bar chart</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="picker-sheet" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Darkened background overlay simulation -->
+        <div style="opacity: 0.3; margin-bottom: 1rem; padding: 1rem 0;">
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">ROLL 024</div>
+        </div>
+
+        <!-- Sheet (no rounded top, sharp corners) -->
+        <div style="background: #0a0a0a; border-top: 1px solid #222; padding: 1.5rem; flex: 1; margin: 0 -1.5rem -1.5rem;">
+          <!-- Handle -->
+          <div style="width: 40px; height: 3px; background: #333; margin: 0 auto 1rem;"></div>
+
+          <div style="color: #fff; font-weight: 600; margin-bottom: 1rem; font-size: 13px;">SELECT CAMERA</div>
+
+          <!-- Search -->
+          <div style="margin-bottom: 1rem;">
+            <input type="text" placeholder="Search..." style="background: transparent; border: none; border-bottom: 1px solid #222; color: #fff; width: 100%; padding: 0.5rem 0; font-family: inherit; font-size: 11px; outline: none;">
+          </div>
+
+          <!-- List -->
+          <div style="border-left: 1px solid #222; padding-left: 0.75rem;">
+            <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+              <div style="font-weight: 600; margin-bottom: 2px;">Leica M6</div>
+              <div style="color: #666; font-size: 9px;">35MM</div>
+            </div>
+            <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+              <div style="font-weight: 600; margin-bottom: 2px;">Nikon F3</div>
+              <div style="color: #666; font-size: 9px;">35MM</div>
+            </div>
+            <div style="color: #fff; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+              <div style="font-weight: 600; margin-bottom: 2px;">Contax T2</div>
+              <div style="color: #666; font-size: 9px;">35MM</div>
+            </div>
+            <div style="color: #888; padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+              <div style="font-weight: 600; margin-bottom: 2px;">+ Add New Camera</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Picker Sheet</h3>
+      <p>Bottom sheet with no rounded top, sharp edges, minimal search bar</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cameras-list" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #000; padding: 1.5rem; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; font-size: 11px; min-height: 400px; display: flex; flex-direction: column;">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #222;">
+          <div style="color: #fbbf24; margin-right: 1rem;">←</div>
+          <div style="color: #fff; font-weight: 600; font-size: 14px;">CAMERAS</div>
+          <div style="margin-left: auto; color: #666;">5</div>
+        </div>
+
+        <!-- Camera list -->
+        <div style="flex: 1; border-left: 1px solid #222; padding-left: 0.75rem;">
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+            <div style="color: #fff; font-weight: 600; margin-bottom: 2px;">Leica M6</div>
+            <div style="color: #666; font-size: 9px;">35MM • 8 ROLLS</div>
+          </div>
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+            <div style="color: #fff; font-weight: 600; margin-bottom: 2px;">Nikon F3</div>
+            <div style="color: #666; font-size: 9px;">35MM • 6 ROLLS</div>
+          </div>
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+            <div style="color: #fff; font-weight: 600; margin-bottom: 2px;">Contax T2</div>
+            <div style="color: #666; font-size: 9px;">35MM • 4 ROLLS</div>
+          </div>
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #1a1a1a;">
+            <div style="color: #fff; font-weight: 600; margin-bottom: 2px;">Hasselblad 500CM</div>
+            <div style="color: #666; font-size: 9px;">MEDIUM FORMAT • 3 ROLLS</div>
+          </div>
+          <div style="padding: 0.75rem 0;">
+            <div style="color: #fff; font-weight: 600; margin-bottom: 2px;">Pentax 67</div>
+            <div style="color: #666; font-size: 9px;">MEDIUM FORMAT • 3 ROLLS</div>
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div style="display: flex; justify-content: space-around; align-items: center; padding: 0.75rem 0; border-top: 1px solid #222; margin-top: auto;">
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📋</div>
+            <div>ROLLS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📊</div>
+            <div>STATS</div>
+          </div>
+          <div style="background: #fbbf24; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -28px; font-size: 18px; color: #000;">+</div>
+          <div style="color: #fbbf24; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">📷</div>
+            <div>CAMERAS</div>
+          </div>
+          <div style="color: #666; font-size: 9px; text-align: center;">
+            <div style="margin-bottom: 2px;">⚙️</div>
+            <div>SETTINGS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Cameras List</h3>
+      <p>List view with roll counts, minimal dividers and vertical border accent</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+  <h3>Key Design Elements</h3>
+  <ul style="margin: 0; padding-left: 1.5rem; color: #666;">
+    <li><strong>Pure black background (#000)</strong> — true darkroom feel</li>
+    <li><strong>No rounded corners</strong> — sheets, cards, buttons all sharp-edged</li>
+    <li><strong>Minimal borders</strong> — only where needed for structure (1px #222)</li>
+    <li><strong>Left border accents</strong> — status, emphasis via 2px colored left borders</li>
+    <li><strong>Amber (#fbbf24) safelight</strong> — only active nav items + FAB</li>
+    <li><strong>Typography hierarchy</strong> — weight, size, spacing (no color decoration)</li>
+    <li><strong>Flat bottom nav</strong> — no glassmorphism, just 1px top border</li>
+    <li><strong>Underline inputs</strong> — single bottom border, no backgrounds</li>
+    <li><strong>Uppercase labels</strong> — tiny, spaced caps for field labels</li>
+  </ul>
+</div>

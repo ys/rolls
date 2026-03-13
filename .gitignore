@@ -18,3 +18,8 @@ next-env.d.ts
 # Editor
 .claude/
 .vercel
+
+# Superpowers - ignore server files but keep brainstorms
+.superpowers/**/.server-info
+.superpowers/**/.server.pid
+.superpowers/**/.server.log
