@@ -75,11 +75,12 @@ function filmLabel(roll: RollRow): string {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "bg-amber-400 border-amber-400" : "border-zinc-600"}`}
+      className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "border-amber-400" : "border-zinc-600"}`}
+      style={{ backgroundColor: "transparent" }}
     >
       {checked && (
         <svg
-          className="w-3 h-3 text-black"
+          className="w-3 h-3 text-amber-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

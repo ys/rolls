@@ -94,9 +94,9 @@ function firstNotesLine(notes: string | null): string | null {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+      className="w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors"
       style={{
-        backgroundColor: checked ? "var(--darkroom-accent)" : "transparent",
+        backgroundColor: "transparent",
         borderColor: checked
           ? "var(--darkroom-accent)"
           : "var(--darkroom-border)",
@@ -109,7 +109,7 @@ function Checkbox({ checked }: { checked: boolean }) {
           viewBox="0 0 24 24"
           stroke="currentColor"
           strokeWidth={3}
-          style={{ color: "#000" }}
+          style={{ color: "var(--darkroom-accent)" }}
         >
           <path
             strokeLinecap="round"
