@@ -90,12 +90,14 @@ export function FullScreenNotesEditor({
   const status = rollStatus(roll);
   const canMoveToNext = status === "LOADED" || status === "FRIDGE" || status === "LAB";
 
-  const dateField =
-    roll.archived_at ? roll.archived_at :
-    roll.processed_at ? roll.processed_at :
-    roll.scanned_at ? roll.scanned_at :
-    roll.lab_at ? roll.lab_at :
-    roll.fridge_at;
+  const [dateField, dateLabel] =
+    roll.archived_at ? [roll.archived_at, "Archived"] :
+    roll.processed_at ? [roll.processed_at, "Processed"] :
+    roll.scanned_at ? [roll.scanned_at, "Scanned"] :
+    roll.lab_at ? [roll.lab_at, "Lab"] :
+    roll.fridge_at ? [roll.fridge_at, "Fridge"] :
+    roll.loaded_at ? [roll.loaded_at, "Loaded"] :
+    [null, "Date"];
 
   const dateStr = dateField
     ? new Date(dateField).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
@@ -215,38 +217,35 @@ export function FullScreenNotesEditor({
         />
       </div>
 
-      {/* Status Pills */}
-      <div className="flex gap-2 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
-        <div
-          className="px-2 py-1 text-[10px] font-medium rounded"
-          style={{
-            backgroundColor: status === "LOADED" ? "rgba(251, 191, 36, 0.2)" :
-                          status === "FRIDGE" ? "rgba(34, 211, 238, 0.2)" :
-                          status === "LAB" ? "rgba(251, 146, 60, 0.2)" :
-                          status === "SCANNED" ? "rgba(34, 197, 94, 0.2)" :
-                          status === "PROCESSED" ? "rgba(168, 85, 247, 0.2)" :
-                          status === "UPLOADED" ? "rgba(59, 130, 246, 0.2)" :
-                          "rgba(113, 113, 122, 0.2)",
-            color: status === "LOADED" ? "#fbbf24" :
-                   status === "FRIDGE" ? "#22d3ee" :
-                   status === "LAB" ? "#fb923c" :
-                   status === "SCANNED" ? "#22c55e" :
-                   status === "PROCESSED" ? "#a855f7" :
-                   status === "UPLOADED" ? "#3b82f6" :
-                   "#71717a",
-          }}
-        >
-          {status}
-        </div>
-        {dateStr && (
+      {/* Status Bar */}
+      <div className="flex gap-6 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+        <div className="flex-1">
+          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Status</div>
           <div
-            className="px-2 py-1 text-[10px] rounded"
+            className="text-[10px] font-medium"
             style={{
-              backgroundColor: "var(--darkroom-card)",
-              color: "var(--darkroom-text-secondary)",
+              color: status === "LOADED" ? "#fbbf24" :
+                     status === "FRIDGE" ? "#22d3ee" :
+                     status === "LAB" ? "#fb923c" :
+                     status === "SCANNED" ? "#22c55e" :
+                     status === "PROCESSED" ? "#a855f7" :
+                     status === "UPLOADED" ? "#3b82f6" :
+                     "var(--darkroom-text-secondary)",
             }}
           >
-            {dateStr}
+            {status}
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>{dateLabel}</div>
+          <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>{dateStr || "—"}</div>
+        </div>
+        {roll.push_pull != null && (
+          <div className="flex-1">
+            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Push/Pull</div>
+            <div className="text-[10px] font-mono" style={{ color: "var(--darkroom-text-primary)" }}>
+              {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
+            </div>
           </div>
         )}
       </div>
