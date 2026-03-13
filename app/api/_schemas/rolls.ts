@@ -12,6 +12,7 @@ export type CreateRollBody = {
   lab_name?: string;
   scanned_at?: string;
   processed_at?: string;
+  uploaded_at?: string;
   archived_at?: string;
   album_name?: string;
   tags?: string[];
