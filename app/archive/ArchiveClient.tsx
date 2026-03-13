@@ -547,7 +547,10 @@ export default function ArchiveClient() {
       >
         <div>
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div
+            className="flex items-center justify-between p-4 border-b mb-6"
+            style={{ borderColor: "var(--darkroom-border)" }}
+          >
             <h1
               className="text-sm font-semibold uppercase tracking-wide"
               style={{ color: "var(--darkroom-text-primary)" }}
@@ -646,7 +649,7 @@ export default function ArchiveClient() {
           {/* Year slider */}
           {years.length > 1 && !editing && (
             <div
-              className="mb-6 pb-4 border-b border"
+              className="mb-6 p-4 border-b border"
               style={{ borderColor: "var(--darkroom-border)" }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -676,7 +679,7 @@ export default function ArchiveClient() {
                       setSelectedYear(year);
                       haptics.light();
                     }}
-                    className={`whitespace-nowrap px-4 py-2 text-xs font-medium transition-colors border ${(selectedYear ?? years[0]) === year ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
+                    className={`whitespace-nowrap px-4 py-2 text-xs font-medium transition-colors border-2 ${(selectedYear ?? years[0]) === year ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
                   >
                     {year}
                   </button>
@@ -774,7 +777,7 @@ export default function ArchiveClient() {
             }}
           >
             <div
-              className="pointer-events-auto h-14 flex items-center gap-2 px-4 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl shadow-black/60 border"
+              className="pointer-events-auto h-14 flex items-center gap-2 px-4 backdrop-blur-3xl shadow-2xl shadow-black/60 border"
               style={{
                 backgroundColor: "var(--darkroom-card)",
                 borderColor: "var(--darkroom-border)",
@@ -819,7 +822,7 @@ export default function ArchiveClient() {
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
-                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50`}
+                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 active:scale-95 transition-transform disabled:opacity-50`}
                       >
                         {applying ? "…" : label}
                       </button>

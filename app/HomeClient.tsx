@@ -178,7 +178,9 @@ function RollItem({
           className="text-xs uppercase tracking-wide mt-0.5"
           style={{ color: "var(--darkroom-text-secondary)" }}
         >
-          {cam && film ? `${cam} • ${film}` : cam || film || "—"}{roll.push_pull != null && ` • ${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`}
+          {cam && film ? `${cam} • ${film}` : cam || film || "—"}
+          {roll.push_pull != null &&
+            ` • ${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`}
         </div>
         <div
           className="text-xs mt-1 uppercase"
@@ -207,7 +209,7 @@ function RollItem({
               onAdvance(next.field);
             }
           }}
-          className="flex gap-2 shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors active:scale-95"
+          className="flex items-center gap-2 shrink-0 px-3 py-1.5 text-xs font-medium transition-colors active:scale-95"
           style={{
             color: "var(--darkroom-text-primary)",
             backgroundColor: "transparent",
@@ -393,7 +395,9 @@ export default function HomeClient() {
   if (!data) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div style={{ color: "var(--darkroom-text-secondary)" }}>No data available</div>
+        <div style={{ color: "var(--darkroom-text-secondary)" }}>
+          No data available
+        </div>
       </div>
     );
   }
@@ -444,7 +448,7 @@ export default function HomeClient() {
       >
         <div>
           <div
-            className="flex items-center justify-between px-4 py-4 border-b mb-6"
+            className="flex items-center justify-between p-4 border-b mb-6"
             style={{ borderColor: "var(--darkroom-border)" }}
           >
             <h1
@@ -665,7 +669,10 @@ export default function HomeClient() {
               placeholder="e.g. The Darkroom"
               autoFocus
               className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
-              style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" }}
+              style={{
+                borderColor: "var(--darkroom-border)",
+                color: "var(--darkroom-text-primary)",
+              }}
             />
           </div>
           <FormButton type="submit" disabled={labSubmitting}>
