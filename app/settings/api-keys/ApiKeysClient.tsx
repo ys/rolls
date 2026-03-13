@@ -8,8 +8,10 @@ import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
 import { haptics } from "@/lib/haptics";
 
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
+const labelCls = "block text-[10px] uppercase tracking-widest";
+const labelStyle = { color: "var(--darkroom-text-secondary)" };
+const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
+const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
 
 function formatDate(s: string | null): string {
   if (!s) return "Never";
@@ -87,8 +89,11 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
 
   return (
     <div>
-      <BackButton label="Settings" />
-      <h1 className="text-3xl font-bold mb-6">API Keys</h1>
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+        <BackButton label="Settings" />
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>API Keys</h1>
+        <div className="w-8" />
+      </div>
 
       {/* One-time new key banner */}
       {newKey && (
@@ -109,32 +114,33 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
         </div>
       )}
 
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-6">
+      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
         {keys.map((k) => (
-          <li key={k.id} className="px-4 py-3 flex items-start justify-between gap-2">
+          <li key={k.id} className="px-4 py-3 flex items-start justify-between gap-2 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
             <div>
-              <div className="text-sm font-medium">{k.label ?? <span className="text-zinc-400 italic">Unlabeled</span>}</div>
-              <div className="text-[12px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+              <div className="text-sm font-medium">{k.label ?? <span className="italic" style={{ color: "var(--darkroom-text-tertiary)" }}>Unlabeled</span>}</div>
+              <div className="text-[12px] mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
                 Created {formatDate(k.created_at)} · Last used {formatDate(k.last_used_at)}
               </div>
             </div>
             <button
               onClick={() => handleDelete(k.id)}
               disabled={deletingId === k.id}
-              className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors disabled:opacity-50 shrink-0"
+              className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 shrink-0"
             >
               {deletingId === k.id ? "…" : "Revoke"}
             </button>
           </li>
         ))}
         {keys.length === 0 && (
-          <li className="text-zinc-500 text-sm text-center py-8">No API keys yet.</li>
+          <li className="text-sm text-center py-8" style={{ color: "var(--darkroom-text-secondary)" }}>No API keys yet.</li>
         )}
       </ul>
 
       <button
         onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
-        className="w-full flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+        className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
+        style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}
       >
         <span>New API Key</span>
         <span className="text-sm leading-none">+</span>
@@ -143,13 +149,14 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
       <Sheet open={showCreate} onClose={() => { setShowCreate(false); setCreateError(""); }} title="New API Key">
         <form onSubmit={handleCreate} className="space-y-6">
           <div className="space-y-1">
-            <label className={labelCls}>Label <span className="normal-case">(optional)</span></label>
+            <label className={labelCls} style={labelStyle}>Label <span className="normal-case">(optional)</span></label>
             <input
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g. rolls CLI"
               className={inputCls}
+              style={inputStyle}
               autoFocus
             />
           </div>

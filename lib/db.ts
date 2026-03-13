@@ -104,6 +104,7 @@ export interface Roll {
   camera_uuid: string | null;
   film_uuid: string | null;
   shot_at: string | null;
+  loaded_at: string | null;
   fridge_at: string | null;
   lab_at: string | null;
   lab_name: string | null;

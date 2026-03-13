@@ -52,25 +52,25 @@ export default function AdminUsersClient({ initialData }: { initialData: UsersDa
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
         {data.users.map((user) => (
-          <div key={user.id} className="px-4 py-3 flex items-center justify-between gap-3">
+          <div key={user.id} className="px-4 py-3 flex items-center justify-between gap-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-[15px] truncate">{user.email}</p>
                 {user.role === "admin" && (
-                  <span className="text-[10px] uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded shrink-0">
+                  <span className="text-[10px] uppercase tracking-widest border px-1.5 py-0.5 rounded shrink-0" style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}>
                     admin
                   </span>
                 )}
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
                 Joined {formatDate(user.created_at)} · Last seen {formatRelative(user.last_seen_at)}
               </p>
             </div>
             <div className="text-right shrink-0">
               <p className="text-[15px] tabular-nums font-medium">{user.roll_count}</p>
-              <p className="text-[10px] text-zinc-400 uppercase tracking-widest">rolls</p>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: "var(--darkroom-text-secondary)" }}>rolls</p>
             </div>
           </div>
         ))}
@@ -81,17 +81,19 @@ export default function AdminUsersClient({ initialData }: { initialData: UsersDa
           <button
             onClick={() => goToPage(data.page - 1)}
             disabled={data.page <= 1 || loading}
-            className="text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 transition-colors"
+            className="text-sm disabled:opacity-30 transition-opacity"
+            style={{ color: "var(--darkroom-text-secondary)" }}
           >
             ← Previous
           </button>
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
             {data.page} / {data.pages}
           </span>
           <button
             onClick={() => goToPage(data.page + 1)}
             disabled={data.page >= data.pages || loading}
-            className="text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 transition-colors"
+            className="text-sm disabled:opacity-30 transition-opacity"
+            style={{ color: "var(--darkroom-text-secondary)" }}
           >
             Next →
           </button>

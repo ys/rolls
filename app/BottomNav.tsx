@@ -57,7 +57,7 @@ export default function BottomNav() {
       className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center gap-0 pointer-events-none"
       style={{
         paddingBottom: "calc(env(safe-area-inset-bottom))",
-        height: 64,
+        height: 72,
       }}
     >
       {/* Icon container */}
@@ -67,7 +67,7 @@ export default function BottomNav() {
           ...animStyle,
           width: "100%",
           maxWidth: "42rem",
-          height: 64,
+          height: 72,
           borderColor: "var(--darkroom-border)",
           backgroundColor: "var(--darkroom-bg)",
           display: "grid",
@@ -84,10 +84,10 @@ export default function BottomNav() {
               aria-label={href.slice(1) || "rolls"}
               onClick={() => haptics.light()}
               className="flex items-center justify-center transition-colors duration-200 active:scale-90"
-              style={{ height: 64 }}
+              style={{ height: 72 }}
             >
               <Icon
-                size={22}
+                size={26}
                 weight={active ? "fill" : "regular"}
                 style={{ color: active ? "var(--darkroom-accent)" : "var(--darkroom-text-tertiary)" }}
               />
@@ -101,18 +101,18 @@ export default function BottomNav() {
           aria-label="New roll"
           onClick={() => haptics.medium()}
           className="flex items-center justify-center active:scale-90 transition-transform"
-          style={{ height: 64 }}
+          style={{ height: 72 }}
         >
           <div
             className="flex items-center justify-center rounded-full"
             style={{
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               background: "var(--darkroom-accent)",
               boxShadow: "0 4px 12px rgba(251, 191, 36, 0.3)",
             }}
           >
-            <Plus size={26} weight="bold" color="#000" />
+            <Plus size={28} weight="bold" color="#000" />
           </div>
         </Link>
 
@@ -126,10 +126,10 @@ export default function BottomNav() {
               aria-label={href.slice(1) || "rolls"}
               onClick={() => haptics.light()}
               className="flex items-center justify-center transition-colors duration-200 active:scale-90"
-              style={{ height: 64 }}
+              style={{ height: 72 }}
             >
               <Icon
-                size={22}
+                size={26}
                 weight={active ? "fill" : "regular"}
                 style={{ color: active ? "var(--darkroom-accent)" : "var(--darkroom-text-tertiary)" }}
               />

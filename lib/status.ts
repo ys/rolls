@@ -7,6 +7,7 @@ export interface RollStatusData {
   scanned_at: string | null;
   lab_at: string | null;
   fridge_at: string | null;
+  loaded_at: string | null;
 }
 
 export function rollStatus(roll: RollStatusData): RollStatus {

@@ -66,7 +66,7 @@ export default function RootLayout({
           className="max-w-2xl mx-auto h-lvh px-4"
           style={{
             paddingTop: "calc(1rem + env(safe-area-inset-top))",
-            paddingBottom: "calc(7rem + env(safe-area-inset-bottom))",
+            paddingBottom: "calc(8rem + env(safe-area-inset-bottom))",
           }}
         >
           <PageTransition>{children}</PageTransition>

@@ -11,6 +11,8 @@ import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
 import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
+import Sheet from "@/components/Sheet";
+import FormButton from "@/components/FormButton";
 import {
   ThermometerColdIcon,
   MailboxIcon,
@@ -126,6 +128,7 @@ function RollItem({
   selected,
   onToggle,
   onAdvance,
+  onLabAction,
   isRecent,
 }: {
   roll: RollRow;
@@ -133,6 +136,7 @@ function RollItem({
   selected: boolean;
   onToggle: () => void;
   onAdvance: (field: string) => void;
+  onLabAction: () => void;
   isRecent: boolean;
 }) {
   const status = rollStatus(roll);
@@ -171,13 +175,13 @@ function RollItem({
           {roll.roll_number}
         </div>
         <div
-          className="text-[10px] uppercase tracking-wide mt-0.5"
+          className="text-xs uppercase tracking-wide mt-0.5"
           style={{ color: "var(--darkroom-text-secondary)" }}
         >
-          {cam && film ? `${cam} • ${film}` : cam || film || "—"}
+          {cam && film ? `${cam} • ${film}` : cam || film || "—"}{roll.push_pull != null && ` • ${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`}
         </div>
         <div
-          className="text-[10px] mt-1 uppercase"
+          className="text-xs mt-1 uppercase"
           style={{ color: "var(--darkroom-text-tertiary)" }}
         >
           {status}
@@ -185,7 +189,7 @@ function RollItem({
         </div>
         {!editing && notePreview && (
           <div
-            className="text-[10px] italic mt-1 truncate"
+            className="text-xs italic mt-1 truncate"
             style={{ color: "var(--darkroom-text-tertiary)" }}
           >
             {notePreview}
@@ -197,7 +201,11 @@ function RollItem({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onAdvance(next.field);
+            if (next.field === "lab_at") {
+              onLabAction();
+            } else {
+              onAdvance(next.field);
+            }
           }}
           className="flex gap-2 shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors active:scale-95"
           style={{
@@ -255,6 +263,9 @@ export default function HomeClient() {
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
+  const [labSheetRoll, setLabSheetRoll] = useState<string | null>(null);
+  const [labName, setLabName] = useState("");
+  const [labSubmitting, setLabSubmitting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -322,6 +333,32 @@ export default function HomeClient() {
     router.refresh();
   }
 
+  function openLabSheet(rollNumber: string) {
+    setLabSheetRoll(rollNumber);
+    setLabName("");
+    haptics.light();
+  }
+
+  async function handleLabSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!labSheetRoll || labSubmitting) return;
+    setLabSubmitting(true);
+    haptics.medium();
+    await fetch(`/api/rolls/${labSheetRoll}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...headers },
+      body: JSON.stringify({
+        lab_at: new Date().toISOString(),
+        ...(labName.trim() ? { lab_name: labName.trim() } : {}),
+      }),
+    });
+    invalidateCache("rolls");
+    haptics.success();
+    setLabSubmitting(false);
+    setLabSheetRoll(null);
+    router.refresh();
+  }
+
   if (!mounted || (isLoading && !data)) {
     return (
       <div className="space-y-6">
@@ -356,7 +393,7 @@ export default function HomeClient() {
   if (!data) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="text-zinc-400">No data available</div>
+        <div style={{ color: "var(--darkroom-text-secondary)" }}>No data available</div>
       </div>
     );
   }
@@ -510,6 +547,7 @@ export default function HomeClient() {
                       onAdvance={(field) =>
                         advanceSingle(roll.roll_number, field)
                       }
+                      onLabAction={() => openLabSheet(roll.roll_number)}
                       isRecent={roll.roll_number === rolls[0]?.roll_number}
                     />
                   ))}
@@ -527,7 +565,7 @@ export default function HomeClient() {
                         <div className="flex items-baseline justify-between mb-3 px-4">
                           <div className="flex items-baseline gap-2">
                             <h2
-                              className="text-[11px] font-semibold uppercase tracking-wider"
+                              className="text-xs font-semibold uppercase tracking-wider"
                               style={{
                                 color: "var(--darkroom-text-secondary)",
                               }}
@@ -535,7 +573,7 @@ export default function HomeClient() {
                               {label}
                             </h2>
                             <span
-                              className="text-[10px]"
+                              className="text-xs"
                               style={{ color: "var(--darkroom-text-tertiary)" }}
                             >
                               {sectionRolls.length}
@@ -562,7 +600,7 @@ export default function HomeClient() {
                                   return s;
                                 });
                               }}
-                              className="text-[10px] font-medium uppercase active:opacity-50 transition-opacity"
+                              className="text-xs font-medium uppercase active:opacity-50 transition-opacity"
                               style={{
                                 color: sectionRolls.every((r) =>
                                   selected.has(r.roll_number),
@@ -590,6 +628,7 @@ export default function HomeClient() {
                               onAdvance={(field) =>
                                 advanceSingle(roll.roll_number, field)
                               }
+                              onLabAction={() => openLabSheet(roll.roll_number)}
                               isRecent={
                                 roll.roll_number === rolls[0]?.roll_number
                               }
@@ -606,13 +645,42 @@ export default function HomeClient() {
       </PullToRefresh>
 
       {/* Edit-mode action bar — portalled to body to escape PageTransition transform */}
+      <Sheet
+        open={labSheetRoll !== null}
+        onClose={() => setLabSheetRoll(null)}
+        title="Send to Lab"
+      >
+        <form onSubmit={handleLabSubmit} className="space-y-6">
+          <div className="space-y-1">
+            <label
+              className="block text-[10px] uppercase tracking-widest"
+              style={{ color: "var(--darkroom-text-secondary)" }}
+            >
+              Lab name <span className="normal-case">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={labName}
+              onChange={(e) => setLabName(e.target.value)}
+              placeholder="e.g. The Darkroom"
+              autoFocus
+              className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
+              style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" }}
+            />
+          </div>
+          <FormButton type="submit" disabled={labSubmitting}>
+            {labSubmitting ? "Sending…" : "Send to Lab"}
+          </FormButton>
+        </form>
+      </Sheet>
+
       {editing &&
         mounted &&
         createPortal(
           <div
             className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
             style={{
-              paddingBottom: "calc(1rem + env(safe-area-inset-bottom) + 64px)",
+              paddingBottom: "calc(1rem + env(safe-area-inset-bottom) + 72px)",
             }}
           >
             <div
@@ -640,7 +708,7 @@ export default function HomeClient() {
               />
               {selected.size === 0 ? (
                 <span
-                  className="text-[11px] px-1"
+                  className="text-xs px-1"
                   style={{ color: "var(--darkroom-text-tertiary)" }}
                 >
                   Select rolls…
@@ -648,7 +716,7 @@ export default function HomeClient() {
               ) : (
                 <>
                   <span
-                    className="text-[11px] tabular-nums"
+                    className="text-xs tabular-nums"
                     style={{ color: "var(--darkroom-text-secondary)" }}
                   >
                     {selected.size} selected
@@ -662,7 +730,7 @@ export default function HomeClient() {
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
-                        className="text-[11px] font-medium px-3 py-1.5 border active:scale-95 transition-transform disabled:opacity-50"
+                        className="text-xs font-medium px-3 py-1.5 border active:scale-95 transition-transform disabled:opacity-50"
                         style={{
                           color: "var(--darkroom-accent)",
                           borderColor: "var(--darkroom-accent)",

@@ -121,15 +121,13 @@ export default function Sheet({
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pb-2">
-          <h2 className="text-xl font-bold" style={{ color: "var(--darkroom-text-primary)" }}>{title}</h2>
+        <div className="flex items-center justify-between px-4 pb-2">
+          <div className="w-8" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full transition-colors text-xl leading-none"
-            style={{
-              backgroundColor: "var(--darkroom-card)",
-              color: "var(--darkroom-text-secondary)",
-            }}
+            className="w-8 h-8 flex items-center justify-center text-xl leading-none transition-opacity active:opacity-50"
+            style={{ color: "var(--darkroom-text-secondary)" }}
           >
             ×
           </button>
@@ -137,7 +135,7 @@ export default function Sheet({
 
         {/* Content */}
         <div
-          className="px-6 pt-4 pb-2 overflow-y-auto transition-[max-height] duration-300"
+          className="px-4 pt-4 pb-2 overflow-y-auto transition-[max-height] duration-300"
           style={{ maxHeight: expanded ? "90vh" : "75vh" }}
         >
           {children}

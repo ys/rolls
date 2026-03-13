@@ -39,13 +39,12 @@ async function getStats() {
   };
 }
 
-function StatCard({ label, value, sub }: { label: string; value: number; sub?: string }) {
+function StatRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl px-4 py-4">
-      <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1">{label}</p>
-      <p className="text-3xl font-bold tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-zinc-400 mt-0.5">{sub}</p>}
-    </div>
+    <li className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+      <span className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>{label}</span>
+      <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</span>
+    </li>
   );
 }
 
@@ -57,38 +56,29 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <BackButton />
-      <h1 className="text-3xl font-bold">Admin</h1>
+      <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+        <BackButton />
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Admin</h1>
+        <div className="w-8" />
+      </div>
 
-      <section className="space-y-2">
-        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
-          Users
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <StatCard label="Total" value={stats.users.total} />
-          <StatCard label="This week" value={stats.users.week} />
-          <StatCard label="This month" value={stats.users.month} />
-        </div>
+      <section className="space-y-3 px-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>Users</p>
+        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+          <StatRow label="Total" value={stats.users.total} />
+          <StatRow label="This week" value={stats.users.week} />
+          <StatRow label="This month" value={stats.users.month} />
+          <StatRow label="Active (30d)" value={stats.active_users_30d} />
+        </ul>
       </section>
 
-      <section className="space-y-2">
-        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
-          Rolls
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <StatCard label="Total" value={stats.rolls.total} />
-          <StatCard label="This week" value={stats.rolls.week} />
-          <StatCard label="This month" value={stats.rolls.month} />
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
-          Engagement
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <StatCard label="Active (30d)" value={stats.active_users_30d} sub="seen in last 30 days" />
-        </div>
+      <section className="space-y-3 px-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>Rolls</p>
+        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+          <StatRow label="Total" value={stats.rolls.total} />
+          <StatRow label="This week" value={stats.rolls.week} />
+          <StatRow label="This month" value={stats.rolls.month} />
+        </ul>
       </section>
     </div>
   );

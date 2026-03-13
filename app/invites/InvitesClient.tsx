@@ -24,8 +24,10 @@ function formatDate(s: string | null): string {
   });
 }
 
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
+const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
+const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
+const labelCls = "block text-[10px] uppercase tracking-widest";
+const labelStyle = { color: "var(--darkroom-text-secondary)" };
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -40,7 +42,8 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors font-mono"
+      className="text-xs font-mono transition-opacity active:opacity-60"
+      style={{ color: "var(--darkroom-text-secondary)" }}
     >
       {copied ? "Copied!" : text}
     </button>
@@ -65,7 +68,6 @@ function ShareButton({ inviteCode }: { inviteCode: string }) {
       });
       haptics.success();
     } catch (err: any) {
-      // AbortError means user cancelled, which is fine
       if (err.name !== "AbortError") {
         console.error("Share failed:", err);
         haptics.error();
@@ -78,7 +80,8 @@ function ShareButton({ inviteCode }: { inviteCode: string }) {
   return (
     <button
       onClick={handleShare}
-      className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+      className="text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
+      style={{ color: "var(--darkroom-text-secondary)" }}
     >
       Share
     </button>
@@ -209,15 +212,18 @@ export default function InvitesClient({
   if (!isAdmin) {
     return (
       <div>
-        <BackButton label="Settings" />
-        <h1 className="text-3xl font-bold mb-6">Invitations</h1>
+        <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+          <BackButton label="Settings" />
+          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Invitations</h1>
+          <div className="w-8" />
+        </div>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 mb-6">
+        <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
           <div className="text-center mb-6">
             <div className="text-5xl font-bold mb-2">
               {remainingInvites !== null ? remainingInvites : "∞"}
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>
               {remainingInvites !== null
                 ? `invite${remainingInvites !== 1 ? "s" : ""} remaining`
                 : "unlimited invites"}
@@ -226,19 +232,16 @@ export default function InvitesClient({
 
           {canCreateInvite && (
             <button
-              onClick={() => {
-                setShowCreate(true);
-                setCreateError("");
-                haptics.light();
-              }}
-              className="w-full border border-zinc-900 dark:border-white text-zinc-900 dark:text-white py-3 text-xs tracking-widest uppercase font-medium hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+              onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
+              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-opacity active:opacity-60"
+              style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" }}
             >
               Create Invite
             </button>
           )}
 
           {!canCreateInvite && remainingInvites === 0 && (
-            <p className="text-sm text-center text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-center" style={{ color: "var(--darkroom-text-secondary)" }}>
               You've used all your invites
             </p>
           )}
@@ -246,21 +249,18 @@ export default function InvitesClient({
 
         {invites.length > 0 && (
           <>
-            <h2 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Your Invites</h2>
-            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-6">
+            <p className="text-[11px] font-semibold uppercase tracking-wider px-1 mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>Your Invites</p>
+            <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
               {invites.map((invite) => {
                 const valid = isValid(invite);
                 return (
-                  <li key={invite.id} className="px-4 py-3">
+                  <li key={invite.id} className="px-4 py-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <CopyButton text={invite.code} />
                         <span
-                          className={`text-[10px] uppercase tracking-widest font-medium ${
-                            valid
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-zinc-400 dark:text-zinc-500"
-                          }`}
+                          className="text-[10px] uppercase tracking-widest font-medium"
+                          style={{ color: valid ? "#4ade80" : "var(--darkroom-text-tertiary)" }}
                         >
                           {valid ? "valid" : "used"}
                         </span>
@@ -276,14 +276,11 @@ export default function InvitesClient({
 
         <Sheet
           open={showCreate}
-          onClose={() => {
-            setShowCreate(false);
-            setCreateError("");
-          }}
+          onClose={() => { setShowCreate(false); setCreateError(""); }}
           title="Create Invite"
         >
           <form onSubmit={handleCreate} className="space-y-6">
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>
               This will create a single-use invite that you can share with a friend.
             </p>
             {createError && <p className="text-red-400 text-xs tracking-wide">{createError}</p>}
@@ -299,38 +296,35 @@ export default function InvitesClient({
   // Admin view
   return (
     <div>
-      <BackButton label="Settings" />
-      <h1 className="text-3xl font-bold mb-6">Invitations</h1>
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+        <BackButton label="Settings" />
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Invitations</h1>
+        <div className="w-8" />
+      </div>
 
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mb-6">
+      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
         {invites.map((invite) => {
           const valid = isValid(invite);
           return (
-            <li
-              key={invite.id}
-              className="px-4 py-3 space-y-2"
-            >
+            <li key={invite.id} className="px-4 py-3 space-y-2 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <CopyButton text={invite.code} />
                   <div className="flex items-center gap-2 mt-1">
                     <span
-                      className={`text-[10px] uppercase tracking-widest font-medium ${
-                        valid
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-zinc-400 dark:text-zinc-500"
-                      }`}
+                      className="text-[10px] uppercase tracking-widest font-medium"
+                      style={{ color: valid ? "#4ade80" : "var(--darkroom-text-tertiary)" }}
                     >
                       {valid ? "valid" : "used/expired"}
                     </span>
                     {invite.used_count > 0 && (
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                      <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
                         {invite.used_count} use{invite.used_count !== 1 ? "s" : ""}
                         {invite.max_uses ? ` / ${invite.max_uses}` : ""}
                       </span>
                     )}
                     {invite.expires_at && (
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                      <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
                         expires {formatDate(invite.expires_at)}
                       </span>
                     )}
@@ -349,7 +343,8 @@ export default function InvitesClient({
                           setSendSuccess("");
                           haptics.light();
                         }}
-                        className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
+                        style={{ color: "var(--darkroom-text-secondary)" }}
                       >
                         Send
                       </button>
@@ -358,7 +353,7 @@ export default function InvitesClient({
                   <button
                     onClick={() => handleDelete(invite)}
                     disabled={deletingId === invite.id}
-                    className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors disabled:opacity-50"
+                    className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
                   >
                     {deletingId === invite.id ? "…" : "Delete"}
                   </button>
@@ -366,28 +361,17 @@ export default function InvitesClient({
               </div>
 
               {sendingCode === invite.code && (
-                <form onSubmit={handleSend} className="space-y-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                <form onSubmit={handleSend} className="space-y-4 pt-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
                   <div className="space-y-1">
-                    <label className={labelCls}>Email</label>
-                    <input
-                      type="email"
-                      value={sendEmail}
-                      onChange={(e) => setSendEmail(e.target.value)}
-                      required
-                      className={inputCls}
-                    />
+                    <label className={labelCls} style={labelStyle}>Email</label>
+                    <input type="email" value={sendEmail} onChange={(e) => setSendEmail(e.target.value)} required className={inputCls} style={inputStyle} />
                   </div>
                   <div className="space-y-1">
-                    <label className={labelCls}>Message <span className="normal-case">(optional)</span></label>
-                    <input
-                      type="text"
-                      value={sendMessage}
-                      onChange={(e) => setSendMessage(e.target.value)}
-                      className={inputCls}
-                    />
+                    <label className={labelCls} style={labelStyle}>Message <span className="normal-case">(optional)</span></label>
+                    <input type="text" value={sendMessage} onChange={(e) => setSendMessage(e.target.value)} className={inputCls} style={inputStyle} />
                   </div>
                   {sendError && <p className="text-red-400 text-xs tracking-wide">{sendError}</p>}
-                  {sendSuccess && <p className="text-green-500 text-xs tracking-wide">{sendSuccess}</p>}
+                  {sendSuccess && <p className="text-xs tracking-wide" style={{ color: "#4ade80" }}>{sendSuccess}</p>}
                   <FormButton type="submit" disabled={sending}>
                     {sending ? "Sending…" : "Send Invite"}
                   </FormButton>
@@ -400,7 +384,7 @@ export default function InvitesClient({
           );
         })}
         {invites.length === 0 && (
-          <li className="text-zinc-500 text-sm text-center py-8">
+          <li className="text-sm text-center py-8" style={{ color: "var(--darkroom-text-secondary)" }}>
             No invites yet.
           </li>
         )}
@@ -408,7 +392,8 @@ export default function InvitesClient({
 
       <button
         onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
-        className="w-full flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+        className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
+        style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}
       >
         <span>Create Invite</span>
         <span className="text-sm leading-none">+</span>
@@ -417,26 +402,12 @@ export default function InvitesClient({
       <Sheet open={showCreate} onClose={() => { setShowCreate(false); setCreateError(""); }} title="Create Invite">
         <form onSubmit={handleCreate} className="space-y-6">
           <div className="space-y-1">
-            <label className={labelCls}>Max uses <span className="normal-case">(blank = unlimited)</span></label>
-            <input
-              type="number"
-              min="1"
-              value={maxUses}
-              onChange={(e) => setMaxUses(e.target.value)}
-              placeholder="e.g. 1"
-              className={inputCls}
-            />
+            <label className={labelCls} style={labelStyle}>Max uses <span className="normal-case">(blank = unlimited)</span></label>
+            <input type="number" min="1" value={maxUses} onChange={(e) => setMaxUses(e.target.value)} placeholder="e.g. 1" className={inputCls} style={inputStyle} />
           </div>
           <div className="space-y-1">
-            <label className={labelCls}>Expires in days <span className="normal-case">(blank = never)</span></label>
-            <input
-              type="number"
-              min="1"
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(e.target.value)}
-              placeholder="e.g. 7"
-              className={inputCls}
-            />
+            <label className={labelCls} style={labelStyle}>Expires in days <span className="normal-case">(blank = never)</span></label>
+            <input type="number" min="1" value={expiresInDays} onChange={(e) => setExpiresInDays(e.target.value)} placeholder="e.g. 7" className={inputCls} style={inputStyle} />
           </div>
           {createError && <p className="text-red-400 text-xs tracking-wide">{createError}</p>}
           <FormButton type="submit" disabled={creating}>

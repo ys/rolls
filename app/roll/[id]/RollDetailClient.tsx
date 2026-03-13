@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { RollDetailView } from "./RollDetailView";
-import { RollEditSheet } from "@/components/RollEditSheet";
 import RollEditForm from "@/components/RollEditForm";
 import { FullScreenNotesEditor } from "@/components/FullScreenNotesEditor";
 import { rollStatus } from "@/lib/status";
@@ -27,7 +26,6 @@ interface RollDetailClientProps {
 }
 
 export default function RollDetailClient({ roll, contactSheetUrl, cameras, films, catalogFilms }: RollDetailClientProps) {
-  const [isEditing, setIsEditing] = useState(false);
   const [isEditingFull, setIsEditingFull] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(roll.notes || "");
@@ -111,15 +109,6 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
         notes={notes}
         onNotesChange={handleNotesChange}
       />
-
-      {isEditing && (
-        <RollEditSheet
-          roll={roll}
-          onClose={() => setIsEditing(false)}
-          onSave={handleSave}
-          onMoveToNext={handleMoveToNext}
-        />
-      )}
 
       {isEditingFull && (
         <RollEditForm

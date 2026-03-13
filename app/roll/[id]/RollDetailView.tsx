@@ -63,15 +63,19 @@ export function RollDetailView({
   const cam = cameraLabel(roll);
   const film = filmLabel(roll);
 
-  const dateField = roll.archived_at
-    ? roll.archived_at
+  const [dateField, dateLabel] = roll.archived_at
+    ? [roll.archived_at, "Archived"]
     : roll.processed_at
-      ? roll.processed_at
+      ? [roll.processed_at, "Processed"]
       : roll.scanned_at
-        ? roll.scanned_at
+        ? [roll.scanned_at, "Scanned"]
         : roll.lab_at
-          ? roll.lab_at
-          : roll.fridge_at;
+          ? [roll.lab_at, "Lab"]
+          : roll.fridge_at
+            ? [roll.fridge_at, "Fridge"]
+            : roll.loaded_at
+              ? [roll.loaded_at, "Loaded"]
+              : [null, "Date"];
 
   const dateStr = dateField
     ? new Date(dateField).toLocaleDateString(undefined, {
@@ -215,39 +219,37 @@ export function RollDetailView({
           />
         </div>
 
-        {/* Status Pills */}
+        {/* Status Bar */}
         <div
-          className="flex gap-2 px-4 py-3 border-t"
+          className="flex gap-6 px-4 py-3 border-t"
           style={{ borderColor: "var(--darkroom-border)" }}
         >
-          <div
-            className="px-2 py-1 text-[10px] font-medium rounded"
-            style={{
-              backgroundColor:
-                status === "LOADED"
-                  ? "rgba(251, 191, 36, 0.2)"
-                  : status === "FRIDGE"
-                    ? "rgba(34, 211, 238, 0.2)"
-                    : "rgba(251, 146, 60, 0.2)",
-              color:
-                status === "LOADED"
-                  ? "#fbbf24"
-                  : status === "FRIDGE"
-                    ? "#22d3ee"
-                    : "#fb923c",
-            }}
-          >
-            {status}
-          </div>
-          {dateStr && (
+          <div className="flex-1">
+            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Status</div>
             <div
-              className="px-2 py-1 text-[10px] rounded"
+              className="text-[10px] font-medium"
               style={{
-                backgroundColor: "var(--darkroom-card)",
-                color: "var(--darkroom-text-secondary)",
+                color:
+                  status === "LOADED"
+                    ? "#fbbf24"
+                    : status === "FRIDGE"
+                      ? "#22d3ee"
+                      : "#fb923c",
               }}
             >
-              {dateStr}
+              {status}
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>{dateLabel}</div>
+            <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>{dateStr || "—"}</div>
+          </div>
+          {roll.push_pull != null && (
+            <div className="flex-1">
+              <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Push/Pull</div>
+              <div className="text-[10px] font-mono" style={{ color: "var(--darkroom-text-primary)" }}>
+                {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
+              </div>
             </div>
           )}
         </div>
@@ -363,6 +365,22 @@ export function RollDetailView({
             {dateStr || "—"}
           </div>
         </div>
+        {roll.push_pull != null && (
+          <div className="flex-1">
+            <div
+              className="text-[8px] uppercase tracking-wider mb-1"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              Push/Pull
+            </div>
+            <div
+              className="text-[10px] font-mono"
+              style={{ color: "var(--darkroom-text-primary)" }}
+            >
+              {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
+            </div>
+          </div>
+        )}
         <button
           onClick={onEditNotes}
           className="flex-[2] min-w-0 text-left active:opacity-60 transition-opacity"

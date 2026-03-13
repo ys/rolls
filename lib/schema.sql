@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS rolls (
   camera_id         TEXT REFERENCES cameras(id),
   film_id           TEXT REFERENCES films(id),
   shot_at           DATE,
+  loaded_at         TIMESTAMP WITH TIME ZONE,
   fridge_at         TIMESTAMP WITH TIME ZONE,
   lab_at            TIMESTAMP WITH TIME ZONE,
   lab_name          TEXT,

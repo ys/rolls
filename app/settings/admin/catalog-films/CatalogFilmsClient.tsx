@@ -5,8 +5,10 @@ import type { CatalogFilm } from "@/lib/db";
 import Sheet from "@/components/Sheet";
 import FormButton from "@/components/FormButton";
 
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
+const labelCls = "block text-[10px] uppercase tracking-widest";
+const labelStyle = { color: "var(--darkroom-text-secondary)" };
+const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
+const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
 
 function GradientSwatch({ from, to }: { from: string | null; to: string | null }) {
   const style = from && to
@@ -136,32 +138,33 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-zinc-400">{films.length} films</span>
+        <span className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>{films.length} films</span>
         <button
           onClick={openNew}
-          className="text-sm font-medium text-amber-500 hover:text-amber-600 transition-colors"
+          className="text-sm font-medium transition-opacity active:opacity-60"
+          style={{ color: "var(--darkroom-accent)" }}
         >
           + Add film
         </button>
       </div>
 
-      <ul className="divide-y divide-zinc-200 dark:divide-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+      <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
         {films.map((f) => (
-          <li key={f.slug}>
+          <li key={f.slug} className="border-b" style={{ borderColor: "var(--darkroom-border)" }}>
             <button
               onClick={() => openEdit(f)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-zinc-100 dark:active:bg-zinc-800 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-60 transition-opacity"
             >
               <GradientSwatch from={f.gradient_from} to={f.gradient_to} />
               <div className="flex-1 min-w-0">
                 <span className="text-[15px] font-medium truncate block">
                   {f.nickname ?? `${f.brand} ${f.name}`}
                 </span>
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
                   {f.brand} · {f.color ? "Color" : "B&W"}{f.iso ? ` · ISO ${f.iso}` : ""}
                 </span>
               </div>
-              <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: "var(--darkroom-text-tertiary)" }}><path d="M9 18l6-6-6-6" /></svg>
             </button>
           </li>
         ))}
@@ -171,25 +174,25 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
         <form onSubmit={handleSave} className="space-y-5">
           {editing === "new" && (
             <div className="space-y-1">
-              <label className={labelCls}>Slug</label>
-              <input type="text" value={form.slug} onChange={(e) => set("slug", e.target.value)} required className={inputCls} placeholder="kodak-gold-200" />
+              <label className={labelCls} style={labelStyle}>Slug</label>
+              <input type="text" value={form.slug} onChange={(e) => set("slug", e.target.value)} required className={inputCls} style={inputStyle} placeholder="kodak-gold-200" />
             </div>
           )}
           <div className="space-y-1">
-            <label className={labelCls}>Brand</label>
-            <input type="text" value={form.brand} onChange={(e) => set("brand", e.target.value)} required className={inputCls} placeholder="Kodak" />
+            <label className={labelCls} style={labelStyle}>Brand</label>
+            <input type="text" value={form.brand} onChange={(e) => set("brand", e.target.value)} required className={inputCls} style={inputStyle} placeholder="Kodak" />
           </div>
           <div className="space-y-1">
-            <label className={labelCls}>Name</label>
-            <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} required className={inputCls} placeholder="Gold" />
+            <label className={labelCls} style={labelStyle}>Name</label>
+            <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} required className={inputCls} style={inputStyle} placeholder="Gold" />
           </div>
           <div className="space-y-1">
-            <label className={labelCls}>Nickname</label>
-            <input type="text" value={form.nickname} onChange={(e) => set("nickname", e.target.value)} className={inputCls} placeholder="Kodak Gold 200" />
+            <label className={labelCls} style={labelStyle}>Nickname</label>
+            <input type="text" value={form.nickname} onChange={(e) => set("nickname", e.target.value)} className={inputCls} style={inputStyle} placeholder="Kodak Gold 200" />
           </div>
           <div className="space-y-1">
-            <label className={labelCls}>ISO</label>
-            <input type="number" value={form.iso} onChange={(e) => set("iso", e.target.value)} className={inputCls} placeholder="200" />
+            <label className={labelCls} style={labelStyle}>ISO</label>
+            <input type="number" value={form.iso} onChange={(e) => set("iso", e.target.value)} className={inputCls} style={inputStyle} placeholder="200" />
           </div>
 
           <div className="flex gap-6">
@@ -205,12 +208,12 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
 
           {/* Gradient preview */}
           <div className="space-y-2">
-            <label className={labelCls}>Gradient</label>
+            <label className={labelCls} style={labelStyle}>Gradient</label>
             <div className="flex items-center gap-3">
               <GradientSwatch from={form.gradient_from || null} to={form.gradient_to || null} />
               <div className="flex-1 space-y-2">
-                <input type="text" value={form.gradient_from} onChange={(e) => set("gradient_from", e.target.value)} className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors font-mono text-sm" placeholder="#fbbf24 (top)" />
-                <input type="text" value={form.gradient_to} onChange={(e) => set("gradient_to", e.target.value)} className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors font-mono text-sm" placeholder="#f59e0b (bottom)" />
+                <input type="text" value={form.gradient_from} onChange={(e) => set("gradient_from", e.target.value)} className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors font-mono text-sm" style={inputStyle} placeholder="#fbbf24 (top)" />
+                <input type="text" value={form.gradient_to} onChange={(e) => set("gradient_to", e.target.value)} className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors font-mono text-sm" style={inputStyle} placeholder="#f59e0b (bottom)" />
               </div>
             </div>
           </div>
