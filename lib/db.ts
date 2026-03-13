@@ -104,13 +104,11 @@ export interface Roll {
   camera_uuid: string | null;
   film_uuid: string | null;
   shot_at: string | null;
-  loaded_at: string | null;
   fridge_at: string | null;
   lab_at: string | null;
   lab_name: string | null;
   scanned_at: string | null;
   processed_at: string | null;
-  uploaded_at: string | null;
   archived_at: string | null;
   album_name: string | null;
   tags: string[] | null;

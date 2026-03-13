@@ -2,17 +2,14 @@ export type RollStatus = "LOADED" | "FRIDGE" | "LAB" | "SCANNED" | "PROCESSED" |
 
 export interface RollStatusData {
   archived_at: string | null;
-  uploaded_at: string | null;
   processed_at: string | null;
   scanned_at: string | null;
   lab_at: string | null;
   fridge_at: string | null;
-  loaded_at: string | null;
 }
 
 export function rollStatus(roll: RollStatusData): RollStatus {
   if (roll.archived_at) return "ARCHIVED";
-  if (roll.uploaded_at) return "UPLOADED";
   if (roll.processed_at) return "PROCESSED";
   if (roll.scanned_at) return "SCANNED";
   if (roll.lab_at) return "LAB";

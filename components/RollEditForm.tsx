@@ -69,7 +69,6 @@ export default function RollEditForm({
   const [cameraId, setCameraId] = useState(initialCameraSlug);
   const [filmId, setFilmId] = useState(initialFilmSlug);
   const [shotAt, setShotAt] = useState(toDateInput(roll.shot_at));
-  const [loadedAt, setLoadedAt] = useState(toDateInput(roll.loaded_at));
   const [fridgeAt, setFridgeAt] = useState(toDateInput(roll.fridge_at));
   const [labAt, setLabAt] = useState(toDateInput(roll.lab_at));
   const [labName, setLabName] = useState(roll.lab_name ?? "");
@@ -127,7 +126,6 @@ export default function RollEditForm({
         updates.film_id = filmId || null;
       }
       if (shotAt !== toDateInput(roll.shot_at)) updates.shot_at = shotAt || null;
-      if (loadedAt !== toDateInput(roll.loaded_at)) updates.loaded_at = loadedAt || null;
       if (fridgeAt !== toDateInput(roll.fridge_at)) updates.fridge_at = fridgeAt || null;
       if (labAt !== toDateInput(roll.lab_at)) updates.lab_at = labAt || null;
       if (labName !== (roll.lab_name ?? "")) updates.lab_name = labName || null;
@@ -285,20 +283,6 @@ export default function RollEditForm({
                 onChange={(e) => setShotAt(e.target.value)}
                 className={inputCls}
                 style={{ borderColor: "var(--darkroom-border)", color: shotAt ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)" }}
-              />
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Loaded date</label>
-                {loadedAt ? <button type="button" onClick={() => setLoadedAt("")} className="text-[9px] uppercase tracking-wider transition-opacity active:opacity-50" style={{ color: "var(--darkroom-text-tertiary)" }}>Clear</button> : <button type="button" onClick={() => setLoadedAt(todayStr())} className="text-[9px] uppercase tracking-wider transition-opacity active:opacity-50" style={{ color: "var(--darkroom-text-tertiary)" }}>Now</button>}
-              </div>
-              <input
-                type="date"
-                value={loadedAt}
-                onChange={(e) => setLoadedAt(e.target.value)}
-                className={inputCls}
-                style={{ borderColor: "var(--darkroom-border)", color: loadedAt ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)" }}
               />
             </div>
 

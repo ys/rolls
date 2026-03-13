@@ -7,13 +7,11 @@ export type CreateRollBody = {
   camera_id?: string;
   film_id?: string;
   shot_at?: string;
-  loaded_at?: string;
   fridge_at?: string;
   lab_at?: string;
   lab_name?: string;
   scanned_at?: string;
   processed_at?: string;
-  uploaded_at?: string;
   archived_at?: string;
   album_name?: string;
   tags?: string[];

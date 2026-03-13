@@ -73,8 +73,8 @@ export function RollDetailView({
           ? [roll.lab_at, "Lab"]
           : roll.fridge_at
             ? [roll.fridge_at, "Fridge"]
-            : roll.loaded_at
-              ? [roll.loaded_at, "Loaded"]
+            : roll.shot_at
+              ? [roll.shot_at, "Loaded"]
               : [null, "Date"];
 
   const dateStr = dateField
@@ -225,7 +225,12 @@ export function RollDetailView({
           style={{ borderColor: "var(--darkroom-border)" }}
         >
           <div className="flex-1">
-            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Status</div>
+            <div
+              className="text-[8px] uppercase tracking-wider mb-1"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              Status
+            </div>
             <div
               className="text-[10px] font-medium"
               style={{
@@ -241,14 +246,33 @@ export function RollDetailView({
             </div>
           </div>
           <div className="flex-1">
-            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>{dateLabel}</div>
-            <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>{dateStr || "—"}</div>
+            <div
+              className="text-[8px] uppercase tracking-wider mb-1"
+              style={{ color: "var(--darkroom-text-tertiary)" }}
+            >
+              {dateLabel}
+            </div>
+            <div
+              className="text-[10px]"
+              style={{ color: "var(--darkroom-text-primary)" }}
+            >
+              {dateStr || "—"}
+            </div>
           </div>
           {roll.push_pull != null && (
             <div className="flex-1">
-              <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Push/Pull</div>
-              <div className="text-[10px] font-mono" style={{ color: "var(--darkroom-text-primary)" }}>
-                {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
+              <div
+                className="text-[8px] uppercase tracking-wider mb-1"
+                style={{ color: "var(--darkroom-text-tertiary)" }}
+              >
+                Push/Pull
+              </div>
+              <div
+                className="text-[10px] font-mono"
+                style={{ color: "var(--darkroom-text-primary)" }}
+              >
+                {roll.push_pull > 0 ? "+" : ""}
+                {roll.push_pull}
               </div>
             </div>
           )}
@@ -377,7 +401,8 @@ export function RollDetailView({
               className="text-[10px] font-mono"
               style={{ color: "var(--darkroom-text-primary)" }}
             >
-              {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
+              {roll.push_pull > 0 ? "+" : ""}
+              {roll.push_pull}
             </div>
           </div>
         )}

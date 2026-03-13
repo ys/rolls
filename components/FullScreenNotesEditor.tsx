@@ -96,7 +96,7 @@ export function FullScreenNotesEditor({
     roll.scanned_at ? [roll.scanned_at, "Scanned"] :
     roll.lab_at ? [roll.lab_at, "Lab"] :
     roll.fridge_at ? [roll.fridge_at, "Fridge"] :
-    roll.loaded_at ? [roll.loaded_at, "Loaded"] :
+    roll.shot_at ? [roll.shot_at, "Shot"] :
     [null, "Date"];
 
   const dateStr = dateField

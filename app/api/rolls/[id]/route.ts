@@ -53,7 +53,7 @@ export async function PATCH(
   }
 
   const allowed = [
-    "roll_number", "camera_uuid", "film_uuid", "shot_at", "loaded_at", "fridge_at", "lab_at", "lab_name",
+    "roll_number", "camera_uuid", "film_uuid", "shot_at", "fridge_at", "lab_at", "lab_name",
     "scanned_at", "processed_at", "uploaded_at", "archived_at",
     "album_name", "tags", "notes", "push_pull",
   ] as const;
