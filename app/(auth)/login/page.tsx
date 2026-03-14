@@ -50,23 +50,10 @@ function LoginForm() {
       const { options: optionsJSON, challenge, user_id: userId } = await resp.json();
       setPendingOptions({ optionsJSON, challenge, userId });
       setStep("passkey");
-
-      // Step 2: immediately trigger passkey prompt (no extra click needed)
-      await signInWithPasskey(optionsJSON, challenge, userId);
     } catch (err: any) {
+      setError(err.message || "Account not found. Please check your email or username.");
+    } finally {
       setLoading(false);
-      if (err.name === "NotAllowedError") {
-        // User dismissed — stay on passkey step so they can retry
-        setError("Cancelled. Tap the button to try again.");
-      } else if (err.message?.includes("not found") || err.message?.includes("Account")) {
-        setStep("identifier");
-        setPendingOptions(null);
-        setError(err.message);
-      } else if (err.name === "NotSupportedError") {
-        setError("Your device doesn't support passkeys.");
-      } else {
-        setError(err.message || "Sign in failed. Please try again.");
-      }
     }
   }
 
@@ -199,18 +186,16 @@ function LoginForm() {
           <div>
             <div style={{ textAlign: "center", marginBottom: 24 }}>
               <div style={{ fontSize: 13, color: "#f4f1ea", marginBottom: 4 }}>{identifier}</div>
-              <div style={{ fontSize: 9, color: "rgba(244,241,234,0.5)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
-                {loading ? "Waiting for passkey…" : "Ready to authenticate"}
+                <div style={{ fontSize: 9, color: "rgba(244,241,234,0.5)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+                {loading ? "Waiting for passkey…" : "Tap to authenticate"}
               </div>
             </div>
             {error && (
               <p style={{ fontSize: 11, color: "#fca5a5", textAlign: "center", marginBottom: 8 }}>{error}</p>
             )}
-            {!loading && (
-              <button onClick={handleRetry} style={ctaStyle}>
-                Sign In with Passkey
-              </button>
-            )}
+            <button onClick={handleRetry} disabled={loading} style={{ ...ctaStyle, opacity: loading ? 0.4 : 1 }}>
+              {loading ? "Waiting…" : "Sign In with Passkey"}
+            </button>
             <div style={{ marginTop: 12, textAlign: "center" }}>
               <button
                 onClick={() => { setStep("identifier"); setError(""); setPendingOptions(null); }}
