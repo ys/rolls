@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         ${cam?.uuid ?? null}, ${film?.uuid ?? null},
         ${r.shot_at ?? null}, ${r.fridge_at ?? null}, ${r.lab_at ?? null}, ${r.lab_name ?? null},
         ${r.scanned_at ?? null}, ${r.processed_at ?? null}, ${r.uploaded_at ?? null}, ${r.archived_at ?? null},
-        ${r.album_name ?? null}, ${r.tags ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null},
+        ${r.album_name ?? null}, ${r.tags?.filter(t => t) ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null},
         ${r.push_pull ?? null}
       )
       ON CONFLICT (user_id, roll_number) DO UPDATE SET
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         album_name       = EXCLUDED.album_name,
         tags             = EXCLUDED.tags,
         notes            = EXCLUDED.notes,
-        contact_sheet_url = EXCLUDED.contact_sheet_url,
+        contact_sheet_url = COALESCE(EXCLUDED.contact_sheet_url, rolls.contact_sheet_url),
         push_pull        = EXCLUDED.push_pull
     `;
   }

@@ -60,10 +60,14 @@ func ParseDate(s string) (time.Time, error) {
 	return time.Parse(DateFormat, s)
 }
 
-// ParseDateTime parses a datetime string in either YYYY-MM-DD HH:MM:SS or RFC3339 format
+// ParseDateTime parses a datetime string in YYYY-MM-DD HH:MM:SS, RFC3339, or date-only YYYY-MM-DD format
 func ParseDateTime(s string) (time.Time, error) {
 	if t, err := time.Parse(DateTimeFormat, s); err == nil {
 		return t, nil
 	}
-	return time.Parse(time.RFC3339, s)
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t, nil
+	}
+	// Fall back to date-only (treat as start of day)
+	return time.Parse(DateFormat, s)
 }

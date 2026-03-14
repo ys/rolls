@@ -1,104 +1,86 @@
 import { getUser } from "@/lib/request-context";
-import { getCameraCount, getFilmCount, getRemainingInvites } from "@/lib/queries";
+import { getCameraCount, getFilmCount } from "@/lib/queries";
 import Link from "next/link";
-import LogoutButton from "@/components/LogoutButton";
+import SignOutButton from "@/components/SignOutButton";
 
 export const dynamic = "force-dynamic";
 
-function SettingsGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Section({ label, children, mt }: { label: string; children: React.ReactNode; mt?: boolean }) {
   return (
-    <section>
-      <p className="text-[11px] font-semibold uppercase tracking-wider px-4 mb-3" style={{ color: "var(--text-secondary)" }}>
+    <div style={{ borderTop: "1px solid var(--border)", marginTop: mt ? 8 : 0 }}>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", padding: "12px 20px 6px" }}>
         {label}
-      </p>
-      <ul className="border-t" style={{ borderColor: "var(--border)" }}>
-        {children}
-      </ul>
-    </section>
+      </div>
+      {children}
+    </div>
   );
 }
 
-function SettingsRow({
-  href,
-  label,
-  value,
-}: {
-  href: string;
-  label: string;
-  value?: string | number | null;
-}) {
+function Row({ href, label, value, amber }: { href: string; label: string; value: string; amber?: boolean }) {
   return (
-    <li>
-      <Link
-        href={href}
-        className="flex items-center justify-between px-4 py-3.5 border-b transition-colors"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <span className="text-xs" style={{ color: "var(--text-primary)" }}>{label}</span>
-        <div className="flex items-center gap-2">
-          {value !== undefined && value !== null && (
-            <span className="text-xs tabular-nums" style={{ color: "var(--text-tertiary)" }}>
-              {value}
-            </span>
-          )}
-          {value === null && (
-            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>∞</span>
-          )}
-          <span style={{ color: "var(--border)", fontSize: 18, lineHeight: 1 }}>›</span>
-        </div>
-      </Link>
-    </li>
+    <Link
+      href={href}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "12px 20px", borderBottom: "1px solid var(--border-subtle)",
+        textDecoration: "none",
+      }}
+    >
+      <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{label}</span>
+      <span style={{ fontSize: 11, color: amber ? "var(--accent)" : "var(--text-tertiary)" }}>{value}</span>
+    </Link>
   );
 }
 
 export default async function SettingsPage() {
-  const { id: userId, role } = await getUser();
+  const { id: userId, email, role } = await getUser();
 
-  const [camera_count, film_count, remaining_invites] = await Promise.all([
+  const [camera_count, film_count] = await Promise.all([
     getCameraCount(userId),
     getFilmCount(userId),
-    getRemainingInvites(userId),
   ]);
 
   return (
-    <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>
-          SETTINGS
-        </h1>
+    <div style={{ paddingBottom: 80 }}>
+      {/* Header */}
+      <div style={{ padding: "16px 20px 12px" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>···</span>
       </div>
 
-      <SettingsGroup label="Library">
-        <SettingsRow href="/cameras" label="Cameras" value={camera_count} />
-        <SettingsRow href="/films" label="Films" value={film_count} />
-        <SettingsRow href="/invites" label="Invitations" value={remaining_invites} />
-      </SettingsGroup>
+      {/* Account */}
+      <Section label="Account">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
+          <span style={{ fontSize: 13, color: "var(--text-primary)" }}>Email</span>
+          <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{email}</span>
+        </div>
+        <Row href="/settings/passkeys" label="Passkeys" value="Manage →" amber />
+        <Row href="/settings/api-keys" label="API Keys" value="Manage →" amber />
+      </Section>
 
+      {/* Gear */}
+      <Section label="Gear" mt>
+        <Row href="/cameras" label="Cameras" value={`${camera_count} camera${camera_count !== 1 ? "s" : ""} →`} />
+        <Row href="/films" label="Films" value={`${film_count} film${film_count !== 1 ? "s" : ""} →`} />
+        <Row href="/invites" label="Invitations" value="Manage →" amber />
+      </Section>
+
+      {/* Admin (if applicable) */}
       {role === "admin" && (
-        <SettingsGroup label="Admin">
-          <SettingsRow href="/settings/admin" label="Dashboard" />
-          <SettingsRow href="/settings/admin/users" label="Users" />
-          <SettingsRow href="/settings/admin/catalog-films" label="Catalog Films" />
-        </SettingsGroup>
+        <Section label="Admin" mt>
+          <Row href="/settings/admin" label="Dashboard" value="→" amber />
+          <Row href="/settings/admin/users" label="Users" value="→" amber />
+        </Section>
       )}
 
-      <SettingsGroup label="Developer">
-        <SettingsRow href="/settings/api-keys" label="API Keys" />
-      </SettingsGroup>
+      {/* Data */}
+      <Section label="Data" mt>
+        <Row href="/api/export" label="Export" value="Download →" amber />
+      </Section>
 
-      <SettingsGroup label="Data">
-        <SettingsRow href="/api/export" label="Export JSON" />
-      </SettingsGroup>
-
-      <SettingsGroup label="Account">
-        <LogoutButton />
-      </SettingsGroup>
+      {/* Sign out */}
+      <div style={{ padding: "24px 20px" }}>
+        <SignOutButton />
+      </div>
     </div>
   );
 }

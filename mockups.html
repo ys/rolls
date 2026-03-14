@@ -3723,6 +3723,321 @@ body {
 
 </div>
 
+<!-- v10: Sub-pages -->
+<div style="max-width:900px;margin-top:64px;font-family:'iAMono',monospace;">
+  <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#555;margin-bottom:24px;">v10 — Settings Sub-pages</div>
+  <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;">
+
+  <!-- Passkeys -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ ···</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Passkeys</span>
+        <span style="width:40px;"></span>
+      </div>
+      <!-- List -->
+      <div style="border-top:1px solid #ddd8cf;margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">MacBook Pro</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">Added Jan 3, 2026 · Last used Mar 14, 2026</div>
+          </div>
+          <!-- Last key — no remove -->
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">iPhone 15 Pro</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">Added Jan 3, 2026 · Last used Mar 12, 2026</div>
+          </div>
+          <button style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c2410c;background:none;border:none;cursor:pointer;font-family:inherit;">Remove</button>
+        </div>
+      </div>
+      <p style="font-size:10px;color:#bbb;padding:8px 20px;">You must keep at least one passkey to sign in.</p>
+    </div>
+    <div class="screen-label">Passkeys — list with device name + dates. Remove button (disabled on last key). No add button (register flow adds passkeys).</div>
+  </div>
+
+  <!-- API Keys -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ ···</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">API Keys</span>
+        <span style="width:40px;"></span>
+      </div>
+      <!-- One-time banner -->
+      <div style="margin:16px 20px;padding:12px 16px;border:1px solid #d97706;background:rgba(217,119,6,0.06);">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d97706;margin-bottom:6px;">Save this key — shown once</div>
+        <div style="font-size:11px;color:#1a1a1a;font-family:inherit;word-break:break-all;">rk_a3f9c2e1b8d47…</div>
+        <div style="font-size:9px;color:#999;margin-top:6px;">Tap to copy · Use as <span style="color:#1a1a1a;">web_app_api_key</span></div>
+        <div style="font-size:9px;color:#bbb;margin-top:8px;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;">Dismiss</div>
+      </div>
+      <!-- Key list -->
+      <div style="border-top:1px solid #ddd8cf;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">rolls CLI</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">Created Mar 14, 2026 · Last used Mar 14, 2026</div>
+          </div>
+          <button style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c2410c;background:none;border:none;cursor:pointer;font-family:inherit;">Revoke</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;font-style:italic;color:#999;">Unlabeled</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">Created Jan 3, 2026 · Last used Never</div>
+          </div>
+          <button style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c2410c;background:none;border:none;cursor:pointer;font-family:inherit;">Revoke</button>
+        </div>
+      </div>
+      <!-- Add -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ddd8cf;padding:12px 20px;margin-top:4px;cursor:pointer;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#999;">New API Key</span>
+        <span style="font-size:16px;color:#d97706;line-height:1;">+</span>
+      </div>
+    </div>
+    <div class="screen-label">API Keys — one-time banner (amber border, no dark bg). Key list with label + dates. Revoke in red. Add row at bottom.</div>
+  </div>
+
+  <!-- Cameras list -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ ···</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Cameras</span>
+        <span style="width:40px;"></span>
+      </div>
+      <!-- Sort tabs -->
+      <div style="display:flex;gap:16px;padding:10px 20px;border-bottom:1px solid #ddd8cf;">
+        <button style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d97706;background:none;border:none;border-bottom:1.5px solid #d97706;padding-bottom:2px;font-family:inherit;cursor:pointer;">Usage</button>
+        <button style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#bbb;background:none;border:none;padding-bottom:2px;font-family:inherit;cursor:pointer;">A–Z</button>
+      </div>
+      <!-- Camera rows -->
+      <div style="border-top:1px solid #ddd8cf;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Leica M6</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">35mm · 18 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Mamiya RZ67</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">120 · 14 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Nikon FM2</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">35mm · 9 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Pentax 67</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">120 · 6 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+      </div>
+      <!-- Add -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ddd8cf;padding:12px 20px;margin-top:4px;cursor:pointer;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#999;">Add Camera</span>
+        <span style="font-size:16px;color:#d97706;line-height:1;">+</span>
+      </div>
+    </div>
+    <div class="screen-label">Cameras — back to ···, usage/A–Z sort tabs (amber active), rows: name + format · count, chevron. Add Camera row at bottom.</div>
+  </div>
+
+  <!-- Films list -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ ···</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Films</span>
+        <span style="width:40px;"></span>
+      </div>
+      <div style="display:flex;gap:16px;padding:10px 20px;border-bottom:1px solid #ddd8cf;">
+        <button style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#d97706;background:none;border:none;border-bottom:1.5px solid #d97706;padding-bottom:2px;font-family:inherit;cursor:pointer;">Usage</button>
+        <button style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#bbb;background:none;border:none;padding-bottom:2px;font-family:inherit;cursor:pointer;">A–Z</button>
+      </div>
+      <div style="border-top:1px solid #ddd8cf;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Kodak Portra 400</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">ISO 400 · Colour · 22 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Ilford HP5</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">ISO 400 · B&W · 11 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #ede8df;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;color:#1a1a1a;">Cinestill 800T</div>
+            <div style="font-size:10px;color:#999;margin-top:2px;">ISO 800 · Colour · 7 rolls</div>
+          </div>
+          <span style="font-size:18px;color:#ddd8cf;line-height:1;">›</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ddd8cf;padding:12px 20px;margin-top:4px;cursor:pointer;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#999;">Add Film</span>
+        <span style="font-size:16px;color:#d97706;line-height:1;">+</span>
+      </div>
+    </div>
+    <div class="screen-label">Films — same pattern as Cameras. Rows: name + ISO · type · count.</div>
+  </div>
+
+  <!-- Invitations -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ ···</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Invitations</span>
+        <span style="width:40px;"></span>
+      </div>
+      <!-- Section: Active -->
+      <div style="border-top:1px solid #ddd8cf;margin-top:16px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;padding:12px 20px 6px;">Active</div>
+        <div style="padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:13px;color:#1a1a1a;font-family:inherit;">ALPHA-42</div>
+            <div style="font-size:11px;color:#999;">1 / 3 used</div>
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:2px;">Expires Apr 1, 2026</div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;background:none;border:none;cursor:pointer;font-family:inherit;">Copy link</button>
+            <button style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;background:none;border:none;cursor:pointer;font-family:inherit;">Send email</button>
+          </div>
+        </div>
+        <div style="padding:12px 20px;border-bottom:1px solid #ede8df;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:13px;color:#1a1a1a;font-family:inherit;">BRAVO-77</div>
+            <div style="font-size:11px;color:#999;">∞ uses</div>
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:2px;">No expiry</div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;background:none;border:none;cursor:pointer;font-family:inherit;">Copy link</button>
+            <button style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;background:none;border:none;cursor:pointer;font-family:inherit;">Send email</button>
+          </div>
+        </div>
+      </div>
+      <!-- Add -->
+      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #ddd8cf;padding:12px 20px;margin-top:4px;cursor:pointer;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#999;">New Invite</span>
+        <span style="font-size:16px;color:#d97706;line-height:1;">+</span>
+      </div>
+    </div>
+    <div class="screen-label">Invitations — Active section with code, uses, expiry. Amber Copy link / Send email actions. Add at bottom.</div>
+  </div>
+
+  <!-- Camera detail / edit -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ Cameras</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Edit Camera</span>
+        <span style="width:48px;"></span>
+      </div>
+      <div style="padding:24px 20px;display:flex;flex-direction:column;gap:20px;">
+        <!-- Brand -->
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">Brand</div>
+          <div style="font-size:14px;color:#1a1a1a;border-bottom:1px solid #ddd8cf;padding-bottom:10px;">Leica</div>
+        </div>
+        <!-- Model -->
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">Model</div>
+          <div style="font-size:14px;color:#1a1a1a;border-bottom:1px solid #ddd8cf;padding-bottom:10px;">M6</div>
+        </div>
+        <!-- Nickname -->
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">Nickname <span style="font-weight:400;opacity:0.6;">(optional)</span></div>
+          <div style="font-size:14px;color:#bbb;border-bottom:1px solid #ddd8cf;padding-bottom:10px;font-style:italic;">—</div>
+        </div>
+        <!-- Format segmented -->
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:8px;">Format</div>
+          <div style="display:flex;border:1px solid #ddd8cf;">
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#1a1a1a;color:#f4f1ea;border:none;font-family:inherit;cursor:pointer;">35mm</button>
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:none;color:#999;border:none;border-left:1px solid #ddd8cf;font-family:inherit;cursor:pointer;">120</button>
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:none;color:#999;border:none;border-left:1px solid #ddd8cf;font-family:inherit;cursor:pointer;">4×5</button>
+          </div>
+        </div>
+      </div>
+      <!-- Save -->
+      <div style="padding:0 20px 32px;">
+        <button style="width:100%;padding:14px 0;background:#d97706;color:#1a1a1a;border:none;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;font-family:inherit;cursor:pointer;">Save Camera</button>
+      </div>
+    </div>
+    <div class="screen-label">Camera edit — back to Cameras list, fields: Brand / Model / Nickname / Format segmented (35mm · 120 · 4×5, filled active). Amber Save.</div>
+  </div>
+
+  <!-- Film detail / edit -->
+  <div class="screen-wrap">
+    <div class="phone-frame" style="background:#f4f1ea;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #ddd8cf;">
+        <span style="font-size:11px;color:#d97706;cursor:pointer;">‹ Films</span>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#1a1a1a;">Edit Film</span>
+        <span style="width:48px;"></span>
+      </div>
+      <div style="padding:24px 20px;display:flex;flex-direction:column;gap:20px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">Brand</div>
+          <div style="font-size:14px;color:#1a1a1a;border-bottom:1px solid #ddd8cf;padding-bottom:10px;">Kodak</div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">Name</div>
+          <div style="font-size:14px;color:#1a1a1a;border-bottom:1px solid #ddd8cf;padding-bottom:10px;">Portra 400</div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:6px;">ISO</div>
+          <div style="font-size:14px;color:#1a1a1a;border-bottom:1px solid #ddd8cf;padding-bottom:10px;">400</div>
+        </div>
+        <!-- Type segmented -->
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999;margin-bottom:8px;">Type</div>
+          <div style="display:flex;border:1px solid #ddd8cf;">
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:#1a1a1a;color:#f4f1ea;border:none;font-family:inherit;cursor:pointer;">Colour</button>
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:none;color:#999;border:none;border-left:1px solid #ddd8cf;font-family:inherit;cursor:pointer;">B&W</button>
+            <button style="flex:1;padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:none;color:#999;border:none;border-left:1px solid #ddd8cf;font-family:inherit;cursor:pointer;">Slide</button>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 20px 32px;">
+        <button style="width:100%;padding:14px 0;background:#d97706;color:#1a1a1a;border:none;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;font-family:inherit;cursor:pointer;">Save Film</button>
+      </div>
+    </div>
+    <div class="screen-label">Film edit — fields: Brand / Name / ISO / Type segmented (Colour · B&W · Slide). Amber Save.</div>
+  </div>
+
+  </div><!-- end flex wrap -->
+</div>
+
+<div style="max-width:720px;margin-top:32px;font-family:'iAMono',monospace;font-size:11px;color:#888;line-height:1.9;border-top:1px solid #ccc;padding-top:32px;">
+  <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#555;margin-bottom:12px;">v10 Notes</div>
+  <p><strong style="color:#555">All sub-pages:</strong> Header = ‹ ··· back link (amber) left, page title centred, blank right. No icons anywhere.</p>
+  <br>
+  <p><strong style="color:#555">Passkeys:</strong> List with device name + added/last-used dates. Remove button in dark red (#c2410c). Last passkey has no Remove button — guard copy: "You must keep at least one passkey to sign in."</p>
+  <br>
+  <p><strong style="color:#555">API Keys:</strong> One-time banner uses amber border + subtle amber bg (rgba(217,119,6,0.06)) — NOT dark. Revoke in dark red. Add row at bottom.</p>
+  <br>
+  <p><strong style="color:#555">Cameras / Films:</strong> Usage / A–Z sort tabs (amber underline active, dim inactive). Rows: name large + format·count small + dim chevron ›. Add row at bottom with amber +.</p>
+  <br>
+  <p><strong style="color:#555">Camera edit / Film edit:</strong> Plain text inputs (label + underline-only border). Format/Type segmented control: filled dark (#1a1a1a bg, cream text) for active, empty for inactive. Amber Save CTA full-width at bottom.</p>
+  <br>
+  <p><strong style="color:#555">Invitations:</strong> Active section header. Each invite: code (monospace) + uses / expiry. Amber Copy link + Send email inline actions. New Invite row at bottom.</p>
+</div>
+
 <div style="max-width:720px;margin-top:32px;font-family:'iAMono',monospace;font-size:11px;color:#888;line-height:1.9;border-top:1px solid #ccc;padding-top:32px;">
   <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#555;margin-bottom:12px;">v9 Notes</div>
   <p><strong style="color:#555">Login:</strong> Notebook cover aesthetic. Film canister icon centred. Passkey CTA is the primary action (dark fill). Email link secondary. Register in amber. No form fields on this screen.</p>

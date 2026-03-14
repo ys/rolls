@@ -2,212 +2,125 @@
 
 import { useRouter } from "next/navigation";
 import PullToRefresh from "@/components/PullToRefresh";
-import { STATUS_ORDER } from "@/lib/status";
-import { FILM_GRADIENTS } from "@/lib/film-gradients";
+
+const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
 interface StatsData {
-  rollsPerYear: { year: string; count: number }[];
+  totalRolls: number;
+  totalFrames: number;
+  inLabCount: number;
   topCameras: { label: string; count: number }[];
-  topFilms: { label: string; count: number; slug: string }[];
-  statusCounts: { status: string; count: number }[];
+  topFilms: { label: string; count: number }[];
+  monthlyActivity: { month: number; count: number }[];
 }
 
-export default function StatsClient({
-  initialData,
-}: {
-  initialData: StatsData;
-}) {
+export default function StatsClient({ initialData }: { initialData: StatsData }) {
   const router = useRouter();
-  const data = initialData;
+  const { totalRolls, totalFrames, inLabCount, topCameras, topFilms, monthlyActivity } = initialData;
 
-  const totalRolls = data.rollsPerYear.reduce((s, r) => s + r.count, 0);
-  const firstYear = data.rollsPerYear.at(-1)?.year ?? "—";
-  const avgPerYear =
-    data.rollsPerYear.length > 0
-      ? Math.round(totalRolls / data.rollsPerYear.length)
-      : 0;
+  const currentYear = new Date().getFullYear();
 
-  const maxPerYear = Math.max(...data.rollsPerYear.map((r) => r.count), 1);
-  const maxCamera = Math.max(...data.topCameras.map((r) => r.count), 1);
-  const maxFilm = Math.max(...data.topFilms.map((r) => r.count), 1);
+  // Build 12-month array for bar chart
+  const monthMap = Object.fromEntries(monthlyActivity.map((r) => [r.month, r.count]));
+  const months = Array.from({ length: 12 }, (_, i) => monthMap[i + 1] ?? 0);
+  const maxMonthCount = Math.max(...months, 1);
 
-  const statusMap = Object.fromEntries(
-    data.statusCounts.map((r) => [r.status, r.count]),
-  );
-
-  // Scanned = everything with scanned_at set (all statuses from SCANNED up)
-  const scannedStatuses = ["SCANNED", "PROCESSED", "UPLOADED", "ARCHIVED"];
-  const totalScanned = scannedStatuses.reduce(
-    (s, st) => s + (statusMap[st] ?? 0),
-    0,
-  );
-  const pctScanned =
-    totalRolls > 0 ? Math.round((totalScanned / totalRolls) * 100) : 0;
+  const maxCamera = Math.max(...topCameras.map((r) => r.count), 1);
+  const maxFilm = Math.max(...topFilms.map((r) => r.count), 1);
 
   return (
-    <PullToRefresh
-      onRefresh={async () => {
-        router.refresh();
-      }}
-    >
-      <div className="space-y-10 pb-24">
-        <div>
-          <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
-            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>
-              STATS
-            </h1>
-          </div>
+    <PullToRefresh onRefresh={async () => { router.refresh(); }}>
+      <div style={{ paddingBottom: 80 }}>
 
-          {/* Hero numbers */}
-          <div className="grid grid-cols-3 gap-3 mb-4 px-4">
-            <HeroStat label="Rolls" value={totalRolls} />
-            <HeroStat label="Since" value={firstYear} />
-            <HeroStat label="Per year" value={avgPerYear} />
-          </div>
-
-          {/* Scanned % */}
-          {totalRolls > 0 && (
-            <div className="px-4 py-2 flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>Scanned or beyond</span>
-              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                {pctScanned}%
-              </span>
-            </div>
-          )}
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 12px" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>STATS</span>
+          <span style={{ fontSize: 9, color: "var(--text-tertiary)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{currentYear}</span>
         </div>
 
-        {/* Status breakdown */}
-        <section className="px-4">
-          <SectionTitle>By Status</SectionTitle>
-          <div className="space-y-2">
-            {STATUS_ORDER.filter((s) => statusMap[s]).map((status) => {
-              const count = statusMap[status] ?? 0;
-              const pct = totalRolls > 0 ? (count / totalRolls) * 100 : 0;
+        {/* Big number strip */}
+        <div style={{ display: "flex", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+          <BigStat label="Rolls" value={totalRolls.toLocaleString()} />
+          <BigStat label="Frames" value={totalFrames.toLocaleString()} border />
+          <BigStat label="In Lab" value={inLabCount.toLocaleString()} amber border />
+        </div>
+
+        {/* Top Cameras */}
+        {topCameras.length > 0 && (
+          <div style={{ padding: "16px 20px 0" }}>
+            <SectionLabel>Top Cameras</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {topCameras.map((r) => (
+                <BarRow key={r.label} label={r.label} count={r.count} pct={(r.count / maxCamera) * 100} color="var(--accent)" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top Films */}
+        {topFilms.length > 0 && (
+          <div style={{ padding: "16px 20px 0", marginTop: 4 }}>
+            <SectionLabel>Top Films</SectionLabel>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {topFilms.map((r) => (
+                <BarRow key={r.label} label={r.label} count={r.count} pct={(r.count / maxFilm) * 100} color="var(--text-primary)" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Monthly Activity */}
+        <div style={{ padding: "16px 20px 24px", marginTop: 4 }}>
+          <SectionLabel>Monthly Activity</SectionLabel>
+          <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 48 + 16 }}>
+            {months.map((count, i) => {
+              const heightPx = count > 0 ? Math.max(2, Math.round((count / maxMonthCount) * 40)) : 2;
+              const isActive = count > 0;
               return (
-                <div key={status}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span
-                      className="text-[10px] uppercase tracking-wide"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {status}
-                    </span>
-                    <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                      {count}
-                    </span>
-                  </div>
-                  <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{ width: `${pct}%`, backgroundColor: "var(--accent)" }}
-                    />
-                  </div>
+                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+                  <div style={{ width: "100%", background: isActive ? "var(--accent)" : "var(--border)", borderRadius: 1, height: heightPx }} />
+                  <div style={{ fontSize: 7, color: "var(--text-tertiary)" }}>{MONTH_LABELS[i]}</div>
                 </div>
               );
             })}
           </div>
-        </section>
+        </div>
 
-        {/* Rolls per year */}
-        <section className="px-4">
-          <SectionTitle>By Year</SectionTitle>
-          <div className="space-y-2">
-            {data.rollsPerYear.map((r) => (
-              <div key={r.year}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
-                    {r.year}
-                  </span>
-                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                    {r.count}
-                  </span>
-                </div>
-                <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${(r.count / maxPerYear) * 100}%`, backgroundColor: "var(--accent)" }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Top cameras */}
-        {data.topCameras.length > 0 && (
-          <section className="px-4">
-            <SectionTitle>Top Cameras</SectionTitle>
-            <RankedList items={data.topCameras} max={maxCamera} />
-          </section>
-        )}
-
-        {/* Top films */}
-        {data.topFilms.length > 0 && (
-          <section className="px-4">
-            <SectionTitle>Top Films</SectionTitle>
-            <RankedList items={data.topFilms} max={maxFilm} useFilmGradient />
-          </section>
-        )}
       </div>
     </PullToRefresh>
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function BigStat({ label, value, border, amber }: { label: string; value: string; border?: boolean; amber?: boolean }) {
   return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-      {children}
-    </h2>
-  );
-}
-
-function HeroStat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="py-2 text-center">
-      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{value}</div>
-      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
-        {label}
-      </div>
+    <div style={{
+      flex: 1, padding: "14px 0", textAlign: "center",
+      borderLeft: border ? "1px solid var(--border)" : undefined,
+    }}>
+      <div style={{ fontSize: 28, fontWeight: 700, color: amber ? "var(--accent)" : "var(--text-primary)", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", marginTop: 4 }}>{label}</div>
     </div>
   );
 }
 
-function RankedList({
-  items,
-  max,
-  useFilmGradient,
-}: {
-  items: { label: string; count: number; slug?: string }[];
-  max: number;
-  useFilmGradient?: boolean;
-}) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      {items.map((r, i) => {
-        const gradient = useFilmGradient && r.slug ? FILM_GRADIENTS[r.slug] : undefined;
-        const barStyle: React.CSSProperties = gradient
-          ? { width: `${(r.count / max) * 100}%`, background: `linear-gradient(to right, ${gradient[0]}, ${gradient[1]})` }
-          : { width: `${(r.count / max) * 100}%`, backgroundColor: "var(--accent)" };
+    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--text-tertiary)", borderTop: "1px solid var(--border)", paddingTop: 12, marginBottom: 10 }}>
+      {children}
+    </div>
+  );
+}
 
-        return (
-          <div key={r.label}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs flex-1 truncate" style={{ color: "var(--text-primary)" }}>
-                {r.label}
-              </span>
-              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
-                {r.count}
-              </span>
-            </div>
-            <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
-              <div
-                className="h-full rounded-full transition-all"
-                style={barStyle}
-              />
-            </div>
-          </div>
-        );
-      })}
+function BarRow({ label, count, pct, color }: { label: string; count: number; pct: number; color: string }) {
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text-primary)", marginBottom: 3 }}>
+        <span>{label}</span>
+        <span style={{ color: "var(--text-tertiary)" }}>{count}</span>
+      </div>
+      <div style={{ height: 3, background: "var(--border)", borderRadius: 2 }}>
+        <div style={{ height: 3, width: `${pct}%`, background: color, borderRadius: 2 }} />
+      </div>
     </div>
   );
 }

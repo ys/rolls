@@ -213,9 +213,10 @@ func FromMarkdown(path string) (Roll, error) {
 				metadata.ArchivedAt = t
 			}
 		case "tags":
-			metadata.Tags = strings.Split(value, ",")
-			for i, tag := range metadata.Tags {
-				metadata.Tags[i] = strings.TrimSpace(tag)
+			for _, tag := range strings.Split(value, ",") {
+				if t := strings.TrimSpace(tag); t != "" {
+					metadata.Tags = append(metadata.Tags, t)
+				}
 			}
 		case "contact_sheet_url":
 			metadata.ContactSheetURL = value

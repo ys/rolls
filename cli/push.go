@@ -288,6 +288,9 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			if r.Metadata.PushPull != nil {
 				rj.PushPull = r.Metadata.PushPull
 			}
+			if r.Metadata.ContactSheetURL != "" {
+				rj.ContactSheetURL = r.Metadata.ContactSheetURL
+			}
 			payload.Rolls = append(payload.Rolls, rj)
 		}
 
