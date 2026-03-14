@@ -13,36 +13,18 @@ import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 import Sheet from "@/components/Sheet";
 import FormButton from "@/components/FormButton";
-import {
-  ThermometerColdIcon,
-  MailboxIcon,
-  ScanIcon,
-} from "@phosphor-icons/react";
-
 const STATUS_NEXT: Partial<
-  Record<
-    string,
-    { field: string; label: string; icon: React.ReactNode; color: string }
-  >
+  Record<string, { field: string; label: string }>
 > = {
-  LOADED: {
-    field: "fridge_at",
-    label: "Done",
-    icon: <ThermometerColdIcon />,
-    color: "bg-cyan-500",
-  },
-  FRIDGE: {
-    field: "lab_at",
-    label: "Send to Lab",
-    icon: <MailboxIcon />,
-    color: "bg-orange-500",
-  },
-  LAB: {
-    field: "scanned_at",
-    label: "Scanned",
-    icon: <ScanIcon />,
-    color: "bg-green-500",
-  },
+  LOADED: { field: "fridge_at", label: "To Fridge" },
+  FRIDGE: { field: "lab_at",    label: "To Lab" },
+  LAB:    { field: "scanned_at", label: "Scanned" },
+};
+
+const STATUS_COLOUR: Record<string, string> = {
+  LOADED: "var(--status-loaded-bg)",
+  FRIDGE: "var(--status-fridge-bg)",
+  LAB:    "var(--status-lab-bg)",
 };
 
 type RollRow = Roll & {
@@ -98,8 +80,8 @@ function Checkbox({ checked }: { checked: boolean }) {
       style={{
         backgroundColor: "transparent",
         borderColor: checked
-          ? "var(--darkroom-accent)"
-          : "var(--darkroom-border)",
+          ? "var(--accent)"
+          : "var(--border)",
       }}
     >
       {checked && (
@@ -109,7 +91,7 @@ function Checkbox({ checked }: { checked: boolean }) {
           viewBox="0 0 24 24"
           stroke="currentColor"
           strokeWidth={3}
-          style={{ color: "var(--darkroom-accent)" }}
+          style={{ color: "var(--accent)" }}
         >
           <path
             strokeLinecap="round"
@@ -127,117 +109,71 @@ function RollItem({
   editing,
   selected,
   onToggle,
-  onAdvance,
-  onLabAction,
-  isRecent,
 }: {
   roll: RollRow;
   editing: boolean;
   selected: boolean;
   onToggle: () => void;
-  onAdvance: (field: string) => void;
-  onLabAction: () => void;
-  isRecent: boolean;
 }) {
   const status = rollStatus(roll);
-  const next = editing ? undefined : STATUS_NEXT[status];
-  const dateStr = roll.shot_at
-    ? new Date(roll.shot_at).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })
-    : null;
   const cam = cameraLabel(roll);
   const film = filmLabel(roll);
-  const notePreview = firstNotesLine(roll.notes);
+  const pushPullStr =
+    roll.push_pull != null
+      ? `${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`
+      : null;
 
-  // Determine left border styling
-  const hasGradient = false; //roll.film_gradient_from && roll.film_gradient_to;
-  const borderStyle = hasGradient
-    ? {
-        borderImage: `linear-gradient(to bottom, ${roll.film_gradient_from}, ${roll.film_gradient_to}) 1`,
-        borderImageSlice: 1,
-      }
-    : {
-        borderColor: isRecent ? "var(--darkroom-accent)" : "#444",
-      };
+  // Date line varies by status
+  let dateLine = "";
+  if (status === "LOADED") {
+    dateLine = roll.shot_at
+      ? new Date(roll.shot_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+      : "";
+  } else if (status === "FRIDGE") {
+    const d = roll.fridge_at
+      ? new Date(roll.fridge_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+      : "";
+    dateLine = [d, pushPullStr].filter(Boolean).join(" · ");
+  } else if (status === "LAB") {
+    dateLine = roll.lab_name || (roll.lab_at
+      ? new Date(roll.lab_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+      : "");
+  }
 
-  const cardBase = "py-4 border-l-2";
-
-  const mainContent = (
-    <>
-      {editing && <Checkbox checked={selected} />}
-      <div className="flex-1 min-w-0 pl-3">
-        <div
-          className="font-semibold"
-          style={{ color: "var(--darkroom-text-primary)" }}
-        >
-          {roll.roll_number}
-        </div>
-        <div
-          className="text-xs uppercase tracking-wide mt-0.5"
-          style={{ color: "var(--darkroom-text-secondary)" }}
-        >
-          {cam && film ? `${cam} • ${film}` : cam || film || "—"}
-          {roll.push_pull != null &&
-            ` • ${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`}
-        </div>
-        <div
-          className="text-xs mt-1 uppercase"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
-        >
-          {status}
-          {dateStr && ` • ${dateStr}`}
-        </div>
-        {!editing && notePreview && (
-          <div
-            className="text-xs italic mt-1 truncate"
-            style={{ color: "var(--darkroom-text-tertiary)" }}
-          >
-            {notePreview}
+  const inner = (
+    <div
+      className="flex items-center justify-between px-5 py-3 border-b"
+      style={{ borderColor: "var(--border-subtle)" }}
+    >
+      <div className="flex items-center gap-3">
+        {editing && <Checkbox checked={selected} />}
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+            {roll.roll_number}
           </div>
-        )}
+          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3, letterSpacing: "0.04em" }}>
+            {cam && film ? `${cam} · ${film}` : cam || film || "—"}
+          </div>
+          {dateLine && (
+            <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>
+              {dateLine}
+            </div>
+          )}
+        </div>
       </div>
-      {!editing && next && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (next.field === "lab_at") {
-              onLabAction();
-            } else {
-              onAdvance(next.field);
-            }
-          }}
-          className="flex items-center gap-2 shrink-0 px-3 py-1.5 text-xs font-medium transition-colors active:scale-95"
-          style={{
-            color: "var(--darkroom-text-primary)",
-            backgroundColor: "transparent",
-            border: `1px solid var(--darkroom-border)`,
-          }}
-        >
-          {next.label}
-        </button>
-      )}
-    </>
+      <div style={{ fontSize: 14, color: "var(--border)", flexShrink: 0 }}>›</div>
+    </div>
   );
 
   return (
     <li>
-      <div className={cardBase} style={borderStyle}>
-        {editing ? (
-          <div className="flex items-start gap-3 px-4" onClick={onToggle}>
-            {mainContent}
-          </div>
-        ) : (
-          <Link
-            href={`/roll/${roll.roll_number}`}
-            className="flex items-start gap-3 px-4 active:bg-zinc-900/30"
-          >
-            {mainContent}
-          </Link>
-        )}
-      </div>
+      {editing ? (
+        <div onClick={onToggle} style={{ cursor: "pointer" }}>{inner}</div>
+      ) : (
+        <Link href={`/roll/${roll.roll_number}`} style={{ textDecoration: "none" }}>
+          {inner}
+        </Link>
+      )}
     </li>
   );
 }
@@ -362,29 +298,12 @@ export default function HomeClient() {
 
   if (!mounted || (isLoading && !data)) {
     return (
-      <div className="space-y-6">
-        <div
-          className="h-6 w-24 animate-pulse"
-          style={{ backgroundColor: "var(--darkroom-border)" }}
-        />
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="py-4 border-l-2 pl-3"
-            style={{ borderColor: "#444" }}
-          >
-            <div
-              className="h-4 w-16 mb-2 animate-pulse"
-              style={{ backgroundColor: "var(--darkroom-border)" }}
-            />
-            <div
-              className="h-3 w-32 mb-1 animate-pulse"
-              style={{ backgroundColor: "var(--darkroom-border-subtle)" }}
-            />
-            <div
-              className="h-3 w-24 animate-pulse"
-              style={{ backgroundColor: "var(--darkroom-border-subtle)" }}
-            />
+      <div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="px-5 py-3 border-b animate-pulse" style={{ borderColor: "var(--border-subtle)" }}>
+            <div className="h-4 w-14 mb-2 rounded" style={{ backgroundColor: "var(--border)" }} />
+            <div className="h-3 w-36 mb-1 rounded" style={{ backgroundColor: "var(--border-subtle)" }} />
+            <div className="h-3 w-20 rounded" style={{ backgroundColor: "var(--border-subtle)" }} />
           </div>
         ))}
       </div>
@@ -394,9 +313,7 @@ export default function HomeClient() {
   if (!data) {
     return (
       <div className="flex items-center justify-center py-16">
-        <div style={{ color: "var(--darkroom-text-secondary)" }}>
-          No data available
-        </div>
+        <div style={{ color: "var(--text-secondary)" }}>No data available</div>
       </div>
     );
   }
@@ -413,7 +330,6 @@ export default function HomeClient() {
   const availableActions: Array<{
     field: string;
     label: string;
-    color: string;
   }> = [];
   for (const num of selected) {
     const roll = rollMap.get(num);
@@ -427,161 +343,80 @@ export default function HomeClient() {
 
   return (
     <>
-      <PullToRefresh
-        onRefresh={async () => {
-          router.refresh();
-        }}
-      >
+      <PullToRefresh onRefresh={async () => { router.refresh(); }}>
         <div>
+          {/* Page header */}
           <div
-            className="flex items-center justify-between p-4 border-b mb-6"
-            style={{ borderColor: "var(--darkroom-border)" }}
+            className="flex items-center justify-between border-b"
+            style={{ borderColor: "var(--border)", padding: "56px 20px 14px" }}
           >
-            <h1
-              className="text-sm font-semibold uppercase tracking-wide"
-              style={{ color: "var(--darkroom-text-primary)" }}
-            >
-              ROLLS
+            <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>
+              Rolls
             </h1>
-            <div className="flex items-center gap-3">
-              <div
-                className="text-xs uppercase"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
+            {rolls.length > 0 && !editing && (
+              <button
+                onClick={enterEdit}
+                style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}
               >
-                {rolls.length} ACTIVE
-              </div>
-              {rolls.length > 0 && !editing && (
-                <button
-                  onClick={enterEdit}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                  style={{
-                    color: "var(--darkroom-text-secondary)",
-                    backgroundColor: "transparent",
-                    border: `1px solid var(--darkroom-border)`,
-                  }}
-                >
-                  Edit
-                </button>
-              )}
-            </div>
+                Edit
+              </button>
+            )}
           </div>
 
           {rolls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <svg
-                className="w-12 h-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                style={{ color: "var(--darkroom-text-disabled)" }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5M12 17.25h8.25"
-                />
-              </svg>
-              <p
-                className="text-center text-xs"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
-              >
-                No active rolls.
-                <br />
-                Tap{" "}
-                <strong style={{ color: "var(--darkroom-text-secondary)" }}>
-                  +
-                </strong>{" "}
-                to load a new roll.
+              <p className="text-center" style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.6 }}>
+                No active rolls.<br />
+                Tap <strong style={{ color: "var(--accent)" }}>+ Load</strong> to start one.
               </p>
             </div>
           ) : (
-            <div className="space-y-8 pb-24">
-              {
-                // Grouped by status
-                [
-                  { label: "Loaded", rolls: loaded },
-                  { label: "In the Fridge", rolls: inFridge },
-                  { label: "At the Lab", rolls: atLab },
-                ].map(
-                  ({ label, rolls: sectionRolls }) =>
-                    sectionRolls.length > 0 && (
-                      <section key={label}>
-                        <div className="flex items-baseline justify-between mb-3 px-4">
-                          <div className="flex items-baseline gap-2">
-                            <h2
-                              className="text-xs font-semibold uppercase tracking-wider"
-                              style={{
-                                color: "var(--darkroom-text-secondary)",
-                              }}
-                            >
-                              {label}
-                            </h2>
-                            <span
-                              className="text-xs"
-                              style={{ color: "var(--darkroom-text-tertiary)" }}
-                            >
-                              {sectionRolls.length}
-                            </span>
-                          </div>
-                          {editing && (
-                            <button
-                              onClick={() => {
-                                const nums = sectionRolls.map(
-                                  (r) => r.roll_number,
-                                );
-                                const allSel = nums.every((n) =>
-                                  selected.has(n),
-                                );
-                                setSelected((prev) => {
-                                  const s = new Set(prev);
-                                  if (allSel) {
-                                    nums.forEach((n) => s.delete(n));
-                                    haptics.light();
-                                  } else {
-                                    nums.forEach((n) => s.add(n));
-                                    haptics.medium();
-                                  }
-                                  return s;
-                                });
-                              }}
-                              className="text-xs font-medium uppercase active:opacity-50 transition-opacity"
-                              style={{
-                                color: sectionRolls.every((r) =>
-                                  selected.has(r.roll_number),
-                                )
-                                  ? "var(--darkroom-accent)"
-                                  : "var(--darkroom-text-tertiary)",
-                              }}
-                            >
-                              {sectionRolls.every((r) =>
-                                selected.has(r.roll_number),
-                              )
-                                ? "Deselect"
-                                : "Select all"}
-                            </button>
-                          )}
-                        </div>
-                        <ul className="space-y-2">
-                          {sectionRolls.map((roll) => (
-                            <RollItem
-                              key={roll.roll_number}
-                              roll={roll}
-                              editing={editing}
-                              selected={selected.has(roll.roll_number)}
-                              onToggle={() => toggleSelect(roll.roll_number)}
-                              onAdvance={(field) =>
-                                advanceSingle(roll.roll_number, field)
-                              }
-                              onLabAction={() => openLabSheet(roll.roll_number)}
-                              isRecent={rollStatus(roll) === "LOADED"}
-                            />
-                          ))}
-                        </ul>
-                      </section>
-                    ),
-                )
-              }
+            <div className="pb-24">
+              {[
+                { statusKey: "LOADED", label: "Loaded",  rolls: loaded },
+                { statusKey: "FRIDGE", label: "Fridge",  rolls: inFridge },
+                { statusKey: "LAB",    label: "Lab",     rolls: atLab },
+              ].map(({ statusKey, label, rolls: sectionRolls }) =>
+                sectionRolls.length > 0 && (
+                  <section key={label}>
+                    {/* Group header: ▪ LABEL ───── */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 20px 6px" }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: STATUS_COLOUR[statusKey], flexShrink: 0 }}>
+                        ▪ {label}
+                      </span>
+                      <div style={{ flex: 1, height: 1, backgroundColor: "var(--border)" }} />
+                      {editing && (
+                        <button
+                          onClick={() => {
+                            const nums = sectionRolls.map((r) => r.roll_number);
+                            const allSel = nums.every((n) => selected.has(n));
+                            setSelected((prev) => {
+                              const s = new Set(prev);
+                              if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
+                              else { nums.forEach((n) => s.add(n)); haptics.medium(); }
+                              return s;
+                            });
+                          }}
+                          style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
+                        >
+                          {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "All"}
+                        </button>
+                      )}
+                    </div>
+                    <ul>
+                      {sectionRolls.map((roll) => (
+                        <RollItem
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                        />
+                      ))}
+                    </ul>
+                  </section>
+                ),
+              )}
             </div>
           )}
         </div>
@@ -597,7 +432,7 @@ export default function HomeClient() {
           <div className="space-y-1">
             <label
               className="block text-[10px] uppercase tracking-widest"
-              style={{ color: "var(--darkroom-text-secondary)" }}
+              style={{ color: "var(--text-secondary)" }}
             >
               Lab name <span className="normal-case">(optional)</span>
             </label>
@@ -609,8 +444,8 @@ export default function HomeClient() {
               autoFocus
               className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
               style={{
-                borderColor: "var(--darkroom-border)",
-                color: "var(--darkroom-text-primary)",
+                borderColor: "var(--border)",
+                color: "var(--text-primary)",
               }}
             />
           </div>
@@ -632,8 +467,8 @@ export default function HomeClient() {
             <div
               className="pointer-events-auto h-12 flex items-center gap-3 px-4 border"
               style={{
-                backgroundColor: "var(--darkroom-card)",
-                borderColor: "var(--darkroom-border)",
+                backgroundColor: "var(--card)",
+                borderColor: "var(--border)",
                 transformOrigin: "center bottom",
                 animation: exiting
                   ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
@@ -644,18 +479,18 @@ export default function HomeClient() {
                 onClick={exitEdit}
                 disabled={exiting}
                 className="text-xs font-semibold px-1 active:opacity-50 transition-opacity disabled:opacity-40"
-                style={{ color: "var(--darkroom-accent)" }}
+                style={{ color: "var(--accent)" }}
               >
                 DONE
               </button>
               <div
                 className="w-px h-4"
-                style={{ backgroundColor: "var(--darkroom-border)" }}
+                style={{ backgroundColor: "var(--border)" }}
               />
               {selected.size === 0 ? (
                 <span
                   className="text-xs px-1"
-                  style={{ color: "var(--darkroom-text-tertiary)" }}
+                  style={{ color: "var(--text-tertiary)" }}
                 >
                   Select rolls…
                 </span>
@@ -663,7 +498,7 @@ export default function HomeClient() {
                 <>
                   <span
                     className="text-xs tabular-nums"
-                    style={{ color: "var(--darkroom-text-secondary)" }}
+                    style={{ color: "var(--text-secondary)" }}
                   >
                     {selected.size} selected
                   </span>
@@ -671,15 +506,15 @@ export default function HomeClient() {
                     <Fragment key={field}>
                       <div
                         className="w-px h-4"
-                        style={{ backgroundColor: "var(--darkroom-border)" }}
+                        style={{ backgroundColor: "var(--border)" }}
                       />
                       <button
                         onClick={() => applyStatus(field)}
                         disabled={applying}
                         className="text-xs font-medium px-3 py-1.5 border active:scale-95 transition-transform disabled:opacity-50"
                         style={{
-                          color: "var(--darkroom-accent)",
-                          borderColor: "var(--darkroom-accent)",
+                          color: "var(--accent)",
+                          borderColor: "var(--accent)",
                           backgroundColor: "transparent",
                         }}
                       >

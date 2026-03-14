@@ -3,10 +3,13 @@
 import { useState } from "react";
 import type { Film } from "@/lib/db";
 import Sheet from "@/components/Sheet";
-import FormButton from "@/components/FormButton";
+import { haptics } from "@/lib/haptics";
 
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
+const TYPE_OPTIONS = [
+  { value: "colour", label: "Colour" },
+  { value: "bw",     label: "B&W" },
+  { value: "slide",  label: "Slide" },
+];
 
 export default function NewFilmSheet({
   open,
@@ -23,6 +26,7 @@ export default function NewFilmSheet({
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [iso, setIso] = useState("");
+  const [filmType, setFilmType] = useState("colour");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,7 +34,6 @@ export default function NewFilmSheet({
     e.preventDefault();
     setSaving(true);
     setError("");
-
     const resp = await fetch("/api/films", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
@@ -39,46 +42,93 @@ export default function NewFilmSheet({
         name,
         nickname: nickname || undefined,
         iso: iso ? Number(iso) : undefined,
-        color: true,
+        color: filmType !== "bw",
         show_iso: !!iso,
       }),
     });
-
     if (!resp.ok) {
       const data = await resp.json();
       setError(data.error ?? "Failed to create film");
       setSaving(false);
       return;
     }
-
     const film = await resp.json();
-    setBrand(""); setName(""); setNickname(""); setIso("");
+    setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
+    haptics.success();
     onCreated(film);
   }
 
+  const fieldLabel: React.CSSProperties = {
+    fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+    color: "var(--text-tertiary)", marginBottom: 4, display: "block",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)",
+    padding: "8px 0", fontSize: 14, color: "var(--text-primary)", fontFamily: "inherit",
+    outline: "none", caretColor: "var(--accent)",
+  };
+
   return (
     <Sheet open={open} onClose={onClose} title="New Film">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-1">
-          <label className={labelCls}>Brand</label>
-          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required className={inputCls} placeholder="Kodak" />
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div>
+          <label style={fieldLabel}>Brand</label>
+          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required style={inputStyle} placeholder="Kodak" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>Name</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} placeholder="Portra 400" />
+        <div>
+          <label style={fieldLabel}>Name</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} placeholder="Portra 400" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>Nickname</label>
-          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} className={inputCls} placeholder="optional" />
+        <div>
+          <label style={fieldLabel}>Nickname</label>
+          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} style={inputStyle} placeholder="optional" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>ISO</label>
-          <input type="number" value={iso} onChange={(e) => setIso(e.target.value)} className={inputCls} placeholder="400" />
+        <div>
+          <label style={fieldLabel}>ISO</label>
+          <input type="number" value={iso} onChange={(e) => setIso(e.target.value)} style={inputStyle} placeholder="400" />
         </div>
-        {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
-        <FormButton type="submit" disabled={saving}>
+        <div>
+          <label style={fieldLabel}>Type</label>
+          <div style={{ display: "flex", gap: 0, marginTop: 4 }}>
+            {TYPE_OPTIONS.map((opt) => {
+              const active = filmType === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { setFilmType(opt.value); haptics.light(); }}
+                  style={{
+                    flex: 1, padding: "8px 0", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "inherit",
+                    border: "1px solid var(--border)",
+                    marginLeft: opt.value === "colour" ? 0 : -1,
+                    backgroundColor: active ? "var(--text-primary)" : "transparent",
+                    color: active ? "var(--bg)" : "var(--text-secondary)",
+                    cursor: "pointer", position: "relative", zIndex: active ? 1 : 0,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {error && <p style={{ fontSize: 11, color: "#c2410c", margin: 0 }}>{error}</p>}
+        <button
+          type="submit"
+          disabled={saving}
+          style={{
+            width: "100%", padding: "14px 0",
+            backgroundColor: saving ? "var(--border)" : "var(--accent)",
+            color: saving ? "var(--text-tertiary)" : "#fff",
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            fontFamily: "inherit",
+          }}
+        >
           {saving ? "Saving…" : "Add Film"}
-        </FormButton>
+        </button>
       </form>
     </Sheet>
   );

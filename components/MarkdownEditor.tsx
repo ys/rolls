@@ -165,11 +165,11 @@ export function MarkdownEditor({
 
       {/* Markdown Toolbar */}
       {showToolbar && (
-      <div className="flex gap-1 pt-2 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex gap-1 pt-2 border-t" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={() => insertMarkdown("**", "**")}
           className="px-2 py-1 text-xs font-bold transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Bold"
         >
           B
@@ -177,7 +177,7 @@ export function MarkdownEditor({
         <button
           onClick={() => insertMarkdown("*", "*")}
           className="px-2 py-1 text-xs italic transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Italic"
         >
           I
@@ -185,12 +185,12 @@ export function MarkdownEditor({
         <button
           onClick={() => insertMarkdown("`", "`")}
           className="px-2 py-1 text-xs font-mono transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Code"
         >
           &lt;/&gt;
         </button>
-        <div className="w-px h-5 self-center" style={{ backgroundColor: "var(--darkroom-border)" }} />
+        <div className="w-px h-5 self-center" style={{ backgroundColor: "var(--border)" }} />
         <button
           onClick={() => {
             const textarea = textareaRef.current;
@@ -206,7 +206,7 @@ export function MarkdownEditor({
             }, 0);
           }}
           className="px-2 py-1 text-xs transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Bullet list"
         >
           •
@@ -226,7 +226,7 @@ export function MarkdownEditor({
             }, 0);
           }}
           className="px-2 py-1 text-xs transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Numbered list"
         >
           1.
@@ -246,12 +246,12 @@ export function MarkdownEditor({
             }, 0);
           }}
           className="px-2 py-1 text-xs transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Checklist"
         >
           ☐
         </button>
-        <div className="w-px h-5 self-center" style={{ backgroundColor: "var(--darkroom-border)" }} />
+        <div className="w-px h-5 self-center" style={{ backgroundColor: "var(--border)" }} />
         <button
           onClick={() => {
             const textarea = textareaRef.current;
@@ -267,7 +267,7 @@ export function MarkdownEditor({
             }, 0);
           }}
           className="px-2 py-1 text-xs transition-colors hover:text-amber-400"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
+          style={{ color: "var(--text-tertiary)" }}
           title="Heading"
         >
           H

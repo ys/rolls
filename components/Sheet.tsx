@@ -102,11 +102,12 @@ export default function Sheet({
       {/* Sheet */}
       <div
         ref={sheetRef}
-        className="relative w-full max-w-lg rounded-t-3xl shadow-2xl"
+        className="relative w-full max-w-lg"
         style={{
           transform: "translateY(100%)",
           paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
-          backgroundColor: "var(--darkroom-bg)",
+          backgroundColor: "var(--bg)",
+          borderTop: "1px solid var(--border)",
         }}
       >
         {/* Handle — drag target */}
@@ -117,17 +118,17 @@ export default function Sheet({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "var(--darkroom-border)" }} />
+          <div style={{ width: 36, height: 3, borderRadius: 2, backgroundColor: "var(--border)" }} />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <div className="w-8" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>{title}</h2>
+          <h2 style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)" }}>{title}</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center text-xl leading-none transition-opacity active:opacity-50"
-            style={{ color: "var(--darkroom-text-secondary)" }}
+            style={{ color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}
           >
             ×
           </button>

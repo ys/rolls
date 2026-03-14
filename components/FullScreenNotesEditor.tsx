@@ -107,7 +107,7 @@ export function FullScreenNotesEditor({
     <div
       className="fixed inset-0 z-50 flex flex-col"
       style={{
-        backgroundColor: "var(--darkroom-bg)",
+        backgroundColor: "var(--bg)",
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
@@ -115,25 +115,25 @@ export function FullScreenNotesEditor({
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b"
-        style={{ borderColor: "var(--darkroom-border)" }}
+        style={{ borderColor: "var(--border)" }}
       >
         <button
           onClick={handleClose}
           className="p-2 -ml-2 active:scale-90 transition-transform"
           aria-label="Close"
         >
-          <X size={20} weight="bold" style={{ color: "var(--darkroom-text-secondary)" }} />
+          <X size={20} weight="bold" style={{ color: "var(--text-secondary)" }} />
         </button>
         <div className="flex-1 text-center">
           <div
             className="text-[11px] font-semibold uppercase tracking-wide"
-            style={{ color: "var(--darkroom-text-primary)" }}
+            style={{ color: "var(--text-primary)" }}
           >
             {rollNumber}
           </div>
           <div
             className="text-[9px] uppercase tracking-wider mt-0.5"
-            style={{ color: "var(--darkroom-text-tertiary)" }}
+            style={{ color: "var(--text-tertiary)" }}
           >
             Notes
           </div>
@@ -144,7 +144,7 @@ export function FullScreenNotesEditor({
             className="p-2 -mr-2 active:scale-90 transition-transform"
             aria-label="Actions"
           >
-            <DotsThree size={20} weight="bold" style={{ color: "var(--darkroom-accent)" }} />
+            <DotsThree size={20} weight="bold" style={{ color: "var(--accent)" }} />
           </button>
           {showMenu && (
             <>
@@ -155,8 +155,8 @@ export function FullScreenNotesEditor({
               <div
                 className="absolute right-0 top-full mt-2 py-1 border z-50"
                 style={{
-                  backgroundColor: "var(--darkroom-card)",
-                  borderColor: "var(--darkroom-border)",
+                  backgroundColor: "var(--bg)",
+                  borderColor: "var(--border)",
                   borderRadius: 8,
                   minWidth: 160,
                 }}
@@ -164,7 +164,7 @@ export function FullScreenNotesEditor({
                 <button
                   onClick={handleEditRoll}
                   className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                  style={{ color: "var(--darkroom-text-primary)" }}
+                  style={{ color: "var(--text-primary)" }}
                 >
                   Edit Roll
                 </button>
@@ -172,7 +172,7 @@ export function FullScreenNotesEditor({
                   <button
                     onClick={() => handleMoveToNext(false)}
                     className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                    style={{ color: "var(--darkroom-text-primary)" }}
+                    style={{ color: "var(--text-primary)" }}
                   >
                     Move to Fridge
                   </button>
@@ -181,7 +181,7 @@ export function FullScreenNotesEditor({
                   <button
                     onClick={() => handleMoveToNext(true)}
                     className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                    style={{ color: "var(--darkroom-text-primary)" }}
+                    style={{ color: "var(--text-primary)" }}
                   >
                     Send to Lab
                   </button>
@@ -190,7 +190,7 @@ export function FullScreenNotesEditor({
                   <button
                     onClick={() => handleMoveToNext(false)}
                     className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                    style={{ color: "var(--darkroom-text-primary)" }}
+                    style={{ color: "var(--text-primary)" }}
                   >
                     Mark as Scanned
                   </button>
@@ -209,7 +209,7 @@ export function FullScreenNotesEditor({
           placeholder="Add notes about this roll..."
           className="text-sm bg-transparent"
           style={{
-            color: "var(--darkroom-text-primary)",
+            color: "var(--text-primary)",
             fontFamily: "inherit",
             lineHeight: "1.6",
           }}
@@ -218,9 +218,9 @@ export function FullScreenNotesEditor({
       </div>
 
       {/* Status Bar */}
-      <div className="flex gap-6 px-4 py-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex gap-6 px-4 py-3 border-t" style={{ borderColor: "var(--border)" }}>
         <div className="flex-1">
-          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Status</div>
+          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>Status</div>
           <div
             className="text-[10px] font-medium"
             style={{
@@ -230,20 +230,20 @@ export function FullScreenNotesEditor({
                      status === "SCANNED" ? "#22c55e" :
                      status === "PROCESSED" ? "#a855f7" :
                      status === "UPLOADED" ? "#3b82f6" :
-                     "var(--darkroom-text-secondary)",
+                     "var(--text-secondary)",
             }}
           >
             {status}
           </div>
         </div>
         <div className="flex-1">
-          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>{dateLabel}</div>
-          <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>{dateStr || "—"}</div>
+          <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>{dateLabel}</div>
+          <div className="text-[10px]" style={{ color: "var(--text-primary)" }}>{dateStr || "—"}</div>
         </div>
         {roll.push_pull != null && (
           <div className="flex-1">
-            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--darkroom-text-tertiary)" }}>Push/Pull</div>
-            <div className="text-[10px] font-mono" style={{ color: "var(--darkroom-text-primary)" }}>
+            <div className="text-[8px] uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>Push/Pull</div>
+            <div className="text-[10px] font-mono" style={{ color: "var(--text-primary)" }}>
               {roll.push_pull > 0 ? "+" : ""}{roll.push_pull}
             </div>
           </div>

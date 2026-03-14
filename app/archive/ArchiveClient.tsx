@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-// Icons removed - using text-only layout
 import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
@@ -12,23 +11,10 @@ import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
 import { haptics } from "@/lib/haptics";
 
-const STATUS_DOT: Record<string, string> = {
-  SCANNED: "bg-green-400",
-  PROCESSED: "bg-purple-400",
-  UPLOADED: "bg-blue-400",
-  ARCHIVED: "bg-zinc-400",
-};
-
-const STATUS_NEXT: Partial<
-  Record<string, { field: string; label: string; color: string }>
-> = {
-  SCANNED: {
-    field: "processed_at",
-    label: "Processed",
-    color: "bg-purple-500",
-  },
-  PROCESSED: { field: "uploaded_at", label: "Uploaded", color: "bg-blue-500" },
-  UPLOADED: { field: "archived_at", label: "Archived", color: "bg-zinc-500" },
+const STATUS_NEXT: Partial<Record<string, { field: string; label: string }>> = {
+  SCANNED:   { field: "processed_at", label: "Processed" },
+  PROCESSED: { field: "uploaded_at",  label: "Uploaded" },
+  UPLOADED:  { field: "archived_at",  label: "Archived" },
 };
 
 type RollRow = Roll & {
@@ -75,22 +61,16 @@ function filmLabel(roll: RollRow): string {
 function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
-      className={`w-5 h-5 border-2 flex items-center justify-center shrink-0 transition-colors ${checked ? "border-amber-400" : "border-zinc-600"}`}
-      style={{ backgroundColor: "transparent" }}
+      style={{
+        width: 20, height: 20,
+        border: `2px solid ${checked ? "var(--accent)" : "var(--border)"}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0, backgroundColor: "transparent",
+      }}
     >
       {checked && (
-        <svg
-          className="w-3 h-3 text-amber-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={3}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 13l4 4L19 7"
-          />
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       )}
     </div>
@@ -99,18 +79,25 @@ function Checkbox({ checked }: { checked: boolean }) {
 
 function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-zinc-900 select-none relative">
-      <div className="absolute top-0 inset-x-0 flex justify-around px-2 py-1">
+    <div
+      style={{
+        width: "100%", height: "100%", minHeight: 120,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        border: "1px dashed var(--border)", position: "relative",
+        backgroundColor: "var(--bg)",
+      }}
+    >
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", justifyContent: "space-around", padding: "4px 8px" }}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-800" />
+          <div key={i} style={{ width: 8, height: 6, backgroundColor: "var(--border)" }} />
         ))}
       </div>
-      <span className="text-zinc-500 text-[13px] font-mono tracking-widest uppercase">
+      <span style={{ color: "var(--text-tertiary)", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.1em", textTransform: "uppercase" }}>
         {rollNumber}
       </span>
-      <div className="absolute bottom-0 inset-x-0 flex justify-around px-2 py-1">
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-around", padding: "4px 8px" }}>
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="w-2 h-1.5 rounded-sm bg-zinc-800" />
+          <div key={i} style={{ width: 8, height: 6, backgroundColor: "var(--border)" }} />
         ))}
       </div>
     </div>
@@ -129,96 +116,75 @@ function GridCard({
   selected: boolean;
   onToggle: () => void;
 }) {
-  const status = rollStatus(roll);
   const film = filmLabel(roll);
   const camera = cameraLabel(roll);
+  const pushPull = roll.push_pull != null
+    ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
+    : "";
   const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })
     : null;
 
-  const hasImage = !!roll.contact_sheet_url;
-  const containerBase = hasImage
-    ? "relative w-full overflow-hidden  mb-8"
-    : "relative w-full aspect-[3/2] overflow-hidden bg-zinc-800";
-
   const label = (
-    <div className="flex-1 min-w-0 pl-3 mb-3">
-      <div
-        className="flex gap-3 items-center font-semibold"
-        style={{ color: "var(--darkroom-text-primary)" }}
-      >
-        <span>{roll.roll_number}</span>
-        {roll.push_pull != null && (
-          <span
-            className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0 "
-            style={{
-              color: "var(--darkroom-text-secondary)",
-              backgroundColor: "var(--darkroom-border)",
-            }}
-          >
-            {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
-          </span>
+    <div style={{ marginBottom: 6 }}>
+      {/* Line 1: roll_number · camera */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 4, fontSize: 11, color: "var(--text-primary)" }}>
+        <span style={{ fontWeight: 700 }}>{roll.roll_number}</span>
+        {camera && (
+          <>
+            <span style={{ color: "var(--border)" }}>·</span>
+            <span style={{ color: "var(--text-secondary)" }}>{camera}</span>
+          </>
         )}
       </div>
-      <div
-        className="text-[10px] uppercase tracking-wide mt-0.5"
-        style={{ color: "var(--darkroom-text-secondary)" }}
-      >
-        {camera && film ? `${camera} • ${film}` : camera || film || "—"}
-      </div>
-      <div
-        className="text-[10px] mt-1 uppercase"
-        style={{ color: "var(--darkroom-text-tertiary)" }}
-      >
-        {status}
-        {dateStr && ` • ${dateStr}`}
-      </div>
+      {/* Line 2: film+push_pull left, date right */}
+      {(film || dateStr) && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>
+          <span>{film ? `${film}${pushPull}` : ""}</span>
+          {dateStr && <span>{dateStr}</span>}
+        </div>
+      )}
     </div>
   );
 
   const sheet = (
-    <div className={containerBase}>
-      {hasImage ? (
+    <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
+      {roll.contact_sheet_url ? (
         <img
-          src={roll.contact_sheet_url!}
+          src={roll.contact_sheet_url}
           alt={roll.roll_number}
-          className="w-full h-auto block"
+          style={{ width: "100%", height: "auto", display: "block" }}
         />
       ) : (
-        <PlaceholderSheet rollNumber={roll.roll_number} />
+        <div style={{ aspectRatio: "3/2" }}>
+          <PlaceholderSheet rollNumber={roll.roll_number} />
+        </div>
       )}
       {editing && (
-        <div className="absolute top-2 left-2">
+        <div style={{ position: "absolute", top: 8, left: 8 }}>
           <Checkbox checked={selected} />
         </div>
       )}
     </div>
   );
 
+  const containerStyle: React.CSSProperties = {
+    display: "block", width: "100%", textAlign: "left",
+    marginBottom: 24, textDecoration: "none",
+    outline: selected ? `2px solid var(--accent)` : "none",
+    outlineOffset: 2,
+  };
+
   if (editing) {
     return (
-      <button
-        onClick={() => {
-          onToggle();
-          haptics.light();
-        }}
-        className={`w-full text-left transition-transform active:scale-[0.98] ${selected ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-950" : ""}`}
-      >
+      <button onClick={() => { onToggle(); haptics.light(); }} style={containerStyle}>
         {label}
         {sheet}
       </button>
     );
   }
   return (
-    <Link
-      href={`/roll/${roll.roll_number}`}
-      onClick={() => haptics.light()}
-      className="block active:scale-[0.98] transition-transform"
-    >
+    <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} style={containerStyle}>
       {label}
       {sheet}
     </Link>
@@ -237,141 +203,73 @@ function ListRow({
   selected: boolean;
   onToggle: () => void;
 }) {
-  const status = rollStatus(roll);
   const camera = cameraLabel(roll);
   const film = filmLabel(roll);
+  const pushPull = roll.push_pull != null
+    ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
+    : "";
   const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })
+    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
-
-  const hasGradient = roll.film_gradient_from && roll.film_gradient_to;
-  const borderStyle = hasGradient
-    ? {
-        borderImage: `linear-gradient(to bottom, ${roll.film_gradient_from}, ${roll.film_gradient_to}) 1`,
-        borderImageSlice: 1,
-      }
-    : {
-        borderColor: "#444",
-      };
 
   const content = (
     <>
       {editing && <Checkbox checked={selected} />}
-      <div className="flex-1 min-w-0 pl-3">
-        <div
-          className="flex gap-3 items-center font-semibold"
-          style={{ color: "var(--darkroom-text-primary)" }}
-        >
-          <span>{roll.roll_number}</span>
-          {roll.push_pull != null && (
-            <span
-              className="text-[10px] font-mono font-semibold text-white/80 bg-white/15 px-1 py-px rounded leading-tight shrink-0 "
-              style={{
-                color: "var(--darkroom-text-secondary)",
-                backgroundColor: "var(--darkroom-border)",
-              }}
-            >
-              {roll.push_pull > 0 ? `+${roll.push_pull}` : `${roll.push_pull}`}
-            </span>
-          )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+          {roll.roll_number}
         </div>
-        <div
-          className="text-[10px] uppercase tracking-wide mt-0.5"
-          style={{ color: "var(--darkroom-text-secondary)" }}
-        >
-          {camera && film ? `${camera} • ${film}` : camera || film || "—"}
+        <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>
+          {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}` || "—"}
         </div>
-        <div
-          className="text-[10px] mt-1 uppercase"
-          style={{ color: "var(--darkroom-text-tertiary)" }}
-        >
-          {status}
-          {dateStr && ` • ${dateStr}`}
-        </div>
+        {dateStr && (
+          <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>{dateStr}</div>
+        )}
       </div>
       {!editing && roll.contact_sheet_url && (
-        <div className="w-16 h-16 rounded-md overflow-hidden shrink-0">
-          <img
-            src={roll.contact_sheet_url}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+        <div style={{ width: 56, height: 56, overflow: "hidden", flexShrink: 0 }}>
+          <img src={roll.contact_sheet_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       )}
     </>
   );
 
-  const cardBase = "py-4 border-l-2";
+  const rowStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", gap: 12, padding: "12px 0",
+    borderBottom: "1px solid var(--border-subtle)", textDecoration: "none",
+  };
 
   if (editing) {
     return (
       <li>
-        <div className={cardBase} style={borderStyle}>
-          <div
-            className="flex items-start gap-3 px-4"
-            onClick={() => {
-              onToggle();
-              haptics.light();
-            }}
-          >
-            {content}
-          </div>
+        <div style={{ ...rowStyle, cursor: "pointer" }} onClick={() => { onToggle(); haptics.light(); }}>
+          {content}
         </div>
       </li>
     );
   }
   return (
     <li>
-      <div className={cardBase} style={borderStyle}>
-        <Link
-          href={`/roll/${roll.roll_number}`}
-          onClick={() => haptics.light()}
-          className="flex items-start gap-3 px-4 active:bg-zinc-900/30"
-        >
-          {content}
-        </Link>
-      </div>
+      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} style={rowStyle}>
+        {content}
+      </Link>
     </li>
   );
 }
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function GridIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.2 : 1.7}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="8" height="8" rx="1" />
-      <rect x="13" y="3" width="8" height="8" rx="1" />
-      <rect x="3" y="13" width="8" height="8" rx="1" />
-      <rect x="13" y="13" width="8" height="8" rx="1" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
+      <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
     </svg>
   );
 }
 function ListIcon({ active }: { active: boolean }) {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={active ? 2.2 : 1.7}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   );
 }
@@ -379,9 +277,7 @@ function ListIcon({ active }: { active: boolean }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ArchiveClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
-  const headers: HeadersInit = apiKey
-    ? { Authorization: `Bearer ${apiKey}` }
-    : {};
+  const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 
   const { data, isLoading } = useCachedData<ArchiveData>(
     ["rolls", "archive"],
@@ -404,15 +300,10 @@ export default function ArchiveClient() {
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  // Clean up body attribute if component unmounts while editing
   useEffect(() => {
-    return () => {
-      document.body.removeAttribute("data-mass-edit");
-    };
+    return () => { document.body.removeAttribute("data-mass-edit"); };
   }, []);
 
   function toggleSelect(n: string) {
@@ -423,48 +314,32 @@ export default function ArchiveClient() {
     });
   }
   function enterEdit() {
-    setEditing(true);
-    setExiting(false);
-    setSelected(new Set());
+    setEditing(true); setExiting(false); setSelected(new Set());
     document.body.setAttribute("data-mass-edit", "");
     haptics.medium();
   }
   function exitEdit() {
-    setExiting(true);
-    haptics.light();
+    setExiting(true); haptics.light();
     setTimeout(() => {
-      setEditing(false);
-      setExiting(false);
-      setSelected(new Set());
+      setEditing(false); setExiting(false); setSelected(new Set());
       document.body.removeAttribute("data-mass-edit");
     }, 220);
   }
-
   function selectAll() {
     if (!data) return;
     const all = new Set(data.rolls.map((r) => r.roll_number));
-    if (selected.size === all.size) {
-      setSelected(new Set());
-      haptics.light();
-    } else {
-      setSelected(all);
-      haptics.medium();
-    }
+    if (selected.size === all.size) { setSelected(new Set()); haptics.light(); }
+    else { setSelected(all); haptics.medium(); }
   }
   const allSelected = !!data && selected.size === data.rolls.length;
 
   async function applyStatus(field: string) {
     if (selected.size === 0 || applying) return;
-    setApplying(true);
-    haptics.medium();
+    setApplying(true); haptics.medium();
     await fetch("/api/rolls/bulk-update", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({
-        roll_numbers: [...selected],
-        field,
-        value: new Date().toISOString(),
-      }),
+      body: JSON.stringify({ roll_numbers: [...selected], field, value: new Date().toISOString() }),
     });
     invalidateCache("rolls");
     haptics.success();
@@ -476,17 +351,10 @@ export default function ArchiveClient() {
   if (isLoading && !data) {
     return (
       <div>
-        <div
-          className="h-8 w-16 rounded animate-pulse mb-6"
-          style={{ backgroundColor: "var(--darkroom-border)" }}
-        />
-        <div className="space-y-2">
+        <div style={{ height: 32, width: 64, backgroundColor: "var(--border)", marginBottom: 24, animation: "pulse 1.5s infinite" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="w-full aspect-[3/2] rounded-xl animate-pulse"
-              style={{ backgroundColor: "var(--darkroom-border)" }}
-            />
+            <div key={i} style={{ width: "100%", aspectRatio: "3/2", backgroundColor: "var(--border)", animation: "pulse 1.5s infinite" }} />
           ))}
         </div>
       </div>
@@ -495,18 +363,15 @@ export default function ArchiveClient() {
 
   if (!data || data.rolls.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <div className="text-4xl">🎞️</div>
-        <p className="text-zinc-400 text-center">
-          No scanned rolls yet.
-          <br />
-          Scanned rolls appear here.
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "96px 0", gap: 12 }}>
+        <div style={{ fontSize: 32 }}>🎞️</div>
+        <p style={{ color: "var(--text-tertiary)", textAlign: "center", fontSize: 13 }}>
+          No scanned rolls yet.<br />Scanned rolls appear here.
         </p>
       </div>
     );
   }
 
-  // Search + tag filtering
   const searchQuery = search.trim().toLowerCase();
   const filteredRolls = data.rolls.filter((r) => {
     if (selectedTag && !(r.tags ?? []).includes(selectedTag)) return false;
@@ -520,10 +385,7 @@ export default function ArchiveClient() {
     );
   });
 
-  // Collect all unique tags across all rolls
-  const allTags = Array.from(
-    new Set(data.rolls.flatMap((r) => r.tags ?? [])),
-  ).sort();
+  const allTags = Array.from(new Set(data.rolls.flatMap((r) => r.tags ?? []))).sort();
 
   const byYear = new Map<number, RollRow[]>();
   for (const roll of filteredRolls) {
@@ -532,17 +394,11 @@ export default function ArchiveClient() {
     byYear.get(y)!.push(roll);
   }
   const years = Array.from(byYear.keys()).sort((a, b) => b - a);
-  const displayYear = selectedYear ?? years[0];
   const yearsToShow = selectedYear ? [selectedYear] : years;
 
-  // Derive available bulk actions from the statuses of selected rolls
   const rollMap = new Map(data.rolls.map((r) => [r.roll_number, r]));
   const seenFields = new Set<string>();
-  const availableActions: Array<{
-    field: string;
-    label: string;
-    color: string;
-  }> = [];
+  const availableActions: Array<{ field: string; label: string }> = [];
   for (const num of selected) {
     const roll = rollMap.get(num);
     if (!roll) continue;
@@ -553,91 +409,66 @@ export default function ArchiveClient() {
     }
   }
 
+  const chipStyle = (active: boolean): React.CSSProperties => ({
+    whiteSpace: "nowrap", padding: "4px 10px", fontSize: 9, fontWeight: 700,
+    letterSpacing: "0.1em", textTransform: "uppercase",
+    border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
+    color: active ? "var(--accent)" : "var(--text-tertiary)",
+    background: "none", cursor: "pointer", fontFamily: "inherit",
+    flexShrink: 0,
+  });
+
   return (
     <>
-      <PullToRefresh
-        onRefresh={async () => {
-          router.refresh();
-        }}
-      >
+      <PullToRefresh onRefresh={async () => { router.refresh(); }}>
         <div>
           {/* Header */}
-          <div
-            className="flex items-center justify-between p-4 border-b mb-6"
-            style={{ borderColor: "var(--darkroom-border)" }}
-          >
-            <h1
-              className="text-sm font-semibold uppercase tracking-wide"
-              style={{ color: "var(--darkroom-text-primary)" }}
-            >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text-primary)" }}>
               ARCHIVE
             </h1>
-            <div className="flex items-center gap-2">
-              {/* View toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {!editing && (
-                <div className="flex gap-0.5 p-1">
+                <>
                   <button
-                    onClick={() => {
-                      setView("list");
-                      haptics.light();
-                    }}
-                    className={`p-1.5 transition-colors ${view === "list" ? "text-amber-400" : "text-zinc-600"}`}
+                    onClick={() => { setView("list"); haptics.light(); }}
+                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: view === "list" ? "var(--accent)" : "var(--text-tertiary)" }}
                   >
                     <ListIcon active={view === "list"} />
                   </button>
                   <button
-                    onClick={() => {
-                      setView("grid");
-                      haptics.light();
-                    }}
-                    className={`p-1.5 transition-colors ${view === "grid" ? "text-amber-400" : "text-zinc-600"}`}
+                    onClick={() => { setView("grid"); haptics.light(); }}
+                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: view === "grid" ? "var(--accent)" : "var(--text-tertiary)" }}
                   >
                     <GridIcon active={view === "grid"} />
                   </button>
-                </div>
-              )}
-              {/* Edit / Done (top — only shown when NOT editing) */}
-              {!editing && (
-                <button
-                  onClick={enterEdit}
-                  className="text-xs font-medium px-3 py-1.5 transition-colors"
-                  style={{
-                    color: "var(--darkroom-text-secondary)",
-                    backgroundColor: "transparent",
-                    border: "1px solid var(--darkroom-border)",
-                  }}
-                >
-                  Edit
-                </button>
+                  <button
+                    onClick={enterEdit}
+                    style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Edit
+                  </button>
+                </>
               )}
             </div>
           </div>
 
           {/* Search */}
           {!editing && (
-            <div className="relative mb-4">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <svg style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "var(--text-tertiary)", pointerEvents: "none" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search archive…"
-                className="w-full pl-10 pr-3 py-2 text-xs border-b bg-transparent focus:outline-none"
                 style={{
-                  color: "var(--darkroom-text-primary)",
-                  borderColor: "var(--darkroom-border)",
-                  fontFamily: "inherit",
+                  width: "100%", paddingLeft: 20, paddingRight: 0, paddingTop: 8, paddingBottom: 8,
+                  fontSize: 12, color: "var(--text-primary)", background: "none", border: "none",
+                  borderBottom: "1px solid var(--border)", fontFamily: "inherit", outline: "none",
+                  caretColor: "var(--accent)",
                 }}
               />
             </div>
@@ -645,73 +476,38 @@ export default function ArchiveClient() {
 
           {/* Tag filter chips */}
           {allTags.length > 0 && !editing && (
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 16 }}>
               {allTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => {
-                    setSelectedTag(selectedTag === tag ? null : tag);
-                    haptics.light();
-                  }}
-                  className={`whitespace-nowrap px-3 py-1 text-xs font-medium transition-colors shrink-0 border ${selectedTag === tag ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
-                >
+                <button key={tag} onClick={() => { setSelectedTag(selectedTag === tag ? null : tag); haptics.light(); }} style={chipStyle(selectedTag === tag)}>
                   #{tag}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Year slider */}
+          {/* Year filter chips (only if multiple years) */}
           {years.length > 1 && !editing && (
-            <div
-              className="mb-6 p-4 border-b border"
-              style={{ borderColor: "var(--darkroom-border)" }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: "var(--darkroom-text-secondary)" }}
-                >
-                  Year
-                </span>
-                {selectedYear && (
-                  <button
-                    onClick={() => {
-                      setSelectedYear(null);
-                      haptics.light();
-                    }}
-                    className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                  >
-                    View All
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {years.map((year) => (
-                  <button
-                    key={year}
-                    onClick={() => {
-                      setSelectedYear(year);
-                      haptics.light();
-                    }}
-                    className={`whitespace-nowrap px-4 py-2 text-xs font-medium transition-colors border-2 ${(selectedYear ?? years[0]) === year ? "border-amber-400 text-amber-400" : "border-zinc-600 text-zinc-600"}`}
-                  >
-                    {year}
-                  </button>
-                ))}
-              </div>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 20 }}>
+              <button onClick={() => { setSelectedYear(null); haptics.light(); }} style={chipStyle(selectedYear === null)}>
+                All
+              </button>
+              {years.map((year) => (
+                <button key={year} onClick={() => { setSelectedYear(year); haptics.light(); }} style={chipStyle(selectedYear === year)}>
+                  {year}
+                </button>
+              ))}
             </div>
           )}
 
           {/* No results */}
           {filteredRolls.length === 0 && (searchQuery || selectedTag) && (
-            <p className="text-zinc-400 text-center py-12 text-sm">
+            <p style={{ color: "var(--text-tertiary)", textAlign: "center", padding: "48px 0", fontSize: 13 }}>
               No rolls match {selectedTag ? `#${selectedTag}` : `"${search}"`}
             </p>
           )}
 
           {/* Content */}
-          <div className="space-y-8 pb-24">
+          <div style={{ paddingBottom: 96 }}>
             {yearsToShow.map((year) => {
               const yearRolls = byYear.get(year);
               if (!yearRolls) return null;
@@ -720,57 +516,37 @@ export default function ArchiveClient() {
               function toggleYear() {
                 setSelected((prev) => {
                   const s = new Set(prev);
-                  if (allYearSelected) {
-                    yearNums.forEach((n) => s.delete(n));
-                    haptics.light();
-                  } else {
-                    yearNums.forEach((n) => s.add(n));
-                    haptics.medium();
-                  }
+                  if (allYearSelected) { yearNums.forEach((n) => s.delete(n)); haptics.light(); }
+                  else { yearNums.forEach((n) => s.add(n)); haptics.medium(); }
                   return s;
                 });
               }
               return (
-                <section key={year}>
-                  <div className="flex items-baseline justify-between mb-3">
-                    <div className="flex items-baseline gap-2">
-                      <h2 className="text-lg font-bold">{year}</h2>
-                      <span className="text-sm text-zinc-500">
-                        {yearRolls.length} roll
-                        {yearRolls.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
+                <section key={year} style={{ marginBottom: 32 }}>
+                  {/* Year section header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: 12, marginBottom: 16 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)", fontVariant: "small-caps" }}>
+                      {year} · {yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}
+                    </span>
                     {editing && (
                       <button
                         onClick={toggleYear}
-                        className={`text-[13px] font-medium active:opacity-50 transition-opacity ${allYearSelected ? "text-amber-400" : "text-zinc-400"}`}
+                        style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: allYearSelected ? "var(--accent)" : "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
                       >
                         {allYearSelected ? "Deselect" : "Select all"}
                       </button>
                     )}
                   </div>
                   {view === "grid" ? (
-                    <div className="space-y-2">
+                    <div>
                       {yearRolls.map((roll) => (
-                        <GridCard
-                          key={roll.roll_number}
-                          roll={roll}
-                          editing={editing}
-                          selected={selected.has(roll.roll_number)}
-                          onToggle={() => toggleSelect(roll.roll_number)}
-                        />
+                        <GridCard key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
                       ))}
                     </div>
                   ) : (
-                    <ul className="space-y-2">
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                       {yearRolls.map((roll) => (
-                        <ListRow
-                          key={roll.roll_number}
-                          roll={roll}
-                          editing={editing}
-                          selected={selected.has(roll.roll_number)}
-                          onToggle={() => toggleSelect(roll.roll_number)}
-                        />
+                        <ListRow key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
                       ))}
                     </ul>
                   )}
@@ -781,74 +557,62 @@ export default function ArchiveClient() {
         </div>
       </PullToRefresh>
 
-      {/* Edit-mode action bar — portalled to body to escape PageTransition transform */}
-      {editing &&
-        mounted &&
-        createPortal(
+      {/* Edit-mode action bar */}
+      {editing && mounted && createPortal(
+        <div
+          style={{
+            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 20,
+            display: "flex", justifyContent: "center", alignItems: "flex-end",
+            padding: "0 16px", paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+            pointerEvents: "none",
+          }}
+        >
           <div
-            className="fixed bottom-0 inset-x-0 z-20 flex justify-center items-end gap-3 pointer-events-none px-4"
             style={{
-              paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+              pointerEvents: "auto", height: 56, display: "flex", alignItems: "center", gap: 8, padding: "0 16px",
+              backgroundColor: "var(--sheet-bg)", border: "1px solid var(--sheet-border)",
+              transformOrigin: "center bottom",
+              animation: exiting
+                ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
+                : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
             }}
           >
-            <div
-              className="pointer-events-auto h-14 flex items-center gap-2 px-4 backdrop-blur-3xl shadow-2xl shadow-black/60 border"
-              style={{
-                backgroundColor: "var(--darkroom-card)",
-                borderColor: "var(--darkroom-border)",
-                transformOrigin: "center bottom",
-                animation: exiting
-                  ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
-                  : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
-              }}
-            >
-              <button
-                onClick={exitEdit}
-                disabled={exiting}
-                className="text-[15px] font-semibold text-amber-400 px-1 active:opacity-50 transition-opacity disabled:opacity-40"
-              >
-                Done
-              </button>
-              <div
-                className="w-px h-4"
-                style={{ backgroundColor: "var(--darkroom-border)" }}
-              />
-              <button
-                onClick={selectAll}
-                className={`text-[13px] font-medium px-1 active:opacity-50 transition-opacity ${allSelected ? "text-amber-400" : "text-zinc-400"}`}
-              >
-                {allSelected ? "Deselect All" : "All"}
-              </button>
-              {selected.size > 0 && (
-                <>
-                  <div
-                    className="w-px h-4"
-                    style={{ backgroundColor: "var(--darkroom-border)" }}
-                  />
-                  <span className="text-[13px] text-zinc-500 tabular-nums">
-                    {selected.size} selected
-                  </span>
-                  {availableActions.map(({ label, field, color }) => (
-                    <Fragment key={field}>
-                      <div
-                        className="w-px h-4"
-                        style={{ backgroundColor: "var(--darkroom-border)" }}
-                      />
-                      <button
-                        onClick={() => applyStatus(field)}
-                        disabled={applying}
-                        className={`${color} text-white text-[13px] font-medium px-3 py-1.5 active:scale-95 transition-transform disabled:opacity-50`}
-                      >
-                        {applying ? "…" : label}
-                      </button>
-                    </Fragment>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>,
-          document.body,
-        )}
+            <button onClick={exitEdit} disabled={exiting} style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "0 4px" }}>
+              Done
+            </button>
+            <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
+            <button onClick={selectAll} style={{ fontSize: 11, fontWeight: 600, color: allSelected ? "var(--accent)" : "var(--sheet-text)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "0 4px" }}>
+              {allSelected ? "Deselect All" : "All"}
+            </button>
+            {selected.size > 0 && (
+              <>
+                <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
+                <span style={{ fontSize: 11, color: "var(--sheet-text)", opacity: 0.5, tabularNums: true } as React.CSSProperties}>
+                  {selected.size} selected
+                </span>
+                {availableActions.map(({ label, field }) => (
+                  <Fragment key={field}>
+                    <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
+                    <button
+                      onClick={() => applyStatus(field)}
+                      disabled={applying}
+                      style={{
+                        fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                        color: "var(--accent)", background: "none", border: "1px solid var(--accent)",
+                        padding: "4px 10px", cursor: "pointer", fontFamily: "inherit",
+                        opacity: applying ? 0.5 : 1,
+                      }}
+                    >
+                      {applying ? "…" : label}
+                    </button>
+                  </Fragment>
+                ))}
+              </>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )}
     </>
   );
 }

@@ -9,9 +9,9 @@ import Sheet from "@/components/Sheet";
 import { haptics } from "@/lib/haptics";
 
 const labelCls = "block text-[10px] uppercase tracking-widest";
-const labelStyle = { color: "var(--darkroom-text-secondary)" };
+const labelStyle = { color: "var(--text-secondary)" };
 const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
-const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
+const inputStyle = { borderColor: "var(--border)", color: "var(--text-primary)" };
 
 function formatDate(s: string | null): string {
   if (!s) return "Never";
@@ -89,9 +89,9 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
 
   return (
     <div>
-      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
         <BackButton label="Settings" />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>API Keys</h1>
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>API Keys</h1>
         <div className="w-8" />
       </div>
 
@@ -114,12 +114,12 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
         </div>
       )}
 
-      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
+      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--bg)" }}>
         {keys.map((k) => (
-          <li key={k.id} className="px-4 py-3 flex items-start justify-between gap-2 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+          <li key={k.id} className="px-4 py-3 flex items-start justify-between gap-2 border-b" style={{ borderColor: "var(--border)" }}>
             <div>
-              <div className="text-sm font-medium">{k.label ?? <span className="italic" style={{ color: "var(--darkroom-text-tertiary)" }}>Unlabeled</span>}</div>
-              <div className="text-[12px] mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
+              <div className="text-sm font-medium">{k.label ?? <span className="italic" style={{ color: "var(--text-tertiary)" }}>Unlabeled</span>}</div>
+              <div className="text-[12px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Created {formatDate(k.created_at)} · Last used {formatDate(k.last_used_at)}
               </div>
             </div>
@@ -133,14 +133,14 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
           </li>
         ))}
         {keys.length === 0 && (
-          <li className="text-sm text-center py-8" style={{ color: "var(--darkroom-text-secondary)" }}>No API keys yet.</li>
+          <li className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>No API keys yet.</li>
         )}
       </ul>
 
       <button
         onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
         className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
-        style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}
+        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
       >
         <span>New API Key</span>
         <span className="text-sm leading-none">+</span>

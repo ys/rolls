@@ -1,24 +1,9 @@
 import { getUser } from "@/lib/request-context";
 import { getCameraCount, getFilmCount, getRemainingInvites } from "@/lib/queries";
 import Link from "next/link";
-import BackButton from "@/components/BackButton";
 import LogoutButton from "@/components/LogoutButton";
 
 export const dynamic = "force-dynamic";
-
-const Chevron = () => (
-  <svg
-    className="w-4 h-4 shrink-0"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    style={{ color: "var(--darkroom-text-tertiary)" }}
-  >
-    <path d="M9 18l6-6-6-6" />
-  </svg>
-);
 
 function SettingsGroup({
   label,
@@ -29,10 +14,10 @@ function SettingsGroup({
 }) {
   return (
     <section>
-      <p className="text-[11px] font-semibold uppercase tracking-wider px-4 mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>
+      <p className="text-[11px] font-semibold uppercase tracking-wider px-4 mb-3" style={{ color: "var(--text-secondary)" }}>
         {label}
       </p>
-      <ul className="border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+      <ul className="border-t" style={{ borderColor: "var(--border)" }}>
         {children}
       </ul>
     </section>
@@ -52,20 +37,20 @@ function SettingsRow({
     <li>
       <Link
         href={href}
-        className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors"
-        style={{ borderColor: "var(--darkroom-border)" }}
+        className="flex items-center justify-between px-4 py-3.5 border-b transition-colors"
+        style={{ borderColor: "var(--border)" }}
       >
-        <span className="text-xs" style={{ color: "var(--darkroom-text-primary)" }}>{label}</span>
+        <span className="text-xs" style={{ color: "var(--text-primary)" }}>{label}</span>
         <div className="flex items-center gap-2">
           {value !== undefined && value !== null && (
-            <span className="text-xs tabular-nums" style={{ color: "var(--darkroom-text-tertiary)" }}>
+            <span className="text-xs tabular-nums" style={{ color: "var(--text-tertiary)" }}>
               {value}
             </span>
           )}
           {value === null && (
-            <span className="text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>∞</span>
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>∞</span>
           )}
-          <Chevron />
+          <span style={{ color: "var(--border)", fontSize: 18, lineHeight: 1 }}>›</span>
         </div>
       </Link>
     </li>
@@ -83,12 +68,10 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
-        <BackButton />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>
           SETTINGS
         </h1>
-        <div className="w-8" />
       </div>
 
       <SettingsGroup label="Library">

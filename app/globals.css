@@ -35,17 +35,29 @@
 }
 
 :root {
-  /* Darkroom color palette */
-  --darkroom-bg: #0f0f0f;
-  --darkroom-card: #0a0a0a;
-  --darkroom-border: #222;
-  --darkroom-border-subtle: #1a1a1a;
-  --darkroom-text-primary: #fff;
-  --darkroom-text-secondary: #888;
-  --darkroom-text-tertiary: #666;
-  --darkroom-text-disabled: #444;
-  --darkroom-accent: #fbbf24;
-  --darkroom-success-bg: rgba(34, 197, 94, 0.15);
+  /* Cream notebook palette */
+  --bg: #f4f1ea;
+  --border: #ddd8cf;
+  --border-subtle: #ede8df;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666;
+  --text-tertiary: #999;
+  --text-disabled: #bbb;
+  --accent: #d97706;
+
+  /* Action sheet (aged darkroom paper) */
+  --sheet-bg: #2c2420;
+  --sheet-text: #e8e0d8;
+  --sheet-border: #3d3530;
+
+  /* Status bands */
+  --status-loaded-bg: #d97706;
+  --status-loaded-text: #1a1a1a;
+  --status-fridge-bg: #0891b2;
+  --status-fridge-text: #fff;
+  --status-lab-bg: #c2410c;
+  --status-lab-text: #fff;
+
 }
 
 html {
@@ -56,8 +68,15 @@ body {
   overflow-x: clip;
   max-width: 100%;
   font-family: "iA Writer Mono", ui-monospace, monospace;
-  background-color: var(--darkroom-bg);
-  color: var(--darkroom-text-primary);
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+/* Dot grid notebook texture */
+.dot-grid {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, #d8d2c6 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
 }
 
 /* Page enter animation */

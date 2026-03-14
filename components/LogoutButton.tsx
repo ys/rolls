@@ -38,7 +38,7 @@ export default function LogoutButton() {
         onClick={handleLogout}
         disabled={loading}
         className="w-full flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors disabled:opacity-50"
-        style={{ borderColor: "var(--darkroom-border)" }}
+        style={{ borderColor: "var(--border)" }}
       >
         <span className="text-xs" style={{ color: "#ef4444" }}>
           {loading ? "Logging out..." : "Logout"}

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import type { Camera } from "@/lib/db";
 import Sheet from "@/components/Sheet";
-import FormButton from "@/components/FormButton";
+import { haptics } from "@/lib/haptics";
 
-const labelCls = "block text-[10px] uppercase tracking-widest text-zinc-400";
-const inputCls = "w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors";
-const selectCls = "w-full appearance-none rounded-none bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors pr-6";
+const FORMAT_OPTIONS = [
+  { value: "135", label: "35mm" },
+  { value: "120", label: "120" },
+  { value: "4",   label: "4×5" },
+];
 
 export default function NewCameraSheet({
   open,
@@ -31,55 +33,90 @@ export default function NewCameraSheet({
     e.preventDefault();
     setSaving(true);
     setError("");
-
     const resp = await fetch("/api/cameras", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({ brand, model, nickname: nickname || undefined, format: Number(format) }),
     });
-
     if (!resp.ok) {
       const data = await resp.json();
       setError(data.error ?? "Failed to create camera");
       setSaving(false);
       return;
     }
-
     const camera = await resp.json();
     setBrand(""); setModel(""); setNickname(""); setFormat("135");
+    haptics.success();
     onCreated(camera);
   }
 
+  const fieldLabel: React.CSSProperties = {
+    fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+    color: "var(--text-tertiary)", marginBottom: 4, display: "block",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)",
+    padding: "8px 0", fontSize: 14, color: "var(--text-primary)", fontFamily: "inherit",
+    outline: "none", caretColor: "var(--accent)",
+  };
+
   return (
     <Sheet open={open} onClose={onClose} title="New Camera">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-1">
-          <label className={labelCls}>Brand</label>
-          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required className={inputCls} placeholder="Nikon" />
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div>
+          <label style={fieldLabel}>Brand</label>
+          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required style={inputStyle} placeholder="Nikon" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>Model</label>
-          <input type="text" value={model} onChange={(e) => setModel(e.target.value)} required className={inputCls} placeholder="FM2" />
+        <div>
+          <label style={fieldLabel}>Model</label>
+          <input type="text" value={model} onChange={(e) => setModel(e.target.value)} required style={inputStyle} placeholder="FM2" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>Nickname</label>
-          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} className={inputCls} placeholder="optional" />
+        <div>
+          <label style={fieldLabel}>Nickname</label>
+          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} style={inputStyle} placeholder="optional" />
         </div>
-        <div className="space-y-1">
-          <label className={labelCls}>Format</label>
-          <div className="relative">
-            <select value={format} onChange={(e) => setFormat(e.target.value)} className={selectCls}>
-              <option value="135">135 (35mm)</option>
-              <option value="120">120 (Medium format)</option>
-              <option value="4">4×5 (Large format)</option>
-            </select>
-            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">▾</span>
+        <div>
+          <label style={fieldLabel}>Format</label>
+          <div style={{ display: "flex", gap: 0, marginTop: 4 }}>
+            {FORMAT_OPTIONS.map((opt) => {
+              const active = format === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { setFormat(opt.value); haptics.light(); }}
+                  style={{
+                    flex: 1, padding: "8px 0", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "inherit",
+                    border: "1px solid var(--border)",
+                    marginLeft: opt.value === "135" ? 0 : -1,
+                    backgroundColor: active ? "var(--text-primary)" : "transparent",
+                    color: active ? "var(--bg)" : "var(--text-secondary)",
+                    cursor: "pointer", position: "relative", zIndex: active ? 1 : 0,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-        {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
-        <FormButton type="submit" disabled={saving}>
+        {error && <p style={{ fontSize: 11, color: "#c2410c", margin: 0 }}>{error}</p>}
+        <button
+          type="submit"
+          disabled={saving}
+          style={{
+            width: "100%", padding: "14px 0",
+            backgroundColor: saving ? "var(--border)" : "var(--accent)",
+            color: saving ? "var(--text-tertiary)" : "#fff",
+            border: "none", cursor: saving ? "not-allowed" : "pointer",
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            fontFamily: "inherit",
+          }}
+        >
           {saving ? "Saving…" : "Add Camera"}
-        </FormButton>
+        </button>
       </form>
     </Sheet>
   );

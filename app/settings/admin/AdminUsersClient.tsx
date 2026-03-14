@@ -52,25 +52,25 @@ export default function AdminUsersClient({ initialData }: { initialData: UsersDa
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg)" }}>
         {data.users.map((user) => (
-          <div key={user.id} className="px-4 py-3 flex items-center justify-between gap-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+          <div key={user.id} className="px-4 py-3 flex items-center justify-between gap-3 border-b" style={{ borderColor: "var(--border)" }}>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-[15px] truncate">{user.email}</p>
                 {user.role === "admin" && (
-                  <span className="text-[10px] uppercase tracking-widest border px-1.5 py-0.5 rounded shrink-0" style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}>
+                  <span className="text-[10px] uppercase tracking-widest border px-1.5 py-0.5 rounded shrink-0" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
                     admin
                   </span>
                 )}
               </div>
-              <p className="text-xs mt-0.5" style={{ color: "var(--darkroom-text-secondary)" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Joined {formatDate(user.created_at)} · Last seen {formatRelative(user.last_seen_at)}
               </p>
             </div>
             <div className="text-right shrink-0">
               <p className="text-[15px] tabular-nums font-medium">{user.roll_count}</p>
-              <p className="text-[10px] uppercase tracking-widest" style={{ color: "var(--darkroom-text-secondary)" }}>rolls</p>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>rolls</p>
             </div>
           </div>
         ))}
@@ -82,18 +82,18 @@ export default function AdminUsersClient({ initialData }: { initialData: UsersDa
             onClick={() => goToPage(data.page - 1)}
             disabled={data.page <= 1 || loading}
             className="text-sm disabled:opacity-30 transition-opacity"
-            style={{ color: "var(--darkroom-text-secondary)" }}
+            style={{ color: "var(--text-secondary)" }}
           >
             ← Previous
           </button>
-          <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
             {data.page} / {data.pages}
           </span>
           <button
             onClick={() => goToPage(data.page + 1)}
             disabled={data.page >= data.pages || loading}
             className="text-sm disabled:opacity-30 transition-opacity"
-            style={{ color: "var(--darkroom-text-secondary)" }}
+            style={{ color: "var(--text-secondary)" }}
           >
             Next →
           </button>

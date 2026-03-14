@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Camera, Film, CatalogFilm } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
-import FormButton from "@/components/FormButton";
-import BackButton from "@/components/BackButton";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
 import FilmPickerSheet from "@/components/FilmPickerSheet";
@@ -15,9 +13,6 @@ import { haptics } from "@/lib/haptics";
 function cameraLabel(c: Camera): string {
   return c.nickname ?? `${c.brand} ${c.model}`;
 }
-
-const labelCls = "block text-[9px] uppercase tracking-wider mb-2";
-const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
 
 export default function NewRollPage() {
   const router = useRouter();
@@ -60,7 +55,6 @@ export default function NewRollPage() {
     e.preventDefault();
     setSaving(true);
     setError("");
-
     try {
       const resp = await fetch("/api/rolls", {
         method: "POST",
@@ -72,14 +66,12 @@ export default function NewRollPage() {
           shot_at: new Date().toISOString().slice(0, 10),
         }),
       });
-
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
         setError(data.error ?? "Failed to create roll");
         haptics.error();
         return;
       }
-
       const roll = await resp.json();
       invalidateCache("rolls");
       haptics.success();
@@ -92,127 +84,113 @@ export default function NewRollPage() {
     }
   }
 
+  const fieldLabel: React.CSSProperties = {
+    fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+    color: "var(--text-tertiary)", marginBottom: 4, display: "block",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)",
+    padding: "10px 0", fontSize: 14, color: "var(--text-primary)", fontFamily: "inherit",
+    outline: "none", caretColor: "var(--accent)",
+  };
+
+  const pickerRow: React.CSSProperties = {
+    width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+    background: "none", border: "none", borderBottom: "1px solid var(--border)",
+    padding: "10px 0", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+  };
+
   return (
     <>
-      <div
-        className="min-h-screen flex flex-col"
-        style={{
-          backgroundColor: "var(--darkroom-bg)",
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      >
+      <div style={{ minHeight: "100%", display: "flex", flexDirection: "column", backgroundColor: "var(--bg)" }}>
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-4 py-4 border-b"
-          style={{ borderColor: "var(--darkroom-border)" }}
-        >
-          <BackButton />
-          <h1
-            className="text-sm font-semibold uppercase tracking-wide"
-            style={{ color: "var(--darkroom-text-primary)" }}
+        <div style={{ display: "flex", alignItems: "center", padding: "16px 0 12px", borderBottom: "1px solid var(--border)", flexShrink: 0, marginBottom: 24 }}>
+          <button
+            type="button"
+            onClick={() => { haptics.light(); router.back(); }}
+            style={{ fontSize: 22, color: "var(--text-primary)", background: "none", border: "none", cursor: "pointer", lineHeight: 1, padding: "0 12px 0 0", fontFamily: "inherit" }}
           >
-            New Roll
+            ‹
+          </button>
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+            Load Roll
           </h1>
-          <div className="w-8" />
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-4 py-6 space-y-6">
-          <div className="space-y-1">
-            <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Roll #</label>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
+          {/* Roll number */}
+          <div>
+            <label style={fieldLabel}>Roll #</label>
             <input
               type="text"
               value={rollNumber}
               onChange={(e) => setRollNumber(e.target.value)}
               placeholder={suggestedNumber}
               required
-              className={inputCls}
-              style={{
-                borderColor: "var(--darkroom-border)",
-                color: "var(--darkroom-text-primary)",
-              }}
+              style={{ ...inputStyle, fontSize: 16, fontWeight: 700 }}
             />
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Camera</label>
-              <button
-                type="button"
-                onClick={() => setShowNewCamera(true)}
-                className="text-xs transition-colors"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
-              >
-                + new
+          {/* Camera */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={fieldLabel}>Camera</span>
+              <button type="button" onClick={() => setShowNewCamera(true)} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                + New
               </button>
             </div>
             {cameras.length === 0 ? (
-              <button
-                type="button"
-                onClick={() => setShowNewCamera(true)}
-                className="block py-2 text-sm transition-colors"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
-              >
+              <button type="button" onClick={() => setShowNewCamera(true)} style={{ ...pickerRow, color: "var(--text-tertiary)", fontSize: 14 }}>
                 + Add a camera first
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => setCameraPickerOpen(true)}
-                className="w-full appearance-none rounded-none bg-transparent border-b py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
-                style={{
-                  borderColor: "var(--darkroom-border)",
-                  color: cameraId ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)",
-                }}
-              >
-                <span>
-                  {cameraId
-                    ? (cameras.find((c) => c.slug === cameraId) ? cameraLabel(cameras.find((c) => c.slug === cameraId)!) : cameraId)
-                    : "— select —"}
+              <button type="button" onClick={() => setCameraPickerOpen(true)} style={pickerRow}>
+                <span style={{ fontSize: 14, color: cameraId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
+                  {cameraId ? (cameras.find((c) => c.slug === cameraId) ? cameraLabel(cameras.find((c) => c.slug === cameraId)!) : cameraId) : "— select —"}
                 </span>
-                <span style={{ color: "var(--darkroom-text-tertiary)" }}>▾</span>
+                <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>▾</span>
               </button>
             )}
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className={labelCls} style={{ color: "var(--darkroom-text-tertiary)" }}>Film</label>
-              <button
-                type="button"
-                onClick={() => setShowNewFilm(true)}
-                className="text-xs transition-colors"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
-              >
-                + new
+          {/* Film */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={fieldLabel}>Film</span>
+              <button type="button" onClick={() => setShowNewFilm(true)} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                + New
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setFilmPickerOpen(true)}
-              className="w-full appearance-none rounded-none bg-transparent border-b py-2 text-base focus:outline-none transition-colors pr-6 text-left flex items-center justify-between"
-              style={{
-                borderColor: "var(--darkroom-border)",
-                color: filmId ? "var(--darkroom-text-primary)" : "var(--darkroom-text-tertiary)",
-              }}
-            >
-              <span>
+            <button type="button" onClick={() => setFilmPickerOpen(true)} style={pickerRow}>
+              <span style={{ fontSize: 14, color: filmId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
                 {filmId
-                  ? (films.find((f) => f.slug === filmId)?.nickname ??
-                     catalogFilms.find((f) => f.slug === filmId)?.nickname ??
-                     filmId)
+                  ? (films.find((f) => f.slug === filmId)?.nickname ?? catalogFilms.find((f) => f.slug === filmId)?.nickname ?? filmId)
                   : "— select —"}
               </span>
-              <span style={{ color: "var(--darkroom-text-tertiary)" }}>▾</span>
+              <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>▾</span>
             </button>
           </div>
 
-          {error && <p className="text-xs tracking-wide" style={{ color: "var(--error-color, #ef4444)" }}>{error}</p>}
+          {error && <p style={{ fontSize: 11, color: "#c2410c", margin: 0 }}>{error}</p>}
 
-          <FormButton type="submit" disabled={saving}>
-            {saving ? "Loading…" : "Load Roll"}
-          </FormButton>
+          <div style={{ marginTop: "auto", paddingBottom: 8 }}>
+            <button
+              type="submit"
+              disabled={saving}
+              style={{
+                width: "100%", padding: "14px 0",
+                backgroundColor: saving ? "var(--border)" : "var(--accent)",
+                color: saving ? "var(--text-tertiary)" : "#fff",
+                border: "none", cursor: saving ? "not-allowed" : "pointer",
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                fontFamily: "inherit",
+              }}
+            >
+              {saving ? "Loading…" : "+ Load Roll"}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -220,24 +198,14 @@ export default function NewRollPage() {
         open={showNewCamera}
         onClose={() => setShowNewCamera(false)}
         authHeaders={authHeaders}
-        onCreated={(camera) => {
-          setAllCameras((prev) => [...prev, camera]);
-          setCameraId(camera.slug);
-          setShowNewCamera(false);
-        }}
+        onCreated={(camera) => { setAllCameras((prev) => [...prev, camera]); setCameraId(camera.slug); setShowNewCamera(false); }}
       />
-
       <NewFilmSheet
         open={showNewFilm}
         onClose={() => setShowNewFilm(false)}
         authHeaders={authHeaders}
-        onCreated={(film) => {
-          setAllFilms((prev) => [...prev, film]);
-          setFilmId(film.slug);
-          setShowNewFilm(false);
-        }}
+        onCreated={(film) => { setAllFilms((prev) => [...prev, film]); setFilmId(film.slug); setShowNewFilm(false); }}
       />
-
       <FilmPickerSheet
         open={filmPickerOpen}
         onClose={() => setFilmPickerOpen(false)}
@@ -246,7 +214,6 @@ export default function NewRollPage() {
         value={filmId}
         onChange={setFilmId}
       />
-
       <CameraPickerSheet
         open={cameraPickerOpen}
         onClose={() => setCameraPickerOpen(false)}

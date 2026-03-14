@@ -41,9 +41,9 @@ async function getStats() {
 
 function StatRow({ label, value }: { label: string; value: number }) {
   return (
-    <li className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
-      <span className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>{label}</span>
-      <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</span>
+    <li className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+      <span className="text-sm" style={{ color: "var(--text-secondary)" }}>{label}</span>
+      <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>{value}</span>
     </li>
   );
 }
@@ -56,15 +56,15 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: "var(--border)" }}>
         <BackButton />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Admin</h1>
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>Admin</h1>
         <div className="w-8" />
       </div>
 
       <section className="space-y-3 px-4">
-        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>Users</p>
-        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Users</p>
+        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg)" }}>
           <StatRow label="Total" value={stats.users.total} />
           <StatRow label="This week" value={stats.users.week} />
           <StatRow label="This month" value={stats.users.month} />
@@ -73,8 +73,8 @@ export default async function AdminPage() {
       </section>
 
       <section className="space-y-3 px-4">
-        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--darkroom-text-secondary)" }}>Rolls</p>
-        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Rolls</p>
+        <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg)" }}>
           <StatRow label="Total" value={stats.rolls.total} />
           <StatRow label="This week" value={stats.rolls.week} />
           <StatRow label="This month" value={stats.rolls.month} />

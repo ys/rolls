@@ -6,9 +6,9 @@ import Sheet from "@/components/Sheet";
 import FormButton from "@/components/FormButton";
 
 const labelCls = "block text-[10px] uppercase tracking-widest";
-const labelStyle = { color: "var(--darkroom-text-secondary)" };
+const labelStyle = { color: "var(--text-secondary)" };
 const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
-const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
+const inputStyle = { borderColor: "var(--border)", color: "var(--text-primary)" };
 
 function GradientSwatch({ from, to }: { from: string | null; to: string | null }) {
   const style = from && to
@@ -138,19 +138,19 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
   return (
     <>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>{films.length} films</span>
+        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>{films.length} films</span>
         <button
           onClick={openNew}
           className="text-sm font-medium transition-opacity active:opacity-60"
-          style={{ color: "var(--darkroom-accent)" }}
+          style={{ color: "var(--accent)" }}
         >
           + Add film
         </button>
       </div>
 
-      <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--darkroom-card)" }}>
+      <ul className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg)" }}>
         {films.map((f) => (
-          <li key={f.slug} className="border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+          <li key={f.slug} className="border-b" style={{ borderColor: "var(--border)" }}>
             <button
               onClick={() => openEdit(f)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left active:opacity-60 transition-opacity"
@@ -160,11 +160,11 @@ export default function CatalogFilmsClient({ initialFilms }: { initialFilms: Cat
                 <span className="text-[15px] font-medium truncate block">
                   {f.nickname ?? `${f.brand} ${f.name}`}
                 </span>
-                <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   {f.brand} · {f.color ? "Color" : "B&W"}{f.iso ? ` · ISO ${f.iso}` : ""}
                 </span>
               </div>
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: "var(--darkroom-text-tertiary)" }}><path d="M9 18l6-6-6-6" /></svg>
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: "var(--text-tertiary)" }}><path d="M9 18l6-6-6-6" /></svg>
             </button>
           </li>
         ))}

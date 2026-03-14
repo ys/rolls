@@ -25,9 +25,9 @@ function formatDate(s: string | null): string {
 }
 
 const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
-const inputStyle = { borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" };
+const inputStyle = { borderColor: "var(--border)", color: "var(--text-primary)" };
 const labelCls = "block text-[10px] uppercase tracking-widest";
-const labelStyle = { color: "var(--darkroom-text-secondary)" };
+const labelStyle = { color: "var(--text-secondary)" };
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -43,7 +43,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={copy}
       className="text-xs font-mono transition-opacity active:opacity-60"
-      style={{ color: "var(--darkroom-text-secondary)" }}
+      style={{ color: "var(--text-secondary)" }}
     >
       {copied ? "Copied!" : text}
     </button>
@@ -81,7 +81,7 @@ function ShareButton({ inviteCode }: { inviteCode: string }) {
     <button
       onClick={handleShare}
       className="text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
-      style={{ color: "var(--darkroom-text-secondary)" }}
+      style={{ color: "var(--text-secondary)" }}
     >
       Share
     </button>
@@ -212,18 +212,18 @@ export default function InvitesClient({
   if (!isAdmin) {
     return (
       <div>
-        <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+        <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
           <BackButton label="Settings" />
-          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Invitations</h1>
+          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>Invitations</h1>
           <div className="w-8" />
         </div>
 
-        <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
+        <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: "var(--bg)" }}>
           <div className="text-center mb-6">
             <div className="text-5xl font-bold mb-2">
               {remainingInvites !== null ? remainingInvites : "∞"}
             </div>
-            <p className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               {remainingInvites !== null
                 ? `invite${remainingInvites !== 1 ? "s" : ""} remaining`
                 : "unlimited invites"}
@@ -234,14 +234,14 @@ export default function InvitesClient({
             <button
               onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
               className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-opacity active:opacity-60"
-              style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-primary)" }}
+              style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               Create Invite
             </button>
           )}
 
           {!canCreateInvite && remainingInvites === 0 && (
-            <p className="text-sm text-center" style={{ color: "var(--darkroom-text-secondary)" }}>
+            <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>
               You've used all your invites
             </p>
           )}
@@ -249,18 +249,18 @@ export default function InvitesClient({
 
         {invites.length > 0 && (
           <>
-            <p className="text-[11px] font-semibold uppercase tracking-wider px-1 mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>Your Invites</p>
-            <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
+            <p className="text-[11px] font-semibold uppercase tracking-wider px-1 mb-3" style={{ color: "var(--text-secondary)" }}>Your Invites</p>
+            <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--bg)" }}>
               {invites.map((invite) => {
                 const valid = isValid(invite);
                 return (
-                  <li key={invite.id} className="px-4 py-3 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+                  <li key={invite.id} className="px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <CopyButton text={invite.code} />
                         <span
                           className="text-[10px] uppercase tracking-widest font-medium"
-                          style={{ color: valid ? "#4ade80" : "var(--darkroom-text-tertiary)" }}
+                          style={{ color: valid ? "#4ade80" : "var(--text-tertiary)" }}
                         >
                           {valid ? "valid" : "used"}
                         </span>
@@ -280,7 +280,7 @@ export default function InvitesClient({
           title="Create Invite"
         >
           <form onSubmit={handleCreate} className="space-y-6">
-            <p className="text-sm" style={{ color: "var(--darkroom-text-secondary)" }}>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               This will create a single-use invite that you can share with a friend.
             </p>
             {createError && <p className="text-red-400 text-xs tracking-wide">{createError}</p>}
@@ -296,35 +296,35 @@ export default function InvitesClient({
   // Admin view
   return (
     <div>
-      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
         <BackButton label="Settings" />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Invitations</h1>
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>Invitations</h1>
         <div className="w-8" />
       </div>
 
-      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--darkroom-card)" }}>
+      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--bg)" }}>
         {invites.map((invite) => {
           const valid = isValid(invite);
           return (
-            <li key={invite.id} className="px-4 py-3 space-y-2 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+            <li key={invite.id} className="px-4 py-3 space-y-2 border-b" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <CopyButton text={invite.code} />
                   <div className="flex items-center gap-2 mt-1">
                     <span
                       className="text-[10px] uppercase tracking-widest font-medium"
-                      style={{ color: valid ? "#4ade80" : "var(--darkroom-text-tertiary)" }}
+                      style={{ color: valid ? "#4ade80" : "var(--text-tertiary)" }}
                     >
                       {valid ? "valid" : "used/expired"}
                     </span>
                     {invite.used_count > 0 && (
-                      <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+                      <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         {invite.used_count} use{invite.used_count !== 1 ? "s" : ""}
                         {invite.max_uses ? ` / ${invite.max_uses}` : ""}
                       </span>
                     )}
                     {invite.expires_at && (
-                      <span className="text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+                      <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         expires {formatDate(invite.expires_at)}
                       </span>
                     )}
@@ -344,7 +344,7 @@ export default function InvitesClient({
                           haptics.light();
                         }}
                         className="text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
-                        style={{ color: "var(--darkroom-text-secondary)" }}
+                        style={{ color: "var(--text-secondary)" }}
                       >
                         Send
                       </button>
@@ -361,7 +361,7 @@ export default function InvitesClient({
               </div>
 
               {sendingCode === invite.code && (
-                <form onSubmit={handleSend} className="space-y-4 pt-3 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
+                <form onSubmit={handleSend} className="space-y-4 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
                   <div className="space-y-1">
                     <label className={labelCls} style={labelStyle}>Email</label>
                     <input type="email" value={sendEmail} onChange={(e) => setSendEmail(e.target.value)} required className={inputCls} style={inputStyle} />
@@ -384,7 +384,7 @@ export default function InvitesClient({
           );
         })}
         {invites.length === 0 && (
-          <li className="text-sm text-center py-8" style={{ color: "var(--darkroom-text-secondary)" }}>
+          <li className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>
             No invites yet.
           </li>
         )}
@@ -393,7 +393,7 @@ export default function InvitesClient({
       <button
         onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
         className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
-        style={{ borderColor: "var(--darkroom-border)", color: "var(--darkroom-text-secondary)" }}
+        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
       >
         <span>Create Invite</span>
         <span className="text-sm leading-none">+</span>

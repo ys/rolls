@@ -4,16 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { haptics } from "../lib/haptics";
-import { FilmStrip, Archive, ChartBar, Gear, Plus } from "@phosphor-icons/react";
 
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
 const TABS = [
-  { href: "/",         icon: FilmStrip, match: (p: string) => p === "/" || p.startsWith("/roll/") },
-  { href: "/archive",  icon: Archive,   match: (p: string) => p === "/archive" },
-  { href: "/stats",    icon: ChartBar,  match: (p: string) => p === "/stats" },
-  { href: "/settings", icon: Gear,      match: (p: string) => p.startsWith("/settings") },
+  { href: "/",         label: "Rolls",   match: (p: string) => p === "/" },
+  { href: "/archive",  label: "Archive", match: (p: string) => p === "/archive" },
+  { href: "/stats",    label: "Stats",   match: (p: string) => p === "/stats" },
+  { href: "/settings", label: "···",     match: (p: string) => p.startsWith("/settings") },
 ];
+
+// Nav is only visible on top-level list views
+const NAV_PATHS = ["/", "/archive", "/stats"];
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -22,7 +24,6 @@ export default function BottomNav() {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
 
-    // Check initial state
     if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
       setAnim("hidden");
     }
@@ -41,7 +42,8 @@ export default function BottomNav() {
     return () => { observer.disconnect(); clearTimeout(timer); };
   }, []);
 
-  if (pathname === "/login" || pathname === "/register") return null;
+  const showOnThisRoute = NAV_PATHS.includes(pathname) || pathname.startsWith("/settings");
+  if (!showOnThisRoute || pathname === "/login" || pathname === "/register") return null;
 
   const animStyle: React.CSSProperties = {
     transformOrigin: "center bottom",
@@ -54,88 +56,65 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center gap-0 pointer-events-none"
-      style={{
-        paddingBottom: "calc(env(safe-area-inset-bottom))",
-        height: 72,
-      }}
+      className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none"
     >
-      {/* Icon container */}
       <div
-        className="pointer-events-auto border-t"
+        className="pointer-events-auto border-t w-full"
         style={{
           ...animStyle,
-          width: "100%",
           maxWidth: "42rem",
-          height: 72,
-          borderColor: "var(--darkroom-border)",
-          backgroundColor: "var(--darkroom-bg)",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+          borderColor: "var(--border)",
+          backgroundColor: "var(--bg)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 20px",
+          paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
         }}
       >
-        {TABS.slice(0, 2).map(({ href, icon: Icon, match }) => {
-          const active = match(pathname);
-          return (
-            <Link
-              key={href}
-              href={href}
-              prefetch={true}
-              aria-label={href.slice(1) || "rolls"}
-              onClick={() => haptics.light()}
-              className="flex items-center justify-center transition-colors duration-200 active:scale-90"
-              style={{ height: 72 }}
-            >
-              <Icon
-                size={26}
-                weight={active ? "fill" : "regular"}
-                style={{ color: active ? "var(--darkroom-accent)" : "var(--darkroom-text-tertiary)" }}
-              />
-            </Link>
-          );
-        })}
+        {/* Left: text tabs */}
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          {TABS.map(({ href, label, match }) => {
+            const active = match(pathname);
+            return (
+              <Link
+                key={href}
+                href={href}
+                prefetch={true}
+                onClick={() => haptics.light()}
+                style={{
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: active ? "var(--text-primary)" : "var(--text-disabled)",
+                  borderBottom: active ? "1.5px solid var(--text-primary)" : "1.5px solid transparent",
+                  paddingBottom: 2,
+                  textDecoration: "none",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
 
-        {/* FAB in center */}
+        {/* Right: + Load (amber, no border) */}
         <Link
           href="/new"
-          aria-label="New roll"
+          prefetch={true}
           onClick={() => haptics.medium()}
-          className="flex items-center justify-center active:scale-90 transition-transform"
-          style={{ height: 72 }}
+          style={{
+            fontSize: 8,
+            fontWeight: 700,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+            textDecoration: "none",
+          }}
         >
-          <div
-            className="flex items-center justify-center rounded-full"
-            style={{
-              width: 52,
-              height: 52,
-              background: "var(--darkroom-accent)",
-              boxShadow: "0 4px 12px rgba(251, 191, 36, 0.3)",
-            }}
-          >
-            <Plus size={28} weight="bold" color="#000" />
-          </div>
+          + Load
         </Link>
-
-        {TABS.slice(2).map(({ href, icon: Icon, match }) => {
-          const active = match(pathname);
-          return (
-            <Link
-              key={href}
-              href={href}
-              prefetch={true}
-              aria-label={href.slice(1) || "rolls"}
-              onClick={() => haptics.light()}
-              className="flex items-center justify-center transition-colors duration-200 active:scale-90"
-              style={{ height: 72 }}
-            >
-              <Icon
-                size={26}
-                weight={active ? "fill" : "regular"}
-                style={{ color: active ? "var(--darkroom-accent)" : "var(--darkroom-text-tertiary)" }}
-              />
-            </Link>
-          );
-        })}
       </div>
     </nav>
   );

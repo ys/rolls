@@ -45,10 +45,10 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
         />
-        {/* Theme color - darkroom aesthetic */}
-        <meta name="theme-color" content="#0f0f0f" />
+        {/* Theme color - cream notebook */}
+        <meta name="theme-color" content="#f4f1ea" />
         {/* Microsoft */}
-        <meta name="msapplication-TileColor" content="#0f0f0f" />
+        <meta name="msapplication-TileColor" content="#f4f1ea" />
         <meta
           name="msapplication-square150x150logo"
           content="/api/icon?size=150"
@@ -59,7 +59,7 @@ export default function RootLayout({
         />
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
-      <body className="min-h-screen" style={{ backgroundColor: "var(--darkroom-bg)", color: "var(--darkroom-text-primary)" }}>
+      <body className="min-h-screen" style={{ backgroundColor: "var(--bg)", color: "var(--text-primary)" }}>
         <OfflineIndicator />
         <SwipeNavigation />
         <main

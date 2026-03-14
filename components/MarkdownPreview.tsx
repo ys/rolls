@@ -16,27 +16,27 @@ export function MarkdownPreview({ content, className = "" }: MarkdownPreviewProp
         components={{
           // Compact inline rendering for small displays
           p: ({ node, ...props }) => (
-            <span style={{ color: "var(--darkroom-text-secondary)" }} {...props} />
+            <span style={{ color: "var(--text-secondary)" }} {...props} />
           ),
           ul: ({ node, ...props }) => (
-            <span style={{ color: "var(--darkroom-text-secondary)" }} {...props} />
+            <span style={{ color: "var(--text-secondary)" }} {...props} />
           ),
           ol: ({ node, ...props }) => (
-            <span style={{ color: "var(--darkroom-text-secondary)" }} {...props} />
+            <span style={{ color: "var(--text-secondary)" }} {...props} />
           ),
           li: ({ node, ...props }) => (
-            <span style={{ color: "var(--darkroom-text-secondary)" }} {...props}>• </span>
+            <span style={{ color: "var(--text-secondary)" }} {...props}>• </span>
           ),
           strong: ({ node, ...props }) => (
-            <strong className="font-bold" style={{ color: "var(--darkroom-text-primary)" }} {...props} />
+            <strong className="font-bold" style={{ color: "var(--text-primary)" }} {...props} />
           ),
           em: ({ node, ...props }) => (
-            <em className="italic" style={{ color: "var(--darkroom-text-secondary)" }} {...props} />
+            <em className="italic" style={{ color: "var(--text-secondary)" }} {...props} />
           ),
           code: ({ node, ...props }) => (
             <code
               className="px-1 rounded text-xs font-mono"
-              style={{ backgroundColor: "var(--darkroom-card)", color: "var(--darkroom-accent)" }}
+              style={{ backgroundColor: "var(--bg)", color: "var(--accent)" }}
               {...props}
             />
           ),

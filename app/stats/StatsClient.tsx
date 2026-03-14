@@ -52,8 +52,8 @@ export default function StatsClient({
     >
       <div className="space-y-10 pb-24">
         <div>
-          <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--darkroom-border)" }}>
-            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>
+          <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
+            <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>
               STATS
             </h1>
           </div>
@@ -68,8 +68,8 @@ export default function StatsClient({
           {/* Scanned % */}
           {totalRolls > 0 && (
             <div className="px-4 py-2 flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--darkroom-text-secondary)" }}>Scanned or beyond</span>
-              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+              <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>Scanned or beyond</span>
+              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
                 {pctScanned}%
               </span>
             </div>
@@ -88,18 +88,18 @@ export default function StatsClient({
                   <div className="flex items-center justify-between mb-1">
                     <span
                       className="text-[10px] uppercase tracking-wide"
-                      style={{ color: "var(--darkroom-text-secondary)" }}
+                      style={{ color: "var(--text-secondary)" }}
                     >
                       {status}
                     </span>
-                    <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                    <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
                       {count}
                     </span>
                   </div>
-                  <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+                  <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
                     <div
                       className="h-full rounded-full transition-all"
-                      style={{ width: `${pct}%`, backgroundColor: "var(--darkroom-accent)" }}
+                      style={{ width: `${pct}%`, backgroundColor: "var(--accent)" }}
                     />
                   </div>
                 </div>
@@ -115,17 +115,17 @@ export default function StatsClient({
             {data.rollsPerYear.map((r) => (
               <div key={r.year}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-xs" style={{ color: "var(--darkroom-text-secondary)" }}>
+                  <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
                     {r.year}
                   </span>
-                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+                  <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
                     {r.count}
                   </span>
                 </div>
-                <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+                <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
                   <div
                     className="h-full rounded-full transition-all"
-                    style={{ width: `${(r.count / maxPerYear) * 100}%`, backgroundColor: "var(--darkroom-accent)" }}
+                    style={{ width: `${(r.count / maxPerYear) * 100}%`, backgroundColor: "var(--accent)" }}
                   />
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function StatsClient({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--darkroom-text-secondary)" }}>
+    <h2 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
       {children}
     </h2>
   );
@@ -164,8 +164,8 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function HeroStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="py-2 text-center">
-      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>{value}</div>
-      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--darkroom-text-secondary)" }}>
+      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--text-primary)" }}>{value}</div>
+      <div className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "var(--text-secondary)" }}>
         {label}
       </div>
     </div>
@@ -187,19 +187,19 @@ function RankedList({
         const gradient = useFilmGradient && r.slug ? FILM_GRADIENTS[r.slug] : undefined;
         const barStyle: React.CSSProperties = gradient
           ? { width: `${(r.count / max) * 100}%`, background: `linear-gradient(to right, ${gradient[0]}, ${gradient[1]})` }
-          : { width: `${(r.count / max) * 100}%`, backgroundColor: "var(--darkroom-accent)" };
+          : { width: `${(r.count / max) * 100}%`, backgroundColor: "var(--accent)" };
 
         return (
           <div key={r.label}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs flex-1 truncate" style={{ color: "var(--darkroom-text-primary)" }}>
+              <span className="text-xs flex-1 truncate" style={{ color: "var(--text-primary)" }}>
                 {r.label}
               </span>
-              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--darkroom-text-primary)" }}>
+              <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-primary)" }}>
                 {r.count}
               </span>
             </div>
-            <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--darkroom-border)" }}>
+            <div className="h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
               <div
                 className="h-full rounded-full transition-all"
                 style={barStyle}

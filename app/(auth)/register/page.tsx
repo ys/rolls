@@ -234,13 +234,9 @@ function RegisterForm() {
   return (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        background: "#7c2d12",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
+        height: "100%",
       }}
     >
       {/* Top section — branding */}

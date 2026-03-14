@@ -49,9 +49,9 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: "var(--darkroom-border)" }}>
+      <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: "var(--border)" }}>
         <BackButton />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>Users</h1>
+        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>Users</h1>
         <div className="w-8" />
       </div>
       <AdminUsersClient initialData={usersData} />

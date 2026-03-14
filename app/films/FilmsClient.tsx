@@ -146,13 +146,13 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
       <div>
         <BackButton label="Settings" />
         {showSuccess && (
-          <div className="mb-4 p-3" style={{ backgroundColor: "var(--darkroom-success-bg)" }}>
+          <div className="mb-4 p-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)" }}>
             <SuccessMessage message={successMessage} />
           </div>
         )}
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--darkroom-text-primary)" }}>FILMS</h1>
+          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>FILMS</h1>
           <div className="flex gap-2 items-center">
             {!merging && (
               <div className="flex gap-1 text-xs p-1">
@@ -172,7 +172,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             )}
             <button
               onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
-              className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--darkroom-text-secondary)", backgroundColor: "transparent", border: "1px solid var(--darkroom-border)" }}
+              className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--text-secondary)", backgroundColor: "transparent", border: "1px solid var(--border)" }}
             >
               {merging ? "Cancel" : "Merge"}
             </button>
@@ -190,7 +190,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
                 <li key={f.slug}>
                   <button
                     onClick={() => { toggleSelect(f.slug); haptics.light(); }}
-                    className={`w-full text-left flex items-center gap-3 px-4 py-3 border-b transition-colors ${isSelected ? "border-amber-400" : "border-zinc-600"}`} style={{ borderColor: isSelected ? "var(--darkroom-accent)" : "var(--darkroom-border)" }}
+                    className={`w-full text-left flex items-center gap-3 px-4 py-3 border-b transition-colors ${isSelected ? "border-amber-400" : "border-zinc-600"}`} style={{ borderColor: isSelected ? "var(--accent)" : "var(--border)" }}
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-amber-400 border-amber-400" : "border-zinc-600"}`}>
                       {isSelected && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
@@ -209,7 +209,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
                 <Link
                   href={`/films/${encodeURIComponent(f.slug)}`}
                   onClick={() => haptics.light()}
-                  className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors" style={{ borderColor: "var(--darkroom-border)" }}
+                  className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors" style={{ borderColor: "var(--border)" }}
                 >
                   <div>
                     <div className="font-medium">{displayName}</div>
@@ -225,14 +225,14 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
               <svg className="w-10 h-10 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125a1.125 1.125 0 00-1.125-1.125v-1.5c0-.621.504-1.125 1.125-1.125m0 3.75v-3.75M6 18.375V7.875c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v10.5c0 .621-.504 1.125-1.125 1.125M6 18.375H3.375m14.25 0H18.75M18.75 19.5h-1.5c-.621 0-1.125-.504-1.125-1.125M18.75 19.5a1.125 1.125 0 001.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75v-3.75" />
               </svg>
-              <p className="text-xs" style={{ color: "var(--darkroom-text-tertiary)" }}>No films yet.<br />Add your first film to get started.</p>
+              <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>No films yet.<br />Add your first film to get started.</p>
             </li>
           )}
         </ul>
 
         {/* Merge panel */}
         {merging && selected.size >= 2 && (
-          <div className="mb-6 space-y-4 border-t pt-4" style={{ borderColor: "var(--darkroom-border)" }}>
+          <div className="mb-6 space-y-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
             <p className="text-[10px] uppercase tracking-widest text-zinc-400">{selected.size} films selected — keep which one?</p>
             <div className="space-y-2">
               {selectedFilms.map((f) => (
@@ -267,7 +267,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
           <>
             <button
               onClick={() => { setShowForm(true); setError(""); haptics.light(); }}
-              className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors" style={{ borderColor: "var(--darkroom-border)" }}
+              className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors" style={{ borderColor: "var(--border)" }}
             >
               <span>Add Film</span>
               <span className="text-sm leading-none">+</span>

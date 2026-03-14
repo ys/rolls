@@ -16,7 +16,7 @@ function gradientStyle(from: string | null | undefined, to: string | null | unde
   if (from && to) return { background: `linear-gradient(to bottom, ${from}, ${to})` };
   const fallback = slug ? FILM_GRADIENTS[slug] : undefined;
   if (fallback) return { background: `linear-gradient(to bottom, ${fallback[0]}, ${fallback[1]})` };
-  return { background: "#d4d4d8" };
+  return { background: "var(--border)" };
 }
 
 function FilmRow({
@@ -43,27 +43,26 @@ function FilmRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-zinc-100 dark:active:bg-zinc-800 ${selected ? "bg-amber-50 dark:bg-amber-900/20" : ""}`}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+        textAlign: "left", background: "none", border: "none",
+        borderBottom: "1px solid var(--border-subtle)",
+        cursor: "pointer", fontFamily: "inherit",
+      }}
     >
-      {/* Gradient swatch */}
-      <div
-        className="w-2 self-stretch rounded-full shrink-0"
-        style={gradientStyle(gradientFrom, gradientTo, slug)}
-      />
-      <div className="flex-1 min-w-0">
-        <span className="text-sm font-medium truncate block">{label}</span>
-        <div className="flex items-center gap-2 mt-0.5">
-          {iso ? <span className="text-[11px] text-zinc-400">ISO {iso}</span> : null}
-          <span className="text-[11px] text-zinc-400">{color ? "Color" : "B&W"}</span>
+      <div style={{ width: 4, alignSelf: "stretch", flexShrink: 0, ...gradientStyle(gradientFrom, gradientTo, slug) }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", display: "block" }}>{label}</span>
+        <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
+          {iso ? <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
+          <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
           {rollCount != null && rollCount > 0 && (
-            <span className="text-[11px] text-zinc-400">{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
+            <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
           )}
         </div>
       </div>
       {selected && (
-        <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
+        <span style={{ fontSize: 14, color: "var(--accent)", fontWeight: 700, flexShrink: 0 }}>✓</span>
       )}
     </button>
   );
@@ -76,6 +75,7 @@ export default function FilmPickerSheet({
   catalogFilms,
   value,
   onChange,
+  onAddNew,
 }: {
   open: boolean;
   onClose: () => void;
@@ -83,6 +83,7 @@ export default function FilmPickerSheet({
   catalogFilms: CatalogFilm[];
   value: string;
   onChange: (slug: string) => void;
+  onAddNew?: () => void;
 }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -105,13 +106,9 @@ export default function FilmPickerSheet({
     );
   }
 
-  // Build a slug→gradient map from catalog
   const catalogBySlug = new Map(catalogFilms.map((c) => [c.slug, c]));
-
   const myFilms = films.filter(matches);
-  const catalogOnly = catalogFilms.filter(
-    (c) => !films.some((f) => f.slug === c.slug) && matches(c),
-  );
+  const catalogOnly = catalogFilms.filter((c) => !films.some((f) => f.slug === c.slug) && matches(c));
 
   function select(slug: string) {
     haptics.light();
@@ -119,39 +116,45 @@ export default function FilmPickerSheet({
     onClose();
   }
 
+  const sectionLabel: React.CSSProperties = {
+    fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+    color: "var(--text-tertiary)", padding: "10px 16px 6px", display: "block",
+  };
+
   return (
     <Sheet open={open} onClose={onClose} title="Film">
-      {/* Search */}
-      <div className="-mx-6 px-6 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+      <div style={{ margin: "0 -24px", padding: "0 24px 12px", borderBottom: "1px solid var(--border)" }}>
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search films…"
-          className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none placeholder:text-zinc-400"
+          style={{
+            width: "100%", backgroundColor: "var(--border-subtle)", border: "none",
+            padding: "8px 12px", fontSize: 13, fontFamily: "inherit",
+            color: "var(--text-primary)", outline: "none", caretColor: "var(--accent)",
+          }}
         />
       </div>
 
-      <div className="-mx-6 mt-1">
-        {/* Clear selection */}
+      <div style={{ margin: "4px -24px 0" }}>
         {value && !q && (
           <button
             onClick={() => select("")}
-            className="w-full text-left px-4 py-3 text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors border-b border-zinc-100 dark:border-zinc-800"
+            style={{
+              width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 13,
+              color: "var(--text-tertiary)", background: "none", border: "none",
+              borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: "inherit",
+            }}
           >
             — clear selection —
           </button>
         )}
 
-        {/* My films */}
         {myFilms.length > 0 && (
           <>
-            {!q && (
-              <div className="px-4 pt-3 pb-1">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">My Films</span>
-              </div>
-            )}
+            {!q && <span style={sectionLabel}>My Films</span>}
             {myFilms.map((f) => {
               const cat = catalogBySlug.get(f.slug);
               return (
@@ -172,14 +175,9 @@ export default function FilmPickerSheet({
           </>
         )}
 
-        {/* Catalog films */}
         {catalogOnly.length > 0 && (
           <>
-            {!q && (
-              <div className="px-4 pt-3 pb-1">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Catalog</span>
-              </div>
-            )}
+            {!q && <span style={sectionLabel}>Catalog</span>}
             {catalogOnly.map((f) => (
               <FilmRow
                 key={f.slug}
@@ -197,7 +195,23 @@ export default function FilmPickerSheet({
         )}
 
         {myFilms.length === 0 && catalogOnly.length === 0 && (
-          <p className="px-4 py-8 text-sm text-zinc-400 text-center">No films match "{query}"</p>
+          <p style={{ padding: "32px 16px", fontSize: 13, color: "var(--text-tertiary)", textAlign: "center" }}>
+            No films match "{query}"
+          </p>
+        )}
+
+        {onAddNew && (
+          <button
+            onClick={() => { onClose(); onAddNew(); }}
+            style={{
+              width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 700,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+              color: "var(--accent)", background: "none", border: "none",
+              borderTop: "1px solid var(--border)", cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            + Add new film
+          </button>
         )}
       </div>
     </Sheet>

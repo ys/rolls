@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { RollDetailView } from "./RollDetailView";
 import RollEditForm from "@/components/RollEditForm";
-import { FullScreenNotesEditor } from "@/components/FullScreenNotesEditor";
 import { rollStatus } from "@/lib/status";
 import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
 
@@ -27,7 +26,6 @@ interface RollDetailClientProps {
 
 export default function RollDetailClient({ roll, contactSheetUrl, cameras, films, catalogFilms }: RollDetailClientProps) {
   const [isEditingFull, setIsEditingFull] = useState(false);
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notes, setNotes] = useState(roll.notes || "");
   const router = useRouter();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -104,7 +102,6 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
         roll={roll}
         contactSheetUrl={contactSheetUrl}
         onEdit={() => setIsEditingFull(true)}
-        onEditNotes={() => setIsEditingNotes(true)}
         onMoveToNext={handleMoveToNext}
         notes={notes}
         onNotesChange={handleNotesChange}
@@ -118,18 +115,6 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
           catalogFilms={catalogFilms}
           onClose={() => setIsEditingFull(false)}
           onSave={handleSave}
-        />
-      )}
-
-      {isEditingNotes && (
-        <FullScreenNotesEditor
-          rollNumber={roll.roll_number}
-          initialNotes={roll.notes || ""}
-          roll={roll}
-          onClose={() => setIsEditingNotes(false)}
-          onSave={handleSaveNotes}
-          onEditRoll={() => setIsEditingFull(true)}
-          onMoveToNext={handleMoveToNext}
         />
       )}
     </>
