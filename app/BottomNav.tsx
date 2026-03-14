@@ -73,7 +73,7 @@ export default function BottomNav() {
         }}
       >
         {/* Left: text tabs */}
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
           {TABS.map(({ href, label, match }) => {
             const active = match(pathname);
             return (
@@ -83,14 +83,15 @@ export default function BottomNav() {
                 prefetch={true}
                 onClick={() => haptics.light()}
                 style={{
-                  fontSize: 8,
+                  fontSize: 11,
                   fontWeight: 700,
-                  letterSpacing: "0.16em",
+                  letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   color: active ? "var(--text-primary)" : "var(--text-disabled)",
                   borderBottom: active ? "1.5px solid var(--text-primary)" : "1.5px solid transparent",
-                  paddingBottom: 2,
+                  paddingBottom: 3,
                   textDecoration: "none",
+                  padding: "10px 0 3px",
                 }}
               >
                 {label}
@@ -105,12 +106,13 @@ export default function BottomNav() {
           prefetch={true}
           onClick={() => haptics.medium()}
           style={{
-            fontSize: 8,
+            fontSize: 11,
             fontWeight: 700,
-            letterSpacing: "0.16em",
+            letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--accent)",
             textDecoration: "none",
+            padding: "10px 0",
           }}
         >
           + Load

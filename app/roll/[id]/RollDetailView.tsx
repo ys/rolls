@@ -126,7 +126,7 @@ export function RollDetailView({
   if (showLargeEditor) {
     return createPortal(
       <div
-        className="fixed inset-0 z-50 flex flex-col"
+        className="fixed inset-x-0 top-0 h-dvh z-50 flex flex-col"
         style={{
           backgroundColor: "var(--bg)",
           paddingTop: "env(safe-area-inset-top)",
@@ -188,56 +188,68 @@ export function RollDetailView({
           />
         </div>
 
-        {/* Status band */}
-        <div
-          style={{
-            backgroundColor: bandBg,
-            color: bandText,
-            padding: "10px 20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-            }}
-          >
-            {status}
-          </span>
-          {bandInfo && (
-            <span style={{ fontSize: 9, letterSpacing: "0.08em", opacity: 0.85 }}>
-              {bandInfo}
-            </span>
-          )}
-        </div>
-
-        {/* Pull-up handle — matches sheet bg to hint at the sheet below */}
+        {/* Status band + pull-up handle — unified tap target */}
         <button
           onClick={() => setShowActionSheet(true)}
-          className="flex justify-center items-center w-full"
-          style={{
-            backgroundColor: "var(--sheet-bg)",
-            padding: "10px 0",
-            paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
-            cursor: "pointer",
-            border: "none",
-          }}
           aria-label="Open actions"
+          style={{
+            flexShrink: 0,
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            display: "block",
+            width: "100%",
+            textAlign: "left",
+          }}
         >
+          {/* Status band */}
           <div
             style={{
-              width: 36,
-              height: 3,
-              background: "#4a3d38",
-              borderRadius: 2,
+              backgroundColor: bandBg,
+              color: bandText,
+              padding: "10px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
-          />
+          >
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+              }}
+            >
+              {status}
+            </span>
+            {bandInfo && (
+              <span style={{ fontSize: 9, letterSpacing: "0.08em", opacity: 0.85 }}>
+                {bandInfo}
+              </span>
+            )}
+          </div>
+
+          {/* Pull-up handle */}
+          <div
+            style={{
+              backgroundColor: "var(--sheet-bg)",
+              padding: "10px 0",
+              paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 3,
+                background: "#4a3d38",
+                borderRadius: 2,
+              }}
+            />
+          </div>
         </button>
 
         {/* Action sheet overlay */}
