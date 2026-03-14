@@ -6,7 +6,7 @@ import { startRegistration } from "@simplewebauthn/browser";
 
 function FilmIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-6 opacity-70">
+    <svg width="40" height="40" viewBox="0 0 32 32" fill="none" style={{ color: "#f4f1ea" }}>
       <rect x="1" y="5" width="30" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" />
       <rect x="1" y="9" width="4" height="4" fill="currentColor" />
       <rect x="1" y="15" width="4" height="4" fill="currentColor" />
@@ -186,177 +186,239 @@ function RegisterForm() {
     passkey: "Passkey",
   };
 
+  const inputStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    borderBottom: "1px solid rgba(244,241,234,0.3)",
+    padding: "10px 0",
+    fontSize: 14,
+    color: "#f4f1ea",
+    caretColor: "#f4f1ea",
+    fontFamily: "inherit",
+    outline: "none",
+    width: "100%",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: 9,
+    color: "rgba(244,241,234,0.5)",
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
+    marginBottom: 6,
+  };
+
+  const primaryButtonStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "14px 0",
+    backgroundColor: "#f4f1ea",
+    color: "#7c2d12",
+    border: "none",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    fontFamily: "inherit",
+    cursor: "pointer",
+  };
+
+  const dimButtonStyle: React.CSSProperties = {
+    fontSize: 9,
+    color: "rgba(244,241,234,0.4)",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontFamily: "inherit",
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="w-full max-w-xs">
-
-        {/* Header */}
-        <div className="text-center mb-12">
-          <FilmIcon />
-          <h1 className="text-2xl font-bold tracking-[0.3em] uppercase mb-1">Rolls</h1>
-          <p className="text-[10px] tracking-widest uppercase text-zinc-400">
-            {stepLabel[step]}
-          </p>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100,
+        background: "#7c2d12",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Top section — branding */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+        }}
+      >
+        <FilmIcon />
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "#f4f1ea",
+          }}
+        >
+          ROLLS
         </div>
+        <div
+          style={{
+            width: 40,
+            height: 1,
+            background: "rgba(244,241,234,0.2)",
+            margin: "8px 0",
+          }}
+        />
+        <div
+          style={{
+            fontSize: 9,
+            color: "rgba(244,241,234,0.5)",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+          }}
+        >
+          {stepLabel[step]}
+        </div>
+      </div>
 
+      {/* Content section */}
+      <div style={{ overflowY: "auto", padding: "0 28px 48px" }}>
         {/* Step 1: Invite Code */}
         {step === "invite" && (
-          <form onSubmit={handleInviteSubmit} className="space-y-8">
-            <div className="space-y-1">
-              <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
-                Invite Code
-              </label>
+          <form onSubmit={handleInviteSubmit}>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Invite Code</label>
               <input
                 type="text"
                 value={invite}
                 onChange={(e) => setInvite(e.target.value.trim())}
                 required
                 autoFocus
-                className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
-                style={{
-                  borderColor: "var(--darkroom-border)",
-                  color: "var(--darkroom-text-primary)",
-                }}
+                style={inputStyle}
               />
             </div>
-            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
+            {error && (
+              <p style={{ fontSize: 11, color: "#fca5a5", textAlign: "center", marginBottom: 8 }}>
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading || !invite}
-              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                borderColor: "var(--darkroom-accent)",
-                color: "var(--darkroom-accent)",
-                backgroundColor: "transparent",
-              }}
+              style={{ ...primaryButtonStyle, opacity: loading || !invite ? 0.4 : 1 }}
             >
               {loading ? "Validating..." : "Continue"}
             </button>
+            {needsInvite && (
+              <div style={{ marginTop: 24, textAlign: "center" }}>
+                <p style={{ fontSize: 9, color: "rgba(244,241,234,0.4)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  Contact the admin for an invite
+                </p>
+              </div>
+            )}
           </form>
         )}
 
         {/* Step 2: User Details */}
         {step === "details" && (
-          <form onSubmit={handleDetailsSubmit} className="space-y-8">
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value.trim())}
-                  required
-                  autoFocus
-                  className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
-                  style={{
-                    borderColor: "var(--darkroom-border)",
-                    color: "var(--darkroom-text-primary)",
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
-                  required
-                  pattern="[a-z0-9_-]{3,}"
-                  title="Lowercase letters, numbers, dashes, and underscores only (min 3 characters)"
-                  className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
-                  style={{
-                    borderColor: "var(--darkroom-border)",
-                    color: "var(--darkroom-text-primary)",
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
-                  Display Name <span className="normal-case">(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
-                  style={{
-                    borderColor: "var(--darkroom-border)",
-                    color: "var(--darkroom-text-primary)",
-                  }}
-                />
-              </div>
+          <form onSubmit={handleDetailsSubmit}>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value.trim())}
+                required
+                autoFocus
+                style={inputStyle}
+              />
             </div>
-            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.trim().toLowerCase())}
+                required
+                pattern="[a-z0-9_-]{3,}"
+                title="Lowercase letters, numbers, dashes, and underscores only (min 3 characters)"
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={labelStyle}>Display Name <span style={{ textTransform: "none" }}>(optional)</span></label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            {error && (
+              <p style={{ fontSize: 11, color: "#fca5a5", textAlign: "center", marginBottom: 8 }}>
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading || !email || !username}
-              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                borderColor: "var(--darkroom-accent)",
-                color: "var(--darkroom-accent)",
-                backgroundColor: "transparent",
-              }}
+              style={{ ...primaryButtonStyle, opacity: loading || !email || !username ? 0.4 : 1 }}
             >
               {loading ? "Checking..." : "Continue"}
             </button>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button type="button" onClick={() => router.push("/login")} style={dimButtonStyle}>
+                Already have an account? Sign in
+              </button>
+            </div>
           </form>
         )}
 
         {/* Step 3: Passkey Registration */}
         {step === "passkey" && (
-          <div className="space-y-8">
-            <div className="text-center space-y-1">
-              <p className="font-medium tracking-wide">{email}</p>
-              <p className="text-[10px] uppercase tracking-widest text-zinc-400">@{username}</p>
-              {name && <p className="text-xs text-zinc-500">{name}</p>}
+          <div>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 13, color: "#f4f1ea", marginBottom: 4 }}>{email}</div>
+              <div style={{ fontSize: 9, color: "rgba(244,241,234,0.5)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
+                @{username}
+              </div>
+              {name && (
+                <div style={{ fontSize: 11, color: "rgba(244,241,234,0.5)", marginTop: 4 }}>{name}</div>
+              )}
             </div>
-            <p className="text-xs text-center text-zinc-400 tracking-wide leading-relaxed">
-              Use Face ID, Touch ID, or a security key to secure your account. No password needed.
-            </p>
-            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
+            {error && (
+              <p style={{ fontSize: 11, color: "#fca5a5", textAlign: "center", marginBottom: 8 }}>
+                {error}
+              </p>
+            )}
             <button
               onClick={handlePasskeyRegistration}
               disabled={loading}
-              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                borderColor: "var(--darkroom-accent)",
-                color: "var(--darkroom-accent)",
-                backgroundColor: "transparent",
-              }}
+              style={{ ...primaryButtonStyle, opacity: loading ? 0.4 : 1 }}
             >
               {loading ? "Setting up..." : "Set Up Passkey"}
             </button>
-            <button
-              onClick={() => setStep("details")}
-              disabled={loading}
-              className="w-full text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-2 transition-colors"
-            >
-              ← Back
-            </button>
+            <div style={{ marginTop: 12, textAlign: "center" }}>
+              <button
+                onClick={() => setStep("details")}
+                disabled={loading}
+                style={dimButtonStyle}
+              >
+                ← Back
+              </button>
+            </div>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button type="button" onClick={() => router.push("/login")} style={dimButtonStyle}>
+                Already have an account? Sign in
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Help text */}
-        <div className="mt-12 text-center">
-          {step === "invite" && needsInvite && (
-            <p className="text-[10px] uppercase tracking-widest text-zinc-400">
-              Contact the admin for an invite
-            </p>
-          )}
-          {(step === "details" || step === "passkey") && (
-            <button
-              onClick={() => router.push("/login")}
-              className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-            >
-              Already have an account? Sign in
-            </button>
-          )}
-        </div>
-
       </div>
     </div>
   );

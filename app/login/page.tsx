@@ -6,7 +6,7 @@ import { startAuthentication } from "@simplewebauthn/browser";
 
 function FilmIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="mx-auto mb-6 opacity-70">
+    <svg width="40" height="40" viewBox="0 0 32 32" fill="none" style={{ color: "#f4f1ea" }}>
       <rect x="1" y="5" width="30" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" />
       <rect x="1" y="9" width="4" height="4" fill="currentColor" />
       <rect x="1" y="15" width="4" height="4" fill="currentColor" />
@@ -129,23 +129,76 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="w-full max-w-xs">
-
-        {/* Header */}
-        <div className="text-center mb-12">
-          <FilmIcon />
-          <h1 className="text-2xl font-bold tracking-[0.3em] uppercase mb-1">Rolls</h1>
-          <p className="text-[10px] tracking-widest uppercase text-zinc-400">
-            {step === "identifier" ? "Sign In" : "Passkey"}
-          </p>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100,
+        background: "#7c2d12",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Top section — branding */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 16,
+        }}
+      >
+        <FilmIcon />
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "#f4f1ea",
+          }}
+        >
+          ROLLS
         </div>
+        <div
+          style={{
+            width: 40,
+            height: 1,
+            background: "rgba(244,241,234,0.2)",
+            margin: "8px 0",
+          }}
+        />
+        <div
+          style={{
+            fontSize: 9,
+            color: "rgba(244,241,234,0.5)",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+          }}
+        >
+          {step === "identifier" ? "Sign In" : "Passkey"}
+        </div>
+      </div>
 
-        {/* Step 1: Enter email or username */}
+      {/* Content section */}
+      <div style={{ padding: "0 28px 48px" }}>
+        {/* Step 1: identifier */}
         {step === "identifier" && (
-          <form onSubmit={handleIdentifierSubmit} className="space-y-8">
-            <div className="space-y-1">
-              <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+          <form onSubmit={handleIdentifierSubmit}>
+            <div style={{ marginBottom: 20 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.5)",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
                 Email or Username
               </label>
               <input
@@ -155,72 +208,144 @@ function LoginForm() {
                 required
                 autoFocus
                 autoComplete="username webauthn"
-                className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
                 style={{
-                  borderColor: "var(--darkroom-border)",
-                  color: "var(--darkroom-text-primary)",
+                  background: "none",
+                  border: "none",
+                  borderBottom: "1px solid rgba(244,241,234,0.3)",
+                  padding: "10px 0",
+                  fontSize: 14,
+                  color: "#f4f1ea",
+                  caretColor: "#f4f1ea",
+                  fontFamily: "inherit",
+                  outline: "none",
+                  width: "100%",
                 }}
               />
             </div>
-            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
+            {error && (
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#fca5a5",
+                  textAlign: "center",
+                  marginBottom: 8,
+                }}
+              >
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading || !identifier}
-              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
-                borderColor: "var(--darkroom-accent)",
-                color: "var(--darkroom-accent)",
-                backgroundColor: "transparent",
+                width: "100%",
+                padding: "14px 0",
+                backgroundColor: "#f4f1ea",
+                color: "#7c2d12",
+                border: "none",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                fontFamily: "inherit",
+                cursor: "pointer",
+                opacity: loading || !identifier ? 0.4 : 1,
               }}
             >
               {loading ? "Checking..." : "Continue"}
             </button>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button
+                type="button"
+                onClick={() => router.push("/register")}
+                style={{
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.4)",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                No account? Get an invite
+              </button>
+            </div>
           </form>
         )}
 
-        {/* Step 2: Passkey authentication */}
+        {/* Step 2: passkey */}
         {step === "passkey" && (
-          <div className="space-y-8">
-            <div className="text-center space-y-1">
-              <p className="font-medium tracking-wide">{identifier}</p>
-              <p className="text-[10px] uppercase tracking-widest text-zinc-400">Ready to authenticate</p>
+          <div>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 13, color: "#f4f1ea", marginBottom: 4 }}>
+                {identifier}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.14em",
+                }}
+              >
+                Ready to authenticate
+              </div>
             </div>
-            {error && <p className="text-red-400 text-xs tracking-wide text-center">{error}</p>}
+            {error && (
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#fca5a5",
+                  textAlign: "center",
+                  marginBottom: 8,
+                }}
+              >
+                {error}
+              </p>
+            )}
             <button
               onClick={handlePasskeyLogin}
               disabled={loading}
-              className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
-                borderColor: "var(--darkroom-accent)",
-                color: "var(--darkroom-accent)",
-                backgroundColor: "transparent",
+                width: "100%",
+                padding: "14px 0",
+                backgroundColor: "#f4f1ea",
+                color: "#7c2d12",
+                border: "none",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                fontFamily: "inherit",
+                cursor: "pointer",
+                opacity: loading ? 0.4 : 1,
               }}
             >
               {loading ? "Signing in..." : "Sign In with Passkey"}
             </button>
-            <button
-              onClick={() => {
-                setStep("identifier");
-                setError("");
-              }}
-              disabled={loading}
-              className="w-full text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white py-2 transition-colors"
-            >
-              ← Back
-            </button>
+            <div style={{ marginTop: 12, textAlign: "center" }}>
+              <button
+                onClick={() => {
+                  setStep("identifier");
+                  setError("");
+                }}
+                disabled={loading}
+                style={{
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.4)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                ← Back
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Help text */}
-        <div className="mt-12 text-center">
-          <button
-            onClick={() => router.push("/register")}
-            className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
-          >
-            No account? Get an invite
-          </button>
-        </div>
-
       </div>
     </div>
   );

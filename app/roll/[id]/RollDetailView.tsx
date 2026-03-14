@@ -2,14 +2,6 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  Camera,
-  PencilSimple,
-  NotePencil,
-  DotsThree,
-} from "@phosphor-icons/react";
-import { MarkdownEditor } from "@/components/MarkdownEditor";
-import { MarkdownPreview } from "@/components/MarkdownPreview";
 import BackButton from "@/components/BackButton";
 import type { Roll } from "@/lib/db";
 import { rollStatus } from "@/lib/status";
@@ -49,439 +41,755 @@ function filmLabel(roll: RollDetailViewProps["roll"]): string {
   return "";
 }
 
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function RollDetailView({
   roll,
   contactSheetUrl,
   onEdit,
-  onEditNotes,
   onMoveToNext,
   notes,
   onNotesChange,
 }: RollDetailViewProps) {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [pendingLab, setPendingLab] = useState(false);
+  const [labNameInput, setLabNameInput] = useState("");
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+
   const status = rollStatus(roll);
   const cam = cameraLabel(roll);
   const film = filmLabel(roll);
 
-  const [dateField, dateLabel] = roll.archived_at
-    ? [roll.archived_at, "Archived"]
-    : roll.processed_at
-      ? [roll.processed_at, "Processed"]
-      : roll.scanned_at
-        ? [roll.scanned_at, "Scanned"]
-        : roll.lab_at
-          ? [roll.lab_at, "At the Lab"]
-          : roll.fridge_at
-            ? [roll.fridge_at, "In the Fridge"]
-            : roll.shot_at
-              ? [roll.shot_at, "Loaded"]
-              : [null, "Date"];
+  const pushPullStr =
+    roll.push_pull != null
+      ? `${roll.push_pull > 0 ? "+" : ""}${roll.push_pull}`
+      : null;
 
-  const dateStr = dateField
-    ? new Date(dateField).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : null;
+  // Subtitle: camera · film · push/pull
+  const subtitle = [
+    cam && film ? `${cam} · ${film}` : cam || film,
+    pushPullStr,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-  // For LOADED, FRIDGE, or LAB status: show large notes editor
   const showLargeEditor =
     status === "LOADED" || status === "FRIDGE" || status === "LAB";
 
-  const handleEditRoll = () => {
-    setShowMenu(false);
-    onEdit();
+  // Status band colours
+  const bandBg =
+    status === "LOADED"
+      ? "var(--status-loaded-bg)"
+      : status === "FRIDGE"
+        ? "var(--status-fridge-bg)"
+        : "var(--status-lab-bg)";
+  const bandText =
+    status === "LOADED"
+      ? "var(--status-loaded-text)"
+      : status === "FRIDGE"
+        ? "var(--status-fridge-text)"
+        : "var(--status-lab-text)";
+
+  // Text shown on the right side of the status band
+  const bandInfo =
+    status === "LOADED"
+      ? roll.shot_at
+        ? fmtDate(roll.shot_at)
+        : ""
+      : status === "FRIDGE"
+        ? [
+            roll.fridge_at ? fmtDate(roll.fridge_at) : "",
+            pushPullStr,
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : roll.lab_name || (roll.lab_at ? fmtDate(roll.lab_at) : "");
+
+  const closeSheet = () => {
+    setShowActionSheet(false);
+    setPendingLab(false);
+    setLabNameInput("");
   };
 
-  const handleMoveToNext = (requiresLabName: boolean) => {
-    setShowMenu(false);
-    if (requiresLabName) {
-      const labName = window.prompt("Enter lab name:");
-      if (labName) {
-        onMoveToNext?.(labName);
-      }
-    } else {
-      onMoveToNext?.();
-    }
+  const confirmLab = () => {
+    closeSheet();
+    onMoveToNext?.(labNameInput || undefined);
   };
 
+  // ── NOTEBOOK VIEW (LOADED / FRIDGE / LAB) ─────────────────────────
   if (showLargeEditor) {
     return createPortal(
       <div
         className="fixed inset-0 z-50 flex flex-col"
         style={{
-          backgroundColor: "var(--darkroom-bg)",
+          backgroundColor: "var(--bg)",
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
+        {/* Back bar */}
+        <div className="flex items-center px-5 py-4">
+          <BackButton />
+        </div>
+
         {/* Header */}
         <div
-          className="flex items-center gap-3 px-4 py-4 border-b"
-          style={{ borderColor: "var(--darkroom-border)" }}
+          className="px-5 pb-3 border-b"
+          style={{ borderColor: "var(--border)" }}
         >
-          <BackButton />
-          <div className="flex-1 min-w-0">
-            <div
-              className="font-semibold text-sm"
-              style={{ color: "var(--darkroom-text-primary)" }}
-            >
-              {roll.roll_number}
-            </div>
-            <div
-              className="text-[9px] uppercase tracking-wide mt-0.5"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              {cam && film ? `${cam} • ${film}` : cam || film || "—"}
-            </div>
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              lineHeight: 1,
+              fontFamily: "inherit",
+            }}
+          >
+            {roll.roll_number}
           </div>
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-2 active:scale-90 transition-transform"
-              aria-label="Actions"
+          {subtitle && (
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--text-tertiary)",
+                marginTop: 4,
+              }}
             >
-              <DotsThree
-                size={18}
-                weight="bold"
-                style={{ color: "var(--darkroom-accent)" }}
-              />
-            </button>
-            {showMenu && (
-              <>
+              {subtitle}
+            </div>
+          )}
+        </div>
+
+        {/* Notes area — dot grid texture, amber caret */}
+        <div className="flex-1 relative overflow-hidden">
+          <textarea
+            value={notes ?? roll.notes ?? ""}
+            onChange={(e) => onNotesChange?.(e.target.value)}
+            placeholder="Notes…"
+            className="dot-grid absolute inset-0 w-full h-full resize-none border-none outline-none"
+            style={{
+              padding: "16px 20px",
+              fontSize: 13,
+              lineHeight: 1.75,
+              color: "var(--text-primary)",
+              caretColor: "var(--accent)",
+              fontFamily: "inherit",
+              backgroundColor: "transparent",
+            }}
+          />
+        </div>
+
+        {/* Status band */}
+        <div
+          style={{
+            backgroundColor: bandBg,
+            color: bandText,
+            padding: "10px 20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+            }}
+          >
+            {status}
+          </span>
+          {bandInfo && (
+            <span style={{ fontSize: 9, letterSpacing: "0.08em", opacity: 0.85 }}>
+              {bandInfo}
+            </span>
+          )}
+        </div>
+
+        {/* Pull-up handle — matches sheet bg to hint at the sheet below */}
+        <button
+          onClick={() => setShowActionSheet(true)}
+          className="flex justify-center items-center w-full"
+          style={{
+            backgroundColor: "var(--sheet-bg)",
+            padding: "10px 0",
+            paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
+            cursor: "pointer",
+            border: "none",
+          }}
+          aria-label="Open actions"
+        >
+          <div
+            style={{
+              width: 36,
+              height: 3,
+              background: "#4a3d38",
+              borderRadius: 2,
+            }}
+          />
+        </button>
+
+        {/* Action sheet overlay */}
+        {showActionSheet && (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ background: "rgba(26,20,16,0.35)" }}
+              onClick={closeSheet}
+            />
+            <div
+              className="absolute bottom-0 left-0 right-0"
+              style={{
+                background: "var(--sheet-bg)",
+                borderRadius: "24px 24px 0 0",
+                paddingBottom: "env(safe-area-inset-bottom)",
+              }}
+            >
+              {/* Drag handle */}
+              <div
+                className="flex justify-center"
+                style={{ padding: "12px 0 0" }}
+              >
                 <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div
-                  className="absolute right-0 top-full mt-2 py-1 border z-50"
                   style={{
-                    backgroundColor: "var(--darkroom-card)",
-                    borderColor: "var(--darkroom-border)",
-                    borderRadius: 8,
-                    minWidth: 160,
+                    width: 36,
+                    height: 3,
+                    background: "#4a3d38",
+                    borderRadius: 2,
+                  }}
+                />
+              </div>
+
+              {/* Identity header */}
+              <div
+                style={{
+                  padding: "14px 24px 12px",
+                  borderBottom: "1px solid var(--sheet-border)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "#6b5a52",
                   }}
                 >
-                  <button
-                    onClick={handleEditRoll}
-                    className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                    style={{ color: "var(--darkroom-text-primary)" }}
+                  {roll.roll_number} · {status}
+                </div>
+              </div>
+
+              {/* Lab name input (shown when pendingLab) */}
+              {pendingLab ? (
+                <div style={{ padding: "16px 24px" }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.15em",
+                      textTransform: "uppercase",
+                      color: "#6b5a52",
+                      marginBottom: 10,
+                    }}
                   >
-                    Edit Roll
-                  </button>
+                    Lab Name
+                  </div>
+                  <input
+                    type="text"
+                    value={labNameInput}
+                    onChange={(e) => setLabNameInput(e.target.value)}
+                    placeholder="e.g. Beau Photo"
+                    autoFocus
+                    onKeyDown={(e) => e.key === "Enter" && confirmLab()}
+                    style={{
+                      width: "100%",
+                      background: "#3d3530",
+                      border: "1px solid var(--sheet-border)",
+                      color: "var(--sheet-text)",
+                      padding: "10px 14px",
+                      fontSize: 14,
+                      fontFamily: "inherit",
+                      outline: "none",
+                      caretColor: "var(--accent)",
+                      marginBottom: 12,
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button
+                      onClick={confirmLab}
+                      style={{
+                        flex: 1,
+                        padding: "12px",
+                        background: "var(--accent)",
+                        color: "#1a1a1a",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "0.15em",
+                        textTransform: "uppercase",
+                        fontFamily: "inherit",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Send to Lab
+                    </button>
+                    <button
+                      onClick={() => setPendingLab(false)}
+                      style={{
+                        padding: "12px 16px",
+                        background: "transparent",
+                        color: "#4a3d38",
+                        fontSize: 11,
+                        fontFamily: "inherit",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: "6px 0" }}>
+                  {/* Single next-step action */}
                   {status === "LOADED" && (
                     <button
-                      onClick={() => handleMoveToNext(false)}
-                      className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                      style={{ color: "var(--darkroom-text-primary)" }}
+                      onClick={() => { closeSheet(); onMoveToNext?.(); }}
+                      style={sheetRowStyle}
                     >
-                      Move to Fridge
+                      <span>Move to Fridge</span>
+                      <span style={{ color: "var(--accent)" }}>›</span>
                     </button>
                   )}
                   {status === "FRIDGE" && (
-                    <button
-                      onClick={() => handleMoveToNext(true)}
-                      className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                      style={{ color: "var(--darkroom-text-primary)" }}
-                    >
-                      Send to Lab
+                    <button onClick={() => setPendingLab(true)} style={sheetRowStyle}>
+                      <span>Send to Lab</span>
+                      <span style={{ color: "var(--accent)" }}>›</span>
                     </button>
                   )}
                   {status === "LAB" && (
                     <button
-                      onClick={() => handleMoveToNext(false)}
-                      className="w-full px-4 py-2 text-left text-xs active:opacity-60"
-                      style={{ color: "var(--darkroom-text-primary)" }}
+                      onClick={() => { closeSheet(); onMoveToNext?.(); }}
+                      style={sheetRowStyle}
                     >
-                      Mark as Scanned
+                      <span>Mark as Scanned</span>
+                      <span style={{ color: "var(--accent)" }}>›</span>
                     </button>
                   )}
+                  <button onClick={() => { closeSheet(); onEdit(); }} style={sheetRowStyle}>
+                    <span>Edit Roll</span>
+                  </button>
+                  <div style={{ height: 1, background: "var(--sheet-border)", margin: "4px 0" }} />
+                  <button onClick={closeSheet} style={{ ...sheetRowStyle, color: "#4a3d38", borderBottom: "none" }}>
+                    <span>Cancel</span>
+                  </button>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Large Notes Editor */}
-        <div className="flex-1 px-4 py-6 flex flex-col overflow-hidden">
-          <MarkdownEditor
-            value={notes ?? roll.notes ?? ""}
-            onChange={(v) => onNotesChange?.(v)}
-            placeholder={`Notes for ${roll.roll_number}...\n\n${status === "LOADED" ? "Roll loaded in camera" : status === "FRIDGE" ? "Roll in fridge" : "Roll at the lab"}`}
-            className="text-sm bg-transparent"
-            style={{
-              color: "var(--darkroom-text-primary)",
-              fontFamily: "inherit",
-              lineHeight: "1.6",
-            }}
-            showToolbar={false}
-          />
-        </div>
-
-        {/* Status Bar */}
-        <div
-          className="flex gap-6 px-4 py-3 border-t"
-          style={{ borderColor: "var(--darkroom-border)" }}
-        >
-          <div className="flex-1">
-            <div
-              className="text-[8px] uppercase tracking-wider mb-1"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              Status
+              )}
             </div>
-            <div
-              className="text-[10px] font-medium"
-              style={{
-                color:
-                  status === "LOADED"
-                    ? "#fbbf24"
-                    : status === "FRIDGE"
-                      ? "#22d3ee"
-                      : "#fb923c",
-              }}
-            >
-              {status}
-            </div>
-          </div>
-          <div className="flex-1">
-            <div
-              className="text-[8px] uppercase tracking-wider mb-1"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              {dateLabel}
-            </div>
-            <div
-              className="text-[10px]"
-              style={{ color: "var(--darkroom-text-primary)" }}
-            >
-              {dateStr || "—"}
-            </div>
-          </div>
-          {roll.push_pull != null && (
-            <div className="flex-1">
-              <div
-                className="text-[8px] uppercase tracking-wider mb-1"
-                style={{ color: "var(--darkroom-text-tertiary)" }}
-              >
-                Push/Pull
-              </div>
-              <div
-                className="text-[10px] font-mono"
-                style={{ color: "var(--darkroom-text-primary)" }}
-              >
-                {roll.push_pull > 0 ? "+" : ""}
-                {roll.push_pull}
-              </div>
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>,
       document.body,
     );
   }
 
-  // For SCANNED and beyond: show contact sheet and metadata
+  // ── ARCHIVED ROLL VIEW (SCANNED / PROCESSED / UPLOADED / ARCHIVED) ─
+
+  // Notes full-screen editor portal
+  if (isEditingNotes) {
+    return createPortal(
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 60,
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "var(--bg)",
+          paddingTop: "env(safe-area-inset-top)",
+        }}
+      >
+        {/* Header bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "12px 16px",
+            borderBottom: "1px solid var(--border)",
+            flexShrink: 0,
+          }}
+        >
+          <button
+            onClick={() => setIsEditingNotes(false)}
+            style={{
+              fontSize: 24,
+              color: "var(--text-primary)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              lineHeight: 1,
+              padding: "0 12px 0 0",
+              fontFamily: "inherit",
+            }}
+          >
+            ‹
+          </button>
+          <span style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>
+            {roll.roll_number}
+          </span>
+        </div>
+        {/* Full-screen dot-grid textarea */}
+        <textarea
+          value={notes ?? roll.notes ?? ""}
+          onChange={(e) => onNotesChange?.(e.target.value)}
+          className="dot-grid"
+          style={{
+            flex: 1,
+            padding: "16px 20px",
+            fontSize: 13,
+            lineHeight: 1.75,
+            color: "var(--text-primary)",
+            caretColor: "var(--accent)",
+            fontFamily: "inherit",
+            border: "none",
+            outline: "none",
+            resize: "none",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "transparent",
+          }}
+        />
+      </div>,
+      document.body,
+    );
+  }
+
+  const timelineEvents = [
+    ["Shot", roll.shot_at],
+    ["Fridge", roll.fridge_at],
+    ["Lab", roll.lab_at, roll.lab_name],
+    ["Scanned", roll.scanned_at],
+    ["Processed", roll.processed_at],
+    ["Archived", roll.archived_at],
+  ].filter(([, d]) => d) as [string, string, string?][];
+
   return (
     <div
       className="flex flex-col pb-24"
-      style={{ backgroundColor: "var(--darkroom-bg)" }}
+      style={{ backgroundColor: "var(--bg)" }}
     >
-      {/* Header */}
+      {/* Header: back + roll number + Edit */}
       <div
-        className="flex items-center gap-3 px-4 py-4 border-b"
-        style={{ borderColor: "var(--darkroom-border)" }}
+        className="flex items-start justify-between px-5 py-4 border-b"
+        style={{ borderColor: "var(--border)" }}
       >
         <BackButton />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 px-3">
           <div
-            className="font-semibold text-sm"
-            style={{ color: "var(--darkroom-text-primary)" }}
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              lineHeight: 1.1,
+            }}
           >
             {roll.roll_number}
           </div>
-          <div
-            className="text-[9px] uppercase tracking-wide mt-0.5"
-            style={{ color: "var(--darkroom-text-tertiary)" }}
-          >
-            {cam && film ? `${cam} • ${film}` : cam || film || "—"}
-          </div>
+          {subtitle && (
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--text-tertiary)",
+                marginTop: 3,
+              }}
+            >
+              {subtitle}
+            </div>
+          )}
         </div>
         <button
           onClick={onEdit}
-          className="p-2 active:scale-90 transition-transform"
-          aria-label="Edit roll"
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            paddingTop: 2,
+          }}
         >
-          <PencilSimple
-            size={18}
-            weight="regular"
-            style={{ color: "var(--darkroom-accent)" }}
-          />
+          Edit
         </button>
       </div>
 
-      {/* Contact Sheet */}
-      <div className="flex-1 px-4 py-6">
-        {contactSheetUrl ? (
-          <img
-            src={contactSheetUrl}
-            alt={`Contact sheet for roll ${roll.roll_number}`}
-            className="w-full h-auto"
-            style={{ borderRadius: 8 }}
-          />
-        ) : (
+      {/* Contact sheet — full width, no radius, dark bg */}
+      {contactSheetUrl ? (
+        <img
+          src={contactSheetUrl}
+          alt={`Contact sheet for roll ${roll.roll_number}`}
+          className="w-full h-auto"
+          style={{ display: "block", borderRadius: 0 }}
+        />
+      ) : (
+        <div
+          className="w-full flex flex-col items-center justify-center gap-3"
+          style={{
+            aspectRatio: "3/2",
+            background: "#faf8f4",
+            border: "1px dashed #c8c2b6",
+          }}
+        >
           <div
-            className="h-full flex flex-col items-center justify-center"
             style={{
-              backgroundColor: "var(--darkroom-card)",
-              borderRadius: 8,
-              border: `1px solid var(--darkroom-border-subtle)`,
+              display: "flex",
+              gap: 3,
+              opacity: 0.35,
             }}
           >
-            <Camera size={48} weight="thin" style={{ color: "#333" }} />
-            <div
-              className="mt-4 text-xs font-medium tracking-wide"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              NO CONTACT SHEET YET
-            </div>
-            <div
-              className="mt-1 text-[9px]"
-              style={{ color: "var(--darkroom-text-disabled)" }}
-            >
-              Upload via CLI or API
-            </div>
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: 22,
+                  height: 16,
+                  border: "1px solid #999",
+                }}
+              />
+            ))}
           </div>
-        )}
-      </div>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--text-disabled)",
+            }}
+          >
+            No Contact Sheet
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              color: "var(--text-disabled)",
+              letterSpacing: "0.06em",
+            }}
+          >
+            Upload via CLI
+          </div>
+        </div>
+      )}
 
       {/* Timeline */}
-      {(() => {
-        const events = [
-          ["Shot", roll.shot_at],
-          ["Fridge", roll.fridge_at],
-          ["Lab", roll.lab_at],
-          ["Scanned", roll.scanned_at],
-          ["Processed", roll.processed_at],
-          ["Archived", roll.archived_at],
-        ].filter(([, d]) => d) as [string, string][];
-        if (events.length === 0) return null;
-        return (
-          <div className="px-4 py-4 border-t" style={{ borderColor: "var(--darkroom-border)" }}>
-            <div
-              className="text-[9px] uppercase tracking-wider mb-3"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              Timeline
-            </div>
-            <div className="flex flex-col">
-              {events.map(([label, d], i) => (
-                <div key={label} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center" style={{ width: 12 }}>
+      {timelineEvents.length > 0 && (
+        <div className="px-5 pt-5 pb-2">
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
+              marginBottom: 14,
+            }}
+          >
+            Timeline
+          </div>
+          <div className="flex flex-col">
+            {timelineEvents.map(([label, d, extra], i) => (
+              <div key={label} className="flex items-start gap-3">
+                <div
+                  className="flex flex-col items-center flex-shrink-0"
+                  style={{ width: 12 }}
+                >
+                  <div
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      backgroundColor: "var(--accent)",
+                      marginTop: 4,
+                      flexShrink: 0,
+                    }}
+                  />
+                  {i < timelineEvents.length - 1 && (
                     <div
-                      className="rounded-full shrink-0"
-                      style={{ width: 6, height: 6, marginTop: 3, backgroundColor: "var(--darkroom-accent)" }}
+                      style={{
+                        width: 1,
+                        minHeight: 28,
+                        backgroundColor: "var(--border)",
+                        margin: "3px 0",
+                      }}
                     />
-                    {i < events.length - 1 && (
-                      <div
-                        style={{ width: 1, minHeight: 20, backgroundColor: "var(--darkroom-border)", margin: "2px 0" }}
-                      />
-                    )}
+                  )}
+                </div>
+                <div style={{ paddingBottom: i < timelineEvents.length - 1 ? 0 : 0 }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--text-tertiary)",
+                    }}
+                  >
+                    {label}
+                    {extra ? ` · ${extra}` : ""}
                   </div>
-                  <div className="pb-3">
-                    <div className="text-[9px] uppercase tracking-wider" style={{ color: "var(--darkroom-text-tertiary)" }}>
-                      {label}
-                    </div>
-                    <div className="text-[10px]" style={{ color: "var(--darkroom-text-primary)" }}>
-                      {new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                    </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--text-primary)",
+                      marginTop: 2,
+                      marginBottom: i < timelineEvents.length - 1 ? 16 : 0,
+                    }}
+                  >
+                    {fmtDate(d)}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        );
-      })()}
+        </div>
+      )}
 
-      {/* Metadata Strip */}
+      {/* Notes — always shown, tappable to open full-screen editor */}
       <div
-        className="flex gap-6 px-4 py-3 border-t"
-        style={{ borderColor: "var(--darkroom-border)" }}
+        onClick={() => setIsEditingNotes(true)}
+        style={{ cursor: "pointer" }}
       >
-        <div className="flex-1">
-          <div
-            className="text-[8px] uppercase tracking-wider mb-1"
-            style={{ color: "var(--darkroom-text-tertiary)" }}
-          >
-            Status
-          </div>
-          <div
-            className="text-[10px]"
-            style={{ color: "var(--darkroom-text-primary)" }}
-          >
-            {status}
-          </div>
-        </div>
-        <div className="flex-1">
-          <div
-            className="text-[8px] uppercase tracking-wider mb-1"
-            style={{ color: "var(--darkroom-text-tertiary)" }}
-          >
-            {dateLabel}
-          </div>
-          <div
-            className="text-[10px]"
-            style={{ color: "var(--darkroom-text-primary)" }}
-          >
-            {dateStr || "—"}
-          </div>
-        </div>
-        {roll.push_pull != null && (
-          <div className="flex-1">
-            <div
-              className="text-[8px] uppercase tracking-wider mb-1"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            >
-              Push/Pull
-            </div>
-            <div
-              className="text-[10px] font-mono"
-              style={{ color: "var(--darkroom-text-primary)" }}
-            >
-              {roll.push_pull > 0 ? "+" : ""}
-              {roll.push_pull}
-            </div>
-          </div>
-        )}
-        <button
-          onClick={onEditNotes}
-          className="flex-[2] min-w-0 text-left active:opacity-60 transition-opacity"
+        <div
+          className="px-5 py-5 border-t"
+          style={{ borderColor: "var(--border)", marginTop: 8 }}
         >
-          <div className="flex items-center gap-1 mb-1">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 10,
+            }}
+          >
             <div
-              className="text-[8px] uppercase tracking-wider"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--text-tertiary)",
+              }}
             >
               Notes
             </div>
-            <NotePencil
-              size={10}
-              weight="bold"
-              style={{ color: "var(--darkroom-text-tertiary)" }}
-            />
+            <span
+              style={{
+                fontSize: 9,
+                color: "var(--text-disabled)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+              }}
+            >
+              Edit
+            </span>
           </div>
-          <div className="text-[10px] italic truncate line-clamp-2">
-            {roll.notes ? (
-              <MarkdownPreview content={roll.notes} />
-            ) : (
-              <span style={{ color: "var(--darkroom-text-disabled)" }}>
-                Tap to add notes...
-              </span>
-            )}
-          </div>
-        </button>
+          {(notes ?? roll.notes) ? (
+            <div
+              style={{
+                fontSize: 13,
+                color: "var(--text-primary)",
+                lineHeight: 1.75,
+              }}
+            >
+              {notes ?? roll.notes}
+            </div>
+          ) : (
+            <div
+              style={{
+                fontSize: 13,
+                color: "var(--text-disabled)",
+                lineHeight: 1.75,
+                fontStyle: "italic",
+              }}
+            >
+              Tap to add notes…
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Tags */}
+      {roll.tags && roll.tags.length > 0 && (
+        <div
+          className="px-5 py-5 border-t"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: "var(--text-tertiary)",
+              marginBottom: 10,
+            }}
+          >
+            Tags
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {roll.tags.map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-primary)",
+                  border: "1px solid var(--border)",
+                  padding: "3px 10px",
+                  letterSpacing: "0.04em",
+                  fontFamily: "inherit",
+                }}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+const sheetRowStyle: React.CSSProperties = {
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "16px 24px",
+  background: "none",
+  borderTop: "none",
+  borderLeft: "none",
+  borderRight: "none",
+  borderBottom: "1px solid var(--sheet-border)",
+  color: "var(--sheet-text)",
+  fontSize: 13,
+  fontFamily: "inherit",
+  textAlign: "left",
+  cursor: "pointer",
+};
