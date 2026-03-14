@@ -25,6 +25,7 @@ function LoginForm() {
   const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<"identifier" | "passkey">("identifier");
   const autofillAbortRef = useRef<AbortController | null>(null);
 
   // Start conditional UI (passkey autofill) on mount
@@ -65,9 +66,9 @@ function LoginForm() {
 
   async function handleIdentifierSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Cancel autofill before starting explicit flow, then trigger passkey immediately
+    // Cancel autofill before starting explicit flow
     autofillAbortRef.current?.abort();
-    handlePasskeyLogin();
+    setStep("passkey");
   }
 
   async function handlePasskeyLogin() {
@@ -75,22 +76,28 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      // Use discoverable-credential flow (empty allowCredentials) — same as autofill.
-      // This avoids Safari showing a QR code when stored credential IDs don't exactly
-      // match the browser's keychain (e.g. cross-device sync lag, re-registration).
-      autofillAbortRef.current?.abort();
-      const optionsResp = await fetch("/api/auth/webauthn/autofill-options", { method: "POST" });
-      if (!optionsResp.ok) throw new Error("Failed to start login");
-      const { options: optionsJSON, challenge } = await optionsResp.json();
+      // Step 1: Get authentication options from server
+      const optionsResp = await fetch("/api/auth/webauthn/login-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      });
 
-      // Prompt user for passkey (Face ID, Touch ID, security key)
+      if (!optionsResp.ok) {
+        const data = await optionsResp.json();
+        throw new Error(data.error || "Failed to start login");
+      }
+
+      const { options: optionsJSON, challenge, userId } = await optionsResp.json();
+
+      // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
       const response = await startAuthentication({ optionsJSON });
 
-      // Verify — no user_id needed, server looks up by credential ID
+      // Step 3: Verify authentication with server
       const verifyResp = await fetch("/api/auth/webauthn/login-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ response, challenge }),
+        body: JSON.stringify({ response, challenge, user_id: userId }),
       });
 
       if (!verifyResp.ok) {
@@ -98,6 +105,7 @@ function LoginForm() {
         throw new Error(data.error || "Failed to complete login");
       }
 
+      // Full page navigation so session cookie is sent on the next request
       window.location.href = searchParams.get("from") ?? "/";
     } catch (err: any) {
       console.error("Login error:", err);
@@ -106,8 +114,14 @@ function LoginForm() {
         setError("Login cancelled. Please try again.");
       } else if (err.name === "NotSupportedError") {
         setError("Your device doesn't support passkeys. Try using a different device or browser.");
+      } else if (err.message?.includes("not found")) {
+        setError("Account not found. Please check your email or username.");
       } else {
         setError(err.message || "Failed to sign in. Please try again.");
+      }
+
+      if (err.message?.includes("not found")) {
+        setStep("identifier");
       }
     } finally {
       setLoading(false);
@@ -161,13 +175,15 @@ function LoginForm() {
             textTransform: "uppercase",
           }}
         >
-          Sign In
+          {step === "identifier" ? "Sign In" : "Passkey"}
         </div>
       </div>
 
       {/* Content section */}
       <div style={{ padding: "0 28px 48px" }}>
-        <form onSubmit={handleIdentifierSubmit}>
+        {/* Step 1: identifier */}
+        {step === "identifier" && (
+          <form onSubmit={handleIdentifierSubmit}>
             <div style={{ marginBottom: 20 }}>
               <label
                 style={{
@@ -234,33 +250,13 @@ function LoginForm() {
             >
               {loading ? "Checking..." : "Continue"}
             </button>
-            <div style={{ marginTop: 16, textAlign: "center" }}>
-              <button
-                type="button"
-                onClick={handlePasskeyLogin}
-                disabled={loading}
-                style={{
-                  fontSize: 9,
-                  color: "rgba(244,241,234,0.5)",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  padding: "8px 0",
-                }}
-              >
-                Sign in with passkey directly
-              </button>
-            </div>
-            <div style={{ marginTop: 8, textAlign: "center" }}>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
               <button
                 type="button"
                 onClick={() => router.push("/register")}
                 style={{
                   fontSize: 9,
-                  color: "rgba(244,241,234,0.3)",
+                  color: "rgba(244,241,234,0.4)",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   background: "none",
@@ -273,6 +269,79 @@ function LoginForm() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* Step 2: passkey */}
+        {step === "passkey" && (
+          <div>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 13, color: "#f4f1ea", marginBottom: 4 }}>
+                {identifier}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.5)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.14em",
+                }}
+              >
+                Ready to authenticate
+              </div>
+            </div>
+            {error && (
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#fca5a5",
+                  textAlign: "center",
+                  marginBottom: 8,
+                }}
+              >
+                {error}
+              </p>
+            )}
+            <button
+              onClick={handlePasskeyLogin}
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "14px 0",
+                backgroundColor: "#f4f1ea",
+                color: "#7c2d12",
+                border: "none",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                fontFamily: "inherit",
+                cursor: "pointer",
+                opacity: loading ? 0.4 : 1,
+              }}
+            >
+              {loading ? "Signing in..." : "Sign In with Passkey"}
+            </button>
+            <div style={{ marginTop: 12, textAlign: "center" }}>
+              <button
+                onClick={() => {
+                  setStep("identifier");
+                  setError("");
+                }}
+                disabled={loading}
+                style={{
+                  fontSize: 9,
+                  color: "rgba(244,241,234,0.4)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
