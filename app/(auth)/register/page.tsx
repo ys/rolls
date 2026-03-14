@@ -32,6 +32,7 @@ function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [needsInvite, setNeedsInvite] = useState(true);
+  const [regOptions, setRegOptions] = useState<{ optionsJSON: any; challenge: string } | null>(null);
 
   // Check if this is a bootstrap registration (no users exist yet)
   useEffect(() => {
@@ -51,6 +52,24 @@ function RegisterForm() {
     }
   }, [inviteCode]);
 
+  // Pre-fetch registration options when entering passkey step
+  // so startRegistration() can be called synchronously on button click (Safari gesture requirement)
+  useEffect(() => {
+    if (step !== "passkey" || !email || !username) return;
+    setRegOptions(null);
+    fetch("/api/auth/webauthn/register-options", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, username, name, invite_code: invite }),
+    })
+      .then((r) => r.json())
+      .then(({ options, challenge, error: err }) => {
+        if (err) { setError(err); setStep("details"); return; }
+        setRegOptions({ optionsJSON: options, challenge });
+      })
+      .catch(() => { setError("Failed to prepare passkey. Please try again."); setStep("details"); });
+  }, [step]);
+
   async function validateInvite(code: string) {
     if (!code) return;
 
@@ -59,12 +78,12 @@ function RegisterForm() {
 
     try {
       const resp = await fetch(`/api/auth/invites/validate?code=${encodeURIComponent(code)}`);
+      const data = await resp.json();
 
-      if (resp.ok) {
+      if (resp.ok && data.valid) {
         setInvite(code);
         setStep("details");
       } else {
-        const data = await resp.json();
         setError(data.error || "Invalid invite code");
       }
     } catch (err) {
@@ -122,25 +141,14 @@ function RegisterForm() {
   }
 
   async function handlePasskeyRegistration() {
+    if (!regOptions) return;
     setError("");
     setLoading(true);
 
     try {
-      // Step 1: Get registration options from server
-      const optionsResp = await fetch("/api/auth/webauthn/register-options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, name, invite_code: invite }),
-      });
+      const { optionsJSON, challenge } = regOptions;
 
-      if (!optionsResp.ok) {
-        const data = await optionsResp.json();
-        throw new Error(data.error || "Failed to start registration");
-      }
-
-      const { options: optionsJSON, challenge } = await optionsResp.json();
-
-      // Step 2: Prompt user for passkey (Face ID, Touch ID, security key)
+      // Prompt user for passkey — called synchronously in gesture handler for Safari compatibility
       const response = await startRegistration({ optionsJSON });
 
       // Step 3: Verify registration with server
@@ -394,10 +402,10 @@ function RegisterForm() {
             )}
             <button
               onClick={handlePasskeyRegistration}
-              disabled={loading}
-              style={{ ...primaryButtonStyle, opacity: loading ? 0.4 : 1 }}
+              disabled={loading || !regOptions}
+              style={{ ...primaryButtonStyle, opacity: loading || !regOptions ? 0.4 : 1 }}
             >
-              {loading ? "Setting up..." : "Set Up Passkey"}
+              {loading ? "Setting up..." : !regOptions ? "Preparing..." : "Set Up Passkey"}
             </button>
             <div style={{ marginTop: 12, textAlign: "center" }}>
               <button
