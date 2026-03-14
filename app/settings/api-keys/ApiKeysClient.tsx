@@ -4,36 +4,33 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ApiKey } from "@/lib/db";
 import BackButton from "@/components/BackButton";
-import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
+import FormButton from "@/components/FormButton";
+import FormField from "@/components/FormField";
 import { haptics } from "@/lib/haptics";
-
-const labelCls = "block text-[10px] uppercase tracking-widest";
-const labelStyle = { color: "var(--text-secondary)" };
-const inputCls = "w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors";
-const inputStyle = { borderColor: "var(--border)", color: "var(--text-primary)" };
 
 function formatDate(s: string | null): string {
   if (!s) return "Never";
-  return new Date(s).toLocaleDateString(undefined, {
-    month: "short", day: "numeric", year: "numeric",
-  });
+  return new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  async function copy() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    haptics.light();
-    setTimeout(() => setCopied(false), 2000);
-  }
-  return (
-    <button onClick={copy} className="text-xs font-mono text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity break-all text-left">
-      {copied ? "Copied!" : text}
-    </button>
-  );
-}
+const S = {
+  row: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "12px 20px", borderBottom: "1px solid var(--border-subtle)",
+  } as React.CSSProperties,
+  label: { fontSize: 13, color: "var(--text-primary)" } as React.CSSProperties,
+  sub: { fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 } as React.CSSProperties,
+  revoke: {
+    fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const,
+    color: "#c2410c", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+  },
+  addRow: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    borderTop: "1px solid var(--border)", padding: "12px 20px", marginTop: 4, cursor: "pointer",
+    background: "none", border: "none", width: "100%", fontFamily: "inherit",
+  } as React.CSSProperties,
+};
 
 export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }) {
   const router = useRouter();
@@ -43,19 +40,19 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const [newKey, setNewKey] = useState<string | null>(null);
+  const [newKeyLabel, setNewKeyLabel] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
     setCreateError("");
-
     const resp = await fetch("/api/auth/api-keys", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ label: label || undefined }),
     });
-
     if (!resp.ok) {
       const data = await resp.json();
       setCreateError(data.error ?? "Failed to create key");
@@ -63,10 +60,10 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
       haptics.error();
       return;
     }
-
     const { api_key, raw_key } = await resp.json();
     setKeys((prev) => [{ ...api_key, last_used_at: null }, ...prev]);
     setNewKey(raw_key);
+    setNewKeyLabel(label || null);
     setLabel("");
     setShowCreate(false);
     setCreating(false);
@@ -87,80 +84,95 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKey[] }
     setDeletingId(null);
   }
 
+  async function copyKey() {
+    if (!newKey) return;
+    await navigator.clipboard.writeText(newKey);
+    setCopied(true);
+    haptics.light();
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div>
-      <div className="flex items-center justify-between px-4 py-4 border-b mb-6" style={{ borderColor: "var(--border)" }}>
-        <BackButton label="Settings" />
-        <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>API Keys</h1>
-        <div className="w-8" />
+    <div style={{ paddingBottom: 80 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
+        <BackButton label="···" />
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>API Keys</span>
+        <div style={{ width: 40 }} />
       </div>
 
       {/* One-time new key banner */}
       {newKey && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-3">
-          <p className="text-[10px] uppercase tracking-widest text-amber-700 dark:text-amber-400 font-medium">
-            Save this key — it won't be shown again
-          </p>
-          <CopyButton text={newKey} />
-          <p className="text-[11px] text-amber-600/70 dark:text-amber-500/70">
-            Tap to copy. Use it in your CLI config as <code className="font-mono">web_app_api_key</code>, or run <code className="font-mono">rolls login</code>.
-          </p>
+        <div style={{ margin: "16px 20px", padding: "12px 16px", border: "1px solid #d97706", background: "rgba(217,119,6,0.06)" }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#d97706", marginBottom: 6 }}>
+            Save this key — shown once
+          </div>
           <button
-            onClick={() => setNewKey(null)}
-            className="text-[10px] uppercase tracking-widest text-amber-600 dark:text-amber-400 hover:opacity-70 transition-opacity"
+            onClick={copyKey}
+            style={{ fontSize: 11, color: "var(--text-primary)", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "monospace", wordBreak: "break-all", textAlign: "left" }}
+          >
+            {copied ? "Copied!" : newKey}
+          </button>
+          <div style={{ fontSize: 9, color: "var(--text-tertiary)", marginTop: 6 }}>
+            Tap to copy · Use as <span style={{ color: "var(--text-primary)" }}>web_app_api_key</span>
+          </div>
+          <button
+            onClick={() => { setNewKey(null); setNewKeyLabel(null); }}
+            style={{ fontSize: 9, color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", marginTop: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}
           >
             Dismiss
           </button>
         </div>
       )}
 
-      <ul className="rounded-2xl overflow-hidden mb-6" style={{ backgroundColor: "var(--bg)" }}>
+      {/* Key list */}
+      <div style={{ borderTop: "1px solid var(--border)" }}>
         {keys.map((k) => (
-          <li key={k.id} className="px-4 py-3 flex items-start justify-between gap-2 border-b" style={{ borderColor: "var(--border)" }}>
+          <div key={k.id} style={S.row}>
             <div>
-              <div className="text-sm font-medium">{k.label ?? <span className="italic" style={{ color: "var(--text-tertiary)" }}>Unlabeled</span>}</div>
-              <div className="text-[12px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              <div style={S.label}>
+                {k.label ?? <span style={{ fontStyle: "italic", color: "var(--text-tertiary)" }}>Unlabeled</span>}
+              </div>
+              <div style={S.sub}>
                 Created {formatDate(k.created_at)} · Last used {formatDate(k.last_used_at)}
               </div>
             </div>
             <button
-              onClick={() => handleDelete(k.id)}
+              onClick={() => { haptics.light(); handleDelete(k.id); }}
               disabled={deletingId === k.id}
-              className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors disabled:opacity-50 shrink-0"
+              style={{ ...S.revoke, opacity: deletingId === k.id ? 0.5 : 1 }}
             >
               {deletingId === k.id ? "…" : "Revoke"}
             </button>
-          </li>
+          </div>
         ))}
         {keys.length === 0 && (
-          <li className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>No API keys yet.</li>
+          <div style={{ padding: "32px 20px", textAlign: "center", fontSize: 13, color: "var(--text-tertiary)" }}>
+            No API keys yet.
+          </div>
         )}
-      </ul>
+      </div>
 
-      <button
-        onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
-        className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest transition-opacity active:opacity-60"
-        style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
-      >
-        <span>New API Key</span>
-        <span className="text-sm leading-none">+</span>
-      </button>
+      {/* Add row */}
+      <div style={{ borderTop: "1px solid var(--border)", marginTop: 4 }}>
+        <button
+          onClick={() => { setShowCreate(true); setCreateError(""); haptics.light(); }}
+          style={S.addRow}
+        >
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)" }}>New API Key</span>
+          <span style={{ fontSize: 16, color: "var(--accent)", lineHeight: 1 }}>+</span>
+        </button>
+      </div>
 
       <Sheet open={showCreate} onClose={() => { setShowCreate(false); setCreateError(""); }} title="New API Key">
-        <form onSubmit={handleCreate} className="space-y-6">
-          <div className="space-y-1">
-            <label className={labelCls} style={labelStyle}>Label <span className="normal-case">(optional)</span></label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g. rolls CLI"
-              className={inputCls}
-              style={inputStyle}
-              autoFocus
-            />
-          </div>
-          {createError && <p className="text-red-400 text-xs tracking-wide">{createError}</p>}
+        <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <FormField
+            label="Label (optional)"
+            value={label}
+            onChange={setLabel}
+            placeholder="e.g. rolls CLI"
+          />
+          {createError && <p style={{ fontSize: 11, color: "#f87171" }}>{createError}</p>}
           <FormButton type="submit" disabled={creating}>
             {creating ? "Creating…" : "Create Key"}
           </FormButton>

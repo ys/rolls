@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import type { Film } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
-import { SuccessMessage } from "@/components/SuccessCheckmark";
-import { haptics } from "@/lib/haptics";
 import BackButton from "@/components/BackButton";
 import FormField from "@/components/FormField";
 import FormButton from "@/components/FormButton";
 import Sheet from "@/components/Sheet";
+import { haptics } from "@/lib/haptics";
 
 function filmLabel(f: Film): string {
   if (f.nickname) return f.nickname;
@@ -19,25 +18,35 @@ function filmLabel(f: Film): string {
   return `${f.brand} ${f.name}${iso}`;
 }
 
+function filmSub(f: Film): string {
+  const parts: string[] = [];
+  if (f.iso) parts.push(`ISO ${f.iso}`);
+  parts.push(f.color ? "Colour" : "B&W");
+  if (f.roll_count) parts.push(`${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}`);
+  return parts.join(" · ");
+}
+
+const tab = (active: boolean): React.CSSProperties => ({
+  fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+  background: "none", border: "none",
+  borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
+  color: active ? "var(--accent)" : "var(--text-tertiary)",
+  paddingBottom: 2, fontFamily: "inherit", cursor: "pointer",
+});
+
 export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) {
   const router = useRouter();
   const [allFilms, setAllFilms] = useState(initialFilms);
   const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
-  const [form, setForm] = useState({
-    id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false,
-  });
+  const [form, setForm] = useState({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-
-  // Merge mode state
   const [merging, setMerging] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetId, setTargetId] = useState("");
   const [mergeError, setMergeError] = useState("");
   const [mergeSaving, setMergeSaving] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers = (extra?: Record<string, string>): HeadersInit => ({
@@ -51,255 +60,184 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
 
   async function handleRefresh() {
     const resp = await fetch("/api/films", { headers: headers() });
-    if (resp.ok) {
-      const films = await resp.json();
-      setAllFilms(films);
-      router.refresh();
-    }
-  }
-
-  function showSuccessMsg(msg: string) {
-    setSuccessMessage(msg);
-    setShowSuccess(true);
-    haptics.success();
-    setTimeout(() => setShowSuccess(false), 2000);
+    if (resp.ok) { setAllFilms(await resp.json()); router.refresh(); }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    setError("");
-
+    setSaving(true); setError("");
     const resp = await fetch("/api/films", {
       method: "POST",
       headers: headers({ "Content-Type": "application/json" }),
       body: JSON.stringify({ ...form, iso: form.iso ? parseInt(form.iso, 10) : null }),
     });
-
     if (!resp.ok) {
       const data = await resp.json();
       setError(data.error ?? "Failed to create film");
-      setSaving(false);
-      haptics.error();
-      return;
+      setSaving(false); haptics.error(); return;
     }
-
     const film = await resp.json();
     setAllFilms((prev) => [...prev.filter((f) => f.slug !== film.slug), film]);
-
-    // Invalidate rolls cache since film data changed
     invalidateCache("rolls");
-
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
-    setSaving(false);
-    setShowForm(false);
-    showSuccessMsg("Film saved!");
+    setSaving(false); setShowForm(false); haptics.success();
     router.refresh();
   }
 
   function toggleSelect(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+    setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
   async function handleMerge() {
     if (!targetId || selected.size < 2) return;
-    setMergeSaving(true);
-    setMergeError("");
-
+    setMergeSaving(true); setMergeError("");
     const source_ids = [...selected].filter((id) => id !== targetId);
     const resp = await fetch("/api/films/merge", {
       method: "POST",
       headers: headers({ "Content-Type": "application/json" }),
       body: JSON.stringify({ target_id: targetId, source_ids }),
     });
-
     if (!resp.ok) {
       const data = await resp.json();
       setMergeError(data.error ?? "Merge failed");
-      setMergeSaving(false);
-      haptics.error();
-      return;
+      setMergeSaving(false); haptics.error(); return;
     }
-
     const updated = await fetch("/api/films", { headers: headers() }).then((r) => r.json());
     setAllFilms(updated);
-
-    // Invalidate rolls cache since film data changed
     invalidateCache("rolls");
-
-    setSelected(new Set());
-    setTargetId("");
-    setMerging(false);
-    setMergeSaving(false);
-    showSuccessMsg(`Films merged into ${targetId}!`);
-    router.refresh();
+    setSelected(new Set()); setTargetId(""); setMerging(false); setMergeSaving(false);
+    haptics.success(); router.refresh();
   }
 
   const selectedFilms = allFilms.filter((f) => selected.has(f.slug));
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div>
-        <BackButton label="Settings" />
-        {showSuccess && (
-          <div className="mb-4 p-3" style={{ backgroundColor: "rgba(34, 197, 94, 0.15)" }}>
-            <SuccessMessage message={successMessage} />
+      <div style={{ paddingBottom: 80 }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 12px", borderBottom: "1px solid var(--border)" }}>
+          <BackButton label="···" />
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>Films</span>
+          <button
+            onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
+            style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "1px solid var(--border)", padding: "4px 8px", cursor: "pointer", fontFamily: "inherit" }}
+          >
+            {merging ? "Done" : "Merge"}
+          </button>
+        </div>
+
+        {/* Sort tabs */}
+        {!merging && (
+          <div style={{ display: "flex", gap: 16, padding: "10px 20px", borderBottom: "1px solid var(--border)" }}>
+            <button style={tab(sortBy === "usage")} onClick={() => { setSortBy("usage"); haptics.light(); }}>Usage</button>
+            <button style={tab(sortBy === "alpha")} onClick={() => { setSortBy("alpha"); haptics.light(); }}>A–Z</button>
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--text-primary)" }}>FILMS</h1>
-          <div className="flex gap-2 items-center">
-            {!merging && (
-              <div className="flex gap-1 text-xs p-1">
-                <button
-                  onClick={() => { setSortBy("usage"); haptics.light(); }}
-                  className={`px-2 py-1 transition-colors ${sortBy === "usage" ? "text-amber-400 font-medium" : "text-zinc-600"}`}
-                >
-                  By usage
-                </button>
-                <button
-                  onClick={() => { setSortBy("alpha"); haptics.light(); }}
-                  className={`px-2 py-1 transition-colors ${sortBy === "alpha" ? "text-amber-400 font-medium" : "text-zinc-600"}`}
-                >
-                  A–Z
-                </button>
-              </div>
-            )}
-            <button
-              onClick={() => { setMerging((m) => !m); setSelected(new Set()); setTargetId(""); setMergeError(""); haptics.light(); }}
-              className="text-xs font-medium px-3 py-1.5 transition-colors" style={{ color: "var(--text-secondary)", backgroundColor: "transparent", border: "1px solid var(--border)" }}
-            >
-              {merging ? "Cancel" : "Merge"}
-            </button>
-          </div>
-        </div>
-
-        <ul className={merging ? "space-y-2 mb-4" : "space-y-2 mb-8"}>
+        {/* List */}
+        <div style={{ borderTop: "1px solid var(--border)" }}>
           {films.map((f) => {
-            const displayName = filmLabel(f);
-            const meta = `${f.slug} · ${f.color ? "color" : "b&w"}${f.iso ? ` · ISO ${f.iso}` : ""}${f.roll_count ? ` · ${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}` : ""}`;
-
             if (merging) {
               const isSelected = selected.has(f.slug);
               return (
-                <li key={f.slug}>
-                  <button
-                    onClick={() => { toggleSelect(f.slug); haptics.light(); }}
-                    className={`w-full text-left flex items-center gap-3 px-4 py-3 border-b transition-colors ${isSelected ? "border-amber-400" : "border-zinc-600"}`} style={{ borderColor: isSelected ? "var(--accent)" : "var(--border)" }}
-                  >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${isSelected ? "bg-amber-400 border-amber-400" : "border-zinc-600"}`}>
-                      {isSelected && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                    </div>
-                    <div>
-                      <div className="font-medium">{displayName}</div>
-                      <div className="text-xs text-zinc-400 mt-0.5">{meta}</div>
-                    </div>
-                  </button>
-                </li>
-              );
-            }
-
-            return (
-              <li key={f.slug}>
-                <Link
-                  href={`/films/${encodeURIComponent(f.slug)}`}
-                  onClick={() => haptics.light()}
-                  className="flex items-center justify-between px-4 py-3.5 border-b active:bg-zinc-900/30 transition-colors" style={{ borderColor: "var(--border)" }}
+                <div
+                  key={f.slug}
+                  onClick={() => { toggleSelect(f.slug); haptics.light(); }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", background: isSelected ? "rgba(217,119,6,0.06)" : "none" }}
                 >
                   <div>
-                    <div className="font-medium">{displayName}</div>
-                    <div className="text-xs text-zinc-400 mt-0.5">{meta}</div>
+                    <div style={{ fontSize: 13, color: "var(--text-primary)" }}>{filmLabel(f)}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>{filmSub(f)}</div>
                   </div>
-                  <svg className="w-4 h-4 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6" /></svg>
-                </Link>
-              </li>
+                  <div style={{ width: 18, height: 18, borderRadius: 9, border: `2px solid ${isSelected ? "var(--accent)" : "var(--border)"}`, background: isSelected ? "var(--accent)" : "none" }} />
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={f.slug}
+                href={`/films/${encodeURIComponent(f.slug)}`}
+                onClick={() => haptics.light()}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", textDecoration: "none" }}
+              >
+                <div>
+                  <div style={{ fontSize: 13, color: "var(--text-primary)" }}>{filmLabel(f)}</div>
+                  <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>{filmSub(f)}</div>
+                </div>
+                <span style={{ fontSize: 18, color: "var(--border)", lineHeight: 1 }}>›</span>
+              </Link>
             );
           })}
           {films.length === 0 && (
-            <li className="flex flex-col items-center justify-center py-12 gap-2 text-center">
-              <svg className="w-10 h-10 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125a1.125 1.125 0 00-1.125-1.125v-1.5c0-.621.504-1.125 1.125-1.125m0 3.75v-3.75M6 18.375V7.875c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v10.5c0 .621-.504 1.125-1.125 1.125M6 18.375H3.375m14.25 0H18.75M18.75 19.5h-1.5c-.621 0-1.125-.504-1.125-1.125M18.75 19.5a1.125 1.125 0 001.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75v-3.75" />
-              </svg>
-              <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>No films yet.<br />Add your first film to get started.</p>
-            </li>
+            <div style={{ padding: "48px 20px", textAlign: "center", fontSize: 13, color: "var(--text-tertiary)" }}>
+              No films yet.
+            </div>
           )}
-        </ul>
+        </div>
 
         {/* Merge panel */}
         {merging && selected.size >= 2 && (
-          <div className="mb-6 space-y-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-400">{selected.size} films selected — keep which one?</p>
-            <div className="space-y-2">
+          <div style={{ padding: "16px 20px", borderTop: "1px solid var(--border)" }}>
+            <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-tertiary)", marginBottom: 12 }}>
+              {selected.size} selected — keep which one?
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {selectedFilms.map((f) => (
-                <label key={f.slug} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="target"
-                    value={f.slug}
-                    checked={targetId === f.slug}
-                    onChange={() => setTargetId(f.slug)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">
-                    {filmLabel(f)}
-                    <span className="text-zinc-500 ml-1">({f.slug})</span>
-                  </span>
+                <label key={f.slug} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: 13, color: "var(--text-primary)" }}>
+                  <input type="radio" name="target" value={f.slug} checked={targetId === f.slug} onChange={() => setTargetId(f.slug)} />
+                  {filmLabel(f)}
                 </label>
               ))}
             </div>
-            {mergeError && <p className="text-red-400 text-xs tracking-wide">{mergeError}</p>}
+            {mergeError && <p style={{ fontSize: 11, color: "#f87171", marginBottom: 8 }}>{mergeError}</p>}
             <button
               onClick={handleMerge}
               disabled={!targetId || mergeSaving}
-              className="w-full border border-red-600 text-red-600 py-3 text-xs tracking-widest uppercase font-medium hover:bg-red-600 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ width: "100%", padding: "12px 0", border: "1px solid #c2410c", color: "#c2410c", background: "none", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "inherit", cursor: "pointer", opacity: (!targetId || mergeSaving) ? 0.4 : 1 }}
             >
-              {mergeSaving ? "Merging…" : `Merge ${selected.size - 1} into ${targetId || "…"}`}
+              {mergeSaving ? "Merging…" : `Merge into ${targetId || "…"}`}
             </button>
           </div>
         )}
 
+        {/* Add row */}
         {!merging && (
-          <>
-            <button
-              onClick={() => { setShowForm(true); setError(""); haptics.light(); }}
-              className="w-full flex items-center justify-between border-t pt-3 mt-2 mb-3 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors" style={{ borderColor: "var(--border)" }}
-            >
-              <span>Add Film</span>
-              <span className="text-sm leading-none">+</span>
+          <div style={{ borderTop: "1px solid var(--border)", marginTop: 4 }}>
+            <button onClick={() => { setShowForm(true); setError(""); haptics.light(); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: "none", border: "none", width: "100%", fontFamily: "inherit", cursor: "pointer" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Add Film</span>
+              <span style={{ fontSize: 16, color: "var(--accent)", lineHeight: 1 }}>+</span>
             </button>
-
-            <Sheet open={showForm} onClose={() => { setShowForm(false); setError(""); }} title="Add Film">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <FormField label="ID (slug)" value={form.id}       onChange={(v) => setForm((f) => ({ ...f, id: v }))}       placeholder="portra-400" required />
-                <FormField label="Brand"     value={form.brand}    onChange={(v) => setForm((f) => ({ ...f, brand: v }))}    placeholder="Kodak" required />
-                <FormField label="Name"      value={form.name}     onChange={(v) => setForm((f) => ({ ...f, name: v }))}     placeholder="Portra" required />
-                <FormField label="Nickname"  value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="optional" />
-                <FormField label="ISO"       value={form.iso}      onChange={(v) => setForm((f) => ({ ...f, iso: v }))}      placeholder="400" inputMode="numeric" />
-
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-400">
-                    <input type="checkbox" checked={form.color} onChange={(e) => setForm((f) => ({ ...f, color: e.target.checked }))} className="w-4 h-4" />
-                    Color
-                  </label>
-                  <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-400">
-                    <input type="checkbox" checked={form.show_iso} onChange={(e) => setForm((f) => ({ ...f, show_iso: e.target.checked }))} className="w-4 h-4" />
-                    Show ISO in name
-                  </label>
-                </div>
-
-                {error && <p className="text-red-400 text-xs tracking-wide">{error}</p>}
-                <FormButton type="submit" disabled={saving}>
-                  {saving ? "Saving…" : "Add Film"}
-                </FormButton>
-              </form>
-            </Sheet>
-          </>
+          </div>
         )}
+
+        <Sheet open={showForm} onClose={() => { setShowForm(false); setError(""); }} title="Add Film">
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <FormField label="ID (slug)" value={form.id} onChange={(v) => setForm((f) => ({ ...f, id: v }))} placeholder="portra-400" required />
+            <FormField label="Brand" value={form.brand} onChange={(v) => setForm((f) => ({ ...f, brand: v }))} placeholder="Kodak" required />
+            <FormField label="Name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} placeholder="Portra 400" required />
+            <FormField label="Nickname (optional)" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="" />
+            <FormField label="ISO" value={form.iso} onChange={(v) => setForm((f) => ({ ...f, iso: v }))} placeholder="400" inputMode="numeric" />
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 8 }}>Type</div>
+              <div style={{ display: "flex", border: "1px solid var(--border)" }}>
+                {[["colour", "Colour"], ["bw", "B&W"]].map(([val, lbl]) => {
+                  const active = val === "colour" ? form.color : !form.color;
+                  return (
+                    <button
+                      key={val} type="button"
+                      onClick={() => setForm((f) => ({ ...f, color: val === "colour" }))}
+                      style={{ flex: 1, padding: "8px 0", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: active ? "var(--text-primary)" : "none", color: active ? "var(--bg)" : "var(--text-tertiary)", border: "none", borderLeft: val !== "colour" ? "1px solid var(--border)" : "none", fontFamily: "inherit", cursor: "pointer" }}
+                    >
+                      {lbl}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {error && <p style={{ fontSize: 11, color: "#f87171" }}>{error}</p>}
+            <FormButton type="submit" disabled={saving}>{saving ? "Saving…" : "Add Film"}</FormButton>
+          </form>
+        </Sheet>
       </div>
     </PullToRefresh>
   );
