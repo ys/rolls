@@ -81,6 +81,7 @@ export interface Film {
   nickname: string | null;
   iso: number | null;
   color: boolean;
+  slide: boolean;
   show_iso: boolean;
   roll_count?: number;
 }
@@ -92,6 +93,7 @@ export interface CatalogFilm {
   nickname: string | null;
   iso: number | null;
   color: boolean;
+  slide: boolean;
   show_iso: boolean;
   gradient_from: string | null;
   gradient_to: string | null;

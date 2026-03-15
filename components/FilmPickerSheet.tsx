@@ -23,6 +23,7 @@ function FilmRow({
   label,
   iso,
   color,
+  slide,
   gradientFrom,
   gradientTo,
   slug,
@@ -33,6 +34,7 @@ function FilmRow({
   label: string;
   iso: number | null;
   color: boolean;
+  slide?: boolean;
   gradientFrom?: string | null;
   gradientTo?: string | null;
   slug?: string;
@@ -55,7 +57,7 @@ function FilmRow({
         <span style={{ fontSize: 17, fontWeight: 500, color: "var(--sheet-text)", display: "block" }}>{label}</span>
         <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
           {iso ? <span style={{ fontSize: 14, color: "#6b5a52" }}>ISO {iso}</span> : null}
-          <span style={{ fontSize: 14, color: "#6b5a52" }}>{color ? "Colour" : "B&W"}</span>
+          <span style={{ fontSize: 14, color: "#6b5a52" }}>{slide ? "Slide" : color ? "Colour" : "B&W"}</span>
           {rollCount != null && rollCount > 0 && (
             <span style={{ fontSize: 14, color: "#6b5a52" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
           )}
@@ -163,6 +165,7 @@ export default function FilmPickerSheet({
                   label={filmLabel(f)}
                   iso={f.iso}
                   color={f.color}
+                  slide={f.slide}
                   gradientFrom={cat?.gradient_from}
                   gradientTo={cat?.gradient_to}
                   slug={f.slug}
@@ -184,6 +187,7 @@ export default function FilmPickerSheet({
                 label={filmLabel(f)}
                 iso={f.iso}
                 color={f.color}
+                slide={f.slide}
                 gradientFrom={f.gradient_from}
                 gradientTo={f.gradient_to}
                 slug={f.slug}

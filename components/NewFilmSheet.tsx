@@ -43,6 +43,7 @@ export default function NewFilmSheet({
         nickname: nickname || undefined,
         iso: iso ? Number(iso) : undefined,
         color: filmType !== "bw",
+        slide: filmType === "slide",
         show_iso: !!iso,
       }),
     });

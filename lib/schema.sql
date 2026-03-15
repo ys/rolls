@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS films (
   nickname   TEXT,
   iso        INT,
   color      BOOLEAN DEFAULT true,
+  slide      BOOLEAN NOT NULL DEFAULT false,
   show_iso   BOOLEAN DEFAULT false,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS catalog_films (
   nickname      TEXT,
   iso           INT,
   color         BOOLEAN DEFAULT true,
+  slide         BOOLEAN NOT NULL DEFAULT false,
   show_iso      BOOLEAN DEFAULT false,
   gradient_from TEXT,
   gradient_to   TEXT

@@ -21,7 +21,7 @@ function filmLabel(f: Film): string {
 function filmSub(f: Film): string {
   const parts: string[] = [];
   if (f.iso) parts.push(`ISO ${f.iso}`);
-  parts.push(f.color ? "Colour" : "B&W");
+  parts.push(f.slide ? "Slide" : f.color ? "Colour" : "B&W");
   if (f.roll_count) parts.push(`${f.roll_count} roll${f.roll_count === 1 ? "" : "s"}`);
   return parts.join(" · ");
 }
@@ -38,7 +38,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
   const router = useRouter();
   const [allFilms, setAllFilms] = useState(initialFilms);
   const [sortBy, setSortBy] = useState<"usage" | "alpha">("usage");
-  const [form, setForm] = useState({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
+  const [form, setForm] = useState({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, slide: false, show_iso: false });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -79,7 +79,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     const film = await resp.json();
     setAllFilms((prev) => [...prev.filter((f) => f.slug !== film.slug), film]);
     invalidateCache("rolls");
-    setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, show_iso: false });
+    setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, slide: false, show_iso: false });
     setSaving(false); setShowForm(false); haptics.success();
     router.refresh();
   }
@@ -220,12 +220,12 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6b5a52", marginBottom: 8 }}>Type</div>
               <div style={{ display: "flex", border: "1px solid var(--sheet-border)" }}>
-                {[["colour", "Colour"], ["bw", "B&W"]].map(([val, lbl]) => {
-                  const active = val === "colour" ? form.color : !form.color;
+                {[["colour", "Colour"], ["slide", "Slide"], ["bw", "B&W"]].map(([val, lbl]) => {
+                  const active = val === "colour" ? (form.color && !form.slide) : val === "slide" ? form.slide : !form.color;
                   return (
                     <button
                       key={val} type="button"
-                      onClick={() => setForm((f) => ({ ...f, color: val === "colour" }))}
+                      onClick={() => setForm((f) => ({ ...f, color: val !== "bw", slide: val === "slide" }))}
                       style={{ flex: 1, padding: "8px 0", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: active ? "var(--sheet-text)" : "none", color: active ? "var(--sheet-bg)" : "#6b5a52", border: "none", borderLeft: val !== "colour" ? "1px solid var(--sheet-border)" : "none", fontFamily: "inherit", cursor: "pointer" }}
                     >
                       {lbl}

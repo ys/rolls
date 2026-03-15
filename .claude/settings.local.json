@@ -57,7 +57,8 @@
       "Bash(open /Users/ys/src/github.com/ys/rolls/identity.html)",
       "WebFetch(domain:www.learnui.design)",
       "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/type-scale.html)",
-      "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/sheets.html)"
+      "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/sheets.html)",
+      "Bash(heroku ps --app rolls)"
     ]
   },
   "enableAllProjectMcpServers": false

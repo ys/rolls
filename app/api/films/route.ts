@@ -27,6 +27,7 @@ type CreateFilmBody = {
   nickname?: string;
   iso?: number;
   color?: boolean;
+  slide?: boolean;
   show_iso?: boolean;
 };
 
@@ -42,7 +43,7 @@ type CreateFilmBody = {
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
   const body: CreateFilmBody = await request.json();
-  const { brand, name, nickname, iso, color, show_iso } = body;
+  const { brand, name, nickname, iso, color, slide, show_iso } = body;
 
   if (!brand || !name) {
     return NextResponse.json(
@@ -55,9 +56,9 @@ export async function POST(request: NextRequest) {
   const slug = slugify(`${brand}-${name}`);
 
   const rows = await sql<Film[]>`
-    INSERT INTO films (slug, user_id, brand, name, nickname, iso, color, show_iso)
-    VALUES (${slug}, ${userId}, ${brand}, ${name}, ${nickname ?? null}, ${iso ?? null}, ${color ?? true}, ${show_iso ?? false})
-    ON CONFLICT (user_id, slug) DO UPDATE SET brand = EXCLUDED.brand, name = EXCLUDED.name, nickname = EXCLUDED.nickname, iso = EXCLUDED.iso, color = EXCLUDED.color, show_iso = EXCLUDED.show_iso
+    INSERT INTO films (slug, user_id, brand, name, nickname, iso, color, slide, show_iso)
+    VALUES (${slug}, ${userId}, ${brand}, ${name}, ${nickname ?? null}, ${iso ?? null}, ${color ?? true}, ${slide ?? false}, ${show_iso ?? false})
+    ON CONFLICT (user_id, slug) DO UPDATE SET brand = EXCLUDED.brand, name = EXCLUDED.name, nickname = EXCLUDED.nickname, iso = EXCLUDED.iso, color = EXCLUDED.color, slide = EXCLUDED.slide, show_iso = EXCLUDED.show_iso
     RETURNING *
   `;
   return NextResponse.json(rows[0], { status: 201 });
