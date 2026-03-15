@@ -22,6 +22,7 @@ export default function NewFilmSheet({
   onCreated: (film: Film) => void;
   authHeaders: HeadersInit;
 }) {
+  const [id, setId] = useState("");
   const [brand, setBrand] = useState("");
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
@@ -38,6 +39,7 @@ export default function NewFilmSheet({
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({
+        id: id || undefined,
         brand,
         name,
         nickname: nickname || undefined,
@@ -54,7 +56,7 @@ export default function NewFilmSheet({
       return;
     }
     const film = await resp.json();
-    setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
+    setId(""); setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
     haptics.success();
     onCreated(film);
   }
@@ -73,6 +75,10 @@ export default function NewFilmSheet({
   return (
     <Sheet open={open} onClose={onClose} title="New Film">
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div>
+          <label style={fieldLabel}>Slug</label>
+          <input type="text" value={id} onChange={(e) => setId(e.target.value)} style={inputStyle} placeholder="portra-400 (auto if blank)" />
+        </div>
         <div>
           <label style={fieldLabel}>Brand</label>
           <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} required style={inputStyle} placeholder="Kodak" />

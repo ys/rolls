@@ -22,6 +22,7 @@ export async function GET() {
 }
 
 type CreateFilmBody = {
+  id?: string;
   brand: string;
   name: string;
   nickname?: string;
@@ -43,7 +44,7 @@ type CreateFilmBody = {
 export async function POST(request: NextRequest) {
   const userId = await getUserId();
   const body: CreateFilmBody = await request.json();
-  const { brand, name, nickname, iso, color, slide, show_iso } = body;
+  const { id, brand, name, nickname, iso, color, slide, show_iso } = body;
 
   if (!brand || !name) {
     return NextResponse.json(
@@ -52,8 +53,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Generate slug server-side
-  const slug = slugify(`${brand}-${name}`);
+  const slug = id ? slugify(id) : slugify(`${brand}-${name}`);
 
   const rows = await sql<Film[]>`
     INSERT INTO films (slug, user_id, brand, name, nickname, iso, color, slide, show_iso)
