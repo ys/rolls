@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
       : [];
 
     await sql`
-      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url, push_pull)
+      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url, push_pull, frame_count)
       VALUES (
         ${r.roll_number}, ${userId},
         ${cam?.uuid ?? null}, ${film?.uuid ?? null},
         ${r.shot_at ?? null}, ${r.fridge_at ?? null}, ${r.lab_at ?? null}, ${r.lab_name ?? null},
         ${r.scanned_at ?? null}, ${r.processed_at ?? null}, ${r.uploaded_at ?? null}, ${r.archived_at ?? null},
         ${r.album_name ?? null}, ${r.tags?.filter(t => t) ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null},
-        ${r.push_pull ?? null}
+        ${r.push_pull ?? null}, ${r.frame_count ?? null}
       )
       ON CONFLICT (user_id, roll_number) DO UPDATE SET
         camera_uuid      = COALESCE(EXCLUDED.camera_uuid, rolls.camera_uuid),
@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
         tags             = EXCLUDED.tags,
         notes            = EXCLUDED.notes,
         contact_sheet_url = COALESCE(EXCLUDED.contact_sheet_url, rolls.contact_sheet_url),
-        push_pull        = EXCLUDED.push_pull
+        push_pull        = EXCLUDED.push_pull,
+        frame_count      = COALESCE(EXCLUDED.frame_count, rolls.frame_count)
     `;
   }
 

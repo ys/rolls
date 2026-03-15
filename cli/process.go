@@ -152,6 +152,21 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 				return err
 			}
 
+			// Count image files to record actual frame count
+			frameCount := 0
+			if entries, err := os.ReadDir(r.Folder); err == nil {
+				for _, f := range entries {
+					if f.IsDir() {
+						continue
+					}
+					name := f.Name()
+					if name == ".DS_Store" || filepath.Ext(name) == ".md" {
+						continue
+					}
+					frameCount++
+				}
+			}
+
 			// Always stamp processed_at (and scanned_at if not set) in local roll.md
 			now := time.Now().UTC()
 			mdPath := filepath.Join(r.Folder, "roll.md")
@@ -159,6 +174,9 @@ Use --exif-only to only refresh EXIF data on already-archived rolls.`,
 				localRoll.Metadata.ProcessedAt = now
 				if !localRoll.Metadata.ScannedAtSet {
 					localRoll.Metadata.ScannedAt = now
+				}
+				if frameCount > 0 {
+					localRoll.Metadata.Frames = frameCount
 				}
 				if err := localRoll.WriteRollMd(); err != nil {
 					fmt.Fprintf(os.Stderr, "  warn: could not update roll.md: %v\n", err)

@@ -135,6 +135,7 @@ type rollJSON struct {
 	Notes           string     `json:"notes,omitempty"`
 	ContactSheetURL string     `json:"contact_sheet_url,omitempty"`
 	PushPull        *float64   `json:"push_pull,omitempty"`
+	FrameCount      *int       `json:"frame_count,omitempty"`
 }
 
 var pushCmd = &cobra.Command{
@@ -287,6 +288,9 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			}
 			if r.Metadata.PushPull != nil {
 				rj.PushPull = r.Metadata.PushPull
+			}
+			if r.Metadata.Frames > 0 {
+				rj.FrameCount = &r.Metadata.Frames
 			}
 			if r.Metadata.ContactSheetURL != "" {
 				rj.ContactSheetURL = r.Metadata.ContactSheetURL

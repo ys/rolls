@@ -267,6 +267,9 @@ func buildRollMarkdown(r rollJSON) string {
 	if r.PushPull != nil {
 		sb.WriteString(fmt.Sprintf("push_pull: %g\n", *r.PushPull))
 	}
+	if r.FrameCount != nil && *r.FrameCount > 0 {
+		sb.WriteString(fmt.Sprintf("frames: %d\n", *r.FrameCount))
+	}
 	sb.WriteString("---\n")
 	if r.Notes != "" {
 		sb.WriteString(r.Notes)

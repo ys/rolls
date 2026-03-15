@@ -33,6 +33,7 @@ export type ImportRoll = {
   notes?: string;
   contact_sheet_url?: string;
   push_pull?: number | null;
+  frame_count?: number | null;
 };
 
 export type ImportPayload = {
@@ -82,6 +83,7 @@ export type ExportRoll = {
   notes: string | null;
   contact_sheet_url: string | null;
   push_pull: number | null;
+  frame_count: number | null;
   camera_id: string | null;
   film_id: string | null;
 };

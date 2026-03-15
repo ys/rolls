@@ -1,0 +1,1 @@
+ALTER TABLE rolls ADD COLUMN IF NOT EXISTS frame_count INT;

@@ -69,10 +69,7 @@ export default async function StatsPage() {
       SELECT
         COUNT(*)::int AS total_rolls,
         COALESCE(SUM(
-          CASE
-            WHEN c.format = 120 THEN 12
-            ELSE 36
-          END
+          COALESCE(r.frame_count, CASE WHEN c.format = 120 THEN 12 ELSE 36 END)
         ), COUNT(*) * 36)::int AS total_frames
       FROM rolls r
       LEFT JOIN cameras c ON c.uuid = r.camera_uuid

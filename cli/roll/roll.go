@@ -34,6 +34,7 @@ type Metadata struct {
 	ArchivedAt      time.Time `yaml:"archived_at,omitempty"`
 	ContactSheetURL string    `yaml:"contact_sheet_url,omitempty"`
 	PushPull        *float64  `yaml:"push_pull,omitempty"`
+	Frames          int       `yaml:"frames,omitempty"`
 }
 
 type Roll struct {
@@ -225,6 +226,10 @@ func FromMarkdown(path string) (Roll, error) {
 		case "push_pull":
 			if v, err := strconv.ParseFloat(value, 64); err == nil {
 				metadata.PushPull = &v
+			}
+		case "frames":
+			if v, err := strconv.Atoi(value); err == nil {
+				metadata.Frames = v
 			}
 		}
 	}
@@ -420,6 +425,13 @@ func (roll *Roll) UpdateMetadata() error {
 			} else {
 				updatedLines = append(updatedLines, line)
 			}
+		case "frames":
+			if roll.Metadata.Frames > 0 {
+				updatedLines = append(updatedLines, fmt.Sprintf("frames: %d", roll.Metadata.Frames))
+				updated["frames"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
 		default:
 			updatedLines = append(updatedLines, line)
 		}
@@ -446,6 +458,9 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 	if !updated["archived_at"] && !roll.Metadata.ArchivedAt.IsZero() {
 		updatedLines = append(updatedLines, fmt.Sprintf("archived_at: %s", FormatDateTime(roll.Metadata.ArchivedAt)))
+	}
+	if !updated["frames"] && roll.Metadata.Frames > 0 {
+		updatedLines = append(updatedLines, fmt.Sprintf("frames: %d", roll.Metadata.Frames))
 	}
 
 	// Reconstruct the file content
@@ -503,6 +518,9 @@ func (r *Roll) MergeFrom(src Roll) {
 	if m.PushPull == nil {
 		m.PushPull = s.PushPull
 	}
+	if m.Frames == 0 {
+		m.Frames = s.Frames
+	}
 	if r.Content == "" {
 		r.Content = src.Content
 	}
@@ -552,6 +570,9 @@ func (r *Roll) WriteRollMd() error {
 	}
 	if m.PushPull != nil {
 		sb.WriteString("push_pull: " + strconv.FormatFloat(*m.PushPull, 'f', -1, 64) + "\n")
+	}
+	if m.Frames > 0 {
+		sb.WriteString("frames: " + strconv.Itoa(m.Frames) + "\n")
 	}
 	sb.WriteString("---\n")
 	if r.Content != "" {
