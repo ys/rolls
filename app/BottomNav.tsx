@@ -65,7 +65,7 @@ export default function BottomNav() {
           borderRadius: "12px 12px 0 0",
           backgroundColor: "#1a1a1a",
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           padding: "20px 28px",
           paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
