@@ -67,7 +67,7 @@ export default function BottomNav() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "14px 28px",
+          padding: "20px 28px",
           paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
         }}
       >
