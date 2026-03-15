@@ -172,7 +172,7 @@ export function RollDetailView({
             className="dot-grid absolute inset-0 w-full h-full resize-none border-none outline-none"
             style={{
               padding: "16px 20px",
-              fontSize: 15,
+              fontSize: 17,
               lineHeight: 1.75,
               color: "var(--text-primary)",
               caretColor: "var(--accent)",
@@ -486,7 +486,7 @@ export function RollDetailView({
             style={{
               fontWeight: 700,
               color: "var(--text-primary)",
-              fontSize: 17,
+              fontSize: 22,
             }}
           >
             {roll.roll_number}
@@ -500,7 +500,7 @@ export function RollDetailView({
           style={{
             flex: 1,
             padding: "16px 20px",
-            fontSize: 15,
+            fontSize: 17,
             lineHeight: 1.75,
             color: "var(--text-primary)",
             caretColor: "var(--accent)",
@@ -541,7 +541,7 @@ export function RollDetailView({
         <div className="flex-1 px-3">
           <div
             style={{
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: 700,
               color: "var(--text-primary)",
               lineHeight: 1.1,
@@ -702,7 +702,7 @@ export function RollDetailView({
                   </div>
                   <div
                     style={{
-                      fontSize: 15,
+                      fontSize: 14,
                       color: "var(--text-primary)",
                       marginTop: 2,
                       marginBottom: i < timelineEvents.length - 1 ? 16 : 0,
@@ -759,7 +759,7 @@ export function RollDetailView({
           {(notes ?? roll.notes) ? (
             <div
               style={{
-                fontSize: 15,
+                fontSize: 17,
                 color: "var(--text-primary)",
                 lineHeight: 1.75,
               }}
@@ -769,7 +769,7 @@ export function RollDetailView({
           ) : (
             <div
               style={{
-                fontSize: 15,
+                fontSize: 17,
                 color: "var(--text-disabled)",
                 lineHeight: 1.75,
                 fontStyle: "italic",
@@ -804,7 +804,7 @@ export function RollDetailView({
               <span
                 key={tag}
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   color: "var(--text-primary)",
                   border: "1px solid var(--border)",
                   padding: "3px 10px",

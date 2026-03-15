@@ -113,7 +113,7 @@ export default function NewRollPage() {
           >
             ‹
           </button>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
             Load Roll
           </h1>
         </div>

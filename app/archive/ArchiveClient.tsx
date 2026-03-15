@@ -242,7 +242,7 @@ function GridCard({
           {(camera || film) && (
             <div
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 color: "var(--text-secondary)",
                 marginTop: 2,
               }}
@@ -268,7 +268,7 @@ function GridCard({
           {dateStr && (
             <div
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 color: "var(--text-disabled)",
                 marginTop: 2,
               }}
@@ -391,7 +391,7 @@ function ListRow({
           {roll.roll_number}
         </div>
         <div
-          style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 2 }}
+          style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: 2 }}
         >
           {camera && film
             ? `${camera} · ${film}${pushPull}`
@@ -413,7 +413,7 @@ function ListRow({
         {dateStr && (
           <div
             style={{
-              fontSize: 13,
+              fontSize: 14,
               color: "var(--text-disabled)",
               marginTop: 2,
             }}
@@ -642,7 +642,7 @@ export default function ArchiveClient() {
           style={{
             color: "var(--text-tertiary)",
             textAlign: "center",
-            fontSize: 15,
+            fontSize: 17,
           }}
         >
           No scanned rolls yet.
@@ -831,7 +831,7 @@ export default function ArchiveClient() {
                   paddingRight: 0,
                   paddingTop: 8,
                   paddingBottom: 8,
-                  fontSize: 15,
+                  fontSize: 17,
                   color: "var(--text-primary)",
                   background: "none",
                   border: "none",
@@ -912,7 +912,7 @@ export default function ArchiveClient() {
                 color: "var(--text-tertiary)",
                 textAlign: "center",
                 padding: "48px 0",
-                fontSize: 15,
+                fontSize: 17,
               }}
             >
               No rolls match {selectedTag ? `#${selectedTag}` : `"${search}"`}

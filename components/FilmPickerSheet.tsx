@@ -54,10 +54,10 @@ function FilmRow({
       <div style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 17, fontWeight: 500, color: "var(--text-primary)", display: "block" }}>{label}</span>
         <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
-          {iso ? <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
-          <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
+          {iso ? <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
+          <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
           {rollCount != null && rollCount > 0 && (
-            <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
+            <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
           )}
         </div>
       </div>

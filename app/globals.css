@@ -57,10 +57,20 @@
   --status-fridge-text: #fff;
   --status-lab-bg: #c2410c;
   --status-lab-text: #fff;
-
 }
 
+/* ── Type scale (golden ratio, φ = 1.618, base = 17px) ─────────────────────
+ *
+ *   28px  = 17 × φ          — titles, page headings
+ *   22px  = √(17 × 28)      — roll numbers as headings, notebook header
+ *   17px  = base             — body text, notes, list items, form inputs
+ *   14px  = √(11 × 17)      — secondary / caption (dates, sub-labels, metadata)
+ *   11px  = 17 ÷ φ          — micro labels (uppercase status badges, section markers)
+ *
+ * ─────────────────────────────────────────────────────────────────────────── */
+
 html {
+  font-size: 17px;
   overflow-x: clip; /* clip (not hidden) avoids creating a scroll container that breaks position:fixed on iOS Safari */
 }
 
@@ -81,14 +91,22 @@ body {
 
 /* Page enter animation */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; } /* explicit 'none' prevents iOS Safari from creating a fixed-position containing block after fill-mode freezes the final frame */
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  } /* explicit 'none' prevents iOS Safari from creating a fixed-position containing block after fill-mode freezes the final frame */
 }
 .page-enter {
   animation: page-enter 0.15s ease-out both;
 }
 @media (prefers-reduced-motion: reduce) {
-  .page-enter { animation: none; }
+  .page-enter {
+    animation: none;
+  }
 }
 
 /* Shimmer animation for skeleton loading screens */
