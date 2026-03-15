@@ -16,54 +16,70 @@ const withPWA = require('next-pwa')({
       }
     },
     {
+      // Self-hosted fonts + icon fonts — CacheFirst, long TTL
       urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
-      handler: 'StaleWhileRevalidate',
+      handler: 'CacheFirst',
       options: {
         cacheName: 'static-font-assets',
         expiration: {
-          maxEntries: 4,
-          maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
+          maxEntries: 16,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 1 year
+        }
+      }
+    },
+    {
+      // Content-hashed Next.js static chunks — safe to cache forever
+      urlPattern: /\/_next\/static\/.+$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-static',
+        expiration: {
+          maxEntries: 256,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 1 year
         }
       }
     },
     {
       urlPattern: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
-      handler: 'StaleWhileRevalidate',
+      handler: 'CacheFirst',
       options: {
         cacheName: 'static-image-assets',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
         }
       }
     },
     {
       urlPattern: /\/_next\/image\?url=.+$/i,
-      handler: 'StaleWhileRevalidate',
+      handler: 'CacheFirst',
       options: {
         cacheName: 'next-image',
         expiration: {
           maxEntries: 64,
-          maxAgeSeconds: 24 * 60 * 60 // 24 hours
+          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
         }
       }
     },
     {
-      urlPattern: /\.(?:js)$/i,
-      handler: 'StaleWhileRevalidate',
+      // API routes — always fresh, short network timeout
+      urlPattern: /\/api\/.*/i,
+      handler: 'NetworkFirst',
       options: {
-        cacheName: 'static-js-assets',
+        cacheName: 'api-cache',
         expiration: {
-          maxEntries: 32,
+          maxEntries: 64,
           maxAgeSeconds: 24 * 60 * 60 // 24 hours
-        }
+        },
+        networkTimeoutSeconds: 5
       }
     },
     {
-      urlPattern: /\.(?:css|less)$/i,
+      // App shell HTML pages — serve from cache instantly, revalidate in background
+      urlPattern: /^https:\/\/rolls\.yannick\.computer(?:\/|\/archive|\/roll\/.*|\/settings.*)?$/i,
       handler: 'StaleWhileRevalidate',
       options: {
-        cacheName: 'static-style-assets',
+        cacheName: 'app-shell',
         expiration: {
           maxEntries: 32,
           maxAgeSeconds: 24 * 60 * 60 // 24 hours
@@ -76,10 +92,10 @@ const withPWA = require('next-pwa')({
       options: {
         cacheName: 'offlineCache',
         expiration: {
-          maxEntries: 200,
+          maxEntries: 128,
           maxAgeSeconds: 24 * 60 * 60 // 24 hours
         },
-        networkTimeoutSeconds: 10
+        networkTimeoutSeconds: 3
       }
     }
   ]
