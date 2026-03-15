@@ -23,7 +23,7 @@ export default function FormField({
 }) {
   return (
     <div className="space-y-1">
-      <label className="block text-[10px] uppercase tracking-widest text-zinc-400">
+      <label className="block text-[11px] uppercase tracking-widest text-zinc-400">
         {label}
       </label>
       <input

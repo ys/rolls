@@ -52,12 +52,12 @@ function FilmRow({
     >
       <div style={{ width: 4, alignSelf: "stretch", flexShrink: 0, ...gradientStyle(gradientFrom, gradientTo, slug) }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", display: "block" }}>{label}</span>
+        <span style={{ fontSize: 17, fontWeight: 500, color: "var(--text-primary)", display: "block" }}>{label}</span>
         <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
-          {iso ? <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
-          <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
+          {iso ? <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
+          <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
           {rollCount != null && rollCount > 0 && (
-            <span style={{ fontSize: 10, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
+            <span style={{ fontSize: 13, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
           )}
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function FilmPickerSheet({
   }
 
   const sectionLabel: React.CSSProperties = {
-    fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
     color: "var(--text-tertiary)", padding: "10px 16px 6px", display: "block",
   };
 
@@ -132,7 +132,7 @@ export default function FilmPickerSheet({
           placeholder="Search films…"
           style={{
             width: "100%", backgroundColor: "var(--border-subtle)", border: "none",
-            padding: "8px 12px", fontSize: 13, fontFamily: "inherit",
+            padding: "8px 12px", fontSize: 15, fontFamily: "inherit",
             color: "var(--text-primary)", outline: "none", caretColor: "var(--accent)",
           }}
         />
@@ -143,7 +143,7 @@ export default function FilmPickerSheet({
           <button
             onClick={() => select("")}
             style={{
-              width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 13,
+              width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 15,
               color: "var(--text-tertiary)", background: "none", border: "none",
               borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: "inherit",
             }}
@@ -195,7 +195,7 @@ export default function FilmPickerSheet({
         )}
 
         {myFilms.length === 0 && catalogOnly.length === 0 && (
-          <p style={{ padding: "32px 16px", fontSize: 13, color: "var(--text-tertiary)", textAlign: "center" }}>
+          <p style={{ padding: "32px 16px", fontSize: 15, color: "var(--text-tertiary)", textAlign: "center" }}>
             No films match "{query}"
           </p>
         )}

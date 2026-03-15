@@ -72,10 +72,7 @@ export function RollDetailView({
       : null;
 
   // Subtitle: camera · film · push/pull
-  const subtitle = [
-    cam && film ? `${cam} · ${film}` : cam || film,
-    pushPullStr,
-  ]
+  const subtitle = [cam && film ? `${cam} · ${film}` : cam || film, pushPullStr]
     .filter(Boolean)
     .join(" · ");
 
@@ -103,10 +100,7 @@ export function RollDetailView({
         ? fmtDate(roll.shot_at)
         : ""
       : status === "FRIDGE"
-        ? [
-            roll.fridge_at ? fmtDate(roll.fridge_at) : "",
-            pushPullStr,
-          ]
+        ? [roll.fridge_at ? fmtDate(roll.fridge_at) : "", pushPullStr]
             .filter(Boolean)
             .join(" · ")
         : roll.lab_name || (roll.lab_at ? fmtDate(roll.lab_at) : "");
@@ -156,7 +150,7 @@ export function RollDetailView({
           {subtitle && (
             <div
               style={{
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
@@ -178,7 +172,7 @@ export function RollDetailView({
             className="dot-grid absolute inset-0 w-full h-full resize-none border-none outline-none"
             style={{
               padding: "16px 20px",
-              fontSize: 13,
+              fontSize: 15,
               lineHeight: 1.75,
               color: "var(--text-primary)",
               caretColor: "var(--accent)",
@@ -207,7 +201,7 @@ export function RollDetailView({
             style={{
               backgroundColor: bandBg,
               color: bandText,
-              padding: "10px 20px",
+              padding: "18px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -215,7 +209,7 @@ export function RollDetailView({
           >
             <span
               style={{
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
@@ -224,7 +218,9 @@ export function RollDetailView({
               {status}
             </span>
             {bandInfo && (
-              <span style={{ fontSize: 9, letterSpacing: "0.08em", opacity: 0.85 }}>
+              <span
+                style={{ fontSize: 11, letterSpacing: "0.08em", opacity: 0.85 }}
+              >
                 {bandInfo}
               </span>
             )}
@@ -331,7 +327,7 @@ export function RollDetailView({
                       border: "1px solid var(--sheet-border)",
                       color: "var(--sheet-text)",
                       padding: "10px 14px",
-                      fontSize: 14,
+                      fontSize: 17,
                       fontFamily: "inherit",
                       outline: "none",
                       caretColor: "var(--accent)",
@@ -378,7 +374,10 @@ export function RollDetailView({
                   {/* Single next-step action */}
                   {status === "LOADED" && (
                     <button
-                      onClick={() => { closeSheet(); onMoveToNext?.(); }}
+                      onClick={() => {
+                        closeSheet();
+                        onMoveToNext?.();
+                      }}
                       style={sheetRowStyle}
                     >
                       <span>Move to Fridge</span>
@@ -386,25 +385,50 @@ export function RollDetailView({
                     </button>
                   )}
                   {status === "FRIDGE" && (
-                    <button onClick={() => setPendingLab(true)} style={sheetRowStyle}>
+                    <button
+                      onClick={() => setPendingLab(true)}
+                      style={sheetRowStyle}
+                    >
                       <span>Send to Lab</span>
                       <span style={{ color: "var(--accent)" }}>›</span>
                     </button>
                   )}
                   {status === "LAB" && (
                     <button
-                      onClick={() => { closeSheet(); onMoveToNext?.(); }}
+                      onClick={() => {
+                        closeSheet();
+                        onMoveToNext?.();
+                      }}
                       style={sheetRowStyle}
                     >
                       <span>Mark as Scanned</span>
                       <span style={{ color: "var(--accent)" }}>›</span>
                     </button>
                   )}
-                  <button onClick={() => { closeSheet(); onEdit(); }} style={sheetRowStyle}>
+                  <button
+                    onClick={() => {
+                      closeSheet();
+                      onEdit();
+                    }}
+                    style={sheetRowStyle}
+                  >
                     <span>Edit Roll</span>
                   </button>
-                  <div style={{ height: 1, background: "var(--sheet-border)", margin: "4px 0" }} />
-                  <button onClick={closeSheet} style={{ ...sheetRowStyle, color: "#4a3d38", borderBottom: "none" }}>
+                  <div
+                    style={{
+                      height: 1,
+                      background: "var(--sheet-border)",
+                      margin: "4px 0",
+                    }}
+                  />
+                  <button
+                    onClick={closeSheet}
+                    style={{
+                      ...sheetRowStyle,
+                      color: "#4a3d38",
+                      borderBottom: "none",
+                    }}
+                  >
                     <span>Cancel</span>
                   </button>
                 </div>
@@ -458,7 +482,13 @@ export function RollDetailView({
           >
             ‹
           </button>
-          <span style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>
+          <span
+            style={{
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              fontSize: 17,
+            }}
+          >
             {roll.roll_number}
           </span>
         </div>
@@ -470,7 +500,7 @@ export function RollDetailView({
           style={{
             flex: 1,
             padding: "16px 20px",
-            fontSize: 13,
+            fontSize: 15,
             lineHeight: 1.75,
             color: "var(--text-primary)",
             caretColor: "var(--accent)",
@@ -511,7 +541,7 @@ export function RollDetailView({
         <div className="flex-1 px-3">
           <div
             style={{
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: 700,
               color: "var(--text-primary)",
               lineHeight: 1.1,
@@ -522,7 +552,7 @@ export function RollDetailView({
           {subtitle && (
             <div
               style={{
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
@@ -615,7 +645,7 @@ export function RollDetailView({
         <div className="px-5 pt-5 pb-2">
           <div
             style={{
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
@@ -653,10 +683,14 @@ export function RollDetailView({
                     />
                   )}
                 </div>
-                <div style={{ paddingBottom: i < timelineEvents.length - 1 ? 0 : 0 }}>
+                <div
+                  style={{
+                    paddingBottom: i < timelineEvents.length - 1 ? 0 : 0,
+                  }}
+                >
                   <div
                     style={{
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: "0.14em",
                       textTransform: "uppercase",
@@ -668,7 +702,7 @@ export function RollDetailView({
                   </div>
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: 15,
                       color: "var(--text-primary)",
                       marginTop: 2,
                       marginBottom: i < timelineEvents.length - 1 ? 16 : 0,
@@ -702,7 +736,7 @@ export function RollDetailView({
           >
             <div
               style={{
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
@@ -713,7 +747,7 @@ export function RollDetailView({
             </div>
             <span
               style={{
-                fontSize: 9,
+                fontSize: 11,
                 color: "var(--text-disabled)",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -725,7 +759,7 @@ export function RollDetailView({
           {(notes ?? roll.notes) ? (
             <div
               style={{
-                fontSize: 13,
+                fontSize: 15,
                 color: "var(--text-primary)",
                 lineHeight: 1.75,
               }}
@@ -735,7 +769,7 @@ export function RollDetailView({
           ) : (
             <div
               style={{
-                fontSize: 13,
+                fontSize: 15,
                 color: "var(--text-disabled)",
                 lineHeight: 1.75,
                 fontStyle: "italic",
@@ -755,7 +789,7 @@ export function RollDetailView({
         >
           <div
             style={{
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.18em",
               textTransform: "uppercase",
@@ -770,7 +804,7 @@ export function RollDetailView({
               <span
                 key={tag}
                 style={{
-                  fontSize: 11,
+                  fontSize: 13,
                   color: "var(--text-primary)",
                   border: "1px solid var(--border)",
                   padding: "3px 10px",
@@ -800,7 +834,7 @@ const sheetRowStyle: React.CSSProperties = {
   borderRight: "none",
   borderBottom: "1px solid var(--sheet-border)",
   color: "var(--sheet-text)",
-  fontSize: 13,
+  fontSize: 17,
   fontFamily: "inherit",
   textAlign: "left",
   cursor: "pointer",

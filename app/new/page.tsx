@@ -85,13 +85,13 @@ export default function NewRollPage() {
   }
 
   const fieldLabel: React.CSSProperties = {
-    fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
     color: "var(--text-tertiary)", marginBottom: 4, display: "block",
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)",
-    padding: "10px 0", fontSize: 14, color: "var(--text-primary)", fontFamily: "inherit",
+    padding: "10px 0", fontSize: 17, color: "var(--text-primary)", fontFamily: "inherit",
     outline: "none", caretColor: "var(--accent)",
   };
 
@@ -113,7 +113,7 @@ export default function NewRollPage() {
           >
             ‹
           </button>
-          <h1 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
             Load Roll
           </h1>
         </div>
@@ -129,7 +129,7 @@ export default function NewRollPage() {
               onChange={(e) => setRollNumber(e.target.value)}
               placeholder={suggestedNumber}
               required
-              style={{ ...inputStyle, fontSize: 16, fontWeight: 700 }}
+              style={{ ...inputStyle, fontSize: 17, fontWeight: 700 }}
             />
           </div>
 
@@ -137,20 +137,20 @@ export default function NewRollPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={fieldLabel}>Camera</span>
-              <button type="button" onClick={() => setShowNewCamera(true)} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setShowNewCamera(true)} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                 + New
               </button>
             </div>
             {cameras.length === 0 ? (
-              <button type="button" onClick={() => setShowNewCamera(true)} style={{ ...pickerRow, color: "var(--text-tertiary)", fontSize: 14 }}>
+              <button type="button" onClick={() => setShowNewCamera(true)} style={{ ...pickerRow, color: "var(--text-tertiary)", fontSize: 17 }}>
                 + Add a camera first
               </button>
             ) : (
               <button type="button" onClick={() => setCameraPickerOpen(true)} style={pickerRow}>
-                <span style={{ fontSize: 14, color: cameraId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
+                <span style={{ fontSize: 17, color: cameraId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
                   {cameraId ? (cameras.find((c) => c.slug === cameraId) ? cameraLabel(cameras.find((c) => c.slug === cameraId)!) : cameraId) : "— select —"}
                 </span>
-                <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>▾</span>
+                <span style={{ color: "var(--text-tertiary)", fontSize: 13 }}>▾</span>
               </button>
             )}
           </div>
@@ -159,21 +159,21 @@ export default function NewRollPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={fieldLabel}>Film</span>
-              <button type="button" onClick={() => setShowNewFilm(true)} style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setShowNewFilm(true)} style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                 + New
               </button>
             </div>
             <button type="button" onClick={() => setFilmPickerOpen(true)} style={pickerRow}>
-              <span style={{ fontSize: 14, color: filmId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
+              <span style={{ fontSize: 17, color: filmId ? "var(--text-primary)" : "var(--text-tertiary)" }}>
                 {filmId
                   ? (films.find((f) => f.slug === filmId)?.nickname ?? catalogFilms.find((f) => f.slug === filmId)?.nickname ?? filmId)
                   : "— select —"}
               </span>
-              <span style={{ color: "var(--text-tertiary)", fontSize: 12 }}>▾</span>
+              <span style={{ color: "var(--text-tertiary)", fontSize: 13 }}>▾</span>
             </button>
           </div>
 
-          {error && <p style={{ fontSize: 11, color: "#c2410c", margin: 0 }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: "#c2410c", margin: 0 }}>{error}</p>}
 
           <div style={{ marginTop: "auto", paddingBottom: 8 }}>
             <button

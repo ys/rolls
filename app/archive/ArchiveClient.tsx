@@ -231,7 +231,7 @@ function GridCard({
         <div>
           <div
             style={{
-              fontSize: 15,
+              fontSize: 17,
               fontWeight: 700,
               color: "var(--text-primary)",
               lineHeight: 1.2,
@@ -242,7 +242,7 @@ function GridCard({
           {(camera || film) && (
             <div
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: "var(--text-secondary)",
                 marginTop: 2,
               }}
@@ -256,7 +256,7 @@ function GridCard({
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <div
             style={{
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.13em",
               textTransform: "uppercase",
@@ -268,7 +268,7 @@ function GridCard({
           {dateStr && (
             <div
               style={{
-                fontSize: 10,
+                fontSize: 13,
                 color: "var(--text-disabled)",
                 marginTop: 2,
               }}
@@ -382,7 +382,7 @@ function ListRow({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 16,
+            fontSize: 17,
             fontWeight: 700,
             color: "var(--text-primary)",
             lineHeight: 1.2,
@@ -391,7 +391,7 @@ function ListRow({
           {roll.roll_number}
         </div>
         <div
-          style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}
+          style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 2 }}
         >
           {camera && film
             ? `${camera} · ${film}${pushPull}`
@@ -401,7 +401,7 @@ function ListRow({
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div
           style={{
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: 700,
             letterSpacing: "0.13em",
             textTransform: "uppercase",
@@ -413,7 +413,7 @@ function ListRow({
         {dateStr && (
           <div
             style={{
-              fontSize: 10,
+              fontSize: 13,
               color: "var(--text-disabled)",
               marginTop: 2,
             }}
@@ -642,7 +642,7 @@ export default function ArchiveClient() {
           style={{
             color: "var(--text-tertiary)",
             textAlign: "center",
-            fontSize: 13,
+            fontSize: 15,
           }}
         >
           No scanned rolls yet.
@@ -695,7 +695,7 @@ export default function ArchiveClient() {
   const chipStyle = (active: boolean): React.CSSProperties => ({
     whiteSpace: "nowrap",
     padding: "4px 10px",
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 700,
     letterSpacing: "0.1em",
     textTransform: "uppercase",
@@ -778,7 +778,7 @@ export default function ArchiveClient() {
                   <button
                     onClick={enterEdit}
                     style={{
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: "0.12em",
                       textTransform: "uppercase",
@@ -831,7 +831,7 @@ export default function ArchiveClient() {
                   paddingRight: 0,
                   paddingTop: 8,
                   paddingBottom: 8,
-                  fontSize: 12,
+                  fontSize: 15,
                   color: "var(--text-primary)",
                   background: "none",
                   border: "none",
@@ -912,7 +912,7 @@ export default function ArchiveClient() {
                 color: "var(--text-tertiary)",
                 textAlign: "center",
                 padding: "48px 0",
-                fontSize: 13,
+                fontSize: 15,
               }}
             >
               No rolls match {selectedTag ? `#${selectedTag}` : `"${search}"`}
@@ -954,7 +954,7 @@ export default function ArchiveClient() {
                   >
                     <span
                       style={{
-                        fontSize: 9,
+                        fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: "0.12em",
                         textTransform: "uppercase",
@@ -969,7 +969,7 @@ export default function ArchiveClient() {
                       <button
                         onClick={toggleYear}
                         style={{
-                          fontSize: 9,
+                          fontSize: 11,
                           fontWeight: 700,
                           letterSpacing: "0.1em",
                           textTransform: "uppercase",

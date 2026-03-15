@@ -19,7 +19,7 @@ export default function FormButton({
         type={type}
         disabled={disabled}
         onClick={onClick}
-        className="w-full text-[10px] uppercase tracking-widest py-2 transition-colors disabled:opacity-40"
+        className="w-full text-[11px] uppercase tracking-widest py-2 transition-colors disabled:opacity-40"
         style={{
           color: "var(--text-tertiary)",
         }}
@@ -34,7 +34,7 @@ export default function FormButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className="w-full border py-3 text-xs tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="w-full border py-3 text-[13px] tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
         borderColor: "var(--accent)",
         color: "var(--accent)",

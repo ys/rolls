@@ -148,20 +148,20 @@ function RollItem({
       <div className="flex items-center gap-3">
         {editing && <Checkbox checked={selected} />}
         <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+          <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
             {roll.roll_number}
           </div>
-          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 3, letterSpacing: "0.04em" }}>
+          <div style={{ fontSize: 15, color: "var(--text-secondary)", marginTop: 3 }}>
             {cam && film ? `${cam} · ${film}` : cam || film || "—"}
           </div>
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
           {status.charAt(0) + status.slice(1).toLowerCase()}
         </div>
         {dateLine && (
-          <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>
+          <div style={{ fontSize: 13, color: "var(--text-disabled)", marginTop: 2 }}>
             {dateLine}
           </div>
         )}
@@ -360,7 +360,7 @@ export default function HomeClient() {
             {rolls.length > 0 && !editing && (
               <button
                 onClick={enterEdit}
-                style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}
+                style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer" }}
               >
                 Edit
               </button>
@@ -369,7 +369,7 @@ export default function HomeClient() {
 
           {rolls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <p className="text-center" style={{ fontSize: 12, color: "var(--text-tertiary)", lineHeight: 1.6 }}>
+              <p className="text-center" style={{ fontSize: 15, color: "var(--text-tertiary)", lineHeight: 1.6 }}>
                 No active rolls.<br />
                 Tap <strong style={{ color: "var(--accent)" }}>+ Load</strong> to start one.
               </p>
