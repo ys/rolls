@@ -13,8 +13,7 @@ import { haptics } from "@/lib/haptics";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string }>> = {
   SCANNED:   { field: "processed_at", label: "Processed" },
-  PROCESSED: { field: "uploaded_at",  label: "Uploaded" },
-  UPLOADED:  { field: "archived_at",  label: "Archived" },
+  PROCESSED: { field: "archived_at",  label: "Archived" },
 };
 
 type RollRow = Roll & {
@@ -104,7 +103,7 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
   );
 }
 
-// ── Grid card ─────────────────────────────────────────────────────────────────
+// ── Grid card (Grid D: full-bleed 16:9 + info strip) ─────────────────────────
 function GridCard({
   roll,
   editing,
@@ -121,75 +120,83 @@ function GridCard({
   const pushPull = roll.push_pull != null
     ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
     : "";
-  const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+  const status = roll.archived_at ? "ARCHIVED"
+    : roll.processed_at ? "PROCESSED"
+    : "SCANNED";
+  const statusDate = roll.archived_at ?? roll.processed_at ?? roll.scanned_at;
+  const dateStr = statusDate
+    ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", year: "numeric" })
     : null;
 
-  const label = (
-    <div style={{ marginBottom: 6 }}>
-      {/* Line 1: roll_number · camera */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 4, fontSize: 11, color: "var(--text-primary)" }}>
-        <span style={{ fontWeight: 700 }}>{roll.roll_number}</span>
-        {camera && (
-          <>
-            <span style={{ color: "var(--border)" }}>·</span>
-            <span style={{ color: "var(--text-secondary)" }}>{camera}</span>
-          </>
+  const inner = (
+    <div style={{ position: "relative" }}>
+      {/* Full-bleed 16:9 image */}
+      <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden", backgroundColor: "var(--border-subtle)" }}>
+        {roll.contact_sheet_url ? (
+          <img
+            src={roll.contact_sheet_url}
+            alt={roll.roll_number}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        ) : (
+          <PlaceholderSheet rollNumber={roll.roll_number} />
+        )}
+        {editing && (
+          <div style={{ position: "absolute", top: 10, left: 16 }}>
+            <Checkbox checked={selected} />
+          </div>
         )}
       </div>
-      {/* Line 2: film+push_pull left, date right */}
-      {(film || dateStr) && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>
-          <span>{film ? `${film}${pushPull}` : ""}</span>
-          {dateStr && <span>{dateStr}</span>}
+      {/* Info strip */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+            {roll.roll_number}
+          </div>
+          {(camera || film) && (
+            <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>
+              {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}`}
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  );
-
-  const sheet = (
-    <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
-      {roll.contact_sheet_url ? (
-        <img
-          src={roll.contact_sheet_url}
-          alt={roll.roll_number}
-          style={{ width: "100%", height: "auto", display: "block" }}
-        />
-      ) : (
-        <div style={{ aspectRatio: "3/2" }}>
-          <PlaceholderSheet rollNumber={roll.roll_number} />
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)" }}>
+            {status.charAt(0) + status.slice(1).toLowerCase()}
+          </div>
+          {dateStr && (
+            <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>{dateStr}</div>
+          )}
         </div>
-      )}
-      {editing && (
-        <div style={{ position: "absolute", top: 8, left: 8 }}>
-          <Checkbox checked={selected} />
-        </div>
-      )}
+      </div>
     </div>
   );
 
   const containerStyle: React.CSSProperties = {
-    display: "block", width: "100%", textAlign: "left",
-    marginBottom: 24, textDecoration: "none",
+    display: "block", textAlign: "left",
+    margin: "0 -16px", width: "calc(100% + 32px)",
+    textDecoration: "none",
     outline: selected ? `2px solid var(--accent)` : "none",
-    outlineOffset: 2,
   };
 
   if (editing) {
     return (
       <button onClick={() => { onToggle(); haptics.light(); }} style={containerStyle}>
-        {label}
-        {sheet}
+        {inner}
       </button>
     );
   }
   return (
     <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} style={containerStyle}>
-      {label}
-      {sheet}
+      {inner}
     </Link>
   );
 }
+
+const ARCHIVE_STATUS_COLOUR: Record<string, string> = {
+  SCANNED:   "#16a34a",
+  PROCESSED: "#9333ea",
+  ARCHIVED:  "var(--text-tertiary)",
+};
 
 // ── List row ──────────────────────────────────────────────────────────────────
 function ListRow({
@@ -208,29 +215,38 @@ function ListRow({
   const pushPull = roll.push_pull != null
     ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
     : "";
-  const dateStr = roll.scanned_at
-    ? new Date(roll.scanned_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+  const status = roll.archived_at ? "ARCHIVED"
+    : roll.processed_at ? "PROCESSED"
+    : "SCANNED";
+  const statusDate = roll.archived_at ?? roll.processed_at ?? roll.scanned_at;
+  const dateStr = statusDate
+    ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
 
   const content = (
     <>
       {editing && <Checkbox checked={selected} />}
+      {!editing && roll.contact_sheet_url && (
+        <div style={{ width: 52, height: 52, overflow: "hidden", flexShrink: 0, borderRadius: 2 }}>
+          <img src={roll.contact_sheet_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
           {roll.roll_number}
         </div>
         <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
           {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}` || "—"}
         </div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)" }}>
+          {status.charAt(0) + status.slice(1).toLowerCase()}
+        </div>
         {dateStr && (
-          <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>{dateStr}</div>
+          <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>{dateStr}</div>
         )}
       </div>
-      {!editing && roll.contact_sheet_url && (
-        <div style={{ width: 56, height: 56, overflow: "hidden", flexShrink: 0 }}>
-          <img src={roll.contact_sheet_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        </div>
-      )}
     </>
   );
 
