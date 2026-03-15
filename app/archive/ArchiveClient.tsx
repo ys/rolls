@@ -131,7 +131,7 @@ function GridCard({
   const inner = (
     <div style={{ position: "relative" }}>
       {/* Full-bleed image — no crop, natural height */}
-      <div style={{ position: "relative", width: "100%", backgroundColor: "var(--border-subtle)" }}>
+      <div style={{ position: "relative", width: "100%" }}>
         {roll.contact_sheet_url ? (
           <img
             src={roll.contact_sheet_url}
