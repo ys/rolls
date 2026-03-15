@@ -70,8 +70,7 @@ export default async function StatsPage() {
         COUNT(*)::int AS total_rolls,
         COALESCE(SUM(
           CASE
-            WHEN c.format = '120'              THEN 12
-            WHEN c.format IN ('4x5','large')   THEN 4
+            WHEN c.format = 120 THEN 12
             ELSE 36
           END
         ), COUNT(*) * 36)::int AS total_frames

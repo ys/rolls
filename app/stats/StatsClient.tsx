@@ -30,10 +30,10 @@ export default function StatsClient({ initialData }: { initialData: StatsData })
 
   return (
     <PullToRefresh onRefresh={async () => { router.refresh(); }}>
-      <div style={{ paddingBottom: 80 }}>
+      <div style={{ paddingBottom: 80, margin: "0 -16px" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 12px" }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>STATS</span>
           <span style={{ fontSize: 9, color: "var(--text-tertiary)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{currentYear}</span>
         </div>
@@ -72,7 +72,7 @@ export default function StatsClient({ initialData }: { initialData: StatsData })
         {/* Monthly Activity */}
         <div style={{ padding: "16px 20px 24px", marginTop: 4 }}>
           <SectionLabel>Monthly Activity</SectionLabel>
-          <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 48 + 16 }}>
+          <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 48 }}>
             {months.map((count, i) => {
               const heightPx = count > 0 ? Math.max(2, Math.round((count / maxMonthCount) * 40)) : 2;
               const isActive = count > 0;
