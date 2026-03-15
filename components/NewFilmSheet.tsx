@@ -59,13 +59,13 @@ export default function NewFilmSheet({
   }
 
   const fieldLabel: React.CSSProperties = {
-    fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
-    color: "var(--text-tertiary)", marginBottom: 4, display: "block",
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
+    color: "#6b5a52", marginBottom: 6, display: "block",
   };
 
   const inputStyle: React.CSSProperties = {
-    width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--border)",
-    padding: "8px 0", fontSize: 14, color: "var(--text-primary)", fontFamily: "inherit",
+    width: "100%", background: "none", border: "none", borderBottom: "1px solid var(--sheet-border)",
+    padding: "8px 0", fontSize: 17, color: "var(--sheet-text)", fontFamily: "inherit",
     outline: "none", caretColor: "var(--accent)",
   };
 
@@ -101,10 +101,10 @@ export default function NewFilmSheet({
                   style={{
                     flex: 1, padding: "8px 0", fontSize: 11, fontWeight: 700,
                     letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "inherit",
-                    border: "1px solid var(--border)",
+                    border: "1px solid var(--sheet-border)",
                     marginLeft: opt.value === "colour" ? 0 : -1,
-                    backgroundColor: active ? "var(--text-primary)" : "transparent",
-                    color: active ? "var(--bg)" : "var(--text-secondary)",
+                    backgroundColor: active ? "var(--sheet-text)" : "transparent",
+                    color: active ? "var(--sheet-bg)" : "#6b5a52",
                     cursor: "pointer", position: "relative", zIndex: active ? 1 : 0,
                   }}
                 >
@@ -120,8 +120,8 @@ export default function NewFilmSheet({
           disabled={saving}
           style={{
             width: "100%", padding: "14px 0",
-            backgroundColor: saving ? "var(--border)" : "var(--accent)",
-            color: saving ? "var(--text-tertiary)" : "#fff",
+            backgroundColor: saving ? "var(--sheet-border)" : "var(--accent)",
+            color: "#fff",
             border: "none", cursor: saving ? "not-allowed" : "pointer",
             fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
             fontFamily: "inherit",

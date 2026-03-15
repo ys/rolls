@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { haptics } from "../lib/haptics";
+import NewRollSheet from "@/components/NewRollSheet";
 
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
@@ -27,6 +28,7 @@ const NAV_PATHS = ["/", "/archive", "/stats"];
 export default function BottomNav() {
   const pathname = usePathname();
   const [anim, setAnim] = useState<NavAnim>("idle");
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -79,77 +81,81 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none">
-      <div
-        className="pointer-events-auto w-full"
-        style={{
-          ...animStyle,
-          maxWidth: "42rem",
-          borderRadius: "12px 12px 0 0",
-          backgroundColor: "#1a1a1a",
-        }}
-      >
-        {/* Content row — symmetric padding so centering is true */}
+    <>
+      <nav className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none">
         <div
+          className="pointer-events-auto w-full"
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "28px",
+            ...animStyle,
+            maxWidth: "42rem",
+            borderRadius: "12px 12px 0 0",
+            backgroundColor: "#1a1a1a",
           }}
         >
-          {/* Left: text tabs */}
-          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-            {TABS.map(({ href, label, match }) => {
-              const active = match(pathname);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  prefetch={true}
-                  onClick={() => haptics.light()}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    color: active ? "var(--accent)" : "var(--bg)",
-                    borderBottom: active
-                      ? "1.5px solid var(--accent)"
-                      : "1.5px solid transparent",
-                    textDecoration: "none",
-                    paddingBottom: 3,
-                  }}
-                >
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Right: + Load (amber, no border) */}
-          <Link
-            href="/new"
-            prefetch={true}
-            onClick={() => haptics.medium()}
+          {/* Content row — symmetric padding so centering is true */}
+          <div
             style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "#1a1a1a",
-              textDecoration: "none",
-              padding: "6px 14px",
-              backgroundColor: "var(--accent)",
-              borderRadius: 3,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "28px",
             }}
           >
-            + Load
-          </Link>
+            {/* Left: text tabs */}
+            <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+              {TABS.map(({ href, label, match }) => {
+                const active = match(pathname);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    prefetch={true}
+                    onClick={() => haptics.light()}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: active ? "var(--accent)" : "var(--bg)",
+                      borderBottom: active
+                        ? "1.5px solid var(--accent)"
+                        : "1.5px solid transparent",
+                      textDecoration: "none",
+                      paddingBottom: 3,
+                    }}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Right: + Load button */}
+            <button
+              onClick={() => { haptics.medium(); setSheetOpen(true); }}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#1a1a1a",
+                background: "var(--accent)",
+                border: "none",
+                cursor: "pointer",
+                padding: "6px 14px",
+                borderRadius: 3,
+                fontFamily: "inherit",
+              }}
+            >
+              + Load
+            </button>
+          </div>
+          {/* Safe area spacer */}
+          <div style={{ height: "env(safe-area-inset-bottom)" }} />
         </div>
-        {/* Safe area spacer */}
-        <div style={{ height: "env(safe-area-inset-bottom)" }} />
-      </div>
-    </nav>
+      </nav>
+
+      <NewRollSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+    </>
   );
 }

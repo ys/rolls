@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Type Scale — Golden Ratio from 17px</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "iA Writer Mono", ui-monospace, "Cascadia Code", monospace;
+    background: #1a1a1a;
+    color: #e8e0d5;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  /* ── colour tokens (app values) */
+  :root {
+    --bg: #f4f1ea;
+    --text-primary: #2a1f1a;
+    --text-secondary: #6b5a52;
+    --text-tertiary: #9c8880;
+    --text-disabled: #b8afa8;
+    --border: #d4cdc4;
+    --border-subtle: #e8e4de;
+    --accent: #b5451b;
+    --sheet-bg: #1a1714;
+    --sheet-text: #e8e0d5;
+    --sheet-border: #3d3530;
+    --status-loaded-bg: #fef3c7;
+    --status-loaded-text: #92400e;
+    --status-fridge-bg: #dbeafe;
+    --status-fridge-text: #1e40af;
+    --status-lab-bg: #d1fae5;
+    --status-lab-text: #065f46;
+  }
+
+  /* ── layout */
+  .page { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .col  { display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── section labels */
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #6b5a52; margin-bottom: 12px;
+  }
+
+  /* ── scale specimen */
+  .scale-block { background: #f4f1ea; border-radius: 4px; padding: 24px 20px; width: 340px; }
+  .scale-row   { display: flex; align-items: baseline; gap: 16px; padding: 8px 0; border-bottom: 1px solid #e8e4de; }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-label { font-size: 10px; color: #9c8880; width: 80px; flex-shrink: 0; letter-spacing: 0.08em; }
+  .scale-sample { color: #2a1f1a; }
+
+  /* ── phone frames */
+  .phone {
+    width: 320px; background: var(--bg); border-radius: 0;
+    overflow: hidden; box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+  }
+  .phone-dark { background: var(--sheet-bg); }
+
+  /* ── app components */
+  .nav-bar {
+    background: #1a1a1a; padding: 18px 20px 0;
+    padding-bottom: 0; border-radius: 12px 12px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: auto;
+  }
+  .nav-tab {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: #9c8880; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px;
+  }
+  .nav-tab.active { color: #b5451b; }
+  .nav-tab-icon { width: 20px; height: 20px; background: currentColor; opacity: 0.6;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='8' height='8'/%3E%3Crect x='13' y='3' width='8' height='8'/%3E%3Crect x='3' y='13' width='8' height='8'/%3E%3Crect x='13' y='13' width='8' height='8'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+  .safe-area { height: 20px; background: #1a1a1a; }
+
+  /* ── roll list items */
+  .list-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg);
+  }
+  .roll-number { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+  .roll-sub    { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+  .status-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; }
+  .status-date  { font-size: 11px; color: var(--text-disabled); margin-top: 2px; text-align: right; }
+
+  /* ── page header */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--bg);
+  }
+  .page-title { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-primary); }
+  .page-action { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
+
+  /* ── load roll form */
+  .form-screen { background: var(--bg); padding: 20px 16px; }
+  .form-header { display: flex; align-items: center; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .form-back { font-size: 22px; color: var(--text-primary); line-height: 1; }
+  .form-title { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+  .field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 4px; display: block; }
+  .field-input { font-size: 17px; color: var(--text-primary); padding: 10px 0; border-bottom: 1px solid var(--border); width: 100%; background: none; margin-bottom: 20px; font-family: inherit; font-weight: 700; }
+  .field-picker { font-size: 17px; color: var(--text-tertiary); padding: 10px 0; border-bottom: 1px solid var(--border); width: 100%; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .field-picker-arrow { font-size: 14px; color: var(--text-tertiary); }
+
+  /* ── roll detail: notebook view */
+  .notebook {
+    background: var(--bg); display: flex; flex-direction: column; height: 520px;
+  }
+  .notebook-header { padding: 14px 20px 12px; border-bottom: 1px solid var(--border); }
+  .notebook-roll { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+  .notebook-sub  { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-top: 5px; }
+  .notebook-body { flex: 1; padding: 16px 20px; }
+  .notebook-text { font-size: 17px; line-height: 1.75; color: var(--text-primary); }
+  .notebook-cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .status-band {
+    padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .status-band-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+  .status-band-info  { font-size: 11px; letter-spacing: 0.08em; opacity: 0.85; }
+  .pull-handle-bar { background: var(--sheet-bg); padding: 10px 0 16px; display: flex; justify-content: center; }
+  .pull-handle { width: 36px; height: 3px; background: #4a3d38; border-radius: 2px; }
+
+  /* ── roll detail: archive view */
+  .detail-header { padding: 16px 20px 14px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; align-items: flex-start; justify-content: space-between; }
+  .detail-roll  { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+  .detail-sub   { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-top: 4px; }
+  .detail-edit  { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+  .detail-body  { padding: 20px; background: var(--bg); }
+  .section-label-block { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px; }
+  .timeline-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .timeline-dot-col { display: flex; flex-direction: column; align-items: center; width: 12px; }
+  .timeline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 4px; }
+  .timeline-line { width: 1px; flex: 1; min-height: 24px; background: var(--border); margin: 3px 0; }
+  .timeline-event { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
+  .timeline-date  { font-size: 14px; color: var(--text-primary); margin-top: 2px; }
+  .notes-area { border-top: 1px solid var(--border); padding: 16px 20px; background: var(--bg); }
+  .notes-text { font-size: 17px; line-height: 1.75; color: var(--text-primary); }
+
+  /* ── picker sheet */
+  .sheet-bg { background: var(--sheet-bg); border-radius: 20px 20px 0 0; }
+  .sheet-handle-bar { padding: 12px 0 4px; display: flex; justify-content: center; }
+  .sheet-handle { width: 36px; height: 3px; background: #4a3d38; border-radius: 2px; }
+  .sheet-title  { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6b5a52; padding: 8px 20px 12px; border-bottom: 1px solid var(--sheet-border); }
+  .sheet-search { padding: 10px 16px; background: #2a2420; font-size: 17px; color: var(--sheet-text); border-bottom: 1px solid var(--sheet-border); }
+  .sheet-row    { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--sheet-border); }
+  .sheet-swatch { width: 4px; align-self: stretch; background: linear-gradient(to bottom, #f5c518, #c0392b); border-radius: 2px; }
+  .sheet-row-name  { font-size: 17px; font-weight: 500; color: var(--sheet-text); }
+  .sheet-row-meta  { font-size: 14px; color: #6b5a52; margin-top: 2px; }
+  .sheet-row-check { font-size: 17px; color: var(--accent); font-weight: 700; margin-left: auto; }
+
+  /* ── archive card */
+  .archive-card { background: var(--bg); border-bottom: 1px solid var(--border-subtle); }
+  .contact-sheet { width: 100%; aspect-ratio: 3/2; background: #1a1714; display: flex; align-items: center; justify-content: center; }
+  .cs-inner { opacity: 0.5; }
+  .cs-strips { display: flex; flex-direction: column; gap: 4px; }
+  .cs-strip  { display: flex; gap: 3px; }
+  .cs-frame  { width: 18px; height: 12px; border: 1px solid #6b5a52; }
+  .archive-info { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 12px; }
+  .archive-roll { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+  .archive-sub  { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+
+</style>
+</head>
+<body>
+
+<div style="margin-bottom: 32px;">
+  <div style="font-size: 14px; color: #9c8880; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">Golden Ratio Type Scale</div>
+  <div style="font-size: 28px; font-weight: 700; color: #e8e0d5; line-height: 1;">Base 17px · φ = 1.618</div>
+</div>
+
+<div class="page">
+
+  <!-- ── Scale specimen ── -->
+  <div>
+    <div class="section-title">Scale</div>
+    <div class="scale-block">
+      <div class="scale-row">
+        <span class="scale-label">28px · ×φ</span>
+        <span class="scale-sample" style="font-size:28px;font-weight:700;line-height:1">Title</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">22px · √(17×28)</span>
+        <span class="scale-sample" style="font-size:22px;font-weight:700;line-height:1">25x07</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">17px · base</span>
+        <span class="scale-sample" style="font-size:17px">Nikon FM2 · Kodak Gold 200</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">14px · √(11×17)</span>
+        <span class="scale-sample" style="font-size:14px;color:#6b5a52">Jun 2025 · 36 frames</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">11px · ÷φ</span>
+        <span class="scale-sample" style="font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#b5451b">Loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Home screen ── -->
+  <div>
+    <div class="section-title">Home — Rolls</div>
+    <div class="phone">
+      <div class="page-header">
+        <span class="page-title">Rolls</span>
+        <span class="page-action">Edit</span>
+      </div>
+
+      <!-- Loaded -->
+      <div class="list-item">
+        <div>
+          <div class="roll-number">25x07</div>
+          <div class="roll-sub">Nikon FM2 · Kodak Gold 200</div>
+        </div>
+        <div style="text-align:right">
+          <div class="status-badge" style="color:#d97706">Loaded</div>
+          <div class="status-date">May 12</div>
+        </div>
+      </div>
+
+      <!-- Fridge -->
+      <div class="list-item">
+        <div>
+          <div class="roll-number">25x06</div>
+          <div class="roll-sub">Contax T2 · Portra 400</div>
+        </div>
+        <div style="text-align:right">
+          <div class="status-badge" style="color:#3b82f6">Fridge</div>
+          <div class="status-date">Apr 28</div>
+        </div>
+      </div>
+
+      <!-- Lab -->
+      <div class="list-item">
+        <div>
+          <div class="roll-number">25x05</div>
+          <div class="roll-sub">Leica M6 · HP5 +1</div>
+        </div>
+        <div style="text-align:right">
+          <div class="status-badge" style="color:#10b981">Lab</div>
+          <div class="status-date">The Darkroom</div>
+        </div>
+      </div>
+
+      <div class="list-item" style="border-bottom:none">
+        <div>
+          <div class="roll-number">25x04</div>
+          <div class="roll-sub">Olympus XA · Cinestill 800T</div>
+        </div>
+        <div style="text-align:right">
+          <div class="status-badge" style="color:#d97706">Loaded</div>
+          <div class="status-date">Apr 2</div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-bar">
+        <div class="nav-tab active">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>
+          Rolls
+        </div>
+        <div class="nav-tab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+          Archive
+        </div>
+        <div style="margin-left:auto">
+          <div style="background:#b5451b;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:8px 14px;border-radius:2px">+ Load</div>
+        </div>
+      </div>
+      <div class="safe-area"></div>
+    </div>
+  </div>
+
+  <!-- ── Load Roll form ── -->
+  <div>
+    <div class="section-title">Load Roll</div>
+    <div class="phone">
+      <div class="form-screen" style="min-height:480px">
+        <div class="form-header">
+          <span class="form-back">‹</span>
+          <span class="form-title">Load Roll</span>
+        </div>
+
+        <label class="field-label">Roll #</label>
+        <div class="field-input">25x08</div>
+
+        <label class="field-label">Camera</label>
+        <div class="field-picker">
+          <span>Nikon FM2</span>
+          <span class="field-picker-arrow">▾</span>
+        </div>
+
+        <label class="field-label">Film</label>
+        <div class="field-picker">
+          <span style="color:var(--text-tertiary)">— select —</span>
+          <span class="field-picker-arrow">▾</span>
+        </div>
+
+        <div style="margin-top:auto;padding-top:40px">
+          <div style="background:var(--accent);color:#fff;padding:14px;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">+ Load Roll</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Notebook (active roll) ── -->
+  <div>
+    <div class="section-title">Roll — Notebook View</div>
+    <div class="phone">
+      <div class="notebook">
+        <div style="padding:14px 20px 4px;background:var(--bg)">
+          <div style="font-size:22px;color:var(--text-secondary);cursor:pointer">‹</div>
+        </div>
+        <div class="notebook-header">
+          <div class="notebook-roll">25x07</div>
+          <div class="notebook-sub">Nikon FM2 · Kodak Gold 200</div>
+        </div>
+        <div class="notebook-body" style="background:var(--bg);background-image:radial-gradient(circle,#c8bfb4 1px,transparent 1px);background-size:20px 20px;flex:1">
+          <div class="notebook-text">Shot three rolls this weekend at the coast. The light was perfect around golden hour — that warm raking light across the sand dunes.<span class="notebook-cursor"></span></div>
+        </div>
+        <div>
+          <div class="status-band" style="background:var(--status-loaded-bg)">
+            <span class="status-band-label" style="color:var(--status-loaded-text)">Loaded</span>
+            <span class="status-band-info" style="color:var(--status-loaded-text)">May 12, 2025</span>
+          </div>
+          <div class="pull-handle-bar">
+            <div class="pull-handle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Roll detail (archived) ── -->
+  <div>
+    <div class="section-title">Roll Detail — Archived</div>
+    <div class="phone" style="max-height:580px;overflow-y:auto">
+      <div class="detail-header">
+        <div>
+          <div style="font-size:24px;color:var(--text-secondary)">‹</div>
+        </div>
+        <div style="flex:1;padding:0 12px">
+          <div class="detail-roll">25x06</div>
+          <div class="detail-sub">Contax T2 · Portra 400</div>
+        </div>
+        <div class="detail-edit">Edit</div>
+      </div>
+
+      <!-- Contact sheet placeholder -->
+      <div class="contact-sheet">
+        <div class="cs-inner">
+          <div class="cs-strips">
+            <div class="cs-strip">
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+            </div>
+            <div class="cs-strip">
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+            </div>
+            <div class="cs-strip">
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+              <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="section-label-block">Timeline</div>
+        <div class="timeline-row">
+          <div class="timeline-dot-col">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+          </div>
+          <div>
+            <div class="timeline-event">Shot</div>
+            <div class="timeline-date">Apr 5, 2025</div>
+          </div>
+        </div>
+        <div class="timeline-row">
+          <div class="timeline-dot-col">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+          </div>
+          <div>
+            <div class="timeline-event">Lab · The Darkroom</div>
+            <div class="timeline-date">Apr 10, 2025</div>
+          </div>
+        </div>
+        <div class="timeline-row" style="margin-bottom:0">
+          <div class="timeline-dot-col">
+            <div class="timeline-dot"></div>
+          </div>
+          <div>
+            <div class="timeline-event">Scanned</div>
+            <div class="timeline-date">Apr 28, 2025</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notes-area">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="section-label-block" style="margin-bottom:0">Notes</span>
+          <span style="font-size:11px;color:var(--text-disabled);letter-spacing:0.1em;text-transform:uppercase">Edit</span>
+        </div>
+        <div class="notes-text">Weekend trip. Overcast most of Saturday but cleared in the afternoon. Metered for shadows on the last strip.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Film picker sheet ── -->
+  <div>
+    <div class="section-title">Film Picker</div>
+    <div class="phone">
+      <div style="height:80px;background:rgba(0,0,0,0.4)"></div>
+      <div class="sheet-bg">
+        <div class="sheet-handle-bar"><div class="sheet-handle"></div></div>
+        <div class="sheet-title">Film</div>
+        <div class="sheet-search" style="font-family:inherit">Search films…</div>
+
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#6b5a52;padding:10px 16px 6px">My Films</div>
+
+        <div class="sheet-row">
+          <div class="sheet-swatch" style="background:linear-gradient(to bottom,#f5c518,#c0392b)"></div>
+          <div style="flex:1">
+            <div class="sheet-row-name">Kodak Gold 200</div>
+            <div class="sheet-row-meta">ISO 200 · Colour · 8 rolls</div>
+          </div>
+          <div class="sheet-row-check">✓</div>
+        </div>
+
+        <div class="sheet-row">
+          <div class="sheet-swatch" style="background:linear-gradient(to bottom,#7ec8e3,#005f89)"></div>
+          <div style="flex:1">
+            <div class="sheet-row-name">Kodak Portra 400</div>
+            <div class="sheet-row-meta">ISO 400 · Colour · 6 rolls</div>
+          </div>
+        </div>
+
+        <div class="sheet-row">
+          <div class="sheet-swatch" style="background:linear-gradient(to bottom,#e8e0d5,#3d3530)"></div>
+          <div style="flex:1">
+            <div class="sheet-row-name">Ilford HP5</div>
+            <div class="sheet-row-meta">ISO 400 · B&W · 12 rolls</div>
+          </div>
+        </div>
+
+        <div class="sheet-row" style="border-bottom:none">
+          <div class="sheet-swatch" style="background:linear-gradient(to bottom,#ff9f43,#ee5a24)"></div>
+          <div style="flex:1">
+            <div class="sheet-row-name">Cinestill 800T</div>
+            <div class="sheet-row-meta">ISO 800 · Colour · 3 rolls</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Archive grid card ── -->
+  <div>
+    <div class="section-title">Archive — Grid Card</div>
+    <div class="phone">
+      <div class="page-header" style="margin-bottom:8px">
+        <span class="page-title">Archive</span>
+        <div style="display:flex;gap:12px;align-items:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9c8880" stroke-width="1.7"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b5451b" stroke-width="2.2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+          <span class="page-action">Edit</span>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-tertiary);padding-top:8px;border-top:1px solid var(--border)">2025 · 3 rolls</div>
+      </div>
+
+      <!-- Grid card -->
+      <div class="archive-card">
+        <div class="contact-sheet" style="aspect-ratio:3/2;min-height:160px">
+          <div class="cs-inner">
+            <div class="cs-strips">
+              <div class="cs-strip">
+                <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+                <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+              </div>
+              <div class="cs-strip">
+                <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+                <div class="cs-frame"></div><div class="cs-frame"></div><div class="cs-frame"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="archive-info">
+          <div>
+            <div class="archive-roll">25x06</div>
+            <div class="archive-sub">Contax T2 · Portra 400</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#16a34a">Scanned</div>
+            <div style="font-size:14px;color:var(--text-disabled);margin-top:2px">Apr 2025</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="archive-card">
+        <div class="archive-info" style="border-bottom:1px solid var(--border-subtle)">
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="width:48px;height:48px;background:#1a1714;flex-shrink:0"></div>
+            <div>
+              <div class="archive-roll">25x05</div>
+              <div class="archive-sub">Leica M6 · HP5 +1</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:#9333ea">Processed</div>
+            <div style="font-size:14px;color:var(--text-disabled);margin-top:2px">Mar 15</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

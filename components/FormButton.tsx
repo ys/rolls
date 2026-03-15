@@ -34,11 +34,13 @@ export default function FormButton({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className="w-full border py-3 text-[13px] tracking-widest uppercase font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="w-full py-3 text-[11px] tracking-widest uppercase font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
-        borderColor: "var(--accent)",
-        color: "var(--accent)",
-        backgroundColor: "transparent",
+        backgroundColor: disabled ? "var(--sheet-border)" : "var(--accent)",
+        color: "#fff",
+        border: "none",
+        fontFamily: "inherit",
+        cursor: disabled ? "not-allowed" : "pointer",
       }}
     >
       {children}

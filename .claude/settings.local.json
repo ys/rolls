@@ -53,7 +53,11 @@
       "Bash(cat /Users/ys/src/github.com/ys/rolls/app/roll/[id]/RollDetailClient.tsx)",
       "Bash(wc -l /Users/ys/src/github.com/ys/rolls/app/roll/[id]/RollDetailClient.tsx)",
       "Bash(git add app/\\\\\\(auth\\\\\\)/login/page.tsx app/\\\\\\(auth\\\\\\)/register/page.tsx)",
-      "Bash(open /Users/ys/src/github.com/ys/rolls/mockups.html)"
+      "Bash(open /Users/ys/src/github.com/ys/rolls/mockups.html)",
+      "Bash(open /Users/ys/src/github.com/ys/rolls/identity.html)",
+      "WebFetch(domain:www.learnui.design)",
+      "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/type-scale.html)",
+      "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/sheets.html)"
     ]
   },
   "enableAllProjectMcpServers": false

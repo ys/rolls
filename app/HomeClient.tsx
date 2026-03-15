@@ -399,12 +399,9 @@ export default function HomeClient() {
         title="Send to Lab"
       >
         <form onSubmit={handleLabSubmit} className="space-y-6">
-          <div className="space-y-1">
-            <label
-              className="block text-[10px] uppercase tracking-widest"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Lab name <span className="normal-case">(optional)</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6b5a52", display: "block" }}>
+              Lab name <span style={{ textTransform: "none", fontWeight: 400, letterSpacing: 0 }}>(optional)</span>
             </label>
             <input
               type="text"
@@ -412,10 +409,11 @@ export default function HomeClient() {
               onChange={(e) => setLabName(e.target.value)}
               placeholder="e.g. The Darkroom"
               autoFocus
-              className="w-full bg-transparent border-b py-2 text-base focus:outline-none transition-colors"
               style={{
-                borderColor: "var(--border)",
-                color: "var(--text-primary)",
+                width: "100%", background: "none", border: "none",
+                borderBottom: "1px solid var(--sheet-border)",
+                padding: "8px 0", fontSize: 17, fontFamily: "inherit",
+                color: "var(--sheet-text)", outline: "none", caretColor: "var(--accent)",
               }}
             />
           </div>

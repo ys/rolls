@@ -214,13 +214,13 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
             <FormField label="Model" value={form.model} onChange={(v) => setForm((f) => ({ ...f, model: v }))} placeholder="M6" required />
             <FormField label="Nickname (optional)" value={form.nickname} onChange={(v) => setForm((f) => ({ ...f, nickname: v }))} placeholder="" />
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", marginBottom: 8 }}>Format</div>
-              <div style={{ display: "flex", border: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6b5a52", marginBottom: 8 }}>Format</div>
+              <div style={{ display: "flex", border: "1px solid var(--sheet-border)" }}>
                 {[["135", "35mm"], ["120", "120"]].map(([val, lbl]) => (
                   <button
                     key={val} type="button"
                     onClick={() => setForm((f) => ({ ...f, format: val }))}
-                    style={{ flex: 1, padding: "8px 0", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: form.format === val ? "var(--text-primary)" : "none", color: form.format === val ? "var(--bg)" : "var(--text-tertiary)", border: "none", borderLeft: val !== "135" ? "1px solid var(--border)" : "none", fontFamily: "inherit", cursor: "pointer" }}
+                    style={{ flex: 1, padding: "8px 0", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: form.format === val ? "var(--sheet-text)" : "none", color: form.format === val ? "var(--sheet-bg)" : "#6b5a52", border: "none", borderLeft: val !== "135" ? "1px solid var(--sheet-border)" : "none", fontFamily: "inherit", cursor: "pointer" }}
                   >
                     {lbl}
                   </button>

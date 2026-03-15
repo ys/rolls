@@ -22,8 +22,8 @@ export default function FormField({
   autoComplete?: string;
 }) {
   return (
-    <div className="space-y-1">
-      <label className="block text-[11px] uppercase tracking-widest text-zinc-400">
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6b5a52", display: "block" }}>
         {label}
       </label>
       <input
@@ -35,7 +35,12 @@ export default function FormField({
         inputMode={inputMode}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
-        className="w-full bg-transparent border-b border-zinc-300 dark:border-zinc-700 focus:border-zinc-900 dark:focus:border-white py-2 text-base focus:outline-none transition-colors"
+        style={{
+          width: "100%", background: "none", border: "none",
+          borderBottom: "1px solid var(--sheet-border)",
+          padding: "8px 0", fontSize: 17, fontFamily: "inherit",
+          color: "var(--sheet-text)", outline: "none", caretColor: "var(--accent)",
+        }}
       />
     </div>
   );

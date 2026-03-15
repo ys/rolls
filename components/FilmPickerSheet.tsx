@@ -45,24 +45,24 @@ function FilmRow({
       onClick={onSelect}
       style={{
         width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
-        textAlign: "left", background: "none", border: "none",
-        borderBottom: "1px solid var(--border-subtle)",
+        textAlign: "left", background: selected ? "#221e1b" : "none", border: "none",
+        borderBottom: "1px solid var(--sheet-border)",
         cursor: "pointer", fontFamily: "inherit",
       }}
     >
-      <div style={{ width: 4, alignSelf: "stretch", flexShrink: 0, ...gradientStyle(gradientFrom, gradientTo, slug) }} />
+      <div style={{ width: 4, alignSelf: "stretch", flexShrink: 0, minHeight: 36, borderRadius: 2, ...gradientStyle(gradientFrom, gradientTo, slug) }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ fontSize: 17, fontWeight: 500, color: "var(--text-primary)", display: "block" }}>{label}</span>
+        <span style={{ fontSize: 17, fontWeight: 500, color: "var(--sheet-text)", display: "block" }}>{label}</span>
         <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
-          {iso ? <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>ISO {iso}</span> : null}
-          <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{color ? "Colour" : "B&W"}</span>
+          {iso ? <span style={{ fontSize: 14, color: "#6b5a52" }}>ISO {iso}</span> : null}
+          <span style={{ fontSize: 14, color: "#6b5a52" }}>{color ? "Colour" : "B&W"}</span>
           {rollCount != null && rollCount > 0 && (
-            <span style={{ fontSize: 14, color: "var(--text-tertiary)" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
+            <span style={{ fontSize: 14, color: "#6b5a52" }}>{rollCount} roll{rollCount !== 1 ? "s" : ""}</span>
           )}
         </div>
       </div>
       {selected && (
-        <span style={{ fontSize: 14, color: "var(--accent)", fontWeight: 700, flexShrink: 0 }}>✓</span>
+        <span style={{ fontSize: 17, color: "var(--accent)", fontWeight: 700, flexShrink: 0 }}>✓</span>
       )}
     </button>
   );
@@ -118,12 +118,12 @@ export default function FilmPickerSheet({
 
   const sectionLabel: React.CSSProperties = {
     fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-    color: "var(--text-tertiary)", padding: "10px 16px 6px", display: "block",
+    color: "#6b5a52", padding: "10px 16px 6px", display: "block",
   };
 
   return (
     <Sheet open={open} onClose={onClose} title="Film">
-      <div style={{ margin: "0 -24px", padding: "0 24px 12px", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ margin: "0 -24px", padding: "0 24px 12px", borderBottom: "1px solid var(--sheet-border)" }}>
         <input
           ref={inputRef}
           type="text"
@@ -131,9 +131,9 @@ export default function FilmPickerSheet({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search films…"
           style={{
-            width: "100%", backgroundColor: "var(--border-subtle)", border: "none",
-            padding: "8px 12px", fontSize: 15, fontFamily: "inherit",
-            color: "var(--text-primary)", outline: "none", caretColor: "var(--accent)",
+            width: "100%", backgroundColor: "#231f1c", border: "none",
+            padding: "8px 12px", fontSize: 17, fontFamily: "inherit",
+            color: "var(--sheet-text)", outline: "none", caretColor: "var(--accent)",
           }}
         />
       </div>
@@ -144,8 +144,8 @@ export default function FilmPickerSheet({
             onClick={() => select("")}
             style={{
               width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 15,
-              color: "var(--text-tertiary)", background: "none", border: "none",
-              borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", fontFamily: "inherit",
+              color: "#6b5a52", background: "none", border: "none",
+              borderBottom: "1px solid var(--sheet-border)", cursor: "pointer", fontFamily: "inherit",
             }}
           >
             — clear selection —
@@ -195,8 +195,8 @@ export default function FilmPickerSheet({
         )}
 
         {myFilms.length === 0 && catalogOnly.length === 0 && (
-          <p style={{ padding: "32px 16px", fontSize: 15, color: "var(--text-tertiary)", textAlign: "center" }}>
-            No films match "{query}"
+          <p style={{ padding: "32px 16px", fontSize: 15, color: "#6b5a52", textAlign: "center" }}>
+            No films match &ldquo;{query}&rdquo;
           </p>
         )}
 
@@ -207,7 +207,7 @@ export default function FilmPickerSheet({
               width: "100%", textAlign: "left", padding: "12px 16px", fontSize: 11, fontWeight: 700,
               letterSpacing: "0.1em", textTransform: "uppercase",
               color: "var(--accent)", background: "none", border: "none",
-              borderTop: "1px solid var(--border)", cursor: "pointer", fontFamily: "inherit",
+              borderTop: "1px solid var(--sheet-border)", cursor: "pointer", fontFamily: "inherit",
             }}
           >
             + Add new film

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sheet Mockups</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "iA Writer Mono", ui-monospace, "Cascadia Code", monospace;
+  background: #1a1a1a;
+  color: #e8e0d5;
+  padding: 40px 24px 80px;
+  min-height: 100vh;
+}
+:root {
+  --bg: #f4f1ea;
+  --text-primary: #2a1f1a;
+  --text-secondary: #6b5a52;
+  --text-tertiary: #9c8880;
+  --text-disabled: #b8afa8;
+  --border: #d4cdc4;
+  --border-subtle: #e8e4de;
+  --accent: #b5451b;
+  --sheet-bg: #1a1714;
+  --sheet-text: #e8e0d5;
+  --sheet-border: #3d3530;
+  --sheet-secondary: #6b5a52;
+}
+
+/* ── layout ── */
+.grid { display: flex; flex-wrap: wrap; gap: 48px 40px; align-items: flex-start; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+.label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #6b5a52;
+}
+
+/* ── phone chassis ── */
+.phone {
+  width: 320px; height: 600px; background: var(--bg);
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+}
+.phone-content {
+  flex: 1; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* ── backdrop ── */
+.backdrop {
+  position: absolute; inset: 0;
+  background: rgba(26,20,16,0.5);
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+
+/* ── shared sheet chrome ── */
+.sheet-wrap {
+  background: var(--sheet-bg);
+  border-radius: 20px 20px 0 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sheet-handle-row {
+  display: flex; justify-content: center;
+  padding: 12px 0 6px;
+  flex-shrink: 0;
+}
+.sheet-handle {
+  width: 36px; height: 3px;
+  background: #4a3d38; border-radius: 2px;
+}
+.sheet-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 20px 12px;
+  flex-shrink: 0;
+}
+.sheet-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--sheet-secondary);
+}
+.sheet-close {
+  font-size: 20px; color: var(--sheet-secondary);
+  line-height: 1; width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* ── page behind the sheets ── */
+.page-behind {
+  flex: 1; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+.page-header-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+}
+.page-title-sm { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-primary); }
+.roll-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);
+}
+.roll-num { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+.roll-sub { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+.roll-status { font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; }
+
+/* ────────────────────────────────────────────────
+   SHEET 1: New Roll
+   ──────────────────────────────────────────────── */
+.nr-body { padding: 12px 20px 0; flex: 1; }
+.nr-roll-num {
+  font-size: 28px; font-weight: 700; color: var(--sheet-text);
+  border-bottom: 1px solid var(--sheet-border);
+  padding: 4px 0 10px; margin-bottom: 20px;
+  display: flex; align-items: baseline; gap: 8px;
+  cursor: text;
+}
+.nr-roll-placeholder { color: #4a3d38; }
+.nr-cursor {
+  display: inline-block; width: 2px; height: 1em;
+  background: var(--accent); vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.nr-field { margin-bottom: 16px; }
+.nr-field-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--sheet-secondary);
+  display: block; margin-bottom: 4px;
+}
+.nr-picker {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+.nr-picker-val { font-size: 17px; }
+.nr-picker-empty { color: #4a3d38; }
+.nr-picker-filled { color: var(--sheet-text); }
+.nr-picker-arrow { font-size: 14px; color: var(--sheet-secondary); }
+
+.nr-cta {
+  margin: 20px 0 0;
+  background: var(--accent); color: #fff;
+  padding: 16px; text-align: center;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; cursor: pointer;
+}
+.nr-safe { height: 28px; }
+
+/* ────────────────────────────────────────────────
+   SHEET 2: Camera Picker
+   ──────────────────────────────────────────────── */
+.cam-search {
+  padding: 10px 20px 12px; border-bottom: 1px solid var(--sheet-border);
+  flex-shrink: 0;
+}
+.cam-search input {
+  width: 100%; background: #2a2420; border: none;
+  padding: 8px 12px; font-size: 17px; font-family: inherit;
+  color: var(--sheet-text); outline: none; caret-color: var(--accent);
+}
+.cam-search input::placeholder { color: #4a3d38; }
+
+.cam-list { overflow-y: auto; flex: 1; }
+.cam-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; border-bottom: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+.cam-format-badge {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border: 1px solid var(--sheet-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--sheet-secondary); flex-direction: column; gap: 0;
+}
+.cam-info { flex: 1; min-width: 0; }
+.cam-name { font-size: 17px; font-weight: 500; color: var(--sheet-text); }
+.cam-meta { font-size: 14px; color: var(--sheet-secondary); margin-top: 2px; }
+.cam-check { font-size: 17px; color: var(--accent); font-weight: 700; }
+.cam-add {
+  padding: 14px 20px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); border-top: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+
+/* ────────────────────────────────────────────────
+   SHEET 3: Film Picker
+   ──────────────────────────────────────────────── */
+.film-search {
+  padding: 10px 20px 12px; border-bottom: 1px solid var(--sheet-border);
+  flex-shrink: 0;
+}
+.film-search input {
+  width: 100%; background: #2a2420; border: none;
+  padding: 8px 12px; font-size: 17px; font-family: inherit;
+  color: var(--sheet-text); outline: none; caret-color: var(--accent);
+}
+.film-search input::placeholder { color: #4a3d38; }
+
+.film-section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--sheet-secondary);
+  padding: 10px 20px 6px; display: block;
+}
+.film-list { overflow-y: auto; flex: 1; }
+.film-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-bottom: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+.film-swatch {
+  width: 4px; align-self: stretch; flex-shrink: 0;
+  border-radius: 2px; min-height: 36px;
+}
+.film-info { flex: 1; min-width: 0; }
+.film-name { font-size: 17px; font-weight: 500; color: var(--sheet-text); }
+.film-meta { font-size: 14px; color: var(--sheet-secondary); margin-top: 2px; }
+.film-check { font-size: 17px; color: var(--accent); font-weight: 700; }
+.film-add {
+  padding: 14px 20px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); border-top: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+
+/* ────────────────────────────────────────────────
+   SHEET 4: Notebook action sheet
+   ──────────────────────────────────────────────── */
+.action-sheet-id {
+  padding: 14px 24px 12px;
+  border-bottom: 1px solid var(--sheet-border);
+  flex-shrink: 0;
+}
+.action-sheet-id-text {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--sheet-secondary);
+}
+.action-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid var(--sheet-border);
+  cursor: pointer;
+}
+.action-row-text { font-size: 17px; color: var(--sheet-text); }
+.action-row-arrow { font-size: 17px; color: var(--accent); }
+.action-row-edit .action-row-text { color: var(--sheet-text); }
+.action-divider { height: 1px; background: var(--sheet-border); margin: 4px 0; }
+.action-row-cancel .action-row-text { color: #4a3d38; }
+
+/* notebook body behind */
+.notebook-page {
+  flex: 1; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+.nb-back { padding: 14px 20px 4px; font-size: 22px; color: var(--text-secondary); }
+.nb-head { padding: 0 20px 12px; border-bottom: 1px solid var(--border); }
+.nb-roll { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.nb-sub { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-top: 4px; }
+.nb-body {
+  flex: 1;
+  background-image: radial-gradient(circle, #c8bfb4 1px, transparent 1px);
+  background-size: 20px 20px;
+  padding: 16px 20px;
+}
+.nb-text { font-size: 17px; line-height: 1.75; color: var(--text-primary); }
+.nb-status-band {
+  padding: 12px 20px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+}
+.nb-status-text { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+.nb-status-info  { font-size: 11px; letter-spacing: 0.08em; opacity: 0.85; }
+
+/* ────────────────────────────────────────────────
+   SHEET 4b: Lab name state
+   ──────────────────────────────────────────────── */
+.lab-body { padding: 16px 24px; }
+.lab-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--sheet-secondary); margin-bottom: 10px;
+}
+.lab-input {
+  width: 100%; background: #3d3530;
+  border: 1px solid var(--sheet-border);
+  color: var(--sheet-text); padding: 12px 14px;
+  font-size: 17px; font-family: inherit;
+  outline: none; caret-color: var(--accent);
+  margin-bottom: 14px;
+}
+.lab-actions { display: flex; gap: 10px; }
+.lab-confirm {
+  flex: 1; padding: 14px;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  font-family: inherit; border: none; cursor: pointer;
+  text-align: center;
+}
+.lab-cancel {
+  padding: 14px 16px; background: transparent;
+  color: #4a3d38; font-size: 14px;
+  font-family: inherit; border: none; cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div style="margin-bottom: 36px">
+  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #6b5a52; margin-bottom: 4px">Sheet Mockups</div>
+  <div style="font-size: 28px; font-weight: 700; color: #e8e0d5; line-height: 1">6 sheets · 7 states</div>
+</div>
+
+<div class="grid">
+
+  <!-- ─────────────────────────────────────────
+       SHEET 1: New Roll (as a sheet)
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">1 — New Roll Sheet</div>
+    <div class="phone">
+      <!-- background page -->
+      <div class="page-behind">
+        <div class="page-header-bar">
+          <span class="page-title-sm">Rolls</span>
+        </div>
+        <div class="roll-row">
+          <div>
+            <div class="roll-num">25x07</div>
+            <div class="roll-sub">Nikon FM2 · Kodak Gold 200</div>
+          </div>
+          <div><span class="roll-status" style="color:#d97706">Loaded</span></div>
+        </div>
+        <div class="roll-row">
+          <div>
+            <div class="roll-num">25x06</div>
+            <div class="roll-sub">Contax T2 · Portra 400</div>
+          </div>
+          <div><span class="roll-status" style="color:#3b82f6">Fridge</span></div>
+        </div>
+      </div>
+      <!-- sheet -->
+      <div class="backdrop new-roll-sheet" style="background:rgba(42,31,26,0.25)">
+        <div class="sheet-wrap">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="sheet-header">
+            <span class="sheet-title">New Roll</span>
+            <span class="sheet-close">×</span>
+          </div>
+
+          <div class="nr-body">
+            <!-- Roll number: big, feels like "writing the number on the canister" -->
+            <div class="nr-roll-num">
+              <span class="nr-roll-placeholder">25x</span><span>08</span><span class="nr-cursor"></span>
+            </div>
+
+            <div class="nr-field">
+              <span class="nr-field-label">Camera</span>
+              <div class="nr-picker">
+                <span class="nr-picker-val nr-picker-filled">Nikon FM2</span>
+                <span class="nr-picker-arrow">▾</span>
+              </div>
+            </div>
+
+            <div class="nr-field">
+              <span class="nr-field-label">Film</span>
+              <div class="nr-picker">
+                <span class="nr-picker-val nr-picker-empty">— select —</span>
+                <span class="nr-picker-arrow">▾</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding: 0 20px">
+            <div class="nr-cta">+ Load Roll</div>
+          </div>
+          <div class="nr-safe"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Light-mode sheet (bg matches the app). Roll number is the hero at 28px. Camera + film as picker rows below.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SHEET 2: Camera Picker
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">2 — Camera Picker</div>
+    <div class="phone">
+      <div class="page-behind" style="filter:brightness(0.6)"></div>
+      <div class="backdrop">
+        <div class="sheet-wrap" style="max-height:88%">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="sheet-header">
+            <span class="sheet-title">Camera</span>
+            <span class="sheet-close">×</span>
+          </div>
+
+          <div class="cam-search">
+            <input placeholder="Search cameras…" />
+          </div>
+
+          <div class="cam-list">
+            <!-- selected -->
+            <div class="cam-row" style="background:#221e1b">
+              <div class="cam-format-badge">35<span style="font-size:7px;letter-spacing:0">mm</span></div>
+              <div class="cam-info">
+                <div class="cam-name">Nikon FM2</div>
+                <div class="cam-meta">12 rolls</div>
+              </div>
+              <span class="cam-check">✓</span>
+            </div>
+
+            <div class="cam-row">
+              <div class="cam-format-badge">35<span style="font-size:7px;letter-spacing:0">mm</span></div>
+              <div class="cam-info">
+                <div class="cam-name">Contax T2</div>
+                <div class="cam-meta">8 rolls</div>
+              </div>
+            </div>
+
+            <div class="cam-row">
+              <div class="cam-format-badge">35<span style="font-size:7px;letter-spacing:0">mm</span></div>
+              <div class="cam-info">
+                <div class="cam-name">Leica M6</div>
+                <div class="cam-meta">6 rolls</div>
+              </div>
+            </div>
+
+            <div class="cam-row">
+              <div class="cam-format-badge" style="font-size:8px;letter-spacing:0">120</div>
+              <div class="cam-info">
+                <div class="cam-name">Hasselblad 500C</div>
+                <div class="cam-meta">3 rolls</div>
+              </div>
+            </div>
+
+            <div class="cam-row">
+              <div class="cam-format-badge" style="font-size:8px;letter-spacing:0">35<span style="font-size:7px;letter-spacing:0">mm</span></div>
+              <div class="cam-info">
+                <div class="cam-name">Olympus XA</div>
+                <div class="cam-meta">4 rolls</div>
+              </div>
+            </div>
+
+            <div class="cam-add">+ Add new camera</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Format badge as a small square glyph. Selected row gets a subtle tint. Name 17px, meta 14px.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SHEET 3: Film Picker
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">3 — Film Picker</div>
+    <div class="phone">
+      <div class="page-behind" style="filter:brightness(0.6)"></div>
+      <div class="backdrop">
+        <div class="sheet-wrap" style="max-height:88%">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="sheet-header">
+            <span class="sheet-title">Film</span>
+            <span class="sheet-close">×</span>
+          </div>
+
+          <div class="film-search">
+            <input placeholder="Search films…" />
+          </div>
+
+          <div class="film-list">
+            <span class="film-section-label">My Films</span>
+
+            <!-- selected -->
+            <div class="film-row" style="background:#221e1b">
+              <div class="film-swatch" style="background:linear-gradient(to bottom,#f5c518,#c0392b)"></div>
+              <div class="film-info">
+                <div class="film-name">Kodak Gold 200</div>
+                <div class="film-meta">ISO 200 · Colour · 8 rolls</div>
+              </div>
+              <span class="film-check">✓</span>
+            </div>
+
+            <div class="film-row">
+              <div class="film-swatch" style="background:linear-gradient(to bottom,#fcdab0,#c8623a)"></div>
+              <div class="film-info">
+                <div class="film-name">Kodak Portra 400</div>
+                <div class="film-meta">ISO 400 · Colour · 6 rolls</div>
+              </div>
+            </div>
+
+            <div class="film-row">
+              <div class="film-swatch" style="background:linear-gradient(to bottom,#e8e0d5,#3d3530)"></div>
+              <div class="film-info">
+                <div class="film-name">Ilford HP5</div>
+                <div class="film-meta">ISO 400 · B&W · 12 rolls</div>
+              </div>
+            </div>
+
+            <div class="film-row">
+              <div class="film-swatch" style="background:linear-gradient(to bottom,#ff7f50,#8b1a1a)"></div>
+              <div class="film-info">
+                <div class="film-name">Cinestill 800T</div>
+                <div class="film-meta">ISO 800 · Colour · 3 rolls</div>
+              </div>
+            </div>
+
+            <span class="film-section-label">Catalog</span>
+
+            <div class="film-row">
+              <div class="film-swatch" style="background:linear-gradient(to bottom,#9ecfff,#2c5f8a)"></div>
+              <div class="film-info">
+                <div class="film-name">Fuji Superia 400</div>
+                <div class="film-meta">ISO 400 · Colour</div>
+              </div>
+            </div>
+
+            <div class="film-add">+ Add new film</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      4px gradient swatch anchored to the left edge. Selected row tinted. "My Films" / "Catalog" section headers.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SHEET 4a: Notebook action sheet (normal)
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">4a — Roll Actions (Fridge state)</div>
+    <div class="phone">
+      <!-- notebook page behind -->
+      <div class="notebook-page" style="filter:brightness(0.7)">
+        <div class="nb-back">‹</div>
+        <div class="nb-head">
+          <div class="nb-roll">25x07</div>
+          <div class="nb-sub">Nikon FM2 · Kodak Gold 200</div>
+        </div>
+        <div class="nb-body">
+          <div class="nb-text">Shot three rolls this weekend at the coast…</div>
+        </div>
+        <div class="nb-status-band" style="background:#fef3c7">
+          <span class="nb-status-text" style="color:#92400e">Fridge</span>
+          <span class="nb-status-info" style="color:#92400e">May 12, 2025</span>
+        </div>
+        <div style="background:var(--sheet-bg);padding:10px 0 0;display:flex;justify-content:center">
+          <div style="width:36px;height:3px;background:#4a3d38;border-radius:2px"></div>
+        </div>
+      </div>
+      <!-- action sheet -->
+      <div class="backdrop" style="background:rgba(26,20,16,0.4)">
+        <div class="sheet-wrap" style="border-radius:24px 24px 0 0">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="action-sheet-id">
+            <div class="action-sheet-id-text">25x07 · Fridge</div>
+          </div>
+          <div style="padding: 6px 0">
+            <div class="action-row">
+              <span class="action-row-text">Send to Lab</span>
+              <span class="action-row-arrow">›</span>
+            </div>
+            <div class="action-row action-row-edit">
+              <span class="action-row-text">Edit Roll</span>
+            </div>
+            <div class="action-divider"></div>
+            <div class="action-row action-row-cancel" style="border-bottom:none">
+              <span class="action-row-text">Cancel</span>
+            </div>
+          </div>
+          <div style="height:24px"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Pull-up from the status band. Shows the one next action + Edit Roll. Roll/status in header.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SHEET 4b: Lab name entry state
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">4b — Lab Name Entry</div>
+    <div class="phone">
+      <div class="notebook-page" style="filter:brightness(0.7)">
+        <div class="nb-back">‹</div>
+        <div class="nb-head">
+          <div class="nb-roll">25x07</div>
+          <div class="nb-sub">Nikon FM2 · Kodak Gold 200</div>
+        </div>
+        <div class="nb-body">
+          <div class="nb-text">Shot three rolls this weekend at the coast…</div>
+        </div>
+        <div class="nb-status-band" style="background:#fef3c7">
+          <span class="nb-status-text" style="color:#92400e">Fridge</span>
+          <span class="nb-status-info" style="color:#92400e">May 12, 2025</span>
+        </div>
+        <div style="background:var(--sheet-bg);padding:10px 0 0;display:flex;justify-content:center">
+          <div style="width:36px;height:3px;background:#4a3d38;border-radius:2px"></div>
+        </div>
+      </div>
+      <div class="backdrop" style="background:rgba(26,20,16,0.4)">
+        <div class="sheet-wrap" style="border-radius:24px 24px 0 0">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="action-sheet-id">
+            <div class="action-sheet-id-text">25x07 · Fridge</div>
+          </div>
+          <div class="lab-body">
+            <div class="lab-label">Lab Name</div>
+            <input class="lab-input" placeholder="e.g. Beau Photo" />
+            <div class="lab-actions">
+              <div class="lab-confirm">Send to Lab</div>
+              <div class="lab-cancel">Cancel</div>
+            </div>
+          </div>
+          <div style="height:24px"></div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Lab name field at 17px body size. CTA uppercase 11px. Cancel in tertiary.
+    </div>
+  </div>
+
+
+  <!-- ─────────────────────────────────────────
+       SHEET 5: Add Camera
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">5 — Add Camera</div>
+    <div class="phone">
+      <div class="page-behind" style="filter:brightness(0.5)"></div>
+      <div class="backdrop">
+        <div class="sheet-wrap">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="sheet-header">
+            <span class="sheet-title">Add Camera</span>
+            <span class="sheet-close">×</span>
+          </div>
+          <div style="padding: 4px 20px 0; overflow-y: auto; flex: 1;">
+
+            <!-- ID -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">ID (slug)</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none;caret-color:var(--accent)" placeholder="leica-m6" />
+            </div>
+
+            <!-- Brand -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">Brand</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none;caret-color:var(--accent)" placeholder="Leica" value="Leica" />
+            </div>
+
+            <!-- Model -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">Model</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none;caret-color:var(--accent);caret-width:2px" placeholder="M6" value="M6" />
+            </div>
+
+            <!-- Nickname -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">Nickname <span style="opacity:0.5;font-weight:400;letter-spacing:0;text-transform:none;font-size:11px">optional</span></div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:#4a3d38;outline:none" placeholder="The silver one" />
+            </div>
+
+            <!-- Format segmented -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:8px">Format</div>
+              <div style="display:flex;border:1px solid var(--sheet-border)">
+                <div style="flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--sheet-text);color:var(--sheet-bg);cursor:pointer">35mm</div>
+                <div style="flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-left:1px solid var(--sheet-border);color:var(--sheet-secondary);cursor:pointer">120</div>
+                <div style="flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-left:1px solid var(--sheet-border);color:var(--sheet-secondary);cursor:pointer">4×5</div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="background:var(--accent);color:#fff;padding:14px;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;margin-bottom:28px">Add Camera</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Dark form sheet. Labels 11px uppercase, inputs 17px. Format as a 3-segment control. Selected segment inverts to light-on-dark.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SHEET 6: Add Film
+       ───────────────────────────────────────── -->
+  <div class="col">
+    <div class="label">6 — Add Film</div>
+    <div class="phone">
+      <div class="page-behind" style="filter:brightness(0.5)"></div>
+      <div class="backdrop">
+        <div class="sheet-wrap">
+          <div class="sheet-handle-row"><div class="sheet-handle"></div></div>
+          <div class="sheet-header">
+            <span class="sheet-title">Add Film</span>
+            <span class="sheet-close">×</span>
+          </div>
+          <div style="padding: 4px 20px 0; overflow-y: auto; flex: 1;">
+
+            <!-- ID -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">ID (slug)</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:#4a3d38;outline:none" placeholder="portra-400" />
+            </div>
+
+            <!-- Brand -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">Brand</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none;caret-color:var(--accent)" value="Kodak" />
+            </div>
+
+            <!-- Name -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">Name</div>
+              <div style="display:flex;align-items:baseline;border-bottom:1px solid var(--accent)">
+                <input style="flex:1;background:transparent;border:none;padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none;caret-color:var(--accent)" value="Portra 400" />
+                <span style="display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:text-bottom;animation:blink 1s step-end infinite"></span>
+              </div>
+            </div>
+
+            <!-- ISO -->
+            <div style="margin-bottom: 20px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:6px">ISO</div>
+              <input style="width:100%;background:#2a2420;border:none;border-bottom:1px solid var(--sheet-border);padding:8px 0;font-size:17px;font-family:inherit;color:var(--sheet-text);outline:none" placeholder="400" value="400" />
+            </div>
+
+            <!-- Type segmented -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--sheet-secondary);margin-bottom:8px">Type</div>
+              <div style="display:flex;border:1px solid var(--sheet-border)">
+                <div style="flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--sheet-text);color:var(--sheet-bg);cursor:pointer">Colour</div>
+                <div style="flex:1;padding:10px 0;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-left:1px solid var(--sheet-border);color:var(--sheet-secondary);cursor:pointer">B&amp;W</div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="background:var(--accent);color:#fff;padding:14px;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;margin-bottom:28px">Add Film</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b5a52;max-width:280px;line-height:1.6">
+      Same dark form treatment as Add Camera. Active field (Name) shows accent underline + cursor. Colour/B&W as 2-segment toggle.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
