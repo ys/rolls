@@ -59,11 +59,12 @@ export default function BottomNav() {
       className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none"
     >
       <div
-        className="pointer-events-auto border-t w-full"
+        className="pointer-events-auto w-full"
         style={{
           ...animStyle,
           maxWidth: "42rem",
-          borderColor: "var(--border)",
+          borderTop: "1px solid var(--border)",
+          borderRadius: "12px 12px 0 0",
           backgroundColor: "var(--bg)",
           display: "flex",
           alignItems: "center",
