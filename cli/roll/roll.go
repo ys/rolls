@@ -215,7 +215,7 @@ func FromMarkdown(path string) (Roll, error) {
 			}
 		case "tags":
 			for _, tag := range strings.Split(value, ",") {
-				if t := strings.TrimSpace(tag); t != "" {
+				if t := strings.TrimSpace(tag); t != "" && t != "[]" {
 					metadata.Tags = append(metadata.Tags, t)
 				}
 			}
