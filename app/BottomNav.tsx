@@ -8,9 +8,17 @@ import { haptics } from "../lib/haptics";
 type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 
 const TABS = [
-  { href: "/",         label: "Rolls",   match: (p: string) => p === "/" },
-  { href: "/archive",  label: "Archive", match: (p: string) => p === "/archive" },
-  { href: "/settings", label: "···",     match: (p: string) => p.startsWith("/settings") || p === "/stats" },
+  { href: "/", label: "Rolls", match: (p: string) => p === "/" },
+  {
+    href: "/archive",
+    label: "Archive",
+    match: (p: string) => p === "/archive",
+  },
+  {
+    href: "/settings",
+    label: "···",
+    match: (p: string) => p.startsWith("/settings") || p === "/stats",
+  },
 ];
 
 // Nav is only visible on top-level list views
@@ -23,13 +31,19 @@ export default function BottomNav() {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
 
-    if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
+    if (
+      document.body.hasAttribute("data-mass-edit") ||
+      document.body.hasAttribute("data-notes-edit")
+    ) {
       setAnim("hidden");
     }
 
     const observer = new MutationObserver(() => {
       clearTimeout(timer);
-      if (document.body.hasAttribute("data-mass-edit") || document.body.hasAttribute("data-notes-edit")) {
+      if (
+        document.body.hasAttribute("data-mass-edit") ||
+        document.body.hasAttribute("data-notes-edit")
+      ) {
         setAnim("hiding");
         timer = setTimeout(() => setAnim("hidden"), 240);
       } else {
@@ -37,26 +51,35 @@ export default function BottomNav() {
         timer = setTimeout(() => setAnim("idle"), 240);
       }
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ["data-mass-edit", "data-notes-edit"] });
-    return () => { observer.disconnect(); clearTimeout(timer); };
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-mass-edit", "data-notes-edit"],
+    });
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
   }, []);
 
-  const showOnThisRoute = NAV_PATHS.includes(pathname) || pathname.startsWith("/settings");
-  if (!showOnThisRoute || pathname === "/login" || pathname === "/register") return null;
+  const showOnThisRoute =
+    NAV_PATHS.includes(pathname) || pathname.startsWith("/settings");
+  if (!showOnThisRoute || pathname === "/login" || pathname === "/register")
+    return null;
 
   const animStyle: React.CSSProperties = {
     transformOrigin: "center bottom",
     animation:
-      anim === "hiding"  ? "navFlipOut 0.24s cubic-bezier(0.4,0,1,1) forwards" :
-      anim === "showing" ? "navFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards" : undefined,
-    opacity:       anim === "hidden" ? 0 : undefined,
+      anim === "hiding"
+        ? "navFlipOut 0.24s cubic-bezier(0.4,0,1,1) forwards"
+        : anim === "showing"
+          ? "navFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards"
+          : undefined,
+    opacity: anim === "hidden" ? 0 : undefined,
     pointerEvents: anim === "hidden" ? "none" : undefined,
   };
 
   return (
-    <nav
-      className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none"
-    >
+    <nav className="fixed bottom-0 inset-x-0 z-50 flex justify-center items-center pointer-events-none">
       <div
         className="pointer-events-auto w-full"
         style={{
@@ -67,7 +90,14 @@ export default function BottomNav() {
         }}
       >
         {/* Content row — symmetric padding so centering is true */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "28px",
+          }}
+        >
           {/* Left: text tabs */}
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
             {TABS.map(({ href, label, match }) => {
@@ -84,7 +114,9 @@ export default function BottomNav() {
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
                     color: active ? "var(--accent)" : "var(--bg)",
-                    borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
+                    borderBottom: active
+                      ? "1.5px solid var(--accent)"
+                      : "1.5px solid transparent",
                     textDecoration: "none",
                     paddingBottom: 3,
                   }}

@@ -52,7 +52,8 @@
       "Bash(sips -g pixelWidth -g pixelHeight /Users/ys/src/github.com/ys/rolls/public/apple-touch-icon.png)",
       "Bash(cat /Users/ys/src/github.com/ys/rolls/app/roll/[id]/RollDetailClient.tsx)",
       "Bash(wc -l /Users/ys/src/github.com/ys/rolls/app/roll/[id]/RollDetailClient.tsx)",
-      "Bash(git add app/\\\\\\(auth\\\\\\)/login/page.tsx app/\\\\\\(auth\\\\\\)/register/page.tsx)"
+      "Bash(git add app/\\\\\\(auth\\\\\\)/login/page.tsx app/\\\\\\(auth\\\\\\)/register/page.tsx)",
+      "Bash(open /Users/ys/src/github.com/ys/rolls/mockups.html)"
     ]
   },
   "enableAllProjectMcpServers": false
