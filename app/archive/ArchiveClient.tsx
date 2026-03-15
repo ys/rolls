@@ -13,7 +13,8 @@ import { haptics } from "@/lib/haptics";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string }>> = {
   SCANNED:   { field: "processed_at", label: "Processed" },
-  PROCESSED: { field: "archived_at",  label: "Archived" },
+  PROCESSED: { field: "uploaded_at",  label: "Uploaded" },
+  UPLOADED:  { field: "archived_at",  label: "Archived" },
 };
 
 type RollRow = Roll & {
@@ -121,9 +122,10 @@ function GridCard({
     ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
     : "";
   const status = roll.archived_at ? "ARCHIVED"
+    : roll.uploaded_at ? "UPLOADED"
     : roll.processed_at ? "PROCESSED"
     : "SCANNED";
-  const statusDate = roll.archived_at ?? roll.processed_at ?? roll.scanned_at;
+  const statusDate = roll.archived_at ?? roll.uploaded_at ?? roll.processed_at ?? roll.scanned_at;
   const dateStr = statusDate
     ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", year: "numeric" })
     : null;
@@ -195,6 +197,7 @@ function GridCard({
 const ARCHIVE_STATUS_COLOUR: Record<string, string> = {
   SCANNED:   "#16a34a",
   PROCESSED: "#9333ea",
+  UPLOADED:  "#0891b2",
   ARCHIVED:  "var(--text-tertiary)",
 };
 
@@ -216,9 +219,10 @@ function ListRow({
     ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
     : "";
   const status = roll.archived_at ? "ARCHIVED"
+    : roll.uploaded_at ? "UPLOADED"
     : roll.processed_at ? "PROCESSED"
     : "SCANNED";
-  const statusDate = roll.archived_at ?? roll.processed_at ?? roll.scanned_at;
+  const statusDate = roll.archived_at ?? roll.uploaded_at ?? roll.processed_at ?? roll.scanned_at;
   const dateStr = statusDate
     ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : null;
