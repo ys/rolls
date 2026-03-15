@@ -216,14 +216,14 @@ function ListRow({
     <>
       {editing && <Checkbox checked={selected} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
           {roll.roll_number}
         </div>
-        <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
           {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}` || "—"}
         </div>
         {dateStr && (
-          <div style={{ fontSize: 10, color: "var(--text-tertiary)", marginTop: 2 }}>{dateStr}</div>
+          <div style={{ fontSize: 11, color: "var(--text-tertiary)", marginTop: 2 }}>{dateStr}</div>
         )}
       </div>
       {!editing && roll.contact_sheet_url && (
@@ -423,7 +423,7 @@ export default function ArchiveClient() {
       <PullToRefresh onRefresh={async () => { router.refresh(); }}>
         <div>
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, marginBottom: 20 }}>
             <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text-primary)" }}>
               ARCHIVE
             </h1>

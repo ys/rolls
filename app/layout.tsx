@@ -65,7 +65,7 @@ export default function RootLayout({
         <main
           className="max-w-2xl mx-auto h-lvh px-4"
           style={{
-            paddingTop: "calc(1rem + env(safe-area-inset-top))",
+            paddingTop: "calc(8px + env(safe-area-inset-top))",
             paddingBottom: "calc(8rem + env(safe-area-inset-bottom))",
           }}
         >

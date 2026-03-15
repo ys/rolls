@@ -151,11 +151,11 @@ function RollItem({
           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
             {roll.roll_number}
           </div>
-          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3, letterSpacing: "0.04em" }}>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 3, letterSpacing: "0.04em" }}>
             {cam && film ? `${cam} · ${film}` : cam || film || "—"}
           </div>
           {dateLine && (
-            <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: "var(--text-disabled)", marginTop: 2 }}>
               {dateLine}
             </div>
           )}
@@ -348,7 +348,7 @@ export default function HomeClient() {
           {/* Page header */}
           <div
             className="flex items-center justify-between border-b"
-            style={{ borderColor: "var(--border)", padding: "56px 20px 14px" }}
+            style={{ borderColor: "var(--border)", padding: "12px 20px 14px" }}
           >
             <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>
               Rolls
