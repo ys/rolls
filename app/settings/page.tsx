@@ -74,6 +74,7 @@ export default async function SettingsPage() {
 
       {/* Data */}
       <Section label="Data" mt>
+        <Row href="/stats" label="Stats" value="→" />
         <Row href="/api/export" label="Export" value="Download →" amber />
       </Section>
 

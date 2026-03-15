@@ -142,7 +142,7 @@ function RollItem({
 
   const inner = (
     <div
-      className="flex items-center justify-between px-5 py-3 border-b"
+      className="flex items-center justify-between px-4 py-3 border-b"
       style={{ borderColor: "var(--border-subtle)" }}
     >
       <div className="flex items-center gap-3">
@@ -154,14 +154,18 @@ function RollItem({
           <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 3, letterSpacing: "0.04em" }}>
             {cam && film ? `${cam} · ${film}` : cam || film || "—"}
           </div>
-          {dateLine && (
-            <div style={{ fontSize: 11, color: "var(--text-disabled)", marginTop: 2 }}>
-              {dateLine}
-            </div>
-          )}
         </div>
       </div>
-      <div style={{ fontSize: 14, color: "var(--border)", flexShrink: 0 }}>›</div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
+          {status.charAt(0) + status.slice(1).toLowerCase()}
+        </div>
+        {dateLine && (
+          <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>
+            {dateLine}
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -348,7 +352,7 @@ export default function HomeClient() {
           {/* Page header */}
           <div
             className="flex items-center justify-between border-b"
-            style={{ borderColor: "var(--border)", padding: "12px 20px 14px" }}
+            style={{ borderColor: "var(--border)", padding: "12px 16px 14px" }}
           >
             <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>
               Rolls
@@ -372,51 +376,17 @@ export default function HomeClient() {
             </div>
           ) : (
             <div className="pb-24">
-              {[
-                { statusKey: "LOADED", label: "Loaded",  rolls: loaded },
-                { statusKey: "FRIDGE", label: "Fridge",  rolls: inFridge },
-                { statusKey: "LAB",    label: "Lab",     rolls: atLab },
-              ].map(({ statusKey, label, rolls: sectionRolls }) =>
-                sectionRolls.length > 0 && (
-                  <section key={label}>
-                    {/* Group header: ▪ LABEL ───── */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 20px 6px" }}>
-                      <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: STATUS_COLOUR[statusKey], flexShrink: 0 }}>
-                        ▪ {label}
-                      </span>
-                      <div style={{ flex: 1, height: 1, backgroundColor: "var(--border)" }} />
-                      {editing && (
-                        <button
-                          onClick={() => {
-                            const nums = sectionRolls.map((r) => r.roll_number);
-                            const allSel = nums.every((n) => selected.has(n));
-                            setSelected((prev) => {
-                              const s = new Set(prev);
-                              if (allSel) { nums.forEach((n) => s.delete(n)); haptics.light(); }
-                              else { nums.forEach((n) => s.add(n)); haptics.medium(); }
-                              return s;
-                            });
-                          }}
-                          style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
-                        >
-                          {sectionRolls.every((r) => selected.has(r.roll_number)) ? "Deselect" : "All"}
-                        </button>
-                      )}
-                    </div>
-                    <ul>
-                      {sectionRolls.map((roll) => (
-                        <RollItem
-                          key={roll.roll_number}
-                          roll={roll}
-                          editing={editing}
-                          selected={selected.has(roll.roll_number)}
-                          onToggle={() => toggleSelect(roll.roll_number)}
-                        />
-                      ))}
-                    </ul>
-                  </section>
-                ),
-              )}
+              <ul>
+                {[...loaded, ...inFridge, ...atLab].map((roll) => (
+                  <RollItem
+                    key={roll.roll_number}
+                    roll={roll}
+                    editing={editing}
+                    selected={selected.has(roll.roll_number)}
+                    onToggle={() => toggleSelect(roll.roll_number)}
+                  />
+                ))}
+              </ul>
             </div>
           )}
         </div>

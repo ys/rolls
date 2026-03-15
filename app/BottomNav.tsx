@@ -10,8 +10,7 @@ type NavAnim = "idle" | "hiding" | "hidden" | "showing";
 const TABS = [
   { href: "/",         label: "Rolls",   match: (p: string) => p === "/" },
   { href: "/archive",  label: "Archive", match: (p: string) => p === "/archive" },
-  { href: "/stats",    label: "Stats",   match: (p: string) => p === "/stats" },
-  { href: "/settings", label: "···",     match: (p: string) => p.startsWith("/settings") },
+  { href: "/settings", label: "···",     match: (p: string) => p.startsWith("/settings") || p === "/stats" },
 ];
 
 // Nav is only visible on top-level list views
@@ -63,9 +62,8 @@ export default function BottomNav() {
         style={{
           ...animStyle,
           maxWidth: "42rem",
-          borderTop: "1px solid var(--border)",
           borderRadius: "12px 12px 0 0",
-          backgroundColor: "var(--bg)",
+          backgroundColor: "#1a1a1a",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -88,8 +86,8 @@ export default function BottomNav() {
                   fontWeight: 700,
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
-                  color: active ? "var(--text-primary)" : "var(--text-disabled)",
-                  borderBottom: active ? "1.5px solid var(--text-primary)" : "1.5px solid transparent",
+                  color: active ? "var(--accent)" : "var(--bg)",
+                  borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
                   paddingBottom: 3,
                   textDecoration: "none",
                   padding: "10px 0 3px",
@@ -111,9 +109,11 @@ export default function BottomNav() {
             fontWeight: 700,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: "var(--accent)",
+            color: "#1a1a1a",
             textDecoration: "none",
-            padding: "10px 0",
+            padding: "6px 14px",
+            backgroundColor: "var(--accent)",
+            borderRadius: 3,
           }}
         >
           + Load
