@@ -142,7 +142,7 @@ function RollItem({
 
   const inner = (
     <div
-      className="flex items-center justify-between px-4 py-3 border-b"
+      className="flex items-center justify-between px-4 py-3 border-b -mx-4"
       style={{ borderColor: "var(--border-subtle)" }}
     >
       <div className="flex items-center gap-3">
@@ -352,7 +352,7 @@ export default function HomeClient() {
           {/* Page header */}
           <div
             className="flex items-center justify-between border-b"
-            style={{ borderColor: "var(--border)", padding: "12px 16px 14px" }}
+            style={{ borderColor: "var(--border)", padding: "12px 16px 14px", margin: "0 -16px" }}
           >
             <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--text-primary)" }}>
               Rolls

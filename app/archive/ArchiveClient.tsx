@@ -12,9 +12,9 @@ import PullToRefresh from "@/components/PullToRefresh";
 import { haptics } from "@/lib/haptics";
 
 const STATUS_NEXT: Partial<Record<string, { field: string; label: string }>> = {
-  SCANNED:   { field: "processed_at", label: "Processed" },
-  PROCESSED: { field: "uploaded_at",  label: "Uploaded" },
-  UPLOADED:  { field: "archived_at",  label: "Archived" },
+  SCANNED: { field: "processed_at", label: "Processed" },
+  PROCESSED: { field: "uploaded_at", label: "Uploaded" },
+  UPLOADED: { field: "archived_at", label: "Archived" },
 };
 
 type RollRow = Roll & {
@@ -62,15 +62,30 @@ function Checkbox({ checked }: { checked: boolean }) {
   return (
     <div
       style={{
-        width: 20, height: 20,
+        width: 20,
+        height: 20,
         border: `2px solid ${checked ? "var(--accent)" : "var(--border)"}`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0, backgroundColor: "transparent",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        backgroundColor: "transparent",
       }}
     >
       {checked && (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth={3}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 13l4 4L19 7"
+          />
         </svg>
       )}
     </div>
@@ -81,23 +96,62 @@ function PlaceholderSheet({ rollNumber }: { rollNumber: string }) {
   return (
     <div
       style={{
-        width: "100%", height: "100%", minHeight: 120,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        border: "1px dashed var(--border)", position: "relative",
+        width: "100%",
+        height: "100%",
+        minHeight: 120,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px dashed var(--border)",
+        position: "relative",
         backgroundColor: "var(--bg)",
       }}
     >
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", justifyContent: "space-around", padding: "4px 8px" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "space-around",
+          padding: "4px 8px",
+        }}
+      >
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} style={{ width: 8, height: 6, backgroundColor: "var(--border)" }} />
+          <div
+            key={i}
+            style={{ width: 8, height: 6, backgroundColor: "var(--border)" }}
+          />
         ))}
       </div>
-      <span style={{ color: "var(--text-tertiary)", fontSize: 11, fontFamily: "inherit", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+      <span
+        style={{
+          color: "var(--text-tertiary)",
+          fontSize: 11,
+          fontFamily: "inherit",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+        }}
+      >
         {rollNumber}
       </span>
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "space-around", padding: "4px 8px" }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "space-around",
+          padding: "4px 8px",
+        }}
+      >
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} style={{ width: 8, height: 6, backgroundColor: "var(--border)" }} />
+          <div
+            key={i}
+            style={{ width: 8, height: 6, backgroundColor: "var(--border)" }}
+          />
         ))}
       </div>
     </div>
@@ -118,16 +172,29 @@ function GridCard({
 }) {
   const film = filmLabel(roll);
   const camera = cameraLabel(roll);
-  const pushPull = roll.push_pull != null
-    ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
-    : "";
-  const status = roll.archived_at ? "ARCHIVED"
-    : roll.uploaded_at ? "UPLOADED"
-    : roll.processed_at ? "PROCESSED"
-    : "SCANNED";
-  const statusDate = roll.archived_at ?? roll.uploaded_at ?? roll.processed_at ?? roll.scanned_at;
+  const pushPull =
+    roll.push_pull != null
+      ? roll.push_pull > 0
+        ? ` +${roll.push_pull}`
+        : ` ${roll.push_pull}`
+      : "";
+  const status = roll.archived_at
+    ? "ARCHIVED"
+    : roll.uploaded_at
+      ? "UPLOADED"
+      : roll.processed_at
+        ? "PROCESSED"
+        : "SCANNED";
+  const statusDate =
+    roll.archived_at ??
+    roll.uploaded_at ??
+    roll.processed_at ??
+    roll.scanned_at;
   const dateStr = statusDate
-    ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", year: "numeric" })
+    ? new Date(statusDate).toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+      })
     : null;
 
   const inner = (
@@ -141,7 +208,9 @@ function GridCard({
             style={{ width: "100%", height: "auto", display: "block" }}
           />
         ) : (
-          <div style={{ aspectRatio: "3/2" }}><PlaceholderSheet rollNumber={roll.roll_number} /></div>
+          <div style={{ aspectRatio: "3/2" }}>
+            <PlaceholderSheet rollNumber={roll.roll_number} />
+          </div>
         )}
         {editing && (
           <div style={{ position: "absolute", top: 10, left: 16 }}>
@@ -150,23 +219,62 @@ function GridCard({
         )}
       </div>
       {/* Info strip */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 16px 12px",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+          <div
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              lineHeight: 1.2,
+            }}
+          >
             {roll.roll_number}
           </div>
           {(camera || film) && (
-            <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 2 }}>
-              {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}`}
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--text-secondary)",
+                marginTop: 2,
+              }}
+            >
+              {camera && film
+                ? `${camera} · ${film}${pushPull}`
+                : camera || `${film}${pushPull}`}
             </div>
           )}
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)" }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.13em",
+              textTransform: "uppercase",
+              color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)",
+            }}
+          >
             {status.charAt(0) + status.slice(1).toLowerCase()}
           </div>
           {dateStr && (
-            <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>{dateStr}</div>
+            <div
+              style={{
+                fontSize: 10,
+                color: "var(--text-disabled)",
+                marginTop: 2,
+              }}
+            >
+              {dateStr}
+            </div>
           )}
         </div>
       </div>
@@ -174,31 +282,42 @@ function GridCard({
   );
 
   const containerStyle: React.CSSProperties = {
-    display: "block", textAlign: "left",
-    margin: "0 -16px", width: "calc(100% + 32px)",
+    display: "block",
+    textAlign: "left",
+    margin: "0 -16px",
+    width: "calc(100% + 32px)",
     textDecoration: "none",
-    outline: selected ? `2px solid var(--accent)` : "none",
   };
 
   if (editing) {
     return (
-      <button onClick={() => { onToggle(); haptics.light(); }} style={containerStyle}>
+      <button
+        onClick={() => {
+          onToggle();
+          haptics.light();
+        }}
+        style={containerStyle}
+      >
         {inner}
       </button>
     );
   }
   return (
-    <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} style={containerStyle}>
+    <Link
+      href={`/roll/${roll.roll_number}`}
+      onClick={() => haptics.light()}
+      style={containerStyle}
+    >
       {inner}
     </Link>
   );
 }
 
 const ARCHIVE_STATUS_COLOUR: Record<string, string> = {
-  SCANNED:   "#16a34a",
+  SCANNED: "#16a34a",
   PROCESSED: "#9333ea",
-  UPLOADED:  "#0891b2",
-  ARCHIVED:  "var(--text-tertiary)",
+  UPLOADED: "#0891b2",
+  ARCHIVED: "var(--text-tertiary)",
 };
 
 // ── List row ──────────────────────────────────────────────────────────────────
@@ -215,54 +334,116 @@ function ListRow({
 }) {
   const camera = cameraLabel(roll);
   const film = filmLabel(roll);
-  const pushPull = roll.push_pull != null
-    ? (roll.push_pull > 0 ? ` +${roll.push_pull}` : ` ${roll.push_pull}`)
-    : "";
-  const status = roll.archived_at ? "ARCHIVED"
-    : roll.uploaded_at ? "UPLOADED"
-    : roll.processed_at ? "PROCESSED"
-    : "SCANNED";
-  const statusDate = roll.archived_at ?? roll.uploaded_at ?? roll.processed_at ?? roll.scanned_at;
+  const pushPull =
+    roll.push_pull != null
+      ? roll.push_pull > 0
+        ? ` +${roll.push_pull}`
+        : ` ${roll.push_pull}`
+      : "";
+  const status = roll.archived_at
+    ? "ARCHIVED"
+    : roll.uploaded_at
+      ? "UPLOADED"
+      : roll.processed_at
+        ? "PROCESSED"
+        : "SCANNED";
+  const statusDate =
+    roll.archived_at ??
+    roll.uploaded_at ??
+    roll.processed_at ??
+    roll.scanned_at;
   const dateStr = statusDate
-    ? new Date(statusDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    ? new Date(statusDate).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })
     : null;
 
   const content = (
     <>
       {editing && <Checkbox checked={selected} />}
       {!editing && roll.contact_sheet_url && (
-        <div style={{ width: 52, height: 52, overflow: "hidden", flexShrink: 0, borderRadius: 2 }}>
-          <img src={roll.contact_sheet_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <div
+          style={{
+            width: 52,
+            height: 52,
+            overflow: "hidden",
+            flexShrink: 0,
+            borderRadius: 2,
+          }}
+        >
+          <img
+            src={roll.contact_sheet_url}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            lineHeight: 1.2,
+          }}
+        >
           {roll.roll_number}
         </div>
-        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-          {camera && film ? `${camera} · ${film}${pushPull}` : camera || `${film}${pushPull}` || "—"}
+        <div
+          style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}
+        >
+          {camera && film
+            ? `${camera} · ${film}${pushPull}`
+            : camera || `${film}${pushPull}` || "—"}
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)" }}>
+        <div
+          style={{
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.13em",
+            textTransform: "uppercase",
+            color: ARCHIVE_STATUS_COLOUR[status] ?? "var(--text-disabled)",
+          }}
+        >
           {status.charAt(0) + status.slice(1).toLowerCase()}
         </div>
         {dateStr && (
-          <div style={{ fontSize: 10, color: "var(--text-disabled)", marginTop: 2 }}>{dateStr}</div>
+          <div
+            style={{
+              fontSize: 10,
+              color: "var(--text-disabled)",
+              marginTop: 2,
+            }}
+          >
+            {dateStr}
+          </div>
         )}
       </div>
     </>
   );
 
   const rowStyle: React.CSSProperties = {
-    display: "flex", alignItems: "center", gap: 12, padding: "12px 0",
-    borderBottom: "1px solid var(--border-subtle)", textDecoration: "none",
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "12px 0",
+    borderBottom: "1px solid var(--border-subtle)",
+    textDecoration: "none",
   };
 
   if (editing) {
     return (
       <li>
-        <div style={{ ...rowStyle, cursor: "pointer" }} onClick={() => { onToggle(); haptics.light(); }}>
+        <div
+          style={{ ...rowStyle, cursor: "pointer" }}
+          onClick={() => {
+            onToggle();
+            haptics.light();
+          }}
+        >
           {content}
         </div>
       </li>
@@ -270,7 +451,11 @@ function ListRow({
   }
   return (
     <li>
-      <Link href={`/roll/${roll.roll_number}`} onClick={() => haptics.light()} style={rowStyle}>
+      <Link
+        href={`/roll/${roll.roll_number}`}
+        onClick={() => haptics.light()}
+        style={rowStyle}
+      >
         {content}
       </Link>
     </li>
@@ -280,16 +465,38 @@ function ListRow({
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function GridIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" />
-      <rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={active ? 2.2 : 1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="8" height="8" rx="1" />
+      <rect x="13" y="3" width="8" height="8" rx="1" />
+      <rect x="3" y="13" width="8" height="8" rx="1" />
+      <rect x="13" y="13" width="8" height="8" rx="1" />
     </svg>
   );
 }
 function ListIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinecap="round" strokeLinejoin="round">
-      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={active ? 2.2 : 1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   );
 }
@@ -297,7 +504,9 @@ function ListIcon({ active }: { active: boolean }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ArchiveClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
-  const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+  const headers: HeadersInit = apiKey
+    ? { Authorization: `Bearer ${apiKey}` }
+    : {};
 
   const { data, isLoading } = useCachedData<ArchiveData>(
     ["rolls", "archive"],
@@ -320,10 +529,14 @@ export default function ArchiveClient() {
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    return () => { document.body.removeAttribute("data-mass-edit"); };
+    return () => {
+      document.body.removeAttribute("data-mass-edit");
+    };
   }, []);
 
   function toggleSelect(n: string) {
@@ -334,32 +547,47 @@ export default function ArchiveClient() {
     });
   }
   function enterEdit() {
-    setEditing(true); setExiting(false); setSelected(new Set());
+    setEditing(true);
+    setExiting(false);
+    setSelected(new Set());
     document.body.setAttribute("data-mass-edit", "");
     haptics.medium();
   }
   function exitEdit() {
-    setExiting(true); haptics.light();
+    setExiting(true);
+    haptics.light();
     setTimeout(() => {
-      setEditing(false); setExiting(false); setSelected(new Set());
+      setEditing(false);
+      setExiting(false);
+      setSelected(new Set());
       document.body.removeAttribute("data-mass-edit");
     }, 220);
   }
   function selectAll() {
     if (!data) return;
     const all = new Set(data.rolls.map((r) => r.roll_number));
-    if (selected.size === all.size) { setSelected(new Set()); haptics.light(); }
-    else { setSelected(all); haptics.medium(); }
+    if (selected.size === all.size) {
+      setSelected(new Set());
+      haptics.light();
+    } else {
+      setSelected(all);
+      haptics.medium();
+    }
   }
   const allSelected = !!data && selected.size === data.rolls.length;
 
   async function applyStatus(field: string) {
     if (selected.size === 0 || applying) return;
-    setApplying(true); haptics.medium();
+    setApplying(true);
+    haptics.medium();
     await fetch("/api/rolls/bulk-update", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ roll_numbers: [...selected], field, value: new Date().toISOString() }),
+      body: JSON.stringify({
+        roll_numbers: [...selected],
+        field,
+        value: new Date().toISOString(),
+      }),
     });
     invalidateCache("rolls");
     haptics.success();
@@ -371,10 +599,26 @@ export default function ArchiveClient() {
   if (isLoading && !data) {
     return (
       <div>
-        <div style={{ height: 32, width: 64, backgroundColor: "var(--border)", marginBottom: 24, animation: "pulse 1.5s infinite" }} />
+        <div
+          style={{
+            height: 32,
+            width: 64,
+            backgroundColor: "var(--border)",
+            marginBottom: 24,
+            animation: "pulse 1.5s infinite",
+          }}
+        />
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ width: "100%", aspectRatio: "3/2", backgroundColor: "var(--border)", animation: "pulse 1.5s infinite" }} />
+            <div
+              key={i}
+              style={{
+                width: "100%",
+                aspectRatio: "3/2",
+                backgroundColor: "var(--border)",
+                animation: "pulse 1.5s infinite",
+              }}
+            />
           ))}
         </div>
       </div>
@@ -383,10 +627,27 @@ export default function ArchiveClient() {
 
   if (!data || data.rolls.length === 0) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "96px 0", gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "96px 0",
+          gap: 12,
+        }}
+      >
         <div style={{ fontSize: 32 }}>🎞️</div>
-        <p style={{ color: "var(--text-tertiary)", textAlign: "center", fontSize: 13 }}>
-          No scanned rolls yet.<br />Scanned rolls appear here.
+        <p
+          style={{
+            color: "var(--text-tertiary)",
+            textAlign: "center",
+            fontSize: 13,
+          }}
+        >
+          No scanned rolls yet.
+          <br />
+          Scanned rolls appear here.
         </p>
       </div>
     );
@@ -405,7 +666,9 @@ export default function ArchiveClient() {
     );
   });
 
-  const allTags = Array.from(new Set(data.rolls.flatMap((r) => r.tags ?? []))).sort();
+  const allTags = Array.from(
+    new Set(data.rolls.flatMap((r) => r.tags ?? [])),
+  ).sort();
 
   const byYear = new Map<number, RollRow[]>();
   for (const roll of filteredRolls) {
@@ -430,41 +693,101 @@ export default function ArchiveClient() {
   }
 
   const chipStyle = (active: boolean): React.CSSProperties => ({
-    whiteSpace: "nowrap", padding: "4px 10px", fontSize: 9, fontWeight: 700,
-    letterSpacing: "0.1em", textTransform: "uppercase",
+    whiteSpace: "nowrap",
+    padding: "4px 10px",
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
     border: `1px solid ${active ? "var(--accent)" : "var(--border)"}`,
     color: active ? "var(--accent)" : "var(--text-tertiary)",
-    background: "none", cursor: "pointer", fontFamily: "inherit",
+    background: "none",
+    cursor: "pointer",
+    fontFamily: "inherit",
     flexShrink: 0,
   });
 
   return (
     <>
-      <PullToRefresh onRefresh={async () => { router.refresh(); }}>
+      <PullToRefresh
+        onRefresh={async () => {
+          router.refresh();
+        }}
+      >
         <div>
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, marginBottom: 20 }}>
-            <h1 style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text-primary)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingTop: 12,
+              marginBottom: 20,
+            }}
+          >
+            <h1
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--text-primary)",
+              }}
+            >
               ARCHIVE
             </h1>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {!editing && (
                 <>
                   <button
-                    onClick={() => { setView("list"); haptics.light(); }}
-                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: view === "list" ? "var(--accent)" : "var(--text-tertiary)" }}
+                    onClick={() => {
+                      setView("list");
+                      haptics.light();
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 4,
+                      cursor: "pointer",
+                      color:
+                        view === "list"
+                          ? "var(--accent)"
+                          : "var(--text-tertiary)",
+                    }}
                   >
                     <ListIcon active={view === "list"} />
                   </button>
                   <button
-                    onClick={() => { setView("grid"); haptics.light(); }}
-                    style={{ background: "none", border: "none", padding: 4, cursor: "pointer", color: view === "grid" ? "var(--accent)" : "var(--text-tertiary)" }}
+                    onClick={() => {
+                      setView("grid");
+                      haptics.light();
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 4,
+                      cursor: "pointer",
+                      color:
+                        view === "grid"
+                          ? "var(--accent)"
+                          : "var(--text-tertiary)",
+                    }}
                   >
                     <GridIcon active={view === "grid"} />
                   </button>
                   <button
                     onClick={enterEdit}
-                    style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: "var(--text-tertiary)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
                   >
                     Edit
                   </button>
@@ -476,8 +799,26 @@ export default function ArchiveClient() {
           {/* Search */}
           {!editing && (
             <div style={{ position: "relative", marginBottom: 12 }}>
-              <svg style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "var(--text-tertiary)", pointerEvents: "none" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              <svg
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 14,
+                  height: 14,
+                  color: "var(--text-tertiary)",
+                  pointerEvents: "none",
+                }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 type="search"
@@ -485,9 +826,18 @@ export default function ArchiveClient() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search archive…"
                 style={{
-                  width: "100%", paddingLeft: 20, paddingRight: 0, paddingTop: 8, paddingBottom: 8,
-                  fontSize: 12, color: "var(--text-primary)", background: "none", border: "none",
-                  borderBottom: "1px solid var(--border)", fontFamily: "inherit", outline: "none",
+                  width: "100%",
+                  paddingLeft: 20,
+                  paddingRight: 0,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                  fontSize: 12,
+                  color: "var(--text-primary)",
+                  background: "none",
+                  border: "none",
+                  borderBottom: "1px solid var(--border)",
+                  fontFamily: "inherit",
+                  outline: "none",
                   caretColor: "var(--accent)",
                 }}
               />
@@ -496,9 +846,24 @@ export default function ArchiveClient() {
 
           {/* Tag filter chips */}
           {allTags.length > 0 && !editing && (
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                overflowX: "auto",
+                paddingBottom: 4,
+                marginBottom: 16,
+              }}
+            >
               {allTags.map((tag) => (
-                <button key={tag} onClick={() => { setSelectedTag(selectedTag === tag ? null : tag); haptics.light(); }} style={chipStyle(selectedTag === tag)}>
+                <button
+                  key={tag}
+                  onClick={() => {
+                    setSelectedTag(selectedTag === tag ? null : tag);
+                    haptics.light();
+                  }}
+                  style={chipStyle(selectedTag === tag)}
+                >
                   #{tag}
                 </button>
               ))}
@@ -507,12 +872,33 @@ export default function ArchiveClient() {
 
           {/* Year filter chips (only if multiple years) */}
           {years.length > 1 && !editing && (
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 20 }}>
-              <button onClick={() => { setSelectedYear(null); haptics.light(); }} style={chipStyle(selectedYear === null)}>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                overflowX: "auto",
+                paddingBottom: 4,
+                marginBottom: 20,
+              }}
+            >
+              <button
+                onClick={() => {
+                  setSelectedYear(null);
+                  haptics.light();
+                }}
+                style={chipStyle(selectedYear === null)}
+              >
                 All
               </button>
               {years.map((year) => (
-                <button key={year} onClick={() => { setSelectedYear(year); haptics.light(); }} style={chipStyle(selectedYear === year)}>
+                <button
+                  key={year}
+                  onClick={() => {
+                    setSelectedYear(year);
+                    haptics.light();
+                  }}
+                  style={chipStyle(selectedYear === year)}
+                >
                   {year}
                 </button>
               ))}
@@ -521,7 +907,14 @@ export default function ArchiveClient() {
 
           {/* No results */}
           {filteredRolls.length === 0 && (searchQuery || selectedTag) && (
-            <p style={{ color: "var(--text-tertiary)", textAlign: "center", padding: "48px 0", fontSize: 13 }}>
+            <p
+              style={{
+                color: "var(--text-tertiary)",
+                textAlign: "center",
+                padding: "48px 0",
+                fontSize: 13,
+              }}
+            >
               No rolls match {selectedTag ? `#${selectedTag}` : `"${search}"`}
             </p>
           )}
@@ -536,22 +929,58 @@ export default function ArchiveClient() {
               function toggleYear() {
                 setSelected((prev) => {
                   const s = new Set(prev);
-                  if (allYearSelected) { yearNums.forEach((n) => s.delete(n)); haptics.light(); }
-                  else { yearNums.forEach((n) => s.add(n)); haptics.medium(); }
+                  if (allYearSelected) {
+                    yearNums.forEach((n) => s.delete(n));
+                    haptics.light();
+                  } else {
+                    yearNums.forEach((n) => s.add(n));
+                    haptics.medium();
+                  }
                   return s;
                 });
               }
               return (
                 <section key={year} style={{ marginBottom: 32 }}>
                   {/* Year section header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid var(--border)", paddingTop: 12, marginBottom: 16 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-tertiary)", fontVariant: "small-caps" }}>
-                      {year} · {yearRolls.length} roll{yearRolls.length !== 1 ? "s" : ""}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderTop: "1px solid var(--border)",
+                      paddingTop: 12,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "var(--text-tertiary)",
+                        fontVariant: "small-caps",
+                      }}
+                    >
+                      {year} · {yearRolls.length} roll
+                      {yearRolls.length !== 1 ? "s" : ""}
                     </span>
                     {editing && (
                       <button
                         onClick={toggleYear}
-                        style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: allYearSelected ? "var(--accent)" : "var(--text-tertiary)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          color: allYearSelected
+                            ? "var(--accent)"
+                            : "var(--text-tertiary)",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                        }}
                       >
                         {allYearSelected ? "Deselect" : "Select all"}
                       </button>
@@ -560,13 +989,25 @@ export default function ArchiveClient() {
                   {view === "grid" ? (
                     <div>
                       {yearRolls.map((roll) => (
-                        <GridCard key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                        <GridCard
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                        />
                       ))}
                     </div>
                   ) : (
                     <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                       {yearRolls.map((roll) => (
-                        <ListRow key={roll.roll_number} roll={roll} editing={editing} selected={selected.has(roll.roll_number)} onToggle={() => toggleSelect(roll.roll_number)} />
+                        <ListRow
+                          key={roll.roll_number}
+                          roll={roll}
+                          editing={editing}
+                          selected={selected.has(roll.roll_number)}
+                          onToggle={() => toggleSelect(roll.roll_number)}
+                        />
                       ))}
                     </ul>
                   )}
@@ -578,61 +1019,135 @@ export default function ArchiveClient() {
       </PullToRefresh>
 
       {/* Edit-mode action bar */}
-      {editing && mounted && createPortal(
-        <div
-          style={{
-            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 20,
-            display: "flex", justifyContent: "center", alignItems: "flex-end",
-            padding: "0 16px", paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
-            pointerEvents: "none",
-          }}
-        >
+      {editing &&
+        mounted &&
+        createPortal(
           <div
             style={{
-              pointerEvents: "auto", height: 56, display: "flex", alignItems: "center", gap: 8, padding: "0 16px",
-              backgroundColor: "var(--sheet-bg)", border: "1px solid var(--sheet-border)",
-              transformOrigin: "center bottom",
-              animation: exiting
-                ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
-                : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 20,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "flex-end",
+              padding: "0 16px",
+              paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+              pointerEvents: "none",
             }}
           >
-            <button onClick={exitEdit} disabled={exiting} style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "0 4px" }}>
-              Done
-            </button>
-            <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
-            <button onClick={selectAll} style={{ fontSize: 11, fontWeight: 600, color: allSelected ? "var(--accent)" : "var(--sheet-text)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: "0 4px" }}>
-              {allSelected ? "Deselect All" : "All"}
-            </button>
-            {selected.size > 0 && (
-              <>
-                <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
-                <span style={{ fontSize: 11, color: "var(--sheet-text)", opacity: 0.5, tabularNums: true } as React.CSSProperties}>
-                  {selected.size} selected
-                </span>
-                {availableActions.map(({ label, field }) => (
-                  <Fragment key={field}>
-                    <div style={{ width: 1, height: 16, backgroundColor: "var(--sheet-border)" }} />
-                    <button
-                      onClick={() => applyStatus(field)}
-                      disabled={applying}
-                      style={{
-                        fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                        color: "var(--accent)", background: "none", border: "1px solid var(--accent)",
-                        padding: "4px 10px", cursor: "pointer", fontFamily: "inherit",
-                        opacity: applying ? 0.5 : 1,
-                      }}
-                    >
-                      {applying ? "…" : label}
-                    </button>
-                  </Fragment>
-                ))}
-              </>
-            )}
-          </div>
-        </div>,
-        document.body,
-      )}
+            <div
+              style={{
+                pointerEvents: "auto",
+                height: 56,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "0 16px",
+                backgroundColor: "var(--sheet-bg)",
+                border: "1px solid var(--sheet-border)",
+                transformOrigin: "center bottom",
+                animation: exiting
+                  ? "editBarFlipOut 0.22s cubic-bezier(0.4,0,1,1) forwards"
+                  : "editBarFlipIn 0.28s cubic-bezier(0,0,0.2,1) forwards",
+              }}
+            >
+              <button
+                onClick={exitEdit}
+                disabled={exiting}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--accent)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: "0 4px",
+                }}
+              >
+                Done
+              </button>
+              <div
+                style={{
+                  width: 1,
+                  height: 16,
+                  backgroundColor: "var(--sheet-border)",
+                }}
+              />
+              <button
+                onClick={selectAll}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: allSelected ? "var(--accent)" : "var(--sheet-text)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: "0 4px",
+                }}
+              >
+                {allSelected ? "Deselect All" : "All"}
+              </button>
+              {selected.size > 0 && (
+                <>
+                  <div
+                    style={{
+                      width: 1,
+                      height: 16,
+                      backgroundColor: "var(--sheet-border)",
+                    }}
+                  />
+                  <span
+                    style={
+                      {
+                        fontSize: 11,
+                        color: "var(--sheet-text)",
+                        opacity: 0.5,
+                        tabularNums: true,
+                      } as React.CSSProperties
+                    }
+                  >
+                    {selected.size} selected
+                  </span>
+                  {availableActions.map(({ label, field }) => (
+                    <Fragment key={field}>
+                      <div
+                        style={{
+                          width: 1,
+                          height: 16,
+                          backgroundColor: "var(--sheet-border)",
+                        }}
+                      />
+                      <button
+                        onClick={() => applyStatus(field)}
+                        disabled={applying}
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--accent)",
+                          background: "none",
+                          border: "1px solid var(--accent)",
+                          padding: "4px 10px",
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          opacity: applying ? 0.5 : 1,
+                        }}
+                      >
+                        {applying ? "…" : label}
+                      </button>
+                    </Fragment>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
