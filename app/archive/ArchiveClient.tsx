@@ -130,16 +130,16 @@ function GridCard({
 
   const inner = (
     <div style={{ position: "relative" }}>
-      {/* Full-bleed 16:9 image */}
-      <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden", backgroundColor: "var(--border-subtle)" }}>
+      {/* Full-bleed image — no crop, natural height */}
+      <div style={{ position: "relative", width: "100%", backgroundColor: "var(--border-subtle)" }}>
         {roll.contact_sheet_url ? (
           <img
             src={roll.contact_sheet_url}
             alt={roll.roll_number}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            style={{ width: "100%", height: "auto", display: "block" }}
           />
         ) : (
-          <PlaceholderSheet rollNumber={roll.roll_number} />
+          <div style={{ aspectRatio: "3/2" }}><PlaceholderSheet rollNumber={roll.roll_number} /></div>
         )}
         {editing && (
           <div style={{ position: "absolute", top: 10, left: 16 }}>
