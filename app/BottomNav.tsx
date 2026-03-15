@@ -88,9 +88,8 @@ export default function BottomNav() {
                   textTransform: "uppercase",
                   color: active ? "var(--accent)" : "var(--bg)",
                   borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
-                  paddingBottom: 3,
                   textDecoration: "none",
-                  padding: "10px 0 3px",
+                  paddingBottom: 3,
                 }}
               >
                 {label}
