@@ -64,59 +64,59 @@ export default function BottomNav() {
           maxWidth: "42rem",
           borderRadius: "12px 12px 0 0",
           backgroundColor: "#1a1a1a",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "20px 28px",
-          paddingBottom: "calc(14px + env(safe-area-inset-bottom))",
         }}
       >
-        {/* Left: text tabs */}
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          {TABS.map(({ href, label, match }) => {
-            const active = match(pathname);
-            return (
-              <Link
-                key={href}
-                href={href}
-                prefetch={true}
-                onClick={() => haptics.light()}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: active ? "var(--accent)" : "var(--bg)",
-                  borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
-                  textDecoration: "none",
-                  paddingBottom: 3,
-                }}
-              >
-                {label}
-              </Link>
-            );
-          })}
-        </div>
+        {/* Content row — symmetric padding so centering is true */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px" }}>
+          {/* Left: text tabs */}
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            {TABS.map(({ href, label, match }) => {
+              const active = match(pathname);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  prefetch={true}
+                  onClick={() => haptics.light()}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: active ? "var(--accent)" : "var(--bg)",
+                    borderBottom: active ? "1.5px solid var(--accent)" : "1.5px solid transparent",
+                    textDecoration: "none",
+                    paddingBottom: 3,
+                  }}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
 
-        {/* Right: + Load (amber, no border) */}
-        <Link
-          href="/new"
-          prefetch={true}
-          onClick={() => haptics.medium()}
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "#1a1a1a",
-            textDecoration: "none",
-            padding: "6px 14px",
-            backgroundColor: "var(--accent)",
-            borderRadius: 3,
-          }}
-        >
-          + Load
-        </Link>
+          {/* Right: + Load (amber, no border) */}
+          <Link
+            href="/new"
+            prefetch={true}
+            onClick={() => haptics.medium()}
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "#1a1a1a",
+              textDecoration: "none",
+              padding: "6px 14px",
+              backgroundColor: "var(--accent)",
+              borderRadius: 3,
+            }}
+          >
+            + Load
+          </Link>
+        </div>
+        {/* Safe area spacer */}
+        <div style={{ height: "env(safe-area-inset-bottom)" }} />
       </div>
     </nav>
   );
