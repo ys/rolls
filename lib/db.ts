@@ -9,10 +9,9 @@ if (!dbUrl) {
 
 const pg = postgres(dbUrl, {
   ssl: dbUrl.includes("localhost") ? false : { rejectUnauthorized: false },
-  max: 8, // per-dyno pool; PgBouncer multiplexes these to Postgres (plan limit: 20)
+  max: 8, // 2 dynos × 8 = 16, leaves 4 for migrations/admin (plan limit: 20)
   idle_timeout: 20,
   connect_timeout: 60,
-  prepare: false, // required for PgBouncer transaction pooling mode
 });
 
 export const sql = pg;

@@ -1,2 +1,2 @@
 release: npm run migrate
-web: bin/start-pgbouncer npm start
+web: npm start
