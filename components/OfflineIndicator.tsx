@@ -14,14 +14,13 @@ import { useEffect, useState } from "react";
 export default function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const [syncingCount, setSyncingCount] = useState(0);
 
   useEffect(() => {
-    // Set initial state
     setIsOffline(!navigator.onLine);
 
     function handleOnline() {
       setIsOffline(false);
-      // Delay hiding banner to show "Connected" message briefly
       setTimeout(() => setShowBanner(false), 2000);
     }
 
@@ -30,20 +29,27 @@ export default function OfflineIndicator() {
       setShowBanner(true);
     }
 
+    function handleSwMessage(event: MessageEvent) {
+      if (event.data?.type === "SYNC_STATUS") {
+        setSyncingCount(event.data.count ?? 0);
+        if (event.data.count > 0) setShowBanner(true);
+        else setTimeout(() => setShowBanner(false), 2000);
+      }
+    }
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    navigator.serviceWorker?.addEventListener("message", handleSwMessage);
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      navigator.serviceWorker?.removeEventListener("message", handleSwMessage);
     };
   }, []);
 
-  // Show banner when offline
   useEffect(() => {
-    if (isOffline) {
-      setShowBanner(true);
-    }
+    if (isOffline) setShowBanner(true);
   }, [isOffline]);
 
   if (!showBanner) return null;
@@ -59,13 +65,20 @@ export default function OfflineIndicator() {
         className={`px-4 py-3 text-center text-sm font-medium ${
           isOffline
             ? "bg-amber-500 dark:bg-amber-600 text-white"
+            : syncingCount > 0
+            ? "bg-blue-500 dark:bg-blue-600 text-white"
             : "bg-green-500 dark:bg-green-600 text-white"
         }`}
       >
         {isOffline ? (
           <>
             <span className="mr-2">📡</span>
-            You're offline. Changes will sync when connected.
+            You&apos;re offline. Changes will sync when connected.
+          </>
+        ) : syncingCount > 0 ? (
+          <>
+            <span className="mr-2">⏳</span>
+            Syncing {syncingCount} roll{syncingCount > 1 ? "s" : ""}...
           </>
         ) : (
           <>

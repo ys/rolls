@@ -16,7 +16,9 @@ export async function GET() {
   const rows = await sql<Roll[]>`
     SELECT * FROM rolls WHERE user_id = ${userId} ORDER BY roll_number DESC
   `;
-  return NextResponse.json(rows);
+  return NextResponse.json(rows, {
+    headers: { "Cache-Control": "private, max-age=60" },
+  });
 }
 
 /**

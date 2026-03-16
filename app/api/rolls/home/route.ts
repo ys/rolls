@@ -5,5 +5,7 @@ import { getRollsWithDetails } from "@/lib/queries";
 export async function GET() {
   const userId = await getUserId();
   const rolls = await getRollsWithDetails(userId, false);
-  return NextResponse.json({ rolls });
+  return NextResponse.json({ rolls }, {
+    headers: { "Cache-Control": "private, max-age=60" },
+  });
 }

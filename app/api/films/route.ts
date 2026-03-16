@@ -18,7 +18,9 @@ function slugify(s: string): string {
 export async function GET() {
   const userId = await getUserId();
   const rows = await getFilms(userId);
-  return NextResponse.json(rows);
+  return NextResponse.json(rows, {
+    headers: { "Cache-Control": "private, max-age=300" },
+  });
 }
 
 type CreateFilmBody = {

@@ -7,6 +7,7 @@ import {
   timestampsChanged,
   type Timestamps,
 } from "@/lib/cache";
+import { db } from "@/lib/offline-db";
 
 interface UseCachedDataOptions {
   ttl?: number;
@@ -79,13 +80,23 @@ export function useCachedData<T>(
         if (!cancelled) {
           setData(result);
           setCached(cacheKey, result, timestamps ?? undefined);
+          // Write-through to IndexedDB for offline fallback
+          db.metadata.put({ key: cacheKey, value: result }).catch(() => {});
           setIsLoading(false);
           setError(null);
         }
       } catch (err) {
+        // Offline fallback: try IndexedDB if network failed
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error("Failed to fetch"));
-          setIsLoading(false);
+          const offline = await db.metadata.get(cacheKey).catch(() => null);
+          if (offline) {
+            setData(offline.value as T);
+            setIsLoading(false);
+            setError(null);
+          } else {
+            setError(err instanceof Error ? err : new Error("Failed to fetch"));
+            setIsLoading(false);
+          }
         }
       }
     }

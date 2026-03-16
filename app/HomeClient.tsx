@@ -157,9 +157,15 @@ function RollItem({
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
-          {status.charAt(0) + status.slice(1).toLowerCase()}
-        </div>
+        {roll.uuid?.startsWith("offline-") ? (
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--accent)" }}>
+            Syncing…
+          </div>
+        ) : (
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
+            {status.charAt(0) + status.slice(1).toLowerCase()}
+          </div>
+        )}
         {dateLine && (
           <div style={{ fontSize: 14, color: "var(--text-disabled)", marginTop: 2 }}>
             {dateLine}
@@ -211,6 +217,18 @@ export default function HomeClient() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Listen for SW sync success messages to refresh roll list
+  useEffect(() => {
+    function handleSwMessage(event: MessageEvent) {
+      if (event.data?.type === "SYNC_SUCCESS") {
+        invalidateCache("rolls");
+        router.refresh();
+      }
+    }
+    navigator.serviceWorker?.addEventListener("message", handleSwMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", handleSwMessage);
+  }, [router]);
 
   useEffect(() => {
     return () => {
