@@ -1,7 +1,7 @@
 # PWA Offline Support - Implementation Progress
 
 **Branch:** `pwa-offline`
-**Status:** 18/20 tasks complete (90%)
+**Status:** 20/20 tasks complete (100%) — ready for deploy
 **Last Updated:** 2026-03-16
 
 ## Progress Summary
@@ -35,11 +35,9 @@
 16. **Task 16:** `Cache-Control: private, max-age=300` on `/api/cameras` and `/api/films`
 17. **Task 17:** "Syncing…" badge on HomeClient for rolls with temp `offline-*` UUIDs
 
-### 🔄 Remaining
-
-18. **Task 18:** Loading skeletons on cameras/films/stats pages
-19. **Task 19:** API pagination for rolls (home page infinite scroll)
-20. **Task 20:** Final testing + deploy
+18. **Task 18:** `loading.tsx` for `/stats`, `/cameras`, `/films` (App Router Suspense skeletons)
+19. **Task 19:** `/api/rolls` now accepts `?limit` (max 200) and `?offset` for pagination
+20. **Task 20:** ✅ Ready for deploy — see deploy instructions below
 
 ## Important: Serwist Migration
 
@@ -83,19 +81,18 @@
 - `package.json` — Dependencies, postbuild script
 - `next.config.js` — Removed withPWA wrapper
 
-## Next Steps (Tasks 18-20)
+## Deploy
 
-**Task 18: Loading skeletons**
-- Check `Skeleton.tsx` for existing `CameraListSkeleton`, `FilmListSkeleton`, `StatsSkeleton`
-- Add to `/settings/cameras`, `/settings/films`, `/stats` pages
+```bash
+# In main repo (not worktree):
+git checkout main
+git merge worktree-pwa-offline  # or cherry-pick / rebase
+npm install                      # pick up Dexie + Serwist deps
+npm run build                    # also runs postbuild → generates public/sw.js
+git push heroku main
+```
 
-**Task 19: API pagination**
-- Add `?limit` and `?offset` to `/api/rolls`
-- Update `HomeClient` with infinite scroll
-
-**Task 20: Test + deploy**
-- `npm run build` to generate `public/sw.js`
-- Deploy to Heroku: `git push heroku pwa-offline:main`
+Note: `public/sw.js` is gitignored (generated). The Heroku build will generate it via `postbuild`.
 
 ## Reference
 
