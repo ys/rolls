@@ -9,6 +9,7 @@
     "setup": "bash bin/setup",
     "dev": "next dev",
     "build": "DATABASE_URL=${DATABASE_URL:-postgresql://localhost/rolls_build} JWT_SECRET=${JWT_SECRET:-build-time-secret} WEBAUTHN_RP_NAME=${WEBAUTHN_RP_NAME:-Rolls} WEBAUTHN_RP_ID=${WEBAUTHN_RP_ID:-localhost} WEBAUTHN_ORIGIN=${WEBAUTHN_ORIGIN:-http://localhost:3000} next build --webpack",
+    "postbuild": "node scripts/generate-sw.js",
     "start": "next start",
     "lint": "next lint",
     "openapi:generate": "next-openapi-gen generate",
