@@ -57,6 +57,7 @@
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.1.0",
     "next-openapi-gen": "^0.10.4",
     "postcss": "^8.5.3",

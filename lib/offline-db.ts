@@ -4,7 +4,7 @@ import type { Roll, Camera, Film } from './db';
 interface SyncItem {
   id?: number;
   type: 'create_roll';
-  data: any;
+  data: Partial<Roll>;
   apiKey: string;
   timestamp: number;
   retries: number;
@@ -12,7 +12,7 @@ interface SyncItem {
 
 interface MetadataItem {
   key: string;
-  value: any;
+  value: number;
 }
 
 class RollsDB extends Dexie {
