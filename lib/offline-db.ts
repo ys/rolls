@@ -12,7 +12,7 @@ interface SyncItem {
 
 interface MetadataItem {
   key: string;
-  value: number;
+  value: unknown;
 }
 
 class RollsDB extends Dexie {
@@ -44,7 +44,7 @@ export async function setLastSyncTime(collection: string): Promise<void> {
 
 export async function getLastSyncTime(collection: string): Promise<number | null> {
   const item = await db.metadata.get(`${collection}_last_sync`);
-  return item?.value ?? null;
+  return typeof item?.value === 'number' ? item.value : null;
 }
 
 export async function getTimeSinceSync(collection: string): Promise<string> {
