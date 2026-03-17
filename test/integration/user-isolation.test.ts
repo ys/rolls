@@ -93,6 +93,7 @@ describe("User Data Isolation Integration Tests", () => {
         method: "GET",
       }) as unknown as NextRequest;
 
+      const request = new Request("http://localhost/api/rolls") as unknown as NextRequest;
       const response = await GET(request);
       const data = await response.json();
 
