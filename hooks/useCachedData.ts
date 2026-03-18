@@ -41,9 +41,22 @@ export function useCachedData<T>(
     let cancelled = false;
 
     async function validate() {
+      let seededFromIDB = false;
+
       try {
         // Get cached data with timestamps
         const cached = getCachedWithTimestamps<T>(cacheKey, ttl);
+
+        // If localStorage is empty (e.g. iOS cleared it on restart), seed from IndexedDB
+        // so the user sees stale data immediately while we revalidate in the background
+        if (!cached) {
+          const offline = await db.metadata.get(cacheKey).catch(() => null);
+          if (offline && !cancelled) {
+            setData(offline.value as T);
+            setIsLoading(false);
+            seededFromIDB = true;
+          }
+        }
 
         // Fetch current server timestamps
         const currentTimestamps = await fetchTimestamps(apiKey);
@@ -68,7 +81,10 @@ export function useCachedData<T>(
         await fetchData(currentTimestamps);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error("Failed to validate cache"));
+          // If we already seeded from IndexedDB, keep showing that data rather than an error
+          if (!seededFromIDB) {
+            setError(err instanceof Error ? err : new Error("Failed to validate cache"));
+          }
           setIsLoading(false);
         }
       }
