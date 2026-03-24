@@ -126,41 +126,38 @@ export function RollDetailView({
           paddingTop: "env(safe-area-inset-top)",
         }}
       >
-        {/* Back bar */}
-        <div className="flex items-center px-5 py-4">
-          <BackButton />
-        </div>
-
         {/* Header */}
         <div
-          className="px-5 pb-3 border-b"
+          className="flex items-start px-5 py-4 border-b"
           style={{ borderColor: "var(--border)" }}
         >
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              lineHeight: 1,
-              fontFamily: "inherit",
-            }}
-          >
-            {roll.roll_number}
-          </div>
-          {subtitle && (
+          <BackButton />
+          <div className="flex-1 px-3">
             <div
               style={{
-                fontSize: 11,
+                fontSize: 22,
                 fontWeight: 700,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "var(--text-tertiary)",
-                marginTop: 4,
+                color: "var(--text-primary)",
+                lineHeight: 1.1,
               }}
             >
-              {subtitle}
+              {roll.roll_number}
             </div>
-          )}
+            {subtitle && (
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--text-tertiary)",
+                  marginTop: 3,
+                }}
+              >
+                {subtitle}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Notes area — dot grid texture, amber caret */}

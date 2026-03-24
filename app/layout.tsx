@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import BottomNav from "./BottomNav";
 import OfflineIndicator from "../components/OfflineIndicator";
+import ServiceWorkerRegistration from "../components/ServiceWorkerRegistration";
 import PageTransition from "../components/PageTransition";
 import SwipeNavigation from "../components/SwipeNavigation";
 
@@ -60,6 +61,7 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body className="min-h-screen" style={{ backgroundColor: "var(--bg)", color: "var(--text-primary)" }}>
+        <ServiceWorkerRegistration />
         <OfflineIndicator />
         <SwipeNavigation />
         <main

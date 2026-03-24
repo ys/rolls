@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Camera, Film, CatalogFilm } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
+import { db } from "@/lib/offline-db";
+import { addToSyncQueue, generateOfflineUuid } from "@/lib/sync-queue";
 import Sheet from "@/components/Sheet";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
@@ -68,16 +70,19 @@ export default function NewRollSheet({
     e.preventDefault();
     setSaving(true);
     setError("");
+
+    const rollData = {
+      roll_number: rollNumber,
+      camera_id: cameraId || undefined,
+      film_id: filmId || undefined,
+      shot_at: new Date().toISOString().slice(0, 10),
+    };
+
     try {
       const resp = await fetch("/api/rolls", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify({
-          roll_number: rollNumber,
-          camera_id: cameraId || undefined,
-          film_id: filmId || undefined,
-          shot_at: new Date().toISOString().slice(0, 10),
-        }),
+        body: JSON.stringify(rollData),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -91,8 +96,28 @@ export default function NewRollSheet({
       onClose();
       router.push(`/roll/${roll.roll_number}`);
     } catch {
-      setError("Network error — please try again");
-      haptics.error();
+      if (!navigator.onLine) {
+        // Save offline with temp UUID, queue for sync
+        const tempUuid = generateOfflineUuid();
+        await db.rolls.add({ uuid: tempUuid, ...rollData, created_at: new Date().toISOString() } as never);
+        await addToSyncQueue("create_roll", { uuid: tempUuid, ...rollData }, apiKey);
+
+        // Request background sync when back online
+        if ("serviceWorker" in navigator && "SyncManager" in window) {
+          const reg = await navigator.serviceWorker.ready;
+          await (reg as ServiceWorkerRegistration & { sync: { register(tag: string): Promise<void> } }).sync
+            .register("sync-rolls")
+            .catch(() => {});
+        }
+
+        invalidateCache("rolls");
+        haptics.success();
+        onClose();
+        router.push(`/roll/${rollNumber}`);
+      } else {
+        setError("Network error — please try again");
+        haptics.error();
+      }
     } finally {
       setSaving(false);
     }

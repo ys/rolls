@@ -15,7 +15,7 @@ describe("Roll API Routes", () => {
         { roll_number: "26x01", user_id: "user-123" },
         { roll_number: "26x02", user_id: "user-123" },
       ]);
-      const response = await GET();
+      const response = await GET(new Request("http://localhost/api/rolls") as any);
       const data = await response.json();
       expect(response.status).toBe(200);
       expect(data).toHaveLength(2);

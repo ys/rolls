@@ -6,17 +6,24 @@ import type { CreateRollBody } from "@/app/api/_schemas/rolls";
 
 /**
  * List rolls
- * @description Returns all rolls for the authenticated user, ordered by roll_number desc.
+ * @description Returns rolls for the authenticated user, ordered by roll_number desc. Supports ?limit and ?offset for pagination.
  * @auth bearer
  * @response Roll[]
  * @openapi
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const userId = await getUserId();
+  const { searchParams } = new URL(request.url);
+  const limit = Math.min(parseInt(searchParams.get("limit") ?? "200", 10), 200);
+  const offset = parseInt(searchParams.get("offset") ?? "0", 10);
+
   const rows = await sql<Roll[]>`
     SELECT * FROM rolls WHERE user_id = ${userId} ORDER BY roll_number DESC
+    LIMIT ${limit} OFFSET ${offset}
   `;
-  return NextResponse.json(rows);
+  return NextResponse.json(rows, {
+    headers: { "Cache-Control": "private, max-age=60" },
+  });
 }
 
 /**
