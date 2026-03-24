@@ -14,11 +14,14 @@ import { useEffect } from "react";
 import { setCached, fetchTimestamps, getCacheKey } from "@/lib/cache";
 import { db } from "@/lib/offline-db";
 
-const PAGES = ["/", "/archive", "/cameras", "/films", "/stats"];
+const PAGES = ["/", "/archive", "/cameras", "/films", "/stats", "/new"];
 
 const API_ENDPOINTS = [
   { cacheKey: getCacheKey("rolls", "home"), url: "/api/rolls/home" },
   { cacheKey: getCacheKey("rolls", "archive"), url: "/api/rolls/archive" },
+  { cacheKey: getCacheKey("cameras"), url: "/api/cameras" },
+  { cacheKey: getCacheKey("films"), url: "/api/films" },
+  { cacheKey: getCacheKey("rolls", "next"), url: "/api/rolls/next" },
 ];
 
 export default function CachePrimer() {

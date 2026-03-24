@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Camera, Film, CatalogFilm } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
+import { useCachedData } from "@/hooks/useCachedData";
 import Sheet from "@/components/Sheet";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
@@ -28,10 +29,7 @@ export default function NewRollSheet({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [allCameras, setAllCameras] = useState<Camera[]>([]);
-  const [allFilms, setAllFilms] = useState<Film[]>([]);
   const [catalogFilms, setCatalogFilms] = useState<CatalogFilm[]>([]);
-  const [suggestedNumber, setSuggestedNumber] = useState("");
   const [rollNumber, setRollNumber] = useState("");
   const [cameraId, setCameraId] = useState("");
   const [filmId, setFilmId] = useState("");
@@ -45,21 +43,53 @@ export default function NewRollSheet({
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const authHeaders: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
 
+  // Use cached data so the sheet works offline (populated by CachePrimer on first online load)
+  const { data: camerasData } = useCachedData<Camera[]>(
+    ["cameras"],
+    () => fetch("/api/cameras", { headers: authHeaders }).then((r) => r.json()),
+    { apiKey },
+  );
+  const { data: filmsData } = useCachedData<Film[]>(
+    ["films"],
+    () => fetch("/api/films", { headers: authHeaders }).then((r) => r.json()),
+    { apiKey },
+  );
+  const { data: nextData } = useCachedData<{ roll_number: string }>(
+    ["rolls", "next"],
+    () => fetch("/api/rolls/next", { headers: authHeaders }).then((r) => r.json()),
+    { apiKey },
+  );
+
+  const [allCameras, setAllCameras] = useState<Camera[]>([]);
+  const [allFilms, setAllFilms] = useState<Film[]>([]);
+
+  // Merge cached data with any locally added cameras/films (added via "+ New" while offline)
+  useEffect(() => {
+    if (camerasData) setAllCameras((prev) => {
+      const ids = new Set(camerasData.map((c) => c.uuid));
+      return [...camerasData, ...prev.filter((c) => !ids.has(c.uuid))];
+    });
+  }, [camerasData]);
+
+  useEffect(() => {
+    if (filmsData) setAllFilms((prev) => {
+      const ids = new Set(filmsData.map((f) => f.uuid));
+      return [...filmsData, ...prev.filter((f) => !ids.has(f.uuid))];
+    });
+  }, [filmsData]);
+
+  // Set roll number from cache/network, but only if user hasn't typed yet
+  useEffect(() => {
+    if (nextData?.roll_number && rollNumber === "") {
+      setRollNumber(nextData.roll_number);
+    }
+  }, [nextData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Catalog films — static-ish list, plain fetch with graceful fallback
   useEffect(() => {
     if (!open) return;
-    Promise.all([
-      fetch("/api/cameras", { headers: authHeaders }).then((r) => r.json()),
-      fetch("/api/films", { headers: authHeaders }).then((r) => r.json()),
-      fetch("/api/rolls/next", { headers: authHeaders }).then((r) => r.json()),
-      fetch("/api/catalog/films").then((r) => r.json()).catch(() => []),
-    ]).then(([cams, fils, next, catalog]: [Camera[], Film[], { roll_number: string }, CatalogFilm[]]) => {
-      setAllCameras(cams);
-      setAllFilms(fils);
-      setCatalogFilms(catalog);
-      setSuggestedNumber(next.roll_number);
-      setRollNumber(next.roll_number);
-    });
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetch("/api/catalog/films").then((r) => r.json()).then(setCatalogFilms).catch(() => {});
+  }, [open]);
 
   const cameras = [...allCameras].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
   const films = [...allFilms].sort((a, b) => (b.roll_count ?? 0) - (a.roll_count ?? 0));
@@ -123,7 +153,7 @@ export default function NewRollSheet({
               type="text"
               value={rollNumber}
               onChange={(e) => setRollNumber(e.target.value)}
-              placeholder={suggestedNumber}
+              placeholder="e.g. 26x01"
               required
               style={{
                 width: "100%", background: "none", border: "none",
