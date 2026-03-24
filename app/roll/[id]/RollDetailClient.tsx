@@ -6,6 +6,9 @@ import { RollDetailView } from "./RollDetailView";
 import RollEditForm from "@/components/RollEditForm";
 import { rollStatus } from "@/lib/status";
 import type { Roll, Camera, Film, CatalogFilm } from "@/lib/db";
+import { db } from "@/lib/offline-db";
+import { mergeRollUpdate, registerBackgroundSync } from "@/lib/sync-queue";
+import { invalidateCache } from "@/lib/cache";
 
 interface RollDetailClientProps {
   roll: Roll & {
@@ -25,8 +28,11 @@ interface RollDetailClientProps {
 }
 
 export default function RollDetailClient({ roll, contactSheetUrl, cameras, films, catalogFilms }: RollDetailClientProps) {
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const [isEditingFull, setIsEditingFull] = useState(false);
   const [notes, setNotes] = useState(roll.notes || "");
+  // Local pending updates applied offline, overlaid on server-fetched roll props
+  const [pendingUpdates, setPendingUpdates] = useState<Partial<Roll>>({});
   const router = useRouter();
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -35,18 +41,40 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
     setNotes(roll.notes || "");
   }, [roll.notes]);
 
-  const handleSave = async (updates: Partial<Roll>) => {
-    const res = await fetch(`/api/rolls/${roll.roll_number}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to update roll");
+  // Listen for SW sync success to clear pending state and refresh
+  useEffect(() => {
+    function handleSwMessage(event: MessageEvent) {
+      if (event.data?.type === "SYNC_SUCCESS" && event.data.rollNumber === roll.roll_number) {
+        setPendingUpdates({});
+        invalidateCache("rolls");
+        router.refresh();
+      }
     }
+    navigator.serviceWorker?.addEventListener("message", handleSwMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", handleSwMessage);
+  }, [roll.roll_number, router]);
 
-    router.refresh();
+  const handleSave = async (updates: Partial<Roll>) => {
+    try {
+      const res = await fetch(`/api/rolls/${roll.roll_number}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update roll");
+      }
+
+      router.refresh();
+    } catch {
+      if (!navigator.onLine) {
+        setPendingUpdates((prev) => ({ ...prev, ...updates }));
+        await db.rolls.where("roll_number").equals(roll.roll_number).modify(updates);
+        await mergeRollUpdate(roll.roll_number, updates, apiKey);
+        await registerBackgroundSync();
+      }
+    }
   };
 
   const handleSaveNotes = async (notes: string) => {
@@ -67,12 +95,19 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: newNotes }),
-      }).catch(console.error);
+      }).catch(async () => {
+        if (!navigator.onLine) {
+          setPendingUpdates((prev) => ({ ...prev, notes: newNotes }));
+          await db.rolls.where("roll_number").equals(roll.roll_number).modify({ notes: newNotes });
+          await mergeRollUpdate(roll.roll_number, { notes: newNotes }, apiKey);
+          await registerBackgroundSync();
+        }
+      });
     }, 1000);
   };
 
   const handleMoveToNext = async (labName?: string) => {
-    const status = rollStatus(roll);
+    const status = rollStatus({ ...roll, ...pendingUpdates });
     const updates: Partial<Roll> = {};
 
     if (status === "LOADED") {
@@ -96,10 +131,13 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
     };
   }, []);
 
+  // Merge pending offline updates onto the server-fetched roll for display
+  const displayRoll = { ...roll, ...pendingUpdates };
+
   return (
     <>
       <RollDetailView
-        roll={roll}
+        roll={displayRoll}
         contactSheetUrl={contactSheetUrl}
         onEdit={() => setIsEditingFull(true)}
         onMoveToNext={handleMoveToNext}
@@ -109,7 +147,7 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
 
       {isEditingFull && (
         <RollEditForm
-          roll={roll}
+          roll={displayRoll}
           cameras={cameras}
           films={films}
           catalogFilms={catalogFilms}

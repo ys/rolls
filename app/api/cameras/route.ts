@@ -4,10 +4,7 @@ import type { Camera } from "@/lib/db";
 import { getUserId } from "@/lib/request-context";
 import { getCameras } from "@/lib/queries";
 import type { ErrorResponse } from "@/app/api/_schemas/common";
-
-function slugify(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
+import { slugify } from "@/lib/slugify";
 
 /**
  * List cameras

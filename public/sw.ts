@@ -30,7 +30,7 @@ const serwist = new Serwist({
   },
 });
 
-// Background Sync for offline roll creation
+// Background Sync for offline operations
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-rolls') {
     event.waitUntil(syncRolls());
@@ -79,7 +79,7 @@ async function notifyClients(message: object): Promise<void> {
 
 interface SyncItem {
   id: number;
-  type: 'create_roll';
+  type: 'create_roll' | 'update_roll' | 'create_camera' | 'create_film';
   data: Record<string, unknown>;
   apiKey: string;
   timestamp: number;
@@ -103,27 +103,83 @@ async function syncRolls(): Promise<void> {
     if (item.retries >= 3) continue;
 
     try {
-      const response = await fetch('/api/rolls', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${item.apiKey}`,
-        },
-        body: JSON.stringify(item.data),
-      });
-
-      if (response.ok) {
-        const serverRoll = await response.json() as Record<string, unknown>;
-        await deleteFromStore(db, 'sync_queue', item.id);
-        synced++;
-
-        await notifyClients({
-          type: 'SYNC_SUCCESS',
-          tempUuid: item.data.uuid,
-          serverRoll,
+      if (item.type === 'create_roll') {
+        const response = await fetch('/api/rolls', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${item.apiKey}`,
+          },
+          body: JSON.stringify(item.data),
         });
-      } else {
-        await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });
+
+        if (response.ok) {
+          const serverRoll = await response.json() as Record<string, unknown>;
+          await deleteFromStore(db, 'sync_queue', item.id);
+          synced++;
+          await notifyClients({ type: 'SYNC_SUCCESS', tempUuid: item.data.uuid, serverRoll });
+        } else {
+          await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });
+        }
+
+      } else if (item.type === 'update_roll') {
+        const { roll_number, uuid, user_id, ...patch } = item.data;
+        const response = await fetch(`/api/rolls/${roll_number}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${item.apiKey}`,
+          },
+          body: JSON.stringify(patch),
+        });
+
+        if (response.ok) {
+          await deleteFromStore(db, 'sync_queue', item.id);
+          synced++;
+          await notifyClients({ type: 'SYNC_SUCCESS', rollNumber: roll_number });
+        } else {
+          await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });
+        }
+
+      } else if (item.type === 'create_camera') {
+        const { uuid, user_id, ...body } = item.data;
+        const response = await fetch('/api/cameras', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${item.apiKey}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+          const serverCamera = await response.json() as Record<string, unknown>;
+          await deleteFromStore(db, 'sync_queue', item.id);
+          synced++;
+          await notifyClients({ type: 'SYNC_SUCCESS', tempCameraUuid: uuid, serverCamera });
+        } else {
+          await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });
+        }
+
+      } else if (item.type === 'create_film') {
+        const { uuid, user_id, ...body } = item.data;
+        const response = await fetch('/api/films', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${item.apiKey}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+          const serverFilm = await response.json() as Record<string, unknown>;
+          await deleteFromStore(db, 'sync_queue', item.id);
+          synced++;
+          await notifyClients({ type: 'SYNC_SUCCESS', tempFilmUuid: uuid, serverFilm });
+        } else {
+          await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });
+        }
       }
     } catch {
       await updateInStore(db, 'sync_queue', { ...item, retries: item.retries + 1 });

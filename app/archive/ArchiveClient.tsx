@@ -8,6 +8,8 @@ import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
 import { invalidateCache } from "@/lib/cache";
 import type { Roll } from "@/lib/db";
+import { db } from "@/lib/offline-db";
+import { mergeRollUpdate, registerBackgroundSync } from "@/lib/sync-queue";
 import PullToRefresh from "@/components/PullToRefresh";
 import { haptics } from "@/lib/haptics";
 
@@ -513,7 +515,22 @@ export default function ArchiveClient() {
     async () => {
       const res = await fetch("/api/rolls/archive", { headers });
       if (!res.ok) throw new Error("Failed to fetch archive");
-      return res.json();
+      const result: ArchiveData = await res.json();
+      // Seed db.rolls for offline writes (fire and forget)
+      const records = result.rolls
+        .filter((r) => !r.uuid?.startsWith("offline-"))
+        .map((r) => ({
+          uuid: r.uuid, roll_number: r.roll_number, user_id: r.user_id,
+          camera_uuid: r.camera_uuid ?? null, film_uuid: r.film_uuid ?? null,
+          loaded_at: r.loaded_at ?? null, shot_at: r.shot_at ?? null,
+          fridge_at: r.fridge_at ?? null, lab_at: r.lab_at ?? null, lab_name: r.lab_name ?? null,
+          scanned_at: r.scanned_at ?? null, processed_at: r.processed_at ?? null,
+          uploaded_at: r.uploaded_at ?? null, archived_at: r.archived_at ?? null,
+          album_name: r.album_name ?? null, tags: r.tags ?? null, notes: r.notes ?? null,
+          contact_sheet_url: r.contact_sheet_url ?? null, push_pull: r.push_pull ?? null,
+        }));
+      if (records.length > 0) db.rolls.bulkPut(records).catch(() => {});
+      return result;
     },
     { apiKey },
   );
@@ -524,6 +541,8 @@ export default function ArchiveClient() {
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
+  // Local patches applied offline, overlaid on server data until sync
+  const [localPatches, setLocalPatches] = useState<Map<string, Partial<RollRow>>>(new Map());
   const [mounted, setMounted] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [search, setSearch] = useState("");
@@ -538,6 +557,24 @@ export default function ArchiveClient() {
       document.body.removeAttribute("data-mass-edit");
     };
   }, []);
+
+  useEffect(() => {
+    function handleSwMessage(event: MessageEvent) {
+      if (event.data?.type === "SYNC_SUCCESS") {
+        if (event.data.rollNumber) {
+          setLocalPatches((prev) => {
+            const next = new Map(prev);
+            next.delete(event.data.rollNumber);
+            return next;
+          });
+        }
+        invalidateCache("rolls");
+        router.refresh();
+      }
+    }
+    navigator.serviceWorker?.addEventListener("message", handleSwMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", handleSwMessage);
+  }, [router]);
 
   function toggleSelect(n: string) {
     setSelected((prev) => {
@@ -580,20 +617,34 @@ export default function ArchiveClient() {
     if (selected.size === 0 || applying) return;
     setApplying(true);
     haptics.medium();
-    await fetch("/api/rolls/bulk-update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({
-        roll_numbers: [...selected],
-        field,
-        value: new Date().toISOString(),
-      }),
-    });
-    invalidateCache("rolls");
-    haptics.success();
-    setApplying(false);
-    exitEdit();
-    router.refresh();
+    const now = new Date().toISOString();
+    try {
+      await fetch("/api/rolls/bulk-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({ roll_numbers: [...selected], field, value: now }),
+      });
+      invalidateCache("rolls");
+      haptics.success();
+      setApplying(false);
+      exitEdit();
+      router.refresh();
+    } catch {
+      if (!navigator.onLine) {
+        for (const rollNumber of selected) {
+          await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
+          setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
+          await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
+        }
+        await registerBackgroundSync();
+        haptics.success();
+        setApplying(false);
+        exitEdit();
+      } else {
+        haptics.error();
+        setApplying(false);
+      }
+    }
   }
 
   if (isLoading && !data) {
@@ -653,8 +704,11 @@ export default function ArchiveClient() {
     );
   }
 
+  // Overlay any offline patches on top of server data
+  const patchedRolls = data.rolls.map((r) => ({ ...r, ...(localPatches.get(r.roll_number) ?? {}) }));
+
   const searchQuery = search.trim().toLowerCase();
-  const filteredRolls = data.rolls.filter((r) => {
+  const filteredRolls = patchedRolls.filter((r) => {
     if (selectedTag && !(r.tags ?? []).includes(selectedTag)) return false;
     if (!searchQuery) return true;
     return (
@@ -667,7 +721,7 @@ export default function ArchiveClient() {
   });
 
   const allTags = Array.from(
-    new Set(data.rolls.flatMap((r) => r.tags ?? [])),
+    new Set(patchedRolls.flatMap((r) => r.tags ?? [])),
   ).sort();
 
   const byYear = new Map<number, RollRow[]>();
@@ -679,7 +733,7 @@ export default function ArchiveClient() {
   const years = Array.from(byYear.keys()).sort((a, b) => b - a);
   const yearsToShow = selectedYear ? [selectedYear] : years;
 
-  const rollMap = new Map(data.rolls.map((r) => [r.roll_number, r]));
+  const rollMap = new Map(patchedRolls.map((r) => [r.roll_number, r]));
   const seenFields = new Set<string>();
   const availableActions: Array<{ field: string; label: string }> = [];
   for (const num of selected) {

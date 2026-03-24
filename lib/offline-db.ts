@@ -3,7 +3,7 @@ import type { Roll, Camera, Film } from './db';
 
 interface SyncItem {
   id?: number;
-  type: 'create_roll';
+  type: 'create_roll' | 'update_roll' | 'create_camera' | 'create_film';
   data: Partial<Roll>;
   apiKey: string;
   timestamp: number;

@@ -6,7 +6,7 @@ import type { Camera, Film, CatalogFilm } from "@/lib/db";
 import { invalidateCache } from "@/lib/cache";
 import { useCachedData } from "@/hooks/useCachedData";
 import { db } from "@/lib/offline-db";
-import { addToSyncQueue, generateOfflineUuid } from "@/lib/sync-queue";
+import { addToSyncQueue, generateOfflineUuid, registerBackgroundSync } from "@/lib/sync-queue";
 import Sheet from "@/components/Sheet";
 import NewCameraSheet from "@/components/NewCameraSheet";
 import NewFilmSheet from "@/components/NewFilmSheet";
@@ -129,16 +129,16 @@ export default function NewRollSheet({
       if (!navigator.onLine) {
         // Save offline with temp UUID, queue for sync
         const tempUuid = generateOfflineUuid();
-        await db.rolls.add({ uuid: tempUuid, ...rollData, created_at: new Date().toISOString() } as never);
+        await db.rolls.add({
+          uuid: tempUuid,
+          ...rollData,
+          created_at: new Date().toISOString(),
+          // Extra display fields for offline rendering (not in Roll interface)
+          _camera_label: selectedCamera ? cameraLabel(selectedCamera) : null,
+          _film_label: selectedFilm ? filmLabel(selectedFilm) : null,
+        } as never);
         await addToSyncQueue("create_roll", { uuid: tempUuid, ...rollData }, apiKey);
-
-        // Request background sync when back online
-        if ("serviceWorker" in navigator && "SyncManager" in window) {
-          const reg = await navigator.serviceWorker.ready;
-          await (reg as ServiceWorkerRegistration & { sync: { register(tag: string): Promise<void> } }).sync
-            .register("sync-rolls")
-            .catch(() => {});
-        }
+        await registerBackgroundSync();
 
         invalidateCache("rolls");
         haptics.success();
