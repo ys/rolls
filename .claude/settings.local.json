@@ -58,7 +58,18 @@
       "WebFetch(domain:www.learnui.design)",
       "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/type-scale.html)",
       "Bash(open /Users/ys/src/github.com/ys/rolls/.superpowers/brainstorm/sheets.html)",
-      "Bash(heroku ps --app rolls)"
+      "Bash(heroku ps --app rolls)",
+      "Bash(git -C .claude/worktrees/pwa-offline status && git -C .claude/worktrees/pwa-offline log --oneline -3)",
+      "Bash(git ls-tree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline pull origin pwa-offline)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline log --oneline -10)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline status)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline diff)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline branch -vv)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline stash)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline branch --set-upstream-to=origin/pwa-offline pwa-offline)",
+      "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline pull)"
     ]
   },
   "enableAllProjectMcpServers": false
