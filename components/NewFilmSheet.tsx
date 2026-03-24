@@ -49,6 +49,32 @@ export default function NewFilmSheet({
       slide: filmType === "slide",
       show_iso: !!iso,
     };
+    if (!navigator.onLine) {
+      const slug = id ? slugify(id) : slugify(`${brand}-${name}`);
+      const tempUuid = generateOfflineUuid();
+      const isColor = filmType !== "bw";
+      const isSlide = filmType === "slide";
+      const tempFilm: Film = {
+        uuid: tempUuid,
+        slug,
+        user_id: "",
+        brand,
+        name,
+        nickname: nickname || null,
+        iso: iso ? Number(iso) : null,
+        color: isColor,
+        slide: isSlide,
+        show_iso: !!iso,
+      };
+      await db.films.add(tempFilm);
+      await addToSyncQueue("create_film", { uuid: tempUuid, ...filmBody }, apiKey);
+      await registerBackgroundSync();
+      setId(""); setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
+      haptics.success();
+      onCreated(tempFilm);
+      return;
+    }
+
     try {
       const resp = await fetch("/api/films", {
         method: "POST",
@@ -66,33 +92,8 @@ export default function NewFilmSheet({
       haptics.success();
       onCreated(film);
     } catch {
-      if (!navigator.onLine) {
-        const slug = id ? slugify(id) : slugify(`${brand}-${name}`);
-        const tempUuid = generateOfflineUuid();
-        const isColor = filmType !== "bw";
-        const isSlide = filmType === "slide";
-        const tempFilm: Film = {
-          uuid: tempUuid,
-          slug,
-          user_id: "",
-          brand,
-          name,
-          nickname: nickname || null,
-          iso: iso ? Number(iso) : null,
-          color: isColor,
-          slide: isSlide,
-          show_iso: !!iso,
-        };
-        await db.films.add(tempFilm);
-        await addToSyncQueue("create_film", { uuid: tempUuid, ...filmBody }, apiKey);
-        await registerBackgroundSync();
-        setId(""); setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
-        haptics.success();
-        onCreated(tempFilm);
-      } else {
-        setError("Network error — please try again");
-        setSaving(false);
-      }
+      setError("Network error — please try again");
+      setSaving(false);
     }
   }
 
