@@ -265,6 +265,23 @@ export default function HomeClient() {
     loadOfflineRolls();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Hydrate localPatches from pending sync_queue entries on mount (survives PWA restart)
+  useEffect(() => {
+    db.sync_queue
+      .filter((item) => item.type === "update_roll")
+      .toArray()
+      .then((items) => {
+        if (items.length === 0) return;
+        const patches = new Map<string, Partial<RollRow>>();
+        for (const item of items) {
+          const { roll_number, ...patch } = item.data as Partial<Roll> & { roll_number?: string };
+          if (roll_number) patches.set(roll_number, patch as Partial<RollRow>);
+        }
+        if (patches.size > 0) setLocalPatches(patches);
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [editing, setEditing] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());

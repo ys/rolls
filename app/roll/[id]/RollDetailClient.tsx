@@ -41,6 +41,19 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
     setNotes(roll.notes || "");
   }, [roll.notes]);
 
+  // Hydrate pendingUpdates from sync_queue on mount (survives PWA restart)
+  useEffect(() => {
+    db.sync_queue
+      .filter((item) => item.type === "update_roll" && (item.data as Record<string, unknown>).roll_number === roll.roll_number)
+      .first()
+      .then((item) => {
+        if (!item) return;
+        const { roll_number: _rn, ...patch } = item.data as Partial<Roll> & { roll_number?: string };
+        setPendingUpdates(patch as Partial<Roll>);
+      })
+      .catch(() => {});
+  }, [roll.roll_number]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Listen for SW sync success to clear pending state and refresh
   useEffect(() => {
     function handleSwMessage(event: MessageEvent) {
