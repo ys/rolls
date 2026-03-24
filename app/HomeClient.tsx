@@ -339,6 +339,18 @@ export default function HomeClient() {
     setApplying(true);
     haptics.medium();
     const now = new Date().toISOString();
+    if (!navigator.onLine) {
+      for (const rollNumber of selected) {
+        await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
+        setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
+        await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
+      }
+      await registerBackgroundSync();
+      haptics.success();
+      setApplying(false);
+      exitEdit();
+      return;
+    }
     try {
       await fetch("/api/rolls/bulk-update", {
         method: "POST",
@@ -351,25 +363,21 @@ export default function HomeClient() {
       exitEdit();
       router.refresh();
     } catch {
-      if (!navigator.onLine) {
-        for (const rollNumber of selected) {
-          await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
-          setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
-          await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
-        }
-        await registerBackgroundSync();
-        haptics.success();
-        setApplying(false);
-        exitEdit();
-      } else {
-        haptics.error();
-        setApplying(false);
-      }
+      haptics.error();
+      setApplying(false);
     }
   }
 
   async function advanceSingle(rollNumber: string, field: string) {
     const now = new Date().toISOString();
+    if (!navigator.onLine) {
+      await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
+      setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
+      await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
+      await registerBackgroundSync();
+      haptics.success();
+      return;
+    }
     try {
       await fetch(`/api/rolls/${rollNumber}`, {
         method: "PATCH",
@@ -380,15 +388,7 @@ export default function HomeClient() {
       haptics.success();
       router.refresh();
     } catch {
-      if (!navigator.onLine) {
-        await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
-        setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
-        await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
-        await registerBackgroundSync();
-        haptics.success();
-      } else {
-        haptics.error();
-      }
+      haptics.error();
     }
   }
 
@@ -407,6 +407,16 @@ export default function HomeClient() {
       lab_at: new Date().toISOString(),
       ...(labName.trim() ? { lab_name: labName.trim() } : {}),
     };
+    if (!navigator.onLine) {
+      await db.rolls.where("roll_number").equals(labSheetRoll).modify(patch);
+      setLocalPatches((prev) => new Map(prev).set(labSheetRoll, { ...(prev.get(labSheetRoll) ?? {}), ...patch } as Partial<RollRow>));
+      await mergeRollUpdate(labSheetRoll, patch, apiKey);
+      await registerBackgroundSync();
+      haptics.success();
+      setLabSubmitting(false);
+      setLabSheetRoll(null);
+      return;
+    }
     try {
       await fetch(`/api/rolls/${labSheetRoll}`, {
         method: "PATCH",
@@ -419,18 +429,8 @@ export default function HomeClient() {
       setLabSheetRoll(null);
       router.refresh();
     } catch {
-      if (!navigator.onLine) {
-        await db.rolls.where("roll_number").equals(labSheetRoll).modify(patch);
-        setLocalPatches((prev) => new Map(prev).set(labSheetRoll, { ...(prev.get(labSheetRoll) ?? {}), ...patch } as Partial<RollRow>));
-        await mergeRollUpdate(labSheetRoll, patch, apiKey);
-        await registerBackgroundSync();
-        haptics.success();
-        setLabSubmitting(false);
-        setLabSheetRoll(null);
-      } else {
-        haptics.error();
-        setLabSubmitting(false);
-      }
+      haptics.error();
+      setLabSubmitting(false);
     }
   }
 

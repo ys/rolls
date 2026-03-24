@@ -618,6 +618,18 @@ export default function ArchiveClient() {
     setApplying(true);
     haptics.medium();
     const now = new Date().toISOString();
+    if (!navigator.onLine) {
+      for (const rollNumber of selected) {
+        await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
+        setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
+        await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
+      }
+      await registerBackgroundSync();
+      haptics.success();
+      setApplying(false);
+      exitEdit();
+      return;
+    }
     try {
       await fetch("/api/rolls/bulk-update", {
         method: "POST",
@@ -630,20 +642,8 @@ export default function ArchiveClient() {
       exitEdit();
       router.refresh();
     } catch {
-      if (!navigator.onLine) {
-        for (const rollNumber of selected) {
-          await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
-          setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
-          await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
-        }
-        await registerBackgroundSync();
-        haptics.success();
-        setApplying(false);
-        exitEdit();
-      } else {
-        haptics.error();
-        setApplying(false);
-      }
+      haptics.error();
+      setApplying(false);
     }
   }
 

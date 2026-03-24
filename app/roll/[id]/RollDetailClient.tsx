@@ -55,6 +55,13 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
   }, [roll.roll_number, router]);
 
   const handleSave = async (updates: Partial<Roll>) => {
+    if (!navigator.onLine) {
+      setPendingUpdates((prev) => ({ ...prev, ...updates }));
+      await db.rolls.where("roll_number").equals(roll.roll_number).modify(updates);
+      await mergeRollUpdate(roll.roll_number, updates, apiKey);
+      await registerBackgroundSync();
+      return;
+    }
     try {
       const res = await fetch(`/api/rolls/${roll.roll_number}`, {
         method: "PATCH",
@@ -68,12 +75,7 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
 
       router.refresh();
     } catch {
-      if (!navigator.onLine) {
-        setPendingUpdates((prev) => ({ ...prev, ...updates }));
-        await db.rolls.where("roll_number").equals(roll.roll_number).modify(updates);
-        await mergeRollUpdate(roll.roll_number, updates, apiKey);
-        await registerBackgroundSync();
-      }
+      // Online but request failed — surface nothing, changes lost
     }
   };
 
@@ -90,19 +92,19 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
     }
 
     // Debounce save by 1 second
-    saveTimeoutRef.current = setTimeout(() => {
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!navigator.onLine) {
+        setPendingUpdates((prev) => ({ ...prev, notes: newNotes }));
+        await db.rolls.where("roll_number").equals(roll.roll_number).modify({ notes: newNotes });
+        await mergeRollUpdate(roll.roll_number, { notes: newNotes }, apiKey);
+        await registerBackgroundSync();
+        return;
+      }
       fetch(`/api/rolls/${roll.roll_number}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: newNotes }),
-      }).catch(async () => {
-        if (!navigator.onLine) {
-          setPendingUpdates((prev) => ({ ...prev, notes: newNotes }));
-          await db.rolls.where("roll_number").equals(roll.roll_number).modify({ notes: newNotes });
-          await mergeRollUpdate(roll.roll_number, { notes: newNotes }, apiKey);
-          await registerBackgroundSync();
-        }
-      });
+      }).catch(() => {});
     }, 1000);
   };
 

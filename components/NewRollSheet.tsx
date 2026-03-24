@@ -108,6 +108,26 @@ export default function NewRollSheet({
       shot_at: new Date().toISOString().slice(0, 10),
     };
 
+    if (!navigator.onLine) {
+      // Offline: save locally with temp UUID, queue for sync
+      const tempUuid = generateOfflineUuid();
+      await db.rolls.add({
+        uuid: tempUuid,
+        ...rollData,
+        created_at: new Date().toISOString(),
+        _camera_label: selectedCamera ? cameraLabel(selectedCamera) : null,
+        _film_label: selectedFilm ? filmLabel(selectedFilm) : null,
+      } as never);
+      await addToSyncQueue("create_roll", { uuid: tempUuid, ...rollData }, apiKey);
+      await registerBackgroundSync();
+      invalidateCache("rolls");
+      haptics.success();
+      setSaving(false);
+      onClose();
+      router.push(`/roll/${rollNumber}`);
+      return;
+    }
+
     try {
       const resp = await fetch("/api/rolls", {
         method: "POST",
@@ -126,28 +146,8 @@ export default function NewRollSheet({
       onClose();
       router.push(`/roll/${roll.roll_number}`);
     } catch {
-      if (!navigator.onLine) {
-        // Save offline with temp UUID, queue for sync
-        const tempUuid = generateOfflineUuid();
-        await db.rolls.add({
-          uuid: tempUuid,
-          ...rollData,
-          created_at: new Date().toISOString(),
-          // Extra display fields for offline rendering (not in Roll interface)
-          _camera_label: selectedCamera ? cameraLabel(selectedCamera) : null,
-          _film_label: selectedFilm ? filmLabel(selectedFilm) : null,
-        } as never);
-        await addToSyncQueue("create_roll", { uuid: tempUuid, ...rollData }, apiKey);
-        await registerBackgroundSync();
-
-        invalidateCache("rolls");
-        haptics.success();
-        onClose();
-        router.push(`/roll/${rollNumber}`);
-      } else {
-        setError("Network error — please try again");
-        haptics.error();
-      }
+      setError("Network error — please try again");
+      haptics.error();
     } finally {
       setSaving(false);
     }
