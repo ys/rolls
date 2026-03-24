@@ -7,6 +7,7 @@ import {
   timestampsChanged,
   type Timestamps,
 } from "@/lib/cache";
+import { db } from "@/lib/offline-db";
 
 interface UseCachedDataOptions {
   ttl?: number;
@@ -40,9 +41,22 @@ export function useCachedData<T>(
     let cancelled = false;
 
     async function validate() {
+      let seededFromIDB = false;
+
       try {
         // Get cached data with timestamps
         const cached = getCachedWithTimestamps<T>(cacheKey, ttl);
+
+        // If localStorage is empty (e.g. iOS cleared it on restart), seed from IndexedDB
+        // so the user sees stale data immediately while we revalidate in the background
+        if (!cached) {
+          const offline = await db.metadata.get(cacheKey).catch(() => null);
+          if (offline && !cancelled) {
+            setData(offline.value as T);
+            setIsLoading(false);
+            seededFromIDB = true;
+          }
+        }
 
         // Fetch current server timestamps
         const currentTimestamps = await fetchTimestamps(apiKey);
@@ -67,7 +81,10 @@ export function useCachedData<T>(
         await fetchData(currentTimestamps);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error("Failed to validate cache"));
+          // If we already seeded from IndexedDB, keep showing that data rather than an error
+          if (!seededFromIDB) {
+            setError(err instanceof Error ? err : new Error("Failed to validate cache"));
+          }
           setIsLoading(false);
         }
       }
@@ -79,13 +96,23 @@ export function useCachedData<T>(
         if (!cancelled) {
           setData(result);
           setCached(cacheKey, result, timestamps ?? undefined);
+          // Write-through to IndexedDB for offline fallback
+          db.metadata.put({ key: cacheKey, value: result }).catch(() => {});
           setIsLoading(false);
           setError(null);
         }
       } catch (err) {
+        // Offline fallback: try IndexedDB if network failed
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error("Failed to fetch"));
-          setIsLoading(false);
+          const offline = await db.metadata.get(cacheKey).catch(() => null);
+          if (offline) {
+            setData(offline.value as T);
+            setIsLoading(false);
+            setError(null);
+          } else {
+            setError(err instanceof Error ? err : new Error("Failed to fetch"));
+            setIsLoading(false);
+          }
         }
       }
     }

@@ -89,7 +89,6 @@ describe("User Data Isolation Integration Tests", () => {
         { roll_number: "user1-roll1", user_id: user1Id },
         { roll_number: "user1-roll2", user_id: user1Id },
       ]);
-
       const request = new Request("http://localhost/api/rolls") as unknown as NextRequest;
       const response = await GET(request);
       const data = await response.json();
