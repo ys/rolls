@@ -9,7 +9,7 @@ if (!dbUrl) {
 
 const pg = postgres(dbUrl, {
   ssl: dbUrl.includes("localhost") ? false : { rejectUnauthorized: false },
-  max: 8, // 2 dynos × 8 = 16, leaves 4 for migrations/admin (plan limit: 20)
+  max: 5, // 2 dynos × 5 = 10, leaves 10 for peaks/migrations (plan limit: 20)
   idle_timeout: 20,
   connect_timeout: 60,
 });

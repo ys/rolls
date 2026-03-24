@@ -7,22 +7,19 @@ import { sql } from "@/lib/db";
  */
 export async function GET() {
   try {
-    const [camerasResult, filmsResult, rollsResult] = await Promise.all([
-      sql<{ updated_at: string }[]>`
-        SELECT MAX(updated_at) as updated_at FROM cameras
-      `,
-      sql<{ updated_at: string }[]>`
-        SELECT MAX(updated_at) as updated_at FROM films
-      `,
-      sql<{ updated_at: string }[]>`
-        SELECT MAX(updated_at) as updated_at FROM rolls
-      `,
-    ]);
+    const result = await sql<
+      { cameras: string | null; films: string | null; rolls: string | null }[]
+    >`
+      SELECT
+        (SELECT MAX(updated_at) FROM cameras) AS cameras,
+        (SELECT MAX(updated_at) FROM films)   AS films,
+        (SELECT MAX(updated_at) FROM rolls)   AS rolls
+    `;
 
     return NextResponse.json({
-      cameras: camerasResult[0]?.updated_at || null,
-      films: filmsResult[0]?.updated_at || null,
-      rolls: rollsResult[0]?.updated_at || null,
+      cameras: result[0]?.cameras || null,
+      films: result[0]?.films || null,
+      rolls: result[0]?.rolls || null,
     });
   } catch (error) {
     console.error("Failed to fetch timestamps:", error);
