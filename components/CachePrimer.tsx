@@ -72,10 +72,17 @@ export default function CachePrimer() {
               .map(extractRollBase)
               .filter((r) => !r.uuid?.startsWith("offline-"));
             if (records.length > 0) db.rolls.bulkPut(records).catch(() => {});
-            // Pre-fetch each roll's detail page so SW caches the HTML for offline viewing
-            rows.forEach((r) => {
-              if (r.roll_number) fetch(`/roll/${r.roll_number}`, { credentials: "same-origin" }).catch(() => {});
-            });
+            // Pre-fetch active roll detail pages (home only) so SW caches the HTML for offline viewing.
+            // Staggered to avoid flooding the connection pool.
+            if (url === "/api/rolls/home") {
+              rows.forEach((r, i) => {
+                if (r.roll_number) {
+                  setTimeout(() => {
+                    fetch(`/roll/${r.roll_number}`, { credentials: "same-origin" }).catch(() => {});
+                  }, i * 150);
+                }
+              });
+            }
           } else if (url === "/api/cameras") {
             const records = (data as Camera[]) ?? [];
             if (records.length > 0) db.cameras.bulkPut(records).catch(() => {});
