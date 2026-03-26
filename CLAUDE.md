@@ -122,3 +122,143 @@ rolls lr albums / upload / check / link / login
 - All DB queries scoped to `user_id` (multitenancy)
 - Camera/film slugs: CLI uses YAML keys; web UI uses `slugify(brand+"-"+model/name)`
 - Push fuzzy matching: unknown camera/film IDs → try fuzzy match to cameras.yml/films.yml; no stubs created on failure (warns to stderr)
+
+## API reference (for rolls-ios)
+
+**Base URL:** `https://rolls.yannick.computer`
+**Auth:** `Authorization: Bearer {api_key}` on all authenticated routes
+**All responses:** JSON unless noted. All routes scoped to authenticated user.
+
+### Authentication
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/auth/me` | ✓ | Current user + passkey credentials |
+| `POST` | `/api/auth/logout` | ✓ | Clear session (Set-Cookie) |
+| `GET` | `/api/auth/bootstrap` | — | `{ needsInvite: bool }` — true if no users exist yet |
+| `POST` | `/api/auth/webauthn/register-options` | — | Begin passkey registration |
+| `POST` | `/api/auth/webauthn/register-verify` | — | Complete passkey registration → session cookie |
+| `POST` | `/api/auth/webauthn/login-options` | — | Begin passkey login (body: `{ identifier }`) |
+| `POST` | `/api/auth/webauthn/login-verify` | — | Complete passkey login → session cookie |
+| `POST` | `/api/auth/webauthn/autofill-options` | — | Discoverable credential options (no allowCredentials) |
+| `POST` | `/api/auth/check-username` | — | `{ username, invite_code? }` → `{ available: bool }` |
+| `GET` | `/api/auth/cli-token` | ✓ (cookie) | Create API key + redirect to `?callback=` with key |
+| `GET` | `/api/auth/api-keys` | ✓ | List API keys (no raw keys) |
+| `POST` | `/api/auth/api-keys` | ✓ | Create key → `{ api_key, raw_key }` (raw shown once) |
+| `DELETE` | `/api/auth/api-keys/[id]` | ✓ | Revoke API key |
+| `DELETE` | `/api/auth/credentials/[id]` | ✓ | Delete passkey |
+| `PATCH` | `/api/auth/email-preferences` | ✓ | `{ email_notifications: bool }` |
+
+**Invites:**
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/auth/invites` | ✓ | List own invites with `isValid` flag |
+| `POST` | `/api/auth/invites` | ✓ | Create invite (admins: custom uses/expiry; users: single-use) |
+| `DELETE` | `/api/auth/invites/[id]` | ✓ | Delete unused invite |
+| `POST` | `/api/auth/invites/send` | ✓ | Email invite (`{ invite_code, email, message? }`) |
+| `GET` | `/api/auth/invites/validate?code=` | — | `{ valid: bool, error? }` |
+
+### Rolls
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/rolls` | ✓ | All rolls, paginated (`?limit=200&offset=0`) |
+| `POST` | `/api/rolls` | ✓ | Create roll (see body below) |
+| `GET` | `/api/rolls/next` | ✓ | `{ roll_number }` — next auto-generated roll number (YYx format) |
+| `GET` | `/api/rolls/home` | ✓ | Active rolls with camera/film details joined |
+| `GET` | `/api/rolls/archive` | ✓ | Archived rolls with camera/film details joined |
+| `GET` | `/api/rolls/[id]` | ✓ | Single roll by UUID |
+| `PATCH` | `/api/rolls/[id]` | ✓ | Partial update (see fields below) |
+| `DELETE` | `/api/rolls/[id]` | ✓ | Delete roll → 204 |
+| `POST` | `/api/rolls/bulk-update` | ✓ | Set one timestamp field for multiple rolls |
+| `GET` | `/api/rolls/[id]/contact-sheet` | ✓ | Proxy contact sheet image (`image/webp`) from R2 |
+| `PUT` | `/api/rolls/[id]/contact-sheet` | ✓ | Upload contact sheet (body: raw `image/webp` bytes) |
+
+**POST /api/rolls body:**
+```json
+{
+  "roll_number": "26a",
+  "camera_id": "camera-slug",
+  "film_id": "film-slug",
+  "notes": "..."
+}
+```
+
+**PATCH /api/rolls/[id] fields** (all optional):
+`roll_number`, `camera_id` (slug→UUID), `film_id` (slug→UUID), `notes`, `push_pull`, `lab_name`, `album_name`, `tags`,
+`shot_at`, `fridge_at`, `lab_at`, `scanned_at`, `processed_at`, `uploaded_at`, `archived_at`
+
+**POST /api/rolls/bulk-update body:**
+```json
+{
+  "roll_numbers": ["26a", "26b"],
+  "field": "archived_at",
+  "value": "2026-03-27T00:00:00Z"
+}
+```
+→ `{ updated: 2 }`
+
+### Cameras
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/cameras` | ✓ | All cameras |
+| `POST` | `/api/cameras` | ✓ | Upsert camera by slug (see body below) |
+| `GET` | `/api/cameras/[slug]` | ✓ | Camera + `roll_count` |
+| `PATCH` | `/api/cameras/[slug]` | ✓ | Update camera |
+| `DELETE` | `/api/cameras/[slug]` | ✓ | Delete (409 if rolls exist) |
+| `POST` | `/api/cameras/merge` | ✓ | `{ target_id, source_ids[] }` → reassign rolls + delete sources |
+
+**POST /api/cameras body:**
+```json
+{ "brand": "Nikon", "model": "F3", "nickname": "F3", "format": 35 }
+```
+Slug auto-generated: `slugify("nikon-f3")`. Upserts on `(user_id, slug)`.
+
+### Films
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/films` | ✓ | All films |
+| `POST` | `/api/films` | ✓ | Upsert film by slug (see body below) |
+| `GET` | `/api/films/[slug]` | ✓ | Film + `roll_count` |
+| `PATCH` | `/api/films/[slug]` | ✓ | Update film |
+| `DELETE` | `/api/films/[slug]` | ✓ | Delete (409 if rolls exist) |
+| `POST` | `/api/films/merge` | ✓ | `{ target_id, source_ids[] }` → reassign rolls + delete sources |
+
+**POST /api/films body:**
+```json
+{ "brand": "Kodak", "name": "Portra 400", "iso": 400, "color": true, "show_iso": false }
+```
+Optional: `nickname`, `slide`. Slug: `slugify("kodak-portra-400")`.
+
+### Catalog films (global, no auth)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/catalog/films` | — | Global film catalog with `gradient_from`/`gradient_to` colors |
+
+### Bulk sync (CLI-compatible)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/import` | ✓ | Bulk upsert cameras + films + rolls → `{ cameras, films, rolls }` counts |
+| `GET` | `/api/export` | ✓ | Full dump: `{ cameras[], films[], rolls[] }` (IDs as slugs) |
+
+**POST /api/import body:**
+```json
+{
+  "cameras": [{ "id": "nikon-f3", "brand": "Nikon", "model": "F3", "format": 35 }],
+  "films":   [{ "id": "kodak-portra-400", "brand": "Kodak", "name": "Portra 400", "iso": 400 }],
+  "rolls":   [{ "roll_number": "26a", "camera_id": "nikon-f3", "film_id": "kodak-portra-400" }]
+}
+```
+
+### Cache timestamps (for conditional refresh)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/cache/timestamps` | ✓ | `{ rolls, cameras, films }` latest `updated_at` timestamps |
+
+Use to skip full re-fetch when nothing has changed.
