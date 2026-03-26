@@ -29,11 +29,13 @@ export async function getCameraCount(userId: string): Promise<number> {
 
 export async function getFilms(userId: string): Promise<Film[]> {
   return sql<Film[]>`
-    SELECT f.*, COUNT(r.roll_number)::int AS roll_count
+    SELECT f.*, COUNT(r.roll_number)::int AS roll_count,
+      cf.gradient_from, cf.gradient_to
     FROM films f
     LEFT JOIN rolls r ON r.film_uuid = f.uuid AND r.user_id = ${userId}
+    LEFT JOIN catalog_films cf ON cf.slug = f.slug
     WHERE f.user_id = ${userId}
-    GROUP BY f.uuid
+    GROUP BY f.uuid, cf.gradient_from, cf.gradient_to
     ORDER BY COALESCE(f.nickname, f.brand || ' ' || f.name)
   `;
 }

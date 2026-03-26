@@ -84,6 +84,8 @@ export interface Film {
   slide: boolean;
   show_iso: boolean;
   roll_count?: number;
+  gradient_from: string | null;
+  gradient_to: string | null;
 }
 
 export interface CatalogFilm {
