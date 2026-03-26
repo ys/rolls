@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Film } from "@/lib/db";
-import { invalidateCache } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
 import BackButton from "@/components/BackButton";
 import FormField from "@/components/FormField";
@@ -78,7 +77,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     }
     const film = await resp.json();
     setAllFilms((prev) => [...prev.filter((f) => f.slug !== film.slug), film]);
-    invalidateCache("rolls");
+
     setForm({ id: "", brand: "", name: "", nickname: "", iso: "", color: true, slide: false, show_iso: false });
     setSaving(false); setShowForm(false); haptics.success();
     router.refresh();
@@ -104,7 +103,7 @@ export default function FilmsClient({ initialFilms }: { initialFilms: Film[] }) 
     }
     const updated = await fetch("/api/films", { headers: headers() }).then((r) => r.json());
     setAllFilms(updated);
-    invalidateCache("rolls");
+
     setSelected(new Set()); setTargetId(""); setMerging(false); setMergeSaving(false);
     haptics.success(); router.refresh();
   }

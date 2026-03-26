@@ -4,9 +4,6 @@ import { useState } from "react";
 import type { Camera } from "@/lib/db";
 import Sheet from "@/components/Sheet";
 import { haptics } from "@/lib/haptics";
-import { db } from "@/lib/offline-db";
-import { addToSyncQueue, generateOfflineUuid, registerBackgroundSync } from "@/lib/sync-queue";
-import { slugify } from "@/lib/slugify";
 
 const FORMAT_OPTIONS = [
   { value: "135", label: "35mm" },
@@ -25,7 +22,6 @@ export default function NewCameraSheet({
   onCreated: (camera: Camera) => void;
   authHeaders: HeadersInit;
 }) {
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [nickname, setNickname] = useState("");
@@ -37,27 +33,6 @@ export default function NewCameraSheet({
     e.preventDefault();
     setSaving(true);
     setError("");
-
-    if (!navigator.onLine) {
-      const slug = slugify(`${brand}-${model}`);
-      const tempUuid = generateOfflineUuid();
-      const tempCamera: Camera = {
-        uuid: tempUuid,
-        slug,
-        user_id: "",
-        brand,
-        model,
-        nickname: nickname || null,
-        format: Number(format),
-      };
-      await db.cameras.add(tempCamera);
-      await addToSyncQueue("create_camera", { uuid: tempUuid, brand, model, nickname: nickname || undefined, format: Number(format) }, apiKey);
-      await registerBackgroundSync();
-      setBrand(""); setModel(""); setNickname(""); setFormat("135");
-      haptics.success();
-      onCreated(tempCamera);
-      return;
-    }
 
     try {
       const resp = await fetch("/api/cameras", {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { invalidateCache } from "@/lib/cache";
 
 export default function SignOutButton() {
   const [loading, setLoading] = useState(false);
@@ -10,7 +9,6 @@ export default function SignOutButton() {
     if (loading) return;
     setLoading(true);
     try {
-      invalidateCache();
       const resp = await fetch("/api/auth/logout", { method: "POST" });
       if (resp.ok) {
         window.location.href = "/login";

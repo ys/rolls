@@ -4,14 +4,9 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { useCachedData } from "@/hooks/useCachedData";
 import { rollStatus } from "@/lib/status";
-import { invalidateCache } from "@/lib/cache";
-import { db } from "@/lib/offline-db";
-import { isOfflineUuid, mergeRollUpdate, registerBackgroundSync } from "@/lib/sync-queue";
 import type { Roll } from "@/lib/db";
 import PullToRefresh from "@/components/PullToRefresh";
-import { RollSkeleton } from "@/components/Skeleton";
 import { haptics } from "@/lib/haptics";
 import Sheet from "@/components/Sheet";
 import FormButton from "@/components/FormButton";
@@ -159,15 +154,9 @@ function RollItem({
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        {roll.uuid?.startsWith("offline-") ? (
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--accent)" }}>
-            Syncing…
-          </div>
-        ) : (
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
-            {status.charAt(0) + status.slice(1).toLowerCase()}
-          </div>
-        )}
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: STATUS_COLOUR[status] }}>
+          {status.charAt(0) + status.slice(1).toLowerCase()}
+        </div>
         {dateLine && (
           <div style={{ fontSize: 14, color: "var(--text-disabled)", marginTop: 2 }}>
             {dateLine}
@@ -190,135 +179,41 @@ function RollItem({
   );
 }
 
-const ROLL_BASE_FIELDS = [
-  "uuid", "roll_number", "user_id", "camera_uuid", "film_uuid",
-  "loaded_at", "shot_at", "fridge_at", "lab_at", "lab_name",
-  "scanned_at", "processed_at", "uploaded_at", "archived_at",
-  "album_name", "tags", "notes", "contact_sheet_url", "push_pull",
-] as const;
-
-function seedRollsToIDB(rows: RollRow[]) {
-  const records = rows
-    .filter((r) => !r.uuid?.startsWith("offline-"))
-    .map((r) => {
-      const out: Partial<Roll> = {};
-      for (const f of ROLL_BASE_FIELDS) {
-        (out as Record<string, unknown>)[f] = (r as unknown as Record<string, unknown>)[f] ?? null;
-      }
-      return out as Roll;
-    });
-  if (records.length > 0) db.rolls.bulkPut(records).catch(() => {});
-}
-
 export default function HomeClient() {
   const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const headers: HeadersInit = apiKey
     ? { Authorization: `Bearer ${apiKey}` }
     : {};
 
-  const { data, isLoading } = useCachedData<HomeData>(
-    ["rolls", "home"],
-    async () => {
-      const res = await fetch("/api/rolls/home", { headers });
-      if (!res.ok) throw new Error("Failed to fetch rolls");
-      const result: HomeData = await res.json();
-      // Seed db.rolls for offline writes (fire and forget)
-      seedRollsToIDB(result.rolls);
-      return result;
-    },
-    { apiKey },
-  );
+  const [data, setData] = useState<HomeData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("/api/rolls/home", { headers })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch rolls");
+        return res.json() as Promise<HomeData>;
+      })
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const router = useRouter();
-
-  // Offline rolls stored in IndexedDB (created while offline, not yet synced)
-  const [offlineRolls, setOfflineRolls] = useState<RollRow[]>([]);
-  // Local patches applied offline, overlaid on server data until sync
-  const [localPatches, setLocalPatches] = useState<Map<string, Partial<RollRow>>>(new Map());
-
-  async function loadOfflineRolls() {
-    try {
-      const rows = await db.rolls.filter((r: { uuid: string }) => isOfflineUuid(r.uuid)).toArray();
-      setOfflineRolls(rows.map((r: typeof rows[number]) => {
-        const extra = r as unknown as { _camera_label?: string; _film_label?: string };
-        return {
-          ...r,
-          camera_nickname: extra._camera_label ?? null,
-          camera_brand: null,
-          camera_model: null,
-          film_nickname: extra._film_label ?? null,
-          film_brand: null,
-          film_name: null,
-          film_iso: null,
-          film_show_iso: null,
-          film_slug: null,
-          film_gradient_from: null,
-          film_gradient_to: null,
-        } as RollRow;
-      }));
-    } catch {
-      // IndexedDB not available
-    }
-  }
-
-  useEffect(() => {
-    loadOfflineRolls();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Hydrate localPatches from pending sync_queue entries on mount (survives PWA restart)
-  useEffect(() => {
-    db.sync_queue
-      .filter((item) => item.type === "update_roll")
-      .toArray()
-      .then((items) => {
-        if (items.length === 0) return;
-        const patches = new Map<string, Partial<RollRow>>();
-        for (const item of items) {
-          const { roll_number, ...patch } = item.data as Partial<Roll> & { roll_number?: string };
-          if (roll_number) patches.set(roll_number, patch as Partial<RollRow>);
-        }
-        if (patches.size > 0) setLocalPatches(patches);
-      })
-      .catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [editing, setEditing] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [labSheetRoll, setLabSheetRoll] = useState<{ uuid: string; rollNumber: string } | null>(null);
+  const [labSheetRoll, setLabSheetRoll] = useState<string | null>(null);
   const [labName, setLabName] = useState("");
   const [labSubmitting, setLabSubmitting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Listen for SW sync success messages to refresh roll list
-  useEffect(() => {
-    function handleSwMessage(event: MessageEvent) {
-      if (event.data?.type === "SYNC_SUCCESS") {
-        // Clean up the offline roll from IndexedDB now that it's synced
-        if (event.data.tempUuid) {
-          db.rolls.delete(event.data.tempUuid).catch(() => {});
-        }
-        // Clear local patch overlay for this roll
-        if (event.data.rollNumber) {
-          setLocalPatches((prev) => {
-            const next = new Map(prev);
-            next.delete(event.data.rollNumber);
-            return next;
-          });
-        }
-        invalidateCache("rolls");
-        router.refresh();
-        loadOfflineRolls();
-      }
-    }
-    navigator.serviceWorker?.addEventListener("message", handleSwMessage);
-    return () => navigator.serviceWorker?.removeEventListener("message", handleSwMessage);
-  }, [router]);
 
   useEffect(() => {
     return () => {
@@ -356,25 +251,12 @@ export default function HomeClient() {
     setApplying(true);
     haptics.medium();
     const now = new Date().toISOString();
-    if (!navigator.onLine) {
-      for (const rollNumber of selected) {
-        await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
-        setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
-        await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
-      }
-      await registerBackgroundSync();
-      haptics.success();
-      setApplying(false);
-      exitEdit();
-      return;
-    }
     try {
       await fetch("/api/rolls/bulk-update", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify({ roll_numbers: [...selected], field, value: now }),
       });
-      invalidateCache("rolls");
       haptics.success();
       setApplying(false);
       exitEdit();
@@ -385,32 +267,8 @@ export default function HomeClient() {
     }
   }
 
-  async function advanceSingle(uuid: string, rollNumber: string, field: string) {
-    const now = new Date().toISOString();
-    if (!navigator.onLine) {
-      await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
-      setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), [field]: now } as Partial<RollRow>));
-      await mergeRollUpdate(rollNumber, { [field]: now } as Partial<Roll>, apiKey);
-      await registerBackgroundSync();
-      haptics.success();
-      return;
-    }
-    try {
-      await fetch(`/api/rolls/${uuid}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify({ [field]: now }),
-      });
-      invalidateCache("rolls");
-      haptics.success();
-      router.refresh();
-    } catch {
-      haptics.error();
-    }
-  }
-
-  function openLabSheet(uuid: string, rollNumber: string) {
-    setLabSheetRoll({ uuid, rollNumber });
+  function openLabSheet(uuid: string) {
+    setLabSheetRoll(uuid);
     setLabName("");
     haptics.light();
   }
@@ -420,28 +278,16 @@ export default function HomeClient() {
     if (!labSheetRoll || labSubmitting) return;
     setLabSubmitting(true);
     haptics.medium();
-    const { uuid, rollNumber } = labSheetRoll;
     const patch: Partial<Roll> = {
       lab_at: new Date().toISOString(),
       ...(labName.trim() ? { lab_name: labName.trim() } : {}),
     };
-    if (!navigator.onLine) {
-      await db.rolls.where("roll_number").equals(rollNumber).modify(patch);
-      setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), ...patch } as Partial<RollRow>));
-      await mergeRollUpdate(rollNumber, patch, apiKey);
-      await registerBackgroundSync();
-      haptics.success();
-      setLabSubmitting(false);
-      setLabSheetRoll(null);
-      return;
-    }
     try {
-      await fetch(`/api/rolls/${uuid}`, {
+      await fetch(`/api/rolls/${labSheetRoll}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(patch),
       });
-      invalidateCache("rolls");
       haptics.success();
       setLabSubmitting(false);
       setLabSheetRoll(null);
@@ -452,7 +298,7 @@ export default function HomeClient() {
     }
   }
 
-  if (!mounted || (isLoading && !data && offlineRolls.length === 0)) {
+  if (!mounted || (isLoading && !data)) {
     return (
       <div>
         {[1, 2, 3].map((i) => (
@@ -466,7 +312,7 @@ export default function HomeClient() {
     );
   }
 
-  if (!data && offlineRolls.length === 0) {
+  if (!data) {
     return (
       <div className="flex items-center justify-center py-16">
         <div style={{ color: "var(--text-secondary)" }}>No data available</div>
@@ -474,14 +320,7 @@ export default function HomeClient() {
     );
   }
 
-  const serverRolls = data?.rolls ?? [];
-
-  // Prepend any offline-created rolls that aren't yet on the server
-  const serverRollNumbers = new Set(serverRolls.map((r) => r.roll_number));
-  const rolls = [
-    ...offlineRolls.filter((r) => !serverRollNumbers.has(r.roll_number)),
-    ...serverRolls.map((r) => ({ ...r, ...(localPatches.get(r.roll_number) ?? {}) })),
-  ];
+  const rolls = data.rolls;
 
   const loaded = rolls.filter((r) => rollStatus(r) === "LOADED");
   const inFridge = rolls.filter((r) => rollStatus(r) === "FRIDGE");

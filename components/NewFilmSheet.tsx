@@ -4,9 +4,6 @@ import { useState } from "react";
 import type { Film } from "@/lib/db";
 import Sheet from "@/components/Sheet";
 import { haptics } from "@/lib/haptics";
-import { db } from "@/lib/offline-db";
-import { addToSyncQueue, generateOfflineUuid, registerBackgroundSync } from "@/lib/sync-queue";
-import { slugify } from "@/lib/slugify";
 
 const TYPE_OPTIONS = [
   { value: "colour", label: "Colour" },
@@ -30,7 +27,6 @@ export default function NewFilmSheet({
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [iso, setIso] = useState("");
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY ?? "";
   const [filmType, setFilmType] = useState("colour");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -49,31 +45,6 @@ export default function NewFilmSheet({
       slide: filmType === "slide",
       show_iso: !!iso,
     };
-    if (!navigator.onLine) {
-      const slug = id ? slugify(id) : slugify(`${brand}-${name}`);
-      const tempUuid = generateOfflineUuid();
-      const isColor = filmType !== "bw";
-      const isSlide = filmType === "slide";
-      const tempFilm: Film = {
-        uuid: tempUuid,
-        slug,
-        user_id: "",
-        brand,
-        name,
-        nickname: nickname || null,
-        iso: iso ? Number(iso) : null,
-        color: isColor,
-        slide: isSlide,
-        show_iso: !!iso,
-      };
-      await db.films.add(tempFilm);
-      await addToSyncQueue("create_film", { uuid: tempUuid, ...filmBody }, apiKey);
-      await registerBackgroundSync();
-      setId(""); setBrand(""); setName(""); setNickname(""); setIso(""); setFilmType("colour");
-      haptics.success();
-      onCreated(tempFilm);
-      return;
-    }
 
     try {
       const resp = await fetch("/api/films", {

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Camera } from "@/lib/db";
-import { invalidateCache } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
 import BackButton from "@/components/BackButton";
 import FormField from "@/components/FormField";
@@ -74,7 +73,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
     }
     const camera = await resp.json();
     setAllCameras((prev) => [...prev.filter((c) => c.slug !== camera.slug), camera]);
-    invalidateCache("rolls");
+
     setForm({ id: "", brand: "", model: "", nickname: "", format: "135" });
     setSaving(false); setShowForm(false); haptics.success();
     router.refresh();
@@ -100,7 +99,7 @@ export default function CamerasClient({ initialCameras }: { initialCameras: Came
     }
     const updated = await fetch("/api/cameras", { headers: headers() }).then((r) => r.json());
     setAllCameras(updated);
-    invalidateCache("rolls");
+
     setSelected(new Set()); setTargetId(""); setMerging(false); setMergeSaving(false);
     haptics.success(); router.refresh();
   }
