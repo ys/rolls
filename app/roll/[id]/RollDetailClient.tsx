@@ -76,7 +76,7 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
       return;
     }
     try {
-      const res = await fetch(`/api/rolls/${roll.roll_number}`, {
+      const res = await fetch(`/api/rolls/${roll.uuid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -113,7 +113,7 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
         await registerBackgroundSync();
         return;
       }
-      fetch(`/api/rolls/${roll.roll_number}`, {
+      fetch(`/api/rolls/${roll.uuid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: newNotes }),

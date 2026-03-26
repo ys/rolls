@@ -124,7 +124,7 @@ async function syncRolls(): Promise<void> {
 
       } else if (item.type === 'update_roll') {
         const { roll_number, uuid, user_id, ...patch } = item.data;
-        const response = await fetch(`/api/rolls/${roll_number}`, {
+        const response = await fetch(`/api/rolls/${uuid}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

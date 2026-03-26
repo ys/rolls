@@ -1,5 +1,5 @@
 export type RollIdPathParams = {
-  id: string; // roll_number
+  id: string; // uuid
 };
 
 export type CreateRollBody = {

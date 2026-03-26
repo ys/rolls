@@ -20,16 +20,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = (await params) satisfies RollIdPathParams;
+  const { id: uuid } = (await params) satisfies RollIdPathParams;
 
   // Verify user owns this roll before serving the image
   const [roll] = await sql<{ roll_number: string }[]>`
-    SELECT roll_number FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
+    SELECT roll_number FROM rolls WHERE uuid = ${uuid} AND user_id = ${userId}
   `;
 
   if (!roll) {
     return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
   }
+
+  const { roll_number } = roll;
 
   try {
     const obj = await r2.send(new GetObjectCommand({
@@ -69,16 +71,18 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = (await params) satisfies RollIdPathParams;
+  const { id: uuid } = (await params) satisfies RollIdPathParams;
 
   // Verify user owns this roll before uploading
   const [roll] = await sql<{ roll_number: string }[]>`
-    SELECT roll_number FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
+    SELECT roll_number FROM rolls WHERE uuid = ${uuid} AND user_id = ${userId}
   `;
 
   if (!roll) {
     return NextResponse.json({ error: "Not found" } satisfies ErrorResponse, { status: 404 });
   }
+
+  const { roll_number } = roll;
 
   const body = await request.arrayBuffer();
   if (!body.byteLength) {
@@ -96,11 +100,11 @@ export async function PUT(
   // otherwise fall back to the app-proxied URL (using APP_URL env or request origin).
   const contactSheetUrl = process.env.R2_PUBLIC_URL
     ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${roll_number}.webp`
-    : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${roll_number}/contact-sheet`;
+    : `${process.env.APP_URL ?? new URL(request.url).origin}/api/rolls/${uuid}/contact-sheet`;
   await sql`
     UPDATE rolls
     SET contact_sheet_url = ${contactSheetUrl}
-    WHERE roll_number = ${roll_number} AND user_id = ${userId}
+    WHERE uuid = ${uuid} AND user_id = ${userId}
   `;
 
   return NextResponse.json({ contact_sheet_url: contactSheetUrl } satisfies ContactSheetUploadResponse);

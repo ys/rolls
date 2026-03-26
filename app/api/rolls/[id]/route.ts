@@ -9,9 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = await params;
+  const { id: uuid } = await params;
   const rows = await sql<Roll[]>`
-    SELECT * FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId}
+    SELECT * FROM rolls WHERE uuid = ${uuid} AND user_id = ${userId}
   `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -19,12 +19,12 @@ export async function GET(
   return NextResponse.json(rows[0]);
 }
 
-export async function PATCH(
+async function handleUpdate(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = await params;
+  const { id: uuid } = await params;
   const body = await request.json();
 
   // Resolve camera_id and film_id slugs to UUIDs if provided
@@ -75,8 +75,8 @@ export async function PATCH(
   }
 
   values.push(userId);
-  values.push(roll_number);
-  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND roll_number = $${idx + 1} RETURNING *`;
+  values.push(uuid);
+  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND uuid = $${idx + 1} RETURNING *`;
   const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
 
   if (rows.length === 0) {
@@ -85,14 +85,17 @@ export async function PATCH(
   return NextResponse.json(rows[0]);
 }
 
+export const PATCH = handleUpdate;
+export const PUT = handleUpdate;
+
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: roll_number } = await params;
+  const { id: uuid } = await params;
   const rows = await sql`
-    DELETE FROM rolls WHERE roll_number = ${roll_number} AND user_id = ${userId} RETURNING roll_number
+    DELETE FROM rolls WHERE uuid = ${uuid} AND user_id = ${userId} RETURNING uuid
   `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

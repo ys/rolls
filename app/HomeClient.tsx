@@ -287,7 +287,7 @@ export default function HomeClient() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [labSheetRoll, setLabSheetRoll] = useState<string | null>(null);
+  const [labSheetRoll, setLabSheetRoll] = useState<{ uuid: string; rollNumber: string } | null>(null);
   const [labName, setLabName] = useState("");
   const [labSubmitting, setLabSubmitting] = useState(false);
 
@@ -385,7 +385,7 @@ export default function HomeClient() {
     }
   }
 
-  async function advanceSingle(rollNumber: string, field: string) {
+  async function advanceSingle(uuid: string, rollNumber: string, field: string) {
     const now = new Date().toISOString();
     if (!navigator.onLine) {
       await db.rolls.where("roll_number").equals(rollNumber).modify({ [field]: now });
@@ -396,7 +396,7 @@ export default function HomeClient() {
       return;
     }
     try {
-      await fetch(`/api/rolls/${rollNumber}`, {
+      await fetch(`/api/rolls/${uuid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify({ [field]: now }),
@@ -409,8 +409,8 @@ export default function HomeClient() {
     }
   }
 
-  function openLabSheet(rollNumber: string) {
-    setLabSheetRoll(rollNumber);
+  function openLabSheet(uuid: string, rollNumber: string) {
+    setLabSheetRoll({ uuid, rollNumber });
     setLabName("");
     haptics.light();
   }
@@ -420,14 +420,15 @@ export default function HomeClient() {
     if (!labSheetRoll || labSubmitting) return;
     setLabSubmitting(true);
     haptics.medium();
+    const { uuid, rollNumber } = labSheetRoll;
     const patch: Partial<Roll> = {
       lab_at: new Date().toISOString(),
       ...(labName.trim() ? { lab_name: labName.trim() } : {}),
     };
     if (!navigator.onLine) {
-      await db.rolls.where("roll_number").equals(labSheetRoll).modify(patch);
-      setLocalPatches((prev) => new Map(prev).set(labSheetRoll, { ...(prev.get(labSheetRoll) ?? {}), ...patch } as Partial<RollRow>));
-      await mergeRollUpdate(labSheetRoll, patch, apiKey);
+      await db.rolls.where("roll_number").equals(rollNumber).modify(patch);
+      setLocalPatches((prev) => new Map(prev).set(rollNumber, { ...(prev.get(rollNumber) ?? {}), ...patch } as Partial<RollRow>));
+      await mergeRollUpdate(rollNumber, patch, apiKey);
       await registerBackgroundSync();
       haptics.success();
       setLabSubmitting(false);
@@ -435,7 +436,7 @@ export default function HomeClient() {
       return;
     }
     try {
-      await fetch(`/api/rolls/${labSheetRoll}`, {
+      await fetch(`/api/rolls/${uuid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(patch),
