@@ -5,6 +5,7 @@ import type {
   WebAuthnLoginOptionsBody,
   WebAuthnLoginOptionsResponse,
 } from "@/app/api/_schemas/auth";
+import type { ErrorResponse } from "@/app/api/_schemas/common";
 
 /**
  * WebAuthn login options
