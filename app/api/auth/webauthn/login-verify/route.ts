@@ -23,11 +23,7 @@ export async function POST(request: Request) {
     const body: WebAuthnLoginVerifyBody = await request.json();
     const { response: credentialResponse, challenge, user_id: userId } = body;
 
-    console.log("[webauthn/login-verify] credential_id=%s user_id=%s challenge=%s",
-      (credentialResponse as any)?.id ?? "(none)", userId ?? "(none)", challenge ?? "(none)");
-
     if (!credentialResponse || !challenge) {
-      console.warn("[webauthn/login-verify] missing required fields");
       return NextResponse.json(
         { error: "Missing required fields" } satisfies ErrorResponse,
         { status: 400 }
@@ -35,20 +31,11 @@ export async function POST(request: Request) {
     }
 
     // Verify the authentication response (userId optional — conditional UI flow omits it)
-    let verification;
-    try {
-      verification = await verifyAuthenticationResponse(
-        credentialResponse,
-        challenge,
-        userId
-      );
-    } catch (verifyError: any) {
-      console.error("[webauthn/login-verify] verifyAuthenticationResponse threw: %s", verifyError.message ?? verifyError);
-      throw verifyError;
-    }
-
-    console.log("[webauthn/login-verify] verified=%s resolved_user_id=%s",
-      verification.verified, verification.resolvedUserId);
+    const verification = await verifyAuthenticationResponse(
+      credentialResponse,
+      challenge,
+      userId
+    );
 
     if (!verification.verified) {
       return NextResponse.json(
@@ -61,14 +48,11 @@ export async function POST(request: Request) {
     const user = await getUserById(verification.resolvedUserId);
 
     if (!user) {
-      console.warn("[webauthn/login-verify] user not found for id=%s", verification.resolvedUserId);
       return NextResponse.json(
         { error: "User not found" } satisfies ErrorResponse,
         { status: 404 }
       );
     }
-
-    console.log("[webauthn/login-verify] success username=%s", user.username);
 
     // Create session token
     const token = await createSessionToken(user.id);
@@ -96,7 +80,7 @@ export async function POST(request: Request) {
       }
     );
   } catch (error: any) {
-    console.error("[webauthn/login-verify] unhandled error:", error.message ?? error);
+    console.error("Login verification error:", error);
     return NextResponse.json(
       { error: "Authentication failed" } satisfies ErrorResponse,
       { status: 401 }
