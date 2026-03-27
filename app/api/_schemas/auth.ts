@@ -21,13 +21,13 @@ export type WebAuthnRegisterVerifyBody = {
 };
 
 export type WebAuthnLoginOptionsBody = {
-  identifier: string;
+  identifier?: string;
 };
 
 export type WebAuthnLoginOptionsResponse = {
   options: unknown;
   challenge: string;
-  user_id: string;
+  user_id: string | null;
 };
 
 export type WebAuthnLoginVerifyBody = {

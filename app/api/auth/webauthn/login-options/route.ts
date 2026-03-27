@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@/lib/auth";
+import { generateAuthenticationOptions as generateWebAuthnAuthenticationOptions } from "@simplewebauthn/server";
 import type {
   WebAuthnLoginOptionsBody,
   WebAuthnLoginOptionsResponse,
 } from "@/app/api/_schemas/auth";
-import type { ErrorResponse } from "@/app/api/_schemas/common";
 
 /**
  * WebAuthn login options
@@ -20,13 +20,21 @@ export async function POST(request: Request) {
     const { identifier } = body;
 
     if (!identifier) {
-      return NextResponse.json(
-        { error: "Email or username is required" } satisfies ErrorResponse,
-        { status: 400 }
-      );
+      // No identifier — discoverable credential flow (passkey picker, no allowCredentials)
+      const rpID = process.env.WEBAUTHN_RP_ID || "localhost";
+      const options = await generateWebAuthnAuthenticationOptions({
+        rpID,
+        allowCredentials: [],
+        userVerification: "preferred",
+      });
+      return NextResponse.json({
+        options,
+        challenge: options.challenge,
+        user_id: null,
+      } satisfies WebAuthnLoginOptionsResponse);
     }
 
-    // Generate authentication options
+    // Known identifier — return credentials specific to that user
     const { options, userId } = await generateAuthenticationOptions(identifier);
 
     return NextResponse.json({
