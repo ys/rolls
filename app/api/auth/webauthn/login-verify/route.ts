@@ -21,9 +21,9 @@ import type { ErrorResponse, SessionAuthSuccessResponse } from "@/app/api/_schem
 export async function POST(request: Request) {
   try {
     const body: WebAuthnLoginVerifyBody = await request.json();
-    const { response: credentialResponse, challenge, user_id: userId } = body;
+    const { response, challenge, user_id: userId } = body;
 
-    if (!credentialResponse || !challenge) {
+    if (!response || !challenge) {
       return NextResponse.json(
         { error: "Missing required fields" } satisfies ErrorResponse,
         { status: 400 }
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     // Verify the authentication response (userId optional — conditional UI flow omits it)
     const verification = await verifyAuthenticationResponse(
-      credentialResponse,
+      response,
       challenge,
       userId
     );
