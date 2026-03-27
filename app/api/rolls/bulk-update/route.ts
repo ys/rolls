@@ -18,6 +18,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "roll_numbers must be a non-empty array" }, { status: 400 });
   }
 
+  if (roll_numbers.length > 500) {
+    return NextResponse.json({ error: "Too many roll_numbers (max 500)" }, { status: 400 });
+  }
+
   if (!ALLOWED_FIELDS.includes(field)) {
     return NextResponse.json({ error: "Invalid field" }, { status: 400 });
   }

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyApiKey, verifySessionToken } from "./lib/auth";
 
-// Public paths that don't require authentication
-const PUBLIC_PATHS = [
+// Exact paths that don't require authentication
+const PUBLIC_PATHS = new Set([
   "/login",
   "/register",
   "/api/auth/webauthn/register-options",
@@ -15,17 +15,27 @@ const PUBLIC_PATHS = [
   "/api/auth/check-username",
   "/api/auth/bootstrap",
   "/api/auth/apple",
-  "/.well-known/",
-];
+]);
+
+// Path prefixes that don't require authentication
+const PUBLIC_PREFIXES = ["/.well-known/"];
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if path is public
-  const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  // Strip any incoming x-user-* headers to prevent spoofing, regardless of auth outcome
+  const safeHeaders = new Headers(request.headers);
+  safeHeaders.delete("x-user-id");
+  safeHeaders.delete("x-user-email");
+  safeHeaders.delete("x-user-role");
+
+  // Check if path is public (exact match only, except for well-known prefixes)
+  const isPublicPath =
+    PUBLIC_PATHS.has(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
   if (isPublicPath) {
-    return NextResponse.next();
+    return NextResponse.next({ request: { headers: safeHeaders } });
   }
 
   let user = null;
@@ -80,7 +90,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 5. Inject user context headers for downstream handlers
-  const requestHeaders = new Headers(request.headers);
+  const requestHeaders = safeHeaders;
   requestHeaders.set("x-user-id", user.id);
   requestHeaders.set("x-user-email", user.email);
   requestHeaders.set("x-user-role", user.role);

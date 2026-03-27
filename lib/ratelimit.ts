@@ -6,7 +6,7 @@ import Redis from "ioredis";
 const redisUrl = process.env.REDIS_URL;
 
 if (!redisUrl) {
-  console.warn("REDIS_URL not set, rate limiting will be disabled");
+  console.error("SECURITY: REDIS_URL not set — rate limiting is disabled. Set REDIS_URL to enable.");
 }
 
 let redis: Redis | null = null;

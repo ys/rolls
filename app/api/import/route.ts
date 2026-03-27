@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
   const films = body.films ?? [];
   const rolls = body.rolls ?? [];
 
+  if (cameras.length > 1000 || films.length > 1000 || rolls.length > 5000) {
+    return NextResponse.json({ error: "Import payload too large" }, { status: 400 });
+  }
+
   // Upsert cameras (CLI sends id = slug)
   for (const c of cameras) {
     if (!c.id || !c.brand || !c.model) continue;

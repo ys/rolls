@@ -48,6 +48,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (brand.length > 100 || model.length > 100 || (nickname && nickname.length > 100)) {
+    return NextResponse.json(
+      { error: "brand, model, and nickname must be 100 characters or fewer" } satisfies ErrorResponse,
+      { status: 400 }
+    );
+  }
+
   // Generate slug server-side
   const slug = slugify(`${brand}-${model}`);
 

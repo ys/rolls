@@ -55,6 +55,10 @@ export async function PATCH(
     return NextResponse.json({ error: "brand and model are required" }, { status: 400 });
   }
 
+  if (brand.length > 100 || model.length > 100 || (nickname && nickname.length > 100)) {
+    return NextResponse.json({ error: "brand, model, and nickname must be 100 characters or fewer" }, { status: 400 });
+  }
+
   const rows = await sql<Camera[]>`
     UPDATE cameras
     SET brand = ${brand}, model = ${model}, nickname = ${nickname ?? null}, format = ${format ?? 135}

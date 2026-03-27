@@ -5,6 +5,7 @@ import {
   createSessionToken,
   makeSessionCookie,
   sendWelcomeEmail,
+  sendSecurityNotification,
 } from "@/lib/auth";
 import type { SessionAuthSuccessResponse, ErrorResponse } from "@/app/api/_schemas/common";
 
@@ -115,6 +116,10 @@ export async function POST(request: NextRequest) {
       `;
       if (userByEmail) {
         await sql`UPDATE users SET apple_user_id = ${appleUserId} WHERE id = ${userByEmail.id}`;
+        sendSecurityNotification(userByEmail, {
+          type: "api_key_created",
+          details: "Apple ID automatically linked to your account via matching email",
+        }).catch((err) => console.error("Failed to send Apple link notification:", err));
         const token = await createSessionToken(userByEmail.id);
         const isProduction = process.env.NODE_ENV === "production";
         const cookie = makeSessionCookie(token, isProduction);

@@ -56,6 +56,28 @@ export async function POST(request: Request) {
     const body = await request.json();
     let { max_uses, expires_in_days } = body;
 
+    // Validate admin-supplied values
+    if (isAdmin) {
+      if (expires_in_days !== undefined && expires_in_days !== null) {
+        expires_in_days = parseInt(expires_in_days, 10);
+        if (isNaN(expires_in_days) || expires_in_days < 1 || expires_in_days > 365) {
+          return NextResponse.json(
+            { error: "expires_in_days must be between 1 and 365" },
+            { status: 400 }
+          );
+        }
+      }
+      if (max_uses !== undefined && max_uses !== null) {
+        max_uses = parseInt(max_uses, 10);
+        if (isNaN(max_uses) || max_uses < 1 || max_uses > 1000) {
+          return NextResponse.json(
+            { error: "max_uses must be between 1 and 1000" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Normal users get single-use invites only
     if (!isAdmin) {
       max_uses = 1;

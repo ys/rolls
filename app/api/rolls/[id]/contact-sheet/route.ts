@@ -89,6 +89,20 @@ export async function PUT(
     return NextResponse.json({ error: "Empty body" } satisfies ErrorResponse, { status: 400 });
   }
 
+  const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
+  if (body.byteLength > MAX_SIZE) {
+    return NextResponse.json({ error: "File too large (max 20 MB)" } satisfies ErrorResponse, { status: 413 });
+  }
+
+  // Validate WebP magic bytes: RIFF....WEBP
+  const bytes = new Uint8Array(body);
+  const isWebP =
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 && // RIFF
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;  // WEBP
+  if (!isWebP) {
+    return NextResponse.json({ error: "File must be a WebP image" } satisfies ErrorResponse, { status: 400 });
+  }
+
   await r2.send(new PutObjectCommand({
     Bucket: R2_BUCKET,
     Key: `${roll_number}.webp`,
