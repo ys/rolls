@@ -35,6 +35,12 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
     setNotes(roll.notes || "");
   }, [roll.notes]);
 
+  const handleDelete = async () => {
+    const res = await fetch(`/api/rolls/${roll.uuid}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete roll");
+    router.push("/");
+  };
+
   const handleSave = async (updates: Partial<Roll>) => {
     try {
       const res = await fetch(`/api/rolls/${roll.uuid}`, {
@@ -119,6 +125,7 @@ export default function RollDetailClient({ roll, contactSheetUrl, cameras, films
           catalogFilms={catalogFilms}
           onClose={() => setIsEditingFull(false)}
           onSave={handleSave}
+          onDelete={handleDelete}
         />
       )}
     </>

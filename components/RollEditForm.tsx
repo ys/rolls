@@ -42,6 +42,7 @@ interface RollEditFormProps {
   catalogFilms: CatalogFilm[];
   onClose: () => void;
   onSave: (updates: Partial<Roll>) => Promise<void>;
+  onDelete: () => Promise<void>;
 }
 
 export default function RollEditForm({
@@ -51,6 +52,7 @@ export default function RollEditForm({
   catalogFilms,
   onClose,
   onSave,
+  onDelete,
 }: RollEditFormProps) {
   const initialCameraSlug = allCameras.find((c) => c.uuid === roll.camera_uuid)?.slug ?? "";
   const initialFilmSlug = allFilms.find((f) => f.uuid === roll.film_uuid)?.slug ?? "";
@@ -73,6 +75,8 @@ export default function RollEditForm({
   const [filmPickerOpen, setFilmPickerOpen] = useState(false);
   const [cameraPickerOpen, setCameraPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
   // Offset for "skip" on next-step card
@@ -101,6 +105,19 @@ export default function RollEditForm({
   // "Next step" index accounts for skips
   const rawNextIdx = firstUnsetIdx === -1 ? -1 : firstUnsetIdx + nextStepSkip;
   const nextStepIdx = rawNextIdx >= dateChain.length ? -1 : rawNextIdx;
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await onDelete();
+      haptics.success();
+    } catch {
+      setError("Failed to delete roll");
+      haptics.error();
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -419,6 +436,59 @@ export default function RollEditForm({
             >
               {saving ? "Saving…" : "Save"}
             </button>
+
+            {/* Delete */}
+            <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => { setConfirmDelete(true); haptics.light(); }}
+                  style={{
+                    width: "100%", padding: "12px 0", background: "none",
+                    border: "1px solid #c2410c", cursor: "pointer",
+                    fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                    color: "#c2410c", fontFamily: "inherit",
+                  }}
+                >
+                  Delete Roll
+                </button>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <p style={{ fontSize: 12, color: "var(--text-secondary)", textAlign: "center", margin: 0 }}>
+                    Delete <strong>{roll.roll_number}</strong>? This cannot be undone.
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setConfirmDelete(false); haptics.light(); }}
+                      disabled={deleting}
+                      style={{
+                        flex: 1, padding: "12px 0", background: "none",
+                        border: "1px solid var(--border)", cursor: "pointer",
+                        fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                        color: "var(--text-secondary)", fontFamily: "inherit",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      style={{
+                        flex: 1, padding: "12px 0",
+                        backgroundColor: deleting ? "var(--border)" : "#c2410c",
+                        border: "none", cursor: deleting ? "not-allowed" : "pointer",
+                        fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+                        color: deleting ? "var(--text-tertiary)" : "#fff", fontFamily: "inherit",
+                      }}
+                    >
+                      {deleting ? "Deleting…" : "Confirm Delete"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </form>
         </div>
       </div>
