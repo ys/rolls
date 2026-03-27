@@ -8,7 +8,10 @@ const APPLE_JWKS = createRemoteJWKSet(
   new URL("https://appleid.apple.com/auth/keys"),
 );
 const APPLE_ISSUER = "https://appleid.apple.com";
-const APPLE_AUDIENCE = "computer.yannick.rolls";
+const APPLE_AUDIENCES = [
+  "computer.yannick.rolls",
+  process.env.APPLE_WEB_CLIENT_ID,
+].filter(Boolean) as string[];
 
 /**
  * Link Apple ID to current account
@@ -33,18 +36,26 @@ export async function POST(request: NextRequest) {
     }
 
     let appleUserId: string;
-    try {
-      const { payload } = await jwtVerify(identity_token, APPLE_JWKS, {
-        issuer: APPLE_ISSUER,
-        audience: APPLE_AUDIENCE,
-      });
-      appleUserId = payload.sub as string;
-    } catch {
+    let verified = false;
+    let verifiedPayload: any;
+    for (const audience of APPLE_AUDIENCES) {
+      try {
+        const { payload } = await jwtVerify(identity_token, APPLE_JWKS, {
+          issuer: APPLE_ISSUER,
+          audience,
+        });
+        verifiedPayload = payload;
+        verified = true;
+        break;
+      } catch {}
+    }
+    if (!verified) {
       return NextResponse.json(
         { error: "Invalid identity token" } satisfies ErrorResponse,
         { status: 401 },
       );
     }
+    appleUserId = verifiedPayload.sub as string;
 
     // Ensure Apple ID isn't already linked to a different account
     const [existing] = await sql<{ id: string }[]>`

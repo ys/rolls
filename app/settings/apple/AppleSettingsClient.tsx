@@ -1,13 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import { haptics } from "@/lib/haptics";
 
+const APPLE_WEB_CLIENT_ID = process.env.NEXT_PUBLIC_APPLE_WEB_CLIENT_ID;
+
 export default function AppleSettingsClient({ linked }: { linked: boolean }) {
   const router = useRouter();
   const [unlinking, setUnlinking] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [error, setError] = useState("");
+  const [appleReady, setAppleReady] = useState(false);
+
+  useEffect(() => {
+    if (!APPLE_WEB_CLIENT_ID) return;
+    const script = document.createElement("script");
+    script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+    script.onload = () => {
+      (window as any).AppleID.auth.init({
+        clientId: APPLE_WEB_CLIENT_ID,
+        scope: "name email",
+        redirectURI: window.location.origin + "/settings/apple",
+        usePopup: true,
+      });
+      setAppleReady(true);
+    };
+    document.head.appendChild(script);
+    return () => { document.head.removeChild(script); };
+  }, []);
+
+  async function handleLink() {
+    setError("");
+    setLinking(true);
+    try {
+      const data = await (window as any).AppleID.auth.signIn();
+      const token = data.authorization.id_token;
+
+      const resp = await fetch("/api/auth/apple/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identity_token: token }),
+      });
+
+      if (resp.ok) {
+        haptics.success();
+        router.refresh();
+      } else {
+        const body = await resp.json();
+        setError(body.error || "Failed to link Apple ID");
+        haptics.error();
+      }
+    } catch (err: any) {
+      if (err?.error !== "popup_closed_by_user") {
+        setError("Apple sign in failed. Please try again.");
+        haptics.error();
+      }
+    } finally {
+      setLinking(false);
+    }
+  }
 
   async function handleUnlink() {
     setUnlinking(true);
@@ -38,8 +91,30 @@ export default function AppleSettingsClient({ linked }: { linked: boolean }) {
         </div>
       </div>
 
-      {linked ? (
-        <div style={{ padding: "24px 20px" }}>
+      <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {error && (
+          <p style={{ fontSize: 11, color: "#fca5a5", margin: 0 }}>{error}</p>
+        )}
+        {!linked && APPLE_WEB_CLIENT_ID && (
+          <button
+            onClick={handleLink}
+            disabled={linking || !appleReady}
+            style={{
+              width: "100%", padding: "11px 0", fontSize: 13, fontWeight: 600,
+              color: "var(--text-primary)", background: "none", border: "1px solid var(--border)",
+              borderRadius: 8, cursor: "pointer", opacity: linking || !appleReady ? 0.5 : 1,
+              fontFamily: "inherit",
+            }}
+          >
+            {linking ? "Waiting for Apple…" : "Link Apple ID"}
+          </button>
+        )}
+        {!linked && !APPLE_WEB_CLIENT_ID && (
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: 0, lineHeight: 1.5 }}>
+            Link your Apple ID from the iOS app under Settings → Apple ID.
+          </p>
+        )}
+        {linked && (
           <button
             onClick={handleUnlink}
             disabled={unlinking}
@@ -52,12 +127,8 @@ export default function AppleSettingsClient({ linked }: { linked: boolean }) {
           >
             {unlinking ? "Unlinking…" : "Unlink Apple ID"}
           </button>
-        </div>
-      ) : (
-        <p style={{ fontSize: 12, color: "var(--text-tertiary)", padding: "16px 20px", lineHeight: 1.5 }}>
-          Link your Apple ID from the iOS app under Settings → Apple ID.
-        </p>
-      )}
+        )}
+      </div>
     </div>
   );
 }
