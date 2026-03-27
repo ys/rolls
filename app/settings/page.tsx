@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/request-context";
 import { getCameraCount, getFilmCount } from "@/lib/queries";
+import { sql } from "@/lib/db";
 import Link from "next/link";
 import SignOutButton from "@/components/SignOutButton";
 
@@ -35,10 +36,12 @@ function Row({ href, label, value, amber }: { href: string; label: string; value
 export default async function SettingsPage() {
   const { id: userId, email, role } = await getUser();
 
-  const [camera_count, film_count] = await Promise.all([
+  const [camera_count, film_count, [userRow]] = await Promise.all([
     getCameraCount(userId),
     getFilmCount(userId),
+    sql<{ apple_user_id: string | null }[]>`SELECT apple_user_id FROM users WHERE id = ${userId}`,
   ]);
+  const hasApple = !!userRow?.apple_user_id;
 
   return (
     <div style={{ paddingBottom: 80 }}>
@@ -54,6 +57,7 @@ export default async function SettingsPage() {
           <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{email}</span>
         </div>
         <Row href="/settings/passkeys" label="Passkeys" value="Manage →" amber />
+        <Row href="/settings/apple" label="Apple ID" value={hasApple ? "Connected →" : "Not connected →"} amber={hasApple} />
         <Row href="/settings/api-keys" label="API Keys" value="Manage →" amber />
       </Section>
 

@@ -142,6 +142,8 @@ rolls lr albums / upload / check / link / login
 | `POST` | `/api/auth/webauthn/login-verify` | — | Complete passkey login → `{ success, user, token }` + Set-Cookie |
 | `GET` | `/.well-known/apple-app-site-association` | — | AASA for iOS passkey associated domains |
 | `POST` | `/api/auth/apple` | — | Sign in with Apple (see body below) |
+| `POST` | `/api/auth/apple/link` | ✓ | Link Apple ID to authenticated account (`{ identity_token }`) |
+| `DELETE` | `/api/auth/apple/link` | ✓ | Unlink Apple ID from account |
 | `POST` | `/api/auth/webauthn/autofill-options` | — | Discoverable credential options (no allowCredentials) |
 | `POST` | `/api/auth/check-username` | — | `{ username, invite_code? }` → `{ available: bool }` |
 | `GET` | `/api/auth/cli-token` | ✓ (cookie) | Create API key + redirect to `?callback=` with key |
