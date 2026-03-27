@@ -12,7 +12,10 @@ const APPLE_JWKS = createRemoteJWKSet(
   new URL("https://appleid.apple.com/auth/keys"),
 );
 const APPLE_ISSUER = "https://appleid.apple.com";
-const APPLE_AUDIENCE = "computer.yannick.rolls";
+const APPLE_AUDIENCES = [
+  "computer.yannick.rolls",
+  process.env.APPLE_WEB_CLIENT_ID,
+].filter(Boolean) as string[];
 
 type AppleAuthBody = {
   // JWT from ASAuthorizationAppleIDCredential.identityToken
@@ -47,24 +50,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify Apple identity token
+    // Verify Apple identity token — try each accepted audience
     let appleUserId: string;
     let appleEmail: string | undefined;
 
-    try {
-      const { payload } = await jwtVerify(identity_token, APPLE_JWKS, {
-        issuer: APPLE_ISSUER,
-        audience: APPLE_AUDIENCE,
-      });
-      appleUserId = payload.sub as string;
-      appleEmail = payload.email as string | undefined;
-    } catch (err) {
-      console.error("Apple token verification failed:", err);
+    let verified = false;
+    let verifiedPayload: any;
+    for (const audience of APPLE_AUDIENCES) {
+      try {
+        const { payload } = await jwtVerify(identity_token, APPLE_JWKS, {
+          issuer: APPLE_ISSUER,
+          audience,
+        });
+        verifiedPayload = payload;
+        verified = true;
+        break;
+      } catch {}
+    }
+
+    if (!verified) {
+      console.error("Apple token verification failed for all audiences");
       return NextResponse.json(
         { error: "Invalid identity token" } satisfies ErrorResponse,
         { status: 401 },
       );
     }
+
+    appleUserId = verifiedPayload.sub as string;
+    appleEmail = verifiedPayload.email as string | undefined;
 
     // Look up existing user by Apple ID
     const [existingUser] = await sql<User[]>`
