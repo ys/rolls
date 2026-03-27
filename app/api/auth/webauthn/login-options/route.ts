@@ -19,6 +19,8 @@ export async function POST(request: Request) {
     const body: WebAuthnLoginOptionsBody = await request.json();
     const { identifier } = body;
 
+    console.log("[webauthn/login-options] identifier=%s", identifier ?? "(none)");
+
     if (!identifier) {
       return NextResponse.json(
         { error: "Email or username is required" } satisfies ErrorResponse,
@@ -29,13 +31,16 @@ export async function POST(request: Request) {
     // Generate authentication options
     const { options, userId } = await generateAuthenticationOptions(identifier);
 
+    console.log("[webauthn/login-options] ok user_id=%s challenge=%s cred_count=%d",
+      userId, options.challenge, options.allowCredentials?.length ?? 0);
+
     return NextResponse.json({
       options,
       challenge: options.challenge,
       user_id: userId,
     } satisfies WebAuthnLoginOptionsResponse);
   } catch (error: any) {
-    console.error("Login options error:", error);
+    console.error("[webauthn/login-options] error:", error.message ?? error);
 
     // Don't reveal whether user exists - generic error
     return NextResponse.json(
