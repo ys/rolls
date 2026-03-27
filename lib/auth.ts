@@ -21,6 +21,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const WEBAUTHN_RP_NAME = process.env.WEBAUTHN_RP_NAME || "Rolls";
 const WEBAUTHN_RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
 const WEBAUTHN_ORIGIN = process.env.WEBAUTHN_ORIGIN || "http://localhost:3000";
+// Support multiple origins (comma-separated) for iOS native app support
+const WEBAUTHN_ORIGINS: string[] = WEBAUTHN_ORIGIN.split(",").map((o) => o.trim());
 const MAILJET_API_KEY = process.env.MAILJET_API_KEY;
 const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY;
 const MAILJET_FROM_EMAIL =
@@ -115,7 +117,7 @@ export async function verifyRegistrationResponse(
   const verification = await verifyWebAuthnRegistrationResponse({
     response,
     expectedChallenge,
-    expectedOrigin: WEBAUTHN_ORIGIN,
+    expectedOrigin: WEBAUTHN_ORIGINS,
     expectedRPID: WEBAUTHN_RP_ID,
   });
 
@@ -177,7 +179,7 @@ export async function verifyAuthenticationResponse(
   const verification = await verifyWebAuthnAuthenticationResponse({
     response,
     expectedChallenge,
-    expectedOrigin: WEBAUTHN_ORIGIN,
+    expectedOrigin: WEBAUTHN_ORIGINS,
     expectedRPID: WEBAUTHN_RP_ID,
     credential: {
       id: credential.credential_id,

@@ -28,11 +28,19 @@ export default async function proxy(request: NextRequest) {
 
   let user = null;
 
-  // 1. Check for Bearer token in Authorization header (CLI/API usage)
+  // 1. Check for Bearer token in Authorization header (CLI/API key or JWT)
   const authHeader = request.headers.get("authorization");
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
+    // Try as API key first, then fall back to JWT (iOS native app)
     user = await verifyApiKey(token);
+    if (!user) {
+      const sessionData = await verifySessionToken(token);
+      if (sessionData) {
+        const { getUserById } = await import("./lib/auth");
+        user = await getUserById(sessionData.userId);
+      }
+    }
   }
 
   // 2. If no Bearer token, check for session cookie (web browser usage)

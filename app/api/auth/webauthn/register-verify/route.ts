@@ -167,6 +167,7 @@ export async function POST(request: Request) {
           name: user.name,
           email: user.email,
         },
+        token,
       } satisfies SessionAuthSuccessResponse),
       {
         status: 200,

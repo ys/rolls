@@ -16,5 +16,6 @@ export type UserPublic = {
 export type SessionAuthSuccessResponse = {
   success: true;
   user: UserPublic;
+  token: string;
 };
 

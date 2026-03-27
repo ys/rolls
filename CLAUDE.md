@@ -137,9 +137,10 @@ rolls lr albums / upload / check / link / login
 | `POST` | `/api/auth/logout` | ✓ | Clear session (Set-Cookie) |
 | `GET` | `/api/auth/bootstrap` | — | `{ needsInvite: bool }` — true if no users exist yet |
 | `POST` | `/api/auth/webauthn/register-options` | — | Begin passkey registration |
-| `POST` | `/api/auth/webauthn/register-verify` | — | Complete passkey registration → session cookie |
+| `POST` | `/api/auth/webauthn/register-verify` | — | Complete passkey registration → `{ success, user, token }` + Set-Cookie |
 | `POST` | `/api/auth/webauthn/login-options` | — | Begin passkey login (body: `{ identifier }`) |
-| `POST` | `/api/auth/webauthn/login-verify` | — | Complete passkey login → session cookie |
+| `POST` | `/api/auth/webauthn/login-verify` | — | Complete passkey login → `{ success, user, token }` + Set-Cookie |
+| `GET` | `/.well-known/apple-app-site-association` | — | AASA for iOS passkey associated domains |
 | `POST` | `/api/auth/webauthn/autofill-options` | — | Discoverable credential options (no allowCredentials) |
 | `POST` | `/api/auth/check-username` | — | `{ username, invite_code? }` → `{ available: bool }` |
 | `GET` | `/api/auth/cli-token` | ✓ (cookie) | Create API key + redirect to `?callback=` with key |
