@@ -69,6 +69,37 @@ export async function getRemainingInvites(userId: string): Promise<number | null
 }
 
 // ============================================================================
+// Rolls — basic list/single with camera_name + film_name
+// ============================================================================
+
+export async function getRolls(userId: string, limit: number, offset: number): Promise<Roll[]> {
+  return sql<Roll[]>`
+    SELECT r.*,
+      COALESCE(c.nickname, c.brand || ' ' || c.model) AS camera_name,
+      COALESCE(f.nickname, f.brand || ' ' || f.name)  AS film_name
+    FROM rolls r
+    LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
+    LEFT JOIN films   f ON f.uuid = r.film_uuid   AND f.user_id = ${userId}
+    WHERE r.user_id = ${userId}
+    ORDER BY r.roll_number DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+}
+
+export async function getRollByUuid(userId: string, uuid: string): Promise<Roll | null> {
+  const [row] = await sql<Roll[]>`
+    SELECT r.*,
+      COALESCE(c.nickname, c.brand || ' ' || c.model) AS camera_name,
+      COALESCE(f.nickname, f.brand || ' ' || f.name)  AS film_name
+    FROM rolls r
+    LEFT JOIN cameras c ON c.uuid = r.camera_uuid AND c.user_id = ${userId}
+    LEFT JOIN films   f ON f.uuid = r.film_uuid   AND f.user_id = ${userId}
+    WHERE r.uuid = ${uuid} AND r.user_id = ${userId}
+  `;
+  return row ?? null;
+}
+
+// ============================================================================
 // Rolls with joined camera/film details
 // ============================================================================
 

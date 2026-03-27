@@ -163,13 +163,13 @@ rolls lr albums / upload / check / link / login
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/api/rolls` | ✓ | All rolls, paginated (`?limit=200&offset=0`) |
-| `POST` | `/api/rolls` | ✓ | Create roll (see body below) |
+| `GET` | `/api/rolls` | ✓ | All rolls with `camera_name`/`film_name`, paginated (`?limit=200&offset=0`) |
+| `POST` | `/api/rolls` | ✓ | Create roll (see body below); returns roll with `camera_name`/`film_name` |
 | `GET` | `/api/rolls/next` | ✓ | `{ roll_number }` — next auto-generated roll number (YYx format) |
 | `GET` | `/api/rolls/home` | ✓ | Active rolls with camera/film details joined |
 | `GET` | `/api/rolls/archive` | ✓ | Archived rolls with camera/film details joined |
-| `GET` | `/api/rolls/[id]` | ✓ | Single roll by UUID |
-| `PATCH` | `/api/rolls/[id]` | ✓ | Partial update (see fields below) |
+| `GET` | `/api/rolls/[id]` | ✓ | Single roll by UUID with `camera_name`/`film_name` |
+| `PATCH` | `/api/rolls/[id]` | ✓ | Partial update (see fields below); returns roll with `camera_name`/`film_name` |
 | `DELETE` | `/api/rolls/[id]` | ✓ | Delete roll → 204 |
 | `POST` | `/api/rolls/bulk-update` | ✓ | Set one timestamp field for multiple rolls |
 | `GET` | `/api/rolls/[id]/contact-sheet` | ✓ | Proxy contact sheet image (`image/webp`) from R2 |
@@ -179,14 +179,14 @@ rolls lr albums / upload / check / link / login
 ```json
 {
   "roll_number": "26a",
-  "camera_id": "camera-slug",
-  "film_id": "film-slug",
+  "camera_uuid": "uuid",
+  "film_uuid": "uuid",
   "notes": "..."
 }
 ```
 
 **PATCH /api/rolls/[id] fields** (all optional):
-`roll_number`, `camera_id` (slug→UUID), `film_id` (slug→UUID), `notes`, `push_pull`, `lab_name`, `album_name`, `tags`,
+`roll_number`, `camera_uuid` (UUID), `film_uuid` (UUID), `camera_id` (slug→UUID), `film_id` (slug→UUID), `notes`, `push_pull`, `lab_name`, `album_name`, `tags`,
 `shot_at`, `fridge_at`, `lab_at`, `scanned_at`, `processed_at`, `uploaded_at`, `archived_at`
 
 **POST /api/rolls/bulk-update body:**

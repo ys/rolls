@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import type { Roll } from "@/lib/db";
 import type postgres from "postgres";
 import { getUserId } from "@/lib/request-context";
+import { getRollByUuid } from "@/lib/queries";
 
 export async function GET(
   _request: NextRequest,
@@ -10,13 +11,11 @@ export async function GET(
 ) {
   const userId = await getUserId();
   const { id: uuid } = await params;
-  const rows = await sql<Roll[]>`
-    SELECT * FROM rolls WHERE uuid = ${uuid} AND user_id = ${userId}
-  `;
-  if (rows.length === 0) {
+  const roll = await getRollByUuid(userId, uuid);
+  if (!roll) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0]);
+  return NextResponse.json(roll);
 }
 
 async function handleUpdate(
@@ -76,13 +75,14 @@ async function handleUpdate(
 
   values.push(userId);
   values.push(uuid);
-  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND uuid = $${idx + 1} RETURNING *`;
-  const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as Roll[];
+  const query = `UPDATE rolls SET ${sets.join(", ")} WHERE user_id = $${idx} AND uuid = $${idx + 1} RETURNING uuid`;
+  const rows = (await sql.unsafe(query, values as postgres.Parameter<never>[])) as unknown as { uuid: string }[];
 
   if (rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  return NextResponse.json(rows[0]);
+  const roll = await getRollByUuid(userId, rows[0].uuid);
+  return NextResponse.json(roll);
 }
 
 export const PATCH = handleUpdate;

@@ -4,8 +4,8 @@ export type RollIdPathParams = {
 
 export type CreateRollBody = {
   roll_number: string;
-  camera_id?: string;
-  film_id?: string;
+  camera_uuid?: string;
+  film_uuid?: string;
   shot_at?: string;
   fridge_at?: string;
   lab_at?: string;
