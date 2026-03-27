@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   "/api/auth/check-username",
   "/api/auth/bootstrap",
   "/api/auth/apple",
+  "/.well-known/",
 ];
 
 export default async function proxy(request: NextRequest) {
