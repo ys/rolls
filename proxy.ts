@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/api/auth/invites/validate",
   "/api/auth/check-username",
   "/api/auth/bootstrap",
+  "/api/auth/apple",
 ];
 
 export default async function proxy(request: NextRequest) {

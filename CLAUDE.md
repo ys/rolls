@@ -141,6 +141,7 @@ rolls lr albums / upload / check / link / login
 | `POST` | `/api/auth/webauthn/login-options` | — | Begin passkey login (body: `{ identifier }`) |
 | `POST` | `/api/auth/webauthn/login-verify` | — | Complete passkey login → `{ success, user, token }` + Set-Cookie |
 | `GET` | `/.well-known/apple-app-site-association` | — | AASA for iOS passkey associated domains |
+| `POST` | `/api/auth/apple` | — | Sign in with Apple (see body below) |
 | `POST` | `/api/auth/webauthn/autofill-options` | — | Discoverable credential options (no allowCredentials) |
 | `POST` | `/api/auth/check-username` | — | `{ username, invite_code? }` → `{ available: bool }` |
 | `GET` | `/api/auth/cli-token` | ✓ (cookie) | Create API key + redirect to `?callback=` with key |
@@ -189,6 +190,15 @@ rolls lr albums / upload / check / link / login
 **PATCH /api/rolls/[id] fields** (all optional):
 `roll_number`, `camera_uuid` (UUID), `film_uuid` (UUID), `camera_id` (slug→UUID), `film_id` (slug→UUID), `notes`, `push_pull`, `lab_name`, `album_name`, `tags`,
 `shot_at`, `fridge_at`, `lab_at`, `scanned_at`, `processed_at`, `uploaded_at`, `archived_at`
+
+**POST /api/auth/apple body:**
+```json
+{ "identity_token": "eyJ...", "full_name": "Jane Doe", "username": "jane", "invite_code": "..." }
+```
+- `identity_token` — required; JWT from `ASAuthorizationAppleIDCredential.identityToken`
+- `full_name` — optional; only sent by Apple on first sign-in
+- `username` + `invite_code` — only required when creating a new account
+- Returns `{ success, user, token }` + Set-Cookie; if user not found and email unavailable: `{ error: "new_account_required", email }` (404)
 
 **POST /api/rolls/bulk-update body:**
 ```json

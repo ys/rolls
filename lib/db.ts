@@ -26,6 +26,7 @@ export interface User {
   invite_quota: number | null;
   invites_sent: number;
   created_at: string;
+  apple_user_id: string | null;
 }
 
 export interface WebAuthnCredential {
