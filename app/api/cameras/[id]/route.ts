@@ -8,12 +8,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id } = await params;
   const rows = await sql<(Camera & { roll_count: number })[]>`
     SELECT c.*, COUNT(r.roll_number)::int AS roll_count
     FROM cameras c
     LEFT JOIN rolls r ON r.camera_uuid = c.uuid AND r.user_id = ${userId}
-    WHERE c.slug = ${slug} AND c.user_id = ${userId}
+    WHERE c.uuid = ${id} AND c.user_id = ${userId}
     GROUP BY c.uuid
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -25,13 +25,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id } = await params;
 
   const rows = await sql<(Camera & { roll_count: number })[]>`
     SELECT c.*, COUNT(r.roll_number)::int AS roll_count
     FROM cameras c
     LEFT JOIN rolls r ON r.camera_uuid = c.uuid AND r.user_id = ${userId}
-    WHERE c.slug = ${slug} AND c.user_id = ${userId}
+    WHERE c.uuid = ${id} AND c.user_id = ${userId}
     GROUP BY c.uuid
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,7 +39,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Cannot delete camera with rolls" }, { status: 409 });
   }
 
-  await sql`DELETE FROM cameras WHERE slug = ${slug} AND user_id = ${userId}`;
+  await sql`DELETE FROM cameras WHERE uuid = ${id} AND user_id = ${userId}`;
   return new NextResponse(null, { status: 204 });
 }
 
@@ -48,7 +48,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
-  const { id: slug } = await params;
+  const { id } = await params;
   const { brand, model, nickname, format } = await request.json();
 
   if (!brand || !model) {
@@ -62,7 +62,7 @@ export async function PATCH(
   const rows = await sql<Camera[]>`
     UPDATE cameras
     SET brand = ${brand}, model = ${model}, nickname = ${nickname ?? null}, format = ${format ?? 135}
-    WHERE slug = ${slug} AND user_id = ${userId}
+    WHERE uuid = ${id} AND user_id = ${userId}
     RETURNING *
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
