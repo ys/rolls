@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
     fridge_at,
     lab_at,
     lab_name,
+    lab_id,
     scanned_at,
     processed_at,
     uploaded_at,
@@ -58,8 +59,8 @@ export async function POST(request: NextRequest) {
   }
 
   const [inserted] = await sql<{ uuid: string }[]>`
-    INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, push_pull)
-    VALUES (${roll_number}, ${userId}, ${camera_uuid ?? null}, ${film_uuid ?? null}, ${shot_at ?? null}, ${fridge_at ?? null}, ${lab_at ?? null}, ${lab_name ?? null}, ${scanned_at ?? null}, ${processed_at ?? null}, ${uploaded_at ?? null}, ${archived_at ?? null}, ${album_name ?? null}, ${tags ?? null}, ${notes ?? null}, ${push_pull ?? null})
+    INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, lab_id, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, push_pull)
+    VALUES (${roll_number}, ${userId}, ${camera_uuid ?? null}, ${film_uuid ?? null}, ${shot_at ?? null}, ${fridge_at ?? null}, ${lab_at ?? null}, ${lab_name ?? null}, ${lab_id ?? null}, ${scanned_at ?? null}, ${processed_at ?? null}, ${uploaded_at ?? null}, ${archived_at ?? null}, ${album_name ?? null}, ${tags ?? null}, ${notes ?? null}, ${push_pull ?? null})
     RETURNING uuid
   `;
   const roll = await getRollByUuid(userId, inserted.uuid);

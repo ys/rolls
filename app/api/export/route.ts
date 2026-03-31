@@ -27,7 +27,7 @@ export async function GET() {
     >`SELECT uuid, slug AS id, brand, name, nickname, iso, color, show_iso FROM films WHERE user_id = ${userId} ORDER BY slug`,
     sql<ExportRoll[]>`
       SELECT
-        r.roll_number, r.shot_at, r.fridge_at, r.lab_at, r.lab_name,
+        r.roll_number, r.shot_at, r.fridge_at, r.lab_at, r.lab_name, r.lab_id,
         r.scanned_at, r.processed_at, r.uploaded_at, r.archived_at,
         r.album_name, r.tags, r.notes, r.contact_sheet_url, r.push_pull, r.frame_count,
         c.slug AS camera_id,

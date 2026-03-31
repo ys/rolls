@@ -115,6 +115,7 @@ export interface Roll {
   fridge_at: string | null;
   lab_at: string | null;
   lab_name: string | null;
+  lab_id: string | null;
   scanned_at: string | null;
   processed_at: string | null;
   uploaded_at: string | null;

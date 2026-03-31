@@ -10,6 +10,7 @@ export type CreateRollBody = {
   fridge_at?: string;
   lab_at?: string;
   lab_name?: string;
+  lab_id?: string;
   scanned_at?: string;
   processed_at?: string;
   uploaded_at?: string;

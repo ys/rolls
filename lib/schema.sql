@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS rolls (
   fridge_at         TIMESTAMP WITH TIME ZONE,
   lab_at            TIMESTAMP WITH TIME ZONE,
   lab_name          TEXT,
+  lab_id            TEXT,
   scanned_at        DATE,
   processed_at      TIMESTAMP WITH TIME ZONE,
   archived_at       TIMESTAMP WITH TIME ZONE,

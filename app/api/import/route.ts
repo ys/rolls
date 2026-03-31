@@ -66,11 +66,11 @@ export async function POST(request: NextRequest) {
       : [];
 
     await sql`
-      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url, push_pull, frame_count)
+      INSERT INTO rolls (roll_number, user_id, camera_uuid, film_uuid, shot_at, fridge_at, lab_at, lab_name, lab_id, scanned_at, processed_at, uploaded_at, archived_at, album_name, tags, notes, contact_sheet_url, push_pull, frame_count)
       VALUES (
         ${r.roll_number}, ${userId},
         ${cam?.uuid ?? null}, ${film?.uuid ?? null},
-        ${r.shot_at ?? null}, ${r.fridge_at ?? null}, ${r.lab_at ?? null}, ${r.lab_name ?? null},
+        ${r.shot_at ?? null}, ${r.fridge_at ?? null}, ${r.lab_at ?? null}, ${r.lab_name ?? null}, ${r.lab_id ?? null},
         ${r.scanned_at ?? null}, ${r.processed_at ?? null}, ${r.uploaded_at ?? null}, ${r.archived_at ?? null},
         ${r.album_name ?? null}, ${r.tags?.filter(t => t && t !== '[]') ?? null}, ${r.notes ?? null}, ${r.contact_sheet_url ?? null},
         ${r.push_pull ?? null}, ${r.frame_count ?? null}
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         fridge_at        = EXCLUDED.fridge_at,
         lab_at           = EXCLUDED.lab_at,
         lab_name         = EXCLUDED.lab_name,
+        lab_id           = EXCLUDED.lab_id,
         scanned_at       = COALESCE(EXCLUDED.scanned_at, rolls.scanned_at),
         processed_at     = EXCLUDED.processed_at,
         uploaded_at      = EXCLUDED.uploaded_at,

@@ -24,6 +24,7 @@ export type ImportRoll = {
   fridge_at?: string;
   lab_at?: string;
   lab_name?: string;
+  lab_id?: string;
   scanned_at?: string;
   processed_at?: string;
   uploaded_at?: string;
@@ -74,6 +75,7 @@ export type ExportRoll = {
   fridge_at: string | null;
   lab_at: string | null;
   lab_name: string | null;
+  lab_id: string | null;
   scanned_at: string | null;
   processed_at: string | null;
   uploaded_at: string | null;

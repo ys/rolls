@@ -104,23 +104,29 @@ scans_path must be set to write roll files.`,
 
 		// Build camera/film lookup maps for folder name generation
 		cameraNames := map[string]string{}
+		cameraDisplay := map[string]string{}
 		for _, c := range data.Cameras {
 			if c.Nickname != "" {
 				cameraNames[c.ID] = strings.ToLower(c.Nickname)
+				cameraDisplay[c.ID] = c.Nickname
 			} else {
 				cameraNames[c.ID] = strings.ToLower(c.Brand + " " + c.Model)
+				cameraDisplay[c.ID] = c.Brand + " " + c.Model
 			}
 		}
 		filmNames := map[string]string{}
+		filmDisplay := map[string]string{}
 		for _, f := range data.Films {
 			if f.Nickname != "" {
 				filmNames[f.ID] = strings.ToLower(f.Nickname)
+				filmDisplay[f.ID] = f.Nickname
 			} else {
 				name := strings.ToLower(f.Brand + " " + f.Name)
 				if f.Iso > 0 {
 					name += fmt.Sprintf(" %d", f.Iso)
 				}
 				filmNames[f.ID] = name
+				filmDisplay[f.ID] = f.Brand + " " + f.Name
 			}
 		}
 
@@ -179,8 +185,15 @@ scans_path must be set to write roll files.`,
 			}
 			rollFile := filepath.Join(rollDir, "roll.md")
 
+			title := ""
+			if cam := cameraDisplay[r.CameraID]; cam != "" {
+				if film := filmDisplay[r.FilmID]; film != "" {
+					title = cam + " - " + film
+				}
+			}
+
 			if dryRun {
-				newContent := buildRollMarkdown(r)
+				newContent := buildRollMarkdown(r, title)
 				oldBytes, readErr := os.ReadFile(rollFile)
 				if readErr != nil {
 					// New file
@@ -208,7 +221,7 @@ scans_path must be set to write roll files.`,
 				fmt.Fprintf(os.Stderr, "failed to create %s: %v\n", rollDir, err)
 				continue
 			}
-			if err := writeRollMarkdown(rollFile, r); err != nil {
+			if err := writeRollMarkdown(rollFile, r, title); err != nil {
 				fmt.Fprintf(os.Stderr, "failed to write %s: %v\n", rollFile, err)
 				continue
 			}
@@ -269,6 +282,9 @@ func buildRollMarkdown(r rollJSON) string {
 	}
 	if r.FrameCount != nil && *r.FrameCount > 0 {
 		sb.WriteString(fmt.Sprintf("frames: %d\n", *r.FrameCount))
+	}
+	if r.LabID != "" {
+		sb.WriteString(fmt.Sprintf("lab_id: %s\n", r.LabID))
 	}
 	sb.WriteString("---\n")
 	if r.Notes != "" {

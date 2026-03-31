@@ -126,6 +126,7 @@ type rollJSON struct {
 	FridgeAt        *time.Time `json:"fridge_at,omitempty"`
 	LabAt           *time.Time `json:"lab_at,omitempty"`
 	LabName         string     `json:"lab_name,omitempty"`
+	LabID           string     `json:"lab_id,omitempty"`
 	ScannedAt       *time.Time `json:"scanned_at,omitempty"`
 	ProcessedAt     *time.Time `json:"processed_at,omitempty"`
 	UploadedAt      *time.Time `json:"uploaded_at,omitempty"`
@@ -136,6 +137,18 @@ type rollJSON struct {
 	ContactSheetURL string     `json:"contact_sheet_url,omitempty"`
 	PushPull        *float64   `json:"push_pull,omitempty"`
 	FrameCount      *int       `json:"frame_count,omitempty"`
+}
+
+// stripTitle removes a leading "# ..." markdown heading line from content.
+func stripTitle(content string) string {
+	if !strings.HasPrefix(content, "# ") {
+		return content
+	}
+	i := strings.Index(content, "\n")
+	if i == -1 {
+		return ""
+	}
+	return strings.TrimPrefix(content[i+1:], "\n")
 }
 
 var pushCmd = &cobra.Command{
@@ -254,7 +267,7 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 				CameraID:   cameraID,
 				FilmID:     filmID,
 				Tags:       r.Metadata.Tags,
-				Notes:      r.Content,
+				Notes:      stripTitle(r.Content),
 				AlbumName:  r.Metadata.AlbumName,
 				LabName:    r.Metadata.LabName,
 			}
@@ -291,6 +304,9 @@ Note: does not set processed_at. Use 'rolls process' for that.`,
 			}
 			if r.Metadata.Frames > 0 {
 				rj.FrameCount = &r.Metadata.Frames
+			}
+			if r.Metadata.LabID != "" {
+				rj.LabID = r.Metadata.LabID
 			}
 			if r.Metadata.ContactSheetURL != "" {
 				rj.ContactSheetURL = r.Metadata.ContactSheetURL

@@ -35,6 +35,7 @@ type Metadata struct {
 	ContactSheetURL string    `yaml:"contact_sheet_url,omitempty"`
 	PushPull        *float64  `yaml:"push_pull,omitempty"`
 	Frames          int       `yaml:"frames,omitempty"`
+	LabID           string    `yaml:"lab_id,omitempty"`
 }
 
 type Roll struct {
@@ -231,6 +232,8 @@ func FromMarkdown(path string) (Roll, error) {
 			if v, err := strconv.Atoi(value); err == nil {
 				metadata.Frames = v
 			}
+		case "lab_id":
+			metadata.LabID = value
 		}
 	}
 
@@ -432,6 +435,13 @@ func (roll *Roll) UpdateMetadata() error {
 			} else {
 				updatedLines = append(updatedLines, line)
 			}
+		case "lab_id":
+			if roll.Metadata.LabID != "" {
+				updatedLines = append(updatedLines, fmt.Sprintf("lab_id: %s", roll.Metadata.LabID))
+				updated["lab_id"] = true
+			} else {
+				updatedLines = append(updatedLines, line)
+			}
 		default:
 			updatedLines = append(updatedLines, line)
 		}
@@ -461,6 +471,9 @@ func (roll *Roll) UpdateMetadata() error {
 	}
 	if !updated["frames"] && roll.Metadata.Frames > 0 {
 		updatedLines = append(updatedLines, fmt.Sprintf("frames: %d", roll.Metadata.Frames))
+	}
+	if !updated["lab_id"] && roll.Metadata.LabID != "" {
+		updatedLines = append(updatedLines, fmt.Sprintf("lab_id: %s", roll.Metadata.LabID))
 	}
 
 	// Reconstruct the file content
@@ -573,6 +586,9 @@ func (r *Roll) WriteRollMd() error {
 	}
 	if m.Frames > 0 {
 		sb.WriteString("frames: " + strconv.Itoa(m.Frames) + "\n")
+	}
+	if m.LabID != "" {
+		sb.WriteString("lab_id: " + m.LabID + "\n")
 	}
 	sb.WriteString("---\n")
 	if r.Content != "" {
