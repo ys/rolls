@@ -4,7 +4,7 @@ FactoryBot.define do
     association :user
     association :camera
     association :film
-    sequence(:roll_number) { |n| "#{Time.current.year.to_s[-2..]}#{Roll.index_to_letters(n)}" }
+    sequence(:roll_number) { |n| "#{Time.current.year.to_s[-2..]}x#{n.to_s.rjust(2, "0")}" }
     created_at { Time.current }
     updated_at { Time.current }
 

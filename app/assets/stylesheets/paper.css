@@ -261,13 +261,8 @@ a:hover {
 }
 
 .btn-danger {
-  border-color: #cc2200;
-  color: #cc2200;
-}
-
-.btn-danger:hover {
-  background: #cc2200;
-  color: var(--paper);
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 /* ---- Forms ---- */

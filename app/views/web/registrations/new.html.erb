@@ -1,30 +1,31 @@
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="auth-logo-text">ROLLS</div>
-      <div class="auth-subtitle">create account</div>
-    </div>
-
-    <div id="register-error" class="flash flash-alert" style="display:none; margin-bottom:16px;"></div>
-
-    <div class="form-group">
-      <label class="form-label" for="username">Username</label>
-      <input type="text" id="username" class="form-input" placeholder="yourname" autocomplete="username webauthn">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="invite-code">Invite Code</label>
-      <input type="text" id="invite-code" class="form-input" placeholder="Optional">
-    </div>
-
-    <button id="register-btn" class="btn btn-primary" style="width:100%;" onclick="registerPasskey()">
-      Register with Passkey
-    </button>
-
-    <div class="auth-link">
-      Have an account? <%= link_to "Sign in", login_path %>
-    </div>
+<div class="auth-hero">
+  <div class="auth-wordstack">
+    <span class="ws-shoot">shoot</span>
+    <span class="ws-develop">develop</span>
+    <span class="ws-archive">archive</span>
   </div>
+  <div class="auth-appname">Rolls</div>
+</div>
+
+<div class="auth-actions">
+  <div id="register-error" class="flash flash-alert" style="display:none; margin-bottom:8px; border-radius:4px;"></div>
+
+  <div class="form-group">
+    <label class="form-label" for="username">Username</label>
+    <input type="text" id="username" class="form-input" placeholder="yourname" autocomplete="username webauthn">
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="invite-code">Invite Code</label>
+    <input type="text" id="invite-code" class="form-input" placeholder="Optional">
+  </div>
+
+  <button id="register-btn" class="btn-auth-passkey" onclick="registerPasskey()">
+    <%= image_tag "person.badge.key.svg", width: 20, height: 20, class: "auth-icon-dark" %>
+    Register with Passkey
+  </button>
+
+  <%= link_to "Already have an account? Sign in", login_path, class: "btn-auth-create" %>
 </div>
 
 <script>
@@ -39,7 +40,7 @@ async function registerPasskey() {
     return;
   }
 
-  btn.textContent = 'Registering...';
+  btn.textContent = 'Registering…';
   btn.disabled = true;
   errorEl.style.display = 'none';
 

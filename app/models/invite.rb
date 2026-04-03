@@ -6,8 +6,8 @@ class Invite < ApplicationRecord
 
   validates :code, presence: true, uniqueness: true
 
-  before_create :generate_id
-  before_create :generate_code
+  before_validation :generate_id, on: :create
+  before_validation :generate_code, on: :create
 
   scope :valid, -> { where("expires_at IS NULL OR expires_at > ?", Time.current).where("used_count < COALESCE(max_uses, 1)") }
 

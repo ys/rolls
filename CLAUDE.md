@@ -1,13 +1,13 @@
 # rolls
 
-Analog film roll tracker. Go CLI + Next.js web app.
+Analog film roll tracker. Go CLI + Rails web app.
 
 ## Structure
 
 - `cmd/` — CLI entry point (`go run ./cmd/rolls`)
 - `cli/` — Cobra subcommands, one file per command, self-register via `init()`
 - `cli/roll/` — Core types: Roll, Camera, Film, Config
-- Next.js 15 App Router, TypeScript, Tailwind, Postgres (files at repo root, not in `web/`)
+- Rails 7.1 MVC app, Ruby 3.2, Postgres, Hotwire (Turbo + Stimulus), Sprockets
 
 ## Web app
 
@@ -20,6 +20,13 @@ Analog film roll tracker. Go CLI + Next.js web app.
 heroku logs --tail --app rolls
 heroku config --app rolls
 heroku pg:psql --app rolls
+```
+
+## Running locally
+
+```sh
+bundle exec rails server
+bundle exec rails db:migrate
 ```
 
 ## CLI config (`~/.config/rolls/config.yml`)
@@ -62,31 +69,60 @@ rolls lr albums / upload / check / link / login
 
 ## Key files — Web app
 
-- `lib/db.ts` — postgres client, Camera/Film/Roll/ApiKey types
-- `lib/r2.ts` — R2 client
-- `lib/auth.ts` — WebAuthn, JWT sessions, API key hash/verify, email (Mailjet)
-- `lib/request-context.ts` — getUser()/getUserId() reads x-user-* headers set by middleware
-- `lib/queries.ts` — shared DB query helpers (getCameraCount, getFilmCount, etc.)
-- `lib/schema.sql` — CREATE TABLE cameras/films/rolls/users/api_keys/webauthn_credentials
-- `proxy.ts` — middleware: Bearer token → api_keys table; session cookie → JWT; injects x-user-* headers
-- `app/api/import/route.ts` — bulk upsert cameras/films/rolls (used by `rolls push`)
-  - camera_uuid/film_uuid use COALESCE to preserve existing values when slug not found
-- `app/api/export/route.ts` — full dump (used by `rolls pull`)
-- `app/api/rolls/[id]/contact-sheet/route.ts` — R2 upload + URL storage
-- `app/api/cameras/route.ts` — GET/POST cameras; slug = slugify(brand+"-"+model)
-- `app/api/films/route.ts` — GET/POST films; slug = slugify(brand+"-"+name)
-- `app/api/admin/cleanup-stubs/route.ts` — one-time POST to delete stub cameras/films
-- `app/settings/api-keys/` — API key management UI (create/revoke, one-time display)
-- `app/roll/[id]/page.tsx` — roll detail server component (user_id scoped)
-- `components/FormField.tsx` — shared label+input component
-- `components/FormButton.tsx` — primary/secondary button variants
-- `components/Sheet.tsx` — bottom sheet modal (uses createPortal)
-- `components/BackButton.tsx` — back navigation
+### Controllers
+
+- `app/controllers/application_controller.rb` — `current_user`, `logged_in?`, `set_current_user`; authenticates from Bearer token (API key or JWT) or session cookie (JWT); sets session cookie via `set_session_cookie!`
+- `app/controllers/web/base_controller.rb` — requires `logged_in?`, redirects to login; uses `application` layout
+- `app/controllers/web/rolls_controller.rb` — `shoot` (loaded+fridge), `develop` (lab/scanned/processed/uploaded), `archive` (archived, dark layout); full CRUD
+- `app/controllers/web/cameras_controller.rb` — camera CRUD
+- `app/controllers/web/films_controller.rb` — film CRUD
+- `app/controllers/web/sessions_controller.rb` — web login (passkey-based, sets session cookie)
+- `app/controllers/web/registrations_controller.rb` — web registration
+- `app/controllers/web/settings_controller.rb` — settings page
+- `app/controllers/web/stats_controller.rb` — stats page
+- `app/controllers/web/admin/` — admin dashboard, users, catalog films
+- `app/controllers/api/base_controller.rb` — skips CSRF, enforces `require_api_auth!`
+- `app/controllers/api/auth/sessions_controller.rb` — me, logout, bootstrap, check-username
+- `app/controllers/api/auth/webauthn_controller.rb` — passkey register/login/autofill options + verify
+- `app/controllers/api/auth/api_keys_controller.rb` — list/create/revoke/cli-token
+- `app/controllers/api/auth/credentials_controller.rb` — delete passkey credential
+- `app/controllers/api/auth/apple_controller.rb` — Sign in with Apple (create/link/unlink)
+- `app/controllers/api/auth/invites_controller.rb` — invite management
+- `app/controllers/api/auth/email_preferences_controller.rb` — email notification toggle
+- `app/controllers/api/rolls_controller.rb` — full rolls CRUD + next_number, home, archive, bulk_update, contact_sheet_show/upload
+- `app/controllers/api/cameras_controller.rb` — cameras CRUD + merge
+- `app/controllers/api/films_controller.rb` — films CRUD + merge
+- `app/controllers/api/import_export_controller.rb` — bulk upsert (import) + full dump (export); used by CLI push/pull
+- `app/controllers/api/catalog_controller.rb` — global catalog films (no auth)
+- `app/controllers/api/cache_controller.rb` — latest updated_at timestamps for rolls/cameras/films
+
+### Models
+
+- `app/models/roll.rb` — belongs_to camera/film/user; `status` method (priority: archived > uploaded > processed > scanned > lab > fridge > loaded); scopes: `active`, `archived`, `by_roll_number`; `next_number_for(user)`
+- `app/models/camera.rb` — belongs_to user; slug-based uniqueness per user
+- `app/models/film.rb` — belongs_to user; slug-based uniqueness per user
+- `app/models/user.rb` — has_many rolls/cameras/films/api_keys/webauthn_credentials
+- `app/models/api_key.rb` — SHA-256 hashed; `touch_last_used!`
+- `app/models/invite.rb` — single/multi-use invite codes with expiry
+- `app/models/catalog_film.rb` — global film catalog (slug primary key, no user scope)
+- `app/models/webauthn_credential.rb` — stored passkey credentials
+
+### Concerns & helpers
+
+- `app/controllers/concerns/serializable.rb` — shared `serialize_*` and `render_*` helpers included in ApplicationController
+- `app/helpers/application_helper.rb` — `nav_active_class`, `status_badge`, `format_date`, `push_pull_label`
+
+### Views & assets
+
+- `app/views/web/` — ERB templates for shoot/develop/archive/cameras/films/rolls/settings/stats/admin
+- `app/views/layouts/` — application layout (paper design system), archive layout (dark)
+- `app/assets/stylesheets/paper.css` — custom design system: paper/ink color palette (`--paper`, `--ink`, `--orange`), status colors per roll status, full component styles (cards, badges, buttons, nav)
+- `app/javascript/` — Stimulus controllers (importmap-based, no bundler)
 
 ## Env vars (Heroku)
 
 - `DATABASE_URL` — Heroku Postgres
-- `JWT_SECRET` — signs session tokens
+- `JWT_SECRET` — signs session tokens and API JWT tokens
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`
 - `R2_PUBLIC_URL=https://rolls-b.yannick.computer`
 - `APP_URL=https://rolls.yannick.computer`
@@ -94,34 +130,30 @@ rolls lr albums / upload / check / link / login
 - `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `MAILJET_FROM_EMAIL`, `MAILJET_FROM_NAME`
 - `NEW_RELIC_LICENSE_KEY` — New Relic ingest license key
 - `NEW_RELIC_APP_NAME` — defaults to `rolls` if unset
+- `SECRET_KEY_BASE` — Rails encrypted cookies/sessions
 
 ## Database migrations
 
-- Migration files live in `lib/migrations/NNN_description.sql` (alphabetical order)
-- Tracked in `schema_migrations` table — runner skips already-applied files
-- **On Heroku**: run automatically via `Procfile` release phase (`release: npm run migrate`) before every deploy
-- **Locally**: `npm run migrate` (reads `DATABASE_URL` from `.env.local`)
-- Runner: `scripts/migrate.js` — creates `schema_migrations` table if missing, then runs pending `.sql` files in order
-- All migrations must be idempotent: use `IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `ON CONFLICT DO UPDATE`, etc.
-- To add a migration: create `lib/migrations/NNN_description.sql`, commit, push — it runs on next deploy
-- `lib/schema.sql` is a human-readable reference snapshot of the full schema; keep it in sync when adding tables/columns
-
-## npm vulnerabilities
-
-- `next-pwa@5.x` has known vulns in its transitive dep `serialize-javascript` — fixed via `package.json` `"overrides": { "serialize-javascript": "^7.0.4" }`
-- Do NOT run `npm audit fix --force` — it downgrades `next-pwa` to v2 which breaks `next.config.js` (different API)
-- Safe to run `npm audit fix` (without `--force`) — it won't touch `next-pwa`
+- Migration files live in `db/migrate/` (standard Rails Active Record migrations)
+- Tracked automatically by Rails in `schema_migrations` table
+- **On Heroku**: run automatically via `Procfile` release phase (`release: bundle exec rails db:migrate`) before every deploy
+- **Locally**: `bundle exec rails db:migrate`
+- `db/schema.rb` — auto-generated schema snapshot; keep in version control
+- All migrations should be reversible where possible; use `add_column`/`remove_column`, etc.
 
 ## Patterns
 
-- Roll status (derived from timestamps): `archived > uploaded > processed > scanned > lab > fridge > loaded`
+- Roll status (derived from timestamps): `archived > uploaded > processed > scanned > lab > fridge > loaded` — computed in `Roll#status`
+- Three primary web views: `/shoot` (loaded + fridge rolls), `/develop` (lab/scanned/processed/uploaded), `/archive` (archived, dark layout with contact sheets)
 - Scans dir structure: `{scans_path}/{year}/{roll_number}-{MMDD}-{camera}-{film}/roll.md`
-- CLI auth: `Authorization: Bearer {api_key}` verified against `api_keys` table (SHA-256 hash)
-- Web auth: WebAuthn passkeys + JWT session cookie (1 year); middleware = `proxy.ts`
+- CLI auth: `Authorization: Bearer {api_key}` verified via `ApiKeyService.find_by_raw_key` (SHA-256 hash)
+- Web auth: WebAuthn passkeys + JWT session cookie (1 year); `current_user` + `logged_in?` helpers in ApplicationController
+- API auth: Bearer token (raw API key `rk_*` or JWT) → `authenticate_from_bearer_token`; session cookie JWT → `authenticate_from_session_cookie`
 - Contact sheets: uploaded to R2, key = `{roll_number}.webp`, public URL = `https://rolls-b.yannick.computer/{roll_number}.webp`
-- All DB queries scoped to `user_id` (multitenancy)
-- Camera/film slugs: CLI uses YAML keys; web UI uses `slugify(brand+"-"+model/name)`
+- All DB queries scoped to `current_user` (multitenancy)
+- Camera/film slugs: CLI uses YAML keys; web UI uses `babosa`-based slugify (`brand-model`)
 - Push fuzzy matching: unknown camera/film IDs → try fuzzy match to cameras.yml/films.yml; no stubs created on failure (warns to stderr)
+- Design system: `paper.css` — warm paper/ink palette, no external CSS framework
 
 ## API reference (for rolls-ios)
 
@@ -149,8 +181,8 @@ rolls lr albums / upload / check / link / login
 | `GET` | `/api/auth/cli-token` | ✓ (cookie) | Create API key + redirect to `?callback=` with key |
 | `GET` | `/api/auth/api-keys` | ✓ | List API keys (no raw keys) |
 | `POST` | `/api/auth/api-keys` | ✓ | Create key → `{ api_key, raw_key }` (raw shown once) |
-| `DELETE` | `/api/auth/api-keys/[id]` | ✓ | Revoke API key |
-| `DELETE` | `/api/auth/credentials/[id]` | ✓ | Delete passkey |
+| `DELETE` | `/api/auth/api-keys/:id` | ✓ | Revoke API key |
+| `DELETE` | `/api/auth/credentials/:id` | ✓ | Delete passkey |
 | `PATCH` | `/api/auth/email-preferences` | ✓ | `{ email_notifications: bool }` |
 
 **Invites:**
@@ -159,7 +191,7 @@ rolls lr albums / upload / check / link / login
 |--------|------|------|-------------|
 | `GET` | `/api/auth/invites` | ✓ | List own invites with `isValid` flag |
 | `POST` | `/api/auth/invites` | ✓ | Create invite (admins: custom uses/expiry; users: single-use) |
-| `DELETE` | `/api/auth/invites/[id]` | ✓ | Delete unused invite |
+| `DELETE` | `/api/auth/invites/:id` | ✓ | Delete unused invite |
 | `POST` | `/api/auth/invites/send` | ✓ | Email invite (`{ invite_code, email, message? }`) |
 | `GET` | `/api/auth/invites/validate?code=` | — | `{ valid: bool, error? }` |
 
@@ -172,12 +204,12 @@ rolls lr albums / upload / check / link / login
 | `GET` | `/api/rolls/next` | ✓ | `{ roll_number }` — next auto-generated roll number (YYx format) |
 | `GET` | `/api/rolls/home` | ✓ | Active rolls with camera/film details joined |
 | `GET` | `/api/rolls/archive` | ✓ | Archived rolls with camera/film details joined |
-| `GET` | `/api/rolls/[id]` | ✓ | Single roll by UUID with `camera_name`/`film_name` |
-| `PATCH` | `/api/rolls/[id]` | ✓ | Partial update (see fields below); returns roll with `camera_name`/`film_name` |
-| `DELETE` | `/api/rolls/[id]` | ✓ | Delete roll → 204 |
+| `GET` | `/api/rolls/:id` | ✓ | Single roll by UUID with `camera_name`/`film_name` |
+| `PATCH` | `/api/rolls/:id` | ✓ | Partial update (see fields below); returns roll with `camera_name`/`film_name` |
+| `DELETE` | `/api/rolls/:id` | ✓ | Delete roll → 204 |
 | `POST` | `/api/rolls/bulk-update` | ✓ | Set one timestamp field for multiple rolls |
-| `GET` | `/api/rolls/[id]/contact-sheet` | ✓ | Proxy contact sheet image (`image/webp`) from R2 |
-| `PUT` | `/api/rolls/[id]/contact-sheet` | ✓ | Upload contact sheet (body: raw `image/webp` bytes) |
+| `GET` | `/api/rolls/:id/contact-sheet` | ✓ | Proxy contact sheet image (`image/webp`) from R2 |
+| `PUT` | `/api/rolls/:id/contact-sheet` | ✓ | Upload contact sheet (body: raw `image/webp` bytes) |
 
 **POST /api/rolls body:**
 ```json
@@ -189,7 +221,7 @@ rolls lr albums / upload / check / link / login
 }
 ```
 
-**PATCH /api/rolls/[id] fields** (all optional):
+**PATCH /api/rolls/:id fields** (all optional):
 `roll_number`, `camera_uuid` (UUID), `film_uuid` (UUID), `camera_id` (slug→UUID), `film_id` (slug→UUID), `notes`, `push_pull`, `lab_name`, `album_name`, `tags`,
 `shot_at`, `fridge_at`, `lab_at`, `scanned_at`, `processed_at`, `uploaded_at`, `archived_at`
 
@@ -218,9 +250,9 @@ rolls lr albums / upload / check / link / login
 |--------|------|------|-------------|
 | `GET` | `/api/cameras` | ✓ | All cameras |
 | `POST` | `/api/cameras` | ✓ | Upsert camera by slug (see body below) |
-| `GET` | `/api/cameras/[slug]` | ✓ | Camera + `roll_count` |
-| `PATCH` | `/api/cameras/[slug]` | ✓ | Update camera |
-| `DELETE` | `/api/cameras/[slug]` | ✓ | Delete (409 if rolls exist) |
+| `GET` | `/api/cameras/:slug` | ✓ | Camera + `roll_count` |
+| `PATCH` | `/api/cameras/:slug` | ✓ | Update camera |
+| `DELETE` | `/api/cameras/:slug` | ✓ | Delete (409 if rolls exist) |
 | `POST` | `/api/cameras/merge` | ✓ | `{ target_id, source_ids[] }` → reassign rolls + delete sources |
 
 **POST /api/cameras body:**
@@ -235,9 +267,9 @@ Slug auto-generated: `slugify("nikon-f3")`. Upserts on `(user_id, slug)`.
 |--------|------|------|-------------|
 | `GET` | `/api/films` | ✓ | All films |
 | `POST` | `/api/films` | ✓ | Upsert film by slug (see body below) |
-| `GET` | `/api/films/[slug]` | ✓ | Film + `roll_count` |
-| `PATCH` | `/api/films/[slug]` | ✓ | Update film |
-| `DELETE` | `/api/films/[slug]` | ✓ | Delete (409 if rolls exist) |
+| `GET` | `/api/films/:slug` | ✓ | Film + `roll_count` |
+| `PATCH` | `/api/films/:slug` | ✓ | Update film |
+| `DELETE` | `/api/films/:slug` | ✓ | Delete (409 if rolls exist) |
 | `POST` | `/api/films/merge` | ✓ | `{ target_id, source_ids[] }` → reassign rolls + delete sources |
 
 **POST /api/films body:**
