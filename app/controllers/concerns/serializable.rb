@@ -26,6 +26,8 @@ module Serializable
       user_id: roll.user_id,
       camera_uuid: roll.camera_uuid,
       film_uuid: roll.film_uuid,
+      camera_name: roll.camera&.display_name,
+      film_name: roll.film&.display_name,
       loaded_at: roll.loaded_at,
       shot_at: roll.shot_at,
       fridge_at: roll.fridge_at,

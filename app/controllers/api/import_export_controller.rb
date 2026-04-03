@@ -96,7 +96,7 @@ module Api
         imported[:rolls] += 1
       end
 
-      render json: {imported: imported}
+      render json: imported
     end
 
     # GET /api/export

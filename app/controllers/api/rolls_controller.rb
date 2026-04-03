@@ -48,7 +48,7 @@ module Api
       roll.updated_at = Time.current
 
       if roll.save
-        render json: serialize_roll(roll), status: :created
+        render json: serialize_roll(roll, include_associations: true), status: :created
       else
         render_error(roll.errors.full_messages.join(", "))
       end
