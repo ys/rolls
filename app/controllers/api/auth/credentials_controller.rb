@@ -10,14 +10,6 @@ module Api
         credential.destroy!
         head :no_content
       end
-
-      private
-
-      def require_api_auth!
-        unless logged_in?
-          render json: {error: "Unauthorized"}, status: :unauthorized
-        end
-      end
     end
   end
 end

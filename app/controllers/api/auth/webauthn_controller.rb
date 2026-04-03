@@ -136,20 +136,6 @@ module Api
         session[:webauthn_login_challenge] = options.challenge
         render json: options
       end
-
-      private
-
-      def serialize_user(user)
-        {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          email: user.email,
-          email_notifications: user.email_notifications,
-          role: user.role,
-          created_at: user.created_at
-        }
-      end
     end
   end
 end

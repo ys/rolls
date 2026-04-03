@@ -107,31 +107,5 @@ module Api
         rolls: current_user.rolls.order(created_at: :asc).map { |r| serialize_roll(r) }
       }
     end
-
-    private
-
-    def serialize_camera(c)
-      {uuid: c.uuid, slug: c.slug, brand: c.brand, model: c.model,
-       nickname: c.nickname, format: c.format, updated_at: c.updated_at}
-    end
-
-    def serialize_film(f)
-      {uuid: f.uuid, slug: f.slug, brand: f.brand, name: f.name,
-       nickname: f.nickname, iso: f.iso, color: f.color, slide: f.slide,
-       show_iso: f.show_iso, gradient_from: f.gradient_from,
-       gradient_to: f.gradient_to, updated_at: f.updated_at}
-    end
-
-    def serialize_roll(r)
-      {uuid: r.uuid, roll_number: r.roll_number, user_id: r.user_id,
-       camera_uuid: r.camera_uuid, film_uuid: r.film_uuid,
-       loaded_at: r.loaded_at, shot_at: r.shot_at, fridge_at: r.fridge_at,
-       lab_at: r.lab_at, lab_name: r.lab_name, lab_id: r.lab_id,
-       scanned_at: r.scanned_at, processed_at: r.processed_at,
-       uploaded_at: r.uploaded_at, archived_at: r.archived_at,
-       album_name: r.album_name, tags: r.tags || [], notes: r.notes,
-       contact_sheet_url: r.contact_sheet_url, push_pull: r.push_pull,
-       created_at: r.created_at, updated_at: r.updated_at}
-    end
   end
 end

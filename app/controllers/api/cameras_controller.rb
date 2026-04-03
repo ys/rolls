@@ -67,18 +67,5 @@ module Api
     def camera_params
       params.permit(:slug, :brand, :model, :nickname, :format)
     end
-
-    def serialize_camera(camera)
-      {
-        uuid: camera.uuid,
-        slug: camera.slug,
-        user_id: camera.user_id,
-        brand: camera.brand,
-        model: camera.model,
-        nickname: camera.nickname,
-        format: camera.format,
-        updated_at: camera.updated_at
-      }
-    end
   end
 end

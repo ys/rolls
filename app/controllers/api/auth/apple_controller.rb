@@ -77,18 +77,6 @@ module Api
         current_user.update!(apple_user_id: nil)
         render json: {success: true}
       end
-
-      private
-
-      def serialize_user(user)
-        {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      end
     end
   end
 end

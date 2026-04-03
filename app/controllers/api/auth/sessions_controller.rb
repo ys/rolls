@@ -39,41 +39,6 @@ module Api
 
         render json: {available: available}
       end
-
-      private
-
-      def require_api_auth!
-        unless logged_in?
-          render json: {error: "Unauthorized"}, status: :unauthorized
-        end
-      end
-
-      def serialize_user(user)
-        {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          email: user.email,
-          email_notifications: user.email_notifications,
-          role: user.role,
-          invite_quota: user.invite_quota,
-          invites_sent: user.invites_sent,
-          created_at: user.created_at,
-          last_seen_at: user.last_seen_at,
-          apple_user_id: user.apple_user_id
-        }
-      end
-
-      def serialize_credential(cred)
-        {
-          id: cred.id,
-          credential_id: cred.credential_id,
-          device_name: cred.device_name,
-          created_at: cred.created_at,
-          last_used_at: cred.last_used_at,
-          transports: cred.transports
-        }
-      end
     end
   end
 end

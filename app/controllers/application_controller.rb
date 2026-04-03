@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include Serializable
+
   before_action :set_current_user
 
   helper_method :current_user, :logged_in?
@@ -60,6 +62,18 @@ class ApplicationController < ActionController::Base
         format.html { redirect_to login_path }
       end
     end
+  end
+
+  def require_api_auth!
+    render json: {error: "Unauthorized"}, status: :unauthorized unless logged_in?
+  end
+
+  def render_not_found
+    render json: {error: "Not found"}, status: :not_found
+  end
+
+  def render_error(message, status: :unprocessable_entity)
+    render json: {error: message}, status: status
   end
 
   def require_admin!

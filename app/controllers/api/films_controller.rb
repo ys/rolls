@@ -67,23 +67,5 @@ module Api
       params.permit(:slug, :brand, :name, :nickname, :iso, :color, :slide,
         :show_iso, :gradient_from, :gradient_to)
     end
-
-    def serialize_film(film)
-      {
-        uuid: film.uuid,
-        slug: film.slug,
-        user_id: film.user_id,
-        brand: film.brand,
-        name: film.name,
-        nickname: film.nickname,
-        iso: film.iso,
-        color: film.color,
-        slide: film.slide,
-        show_iso: film.show_iso,
-        gradient_from: film.gradient_from,
-        gradient_to: film.gradient_to,
-        updated_at: film.updated_at
-      }
-    end
   end
 end

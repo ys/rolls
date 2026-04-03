@@ -58,26 +58,6 @@ module Api
           render json: {valid: false, error: "Invite already used"}
         end
       end
-
-      private
-
-      def require_api_auth!
-        unless logged_in?
-          render json: {error: "Unauthorized"}, status: :unauthorized
-        end
-      end
-
-      def serialize_invite(invite)
-        {
-          id: invite.id,
-          code: invite.code,
-          max_uses: invite.max_uses,
-          used_count: invite.used_count,
-          expires_at: invite.expires_at,
-          created_at: invite.created_at,
-          used_at: invite.used_at
-        }
-      end
     end
   end
 end

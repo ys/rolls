@@ -52,23 +52,6 @@ module Api
           render json: {raw_key: raw_key}
         end
       end
-
-      private
-
-      def require_api_auth!
-        unless logged_in?
-          render json: {error: "Unauthorized"}, status: :unauthorized
-        end
-      end
-
-      def serialize_key(key)
-        {
-          id: key.id,
-          label: key.label,
-          created_at: key.created_at,
-          last_used_at: key.last_used_at
-        }
-      end
     end
   end
 end
