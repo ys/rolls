@@ -3,8 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  # Allow any host — the app is behind Heroku's router which handles host validation
-  config.hosts.clear
+  # Disable host authorization — Heroku's router handles this
+  config.hosts = []
 
   # Code is not reloaded between requests.
   config.enable_reloading = false
