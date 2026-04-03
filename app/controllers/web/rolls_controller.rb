@@ -41,16 +41,18 @@ module Web
       @rolls = current_user.rolls
         .active
         .includes(:camera, :film)
-        .order(created_at: :desc)
         .reject { |r| DEVELOP_STATUSES.include?(r.status) }
+        .sort_by { |r| roll_number_sort_key(r.roll_number) }
+        .reverse
     end
 
     def develop
       @rolls = current_user.rolls
         .active
         .includes(:camera, :film)
-        .order(created_at: :desc)
         .select { |r| %w[lab scanned processed uploaded].include?(r.status) }
+        .sort_by { |r| roll_number_sort_key(r.roll_number) }
+        .reverse
     end
 
     def index
@@ -97,6 +99,11 @@ module Web
     end
 
     private
+
+    def roll_number_sort_key(roll_number)
+      m = roll_number.to_s.match(/^(\d+)x(\d+)$/i)
+      m ? [m[1].to_i, m[2].to_i] : [0, 0]
+    end
 
     def set_roll
       @roll = current_user.rolls.find_by!(uuid: params[:id])
