@@ -1044,6 +1044,64 @@ body.archive-body .main-content {
   max-width: 680px;
 }
 
+body.archive-body .main-content,
+body.archive-body .main-content .page-title,
+body.archive-body .main-content .detail-label,
+body.archive-body .main-content .detail-value,
+body.archive-body .main-content .detail-section-title,
+body.archive-body .main-content .back-link,
+body.archive-body .main-content .text-muted,
+body.archive-body .main-content .status-badge,
+body.archive-body .main-content .notes-editor,
+body.archive-body .main-content .tl-label {
+  color: rgba(245, 240, 232, 0.75);
+}
+
+body.archive-body .main-content .page-title {
+  color: rgba(245, 240, 232, 0.95);
+}
+
+body.archive-body .main-content .detail-section-title {
+  border-bottom-color: rgba(245, 240, 232, 0.1);
+  color: rgba(245, 240, 232, 0.4);
+}
+
+body.archive-body .main-content .detail-grid {
+  color: rgba(245, 240, 232, 0.75);
+}
+
+body.archive-body .main-content a {
+  color: rgba(245, 240, 232, 0.6);
+}
+
+body.archive-body .main-content a:hover {
+  color: rgba(245, 240, 232, 0.9);
+}
+
+body.archive-body .main-content .btn {
+  border-color: rgba(245, 240, 232, 0.3);
+  color: rgba(245, 240, 232, 0.6);
+}
+
+body.archive-body .main-content .btn:hover {
+  background: rgba(245, 240, 232, 0.1);
+  color: rgba(245, 240, 232, 0.9);
+}
+
+body.archive-body .main-content .btn-danger {
+  border-color: rgba(180, 40, 20, 0.5);
+  color: rgba(220, 80, 60, 0.8);
+}
+
+body.archive-body .main-content .btn-danger:hover {
+  background: rgba(180, 40, 20, 0.3);
+  color: rgba(245, 240, 232, 0.9);
+}
+
+body.archive-body .main-content .text-muted {
+  color: rgba(245, 240, 232, 0.4);
+}
+
 
 .archive-year-pills {
   display: flex;

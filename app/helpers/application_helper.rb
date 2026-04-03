@@ -4,14 +4,14 @@ module ApplicationHelper
     paths << root_path if path == shoot_path
     active = paths.any? { |p| exact ? request.path == p : request.path.start_with?(p) }
 
-    # Keep Archive active when viewing an archived roll detail
-    if !active && path == archive_path && @roll&.status == "archived"
-      active = true
-    end
-
-    # Keep Develop active when viewing a develop-stage roll detail
-    if !active && path == develop_path && %w[lab scanned processed uploaded].include?(@roll&.status)
-      active = true
+    # Keep section nav active when viewing a roll detail
+    if !active && @roll
+      active = case path
+      when archive_path then @roll.status == "archived"
+      when develop_path then %w[lab scanned processed uploaded].include?(@roll.status)
+      when shoot_path   then %w[loaded fridge].include?(@roll.status)
+      else false
+      end
     end
 
     active ? "nav-link nav-link-active" : "nav-link"
