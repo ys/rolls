@@ -15,7 +15,9 @@ Rails.application.routes.draw do
     get "archive" => "rolls#archive", :as => :archive
     get "stats"   => "stats#index",   :as => :stats
     get "settings" => "settings#index", :as => :settings
-    resources :rolls
+    resources :rolls do
+      member { patch :advance }
+    end
     resources :cameras
     resources :films
 

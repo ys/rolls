@@ -1,29 +1,35 @@
-<%= link_to roll_path(roll), class: "roll-card" do %>
-  <div class="roll-card-top">
-    <span class="roll-film-name">
-      <%= roll.film&.display_name || "No film" %>
-    </span>
-    <span class="roll-card-number"><%= roll.roll_number %></span>
-  </div>
+<div class="roll-row-outer">
+  <%= link_to roll_path(roll), class: "roll-card" do %>
+    <div class="roll-card-top">
+      <span class="roll-film-name">
+        <%= roll.film&.display_name || "No film" %>
+      </span>
+      <span class="roll-card-number"><%= roll.roll_number %></span>
+    </div>
 
-  <div class="roll-card-secondary">
-    <%
-      parts = []
-      parts << roll.camera.display_name if roll.camera
-      ts = roll.loaded_at || roll.fridge_at || roll.created_at
-      parts << ts.strftime("%-d %b %Y") if ts
-    %>
-    <%= parts.join(" · ") %>
-  </div>
+    <div class="roll-card-secondary">
+      <%
+        parts = []
+        parts << roll.camera.display_name if roll.camera
+        ts = roll.loaded_at || roll.fridge_at || roll.created_at
+        parts << ts.strftime("%-d %b %Y") if ts
+      %>
+      <%= parts.join(" · ") %>
+    </div>
 
-  <% if roll.notes.present? %>
-    <div class="roll-card-notes"><%= truncate(roll.notes, length: 72) %></div>
+    <% if roll.notes.present? %>
+      <div class="roll-card-notes"><%= truncate(roll.notes, length: 72) %></div>
+    <% end %>
+
+    <div class="roll-card-footer">
+      <%= status_badge(roll.status) %>
+      <% if roll.album_name.present? %>
+        <span class="roll-card-album"><%= roll.album_name %></span>
+      <% end %>
+    </div>
   <% end %>
 
-  <div class="roll-card-footer">
-    <%= status_badge(roll.status) %>
-    <% if roll.album_name.present? %>
-      <span class="roll-card-album"><%= roll.album_name %></span>
-    <% end %>
-  </div>
-<% end %>
+  <% if (step = Web::RollsController::ADVANCE_MAP[roll.status]) %>
+    <%= button_to step[:label], advance_roll_path(roll), method: :patch, class: "roll-action-btn" %>
+  <% end %>
+</div>

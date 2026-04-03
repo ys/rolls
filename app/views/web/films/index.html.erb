@@ -18,7 +18,12 @@
     <tbody>
       <% @films.each do |film| %>
         <tr>
-          <td><%= link_to film.display_name, film_path(film) %></td>
+          <td>
+            <% if film.gradient_from.present? %>
+              <span class="film-swatch" style="background: linear-gradient(135deg, <%= film.gradient_from %>, <%= film.gradient_to.presence || film.gradient_from %>);"></span>
+            <% end %>
+            <%= link_to film.display_name, film_path(film) %>
+          </td>
           <td><%= film.iso %></td>
           <td class="text-xs text-muted"><%= film.slide ? "Slide" : (film.color ? "Color" : "B&W") %></td>
           <td>

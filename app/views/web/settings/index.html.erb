@@ -11,6 +11,16 @@
     <span class="detail-value"><%= current_user.email.presence || '—' %></span>
     <span class="detail-label">Role</span>
     <span class="detail-value"><%= current_user.role %></span>
+    <span class="detail-label">Email alerts</span>
+    <span class="detail-value">
+      <label class="toggle-label">
+        <input type="checkbox" id="email-notif-toggle"
+               <%= current_user.email_notifications ? "checked" : "" %>>
+        <span class="toggle-text" id="email-notif-text">
+          <%= current_user.email_notifications ? "On" : "Off" %>
+        </span>
+      </label>
+    </span>
   </div>
 </div>
 
@@ -114,6 +124,20 @@
 </div>
 
 <script>
+document.getElementById('email-notif-toggle').addEventListener('change', async function() {
+  const enabled = this.checked;
+  document.getElementById('email-notif-text').textContent = enabled ? 'Saving…' : 'Saving…';
+  const res = await fetch('/api/auth/email-preferences', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({ email_notifications: enabled })
+  });
+  document.getElementById('email-notif-text').textContent = res.ok ? (enabled ? 'On' : 'Off') : 'Error';
+});
+
 async function createApiKey() {
   const label = prompt('API Key label:', 'My Key');
   if (!label) return;

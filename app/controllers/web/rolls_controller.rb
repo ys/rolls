@@ -1,6 +1,14 @@
 module Web
   class RollsController < BaseController
-    before_action :set_roll, only: [:show, :edit, :update, :destroy]
+    before_action :set_roll, only: [:show, :edit, :update, :destroy, :advance]
+
+    ADVANCE_MAP = {
+      "loaded"    => {field: "fridge_at",    label: "→ Fridge"},
+      "fridge"    => {field: "lab_at",       label: "→ Lab"},
+      "lab"       => {field: "processed_at", label: "→ Processed"},
+      "processed" => {field: "uploaded_at",  label: "→ Uploaded"},
+      "uploaded"  => {field: "archived_at",  label: "→ Archive"}
+    }.freeze
 
     def new
       @roll = Roll.new
@@ -91,6 +99,14 @@ module Web
           end
         end
       end
+    end
+
+    def advance
+      step = ADVANCE_MAP[@roll.status]
+      if step
+        @roll.update!(step[:field] => Time.current, updated_at: Time.current)
+      end
+      redirect_back fallback_location: shoot_path
     end
 
     def destroy

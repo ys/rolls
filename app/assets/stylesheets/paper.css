@@ -183,6 +183,52 @@ a:hover {
   text-transform: uppercase;
 }
 
+/* ---- Back link ---- */
+
+.page-back {
+  margin-bottom: 12px;
+}
+
+.back-link {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--ink);
+}
+
+/* ---- Film swatch ---- */
+
+.film-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* ---- Email toggle ---- */
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-text {
+  font-size: 13px;
+  color: var(--ink);
+}
+
 /* ---- Flash messages ---- */
 
 .flash {
@@ -440,6 +486,46 @@ form.button_to {
   display: flex;
   flex-direction: column;
   gap: 0;
+}
+
+.roll-row-outer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roll-row-outer .roll-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.roll-action-btn {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0.45;
+  transition: opacity 0.1s, background 0.1s, color 0.1s;
+}
+
+.roll-action-btn:hover {
+  opacity: 1;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+form.button_to:has(.roll-action-btn) {
+  display: inline-flex;
+  margin: 0;
 }
 
 .roll-card {
