@@ -12,7 +12,7 @@ module Web
     def create
       @roll = current_user.rolls.build(roll_params)
       @roll.uuid = SecureRandom.uuid
-      @roll.roll_number ||= Roll.next_number_for(current_user)
+      @roll.roll_number = Roll.next_number_for(current_user) if @roll.roll_number.blank?
       @roll.created_at = Time.current
       @roll.updated_at = Time.current
       if @roll.camera_uuid.present?
