@@ -506,6 +506,7 @@ a:hover {
 
 body.auth-body {
   background: #f2ede4;
+  font-family: 'Courier New', Courier, monospace;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -528,12 +529,13 @@ body.auth-body {
   line-height: 0.92;
   letter-spacing: -1px;
   text-transform: uppercase;
+  color: #1a1310;
   margin-bottom: 20px;
 }
 
-.auth-wordstack .ws-shoot   { display: block; color: #a89e8e; }
-.auth-wordstack .ws-develop { display: block; color: #5c5248; }
-.auth-wordstack .ws-archive { display: block; color: var(--orange); }
+.auth-wordstack .ws-shoot,
+.auth-wordstack .ws-develop,
+.auth-wordstack .ws-archive { display: block; }
 
 .auth-appname {
   font-size: 9px;
