@@ -1,0 +1,16 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  url: <%= ENV.fetch("DATABASE_URL", "postgres://localhost/rolls_rails_rewrite_development") %>
+
+test:
+  <<: *default
+  database: rolls_rails_rewrite_test
+
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

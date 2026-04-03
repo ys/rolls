@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Rolls</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#f5f0e8">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="paper-body">
+    <% if notice.present? %>
+      <div class="flash flash-notice" data-turbo-temporary><%= notice %></div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="flash flash-alert" data-turbo-temporary><%= alert %></div>
+    <% end %>
+
+    <% if logged_in? %>
+      <nav class="main-nav">
+        <div class="nav-inner">
+          <%= link_to "ROLLS", root_path, class: nav_active_class(root_path, exact: true) %>
+          <%= link_to "ARCHIVE", archive_path, class: nav_active_class(archive_path) %>
+          <%= link_to "CAMERAS", web_cameras_path, class: nav_active_class(web_cameras_path) %>
+          <%= link_to "FILMS", web_films_path, class: nav_active_class(web_films_path) %>
+          <%= link_to "STATS", stats_path, class: nav_active_class(stats_path) %>
+          <%= link_to "SETTINGS", settings_path, class: nav_active_class(settings_path) %>
+        </div>
+        <div class="nav-user">
+          <span class="nav-username"><%= current_user.username %></span>
+          <%= button_to "Sign out", logout_path, method: :delete, class: "btn-ghost btn-sm" %>
+        </div>
+      </nav>
+    <% end %>
+
+    <main class="main-content">
+      <%= yield %>
+    </main>
+  </body>
+</html>

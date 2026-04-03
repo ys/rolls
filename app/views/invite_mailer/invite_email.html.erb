@@ -1,0 +1,10 @@
+<p>Hi,</p>
+<p><strong><%= @from_user.username %></strong> has invited you to join Rolls, an analog film roll tracker.</p>
+<p>
+  <a href="<%= @register_url %>">Click here to create your account</a>
+  &mdash; your invite code is <strong><%= @invite.code %></strong>.
+</p>
+<% if @invite.expires_at %>
+  <p><em>This invite expires on <%= @invite.expires_at.strftime('%B %d, %Y') %>.</em></p>
+<% end %>
+<p>Rolls &mdash; <%= @app_url %></p>

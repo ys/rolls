@@ -1,0 +1,74 @@
+<div class="page-header">
+  <h1 class="page-title">Stats</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= @total_rolls %></div>
+    <div class="stat-label">Total Rolls</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @active_rolls %></div>
+    <div class="stat-label">Active</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @archived_rolls %></div>
+    <div class="stat-label">Archived</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @total_cameras %></div>
+    <div class="stat-label">Cameras</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @total_films %></div>
+    <div class="stat-label">Film Stocks</div>
+  </div>
+</div>
+
+<% if @status_counts.present? %>
+  <div class="detail-section">
+    <div class="detail-section-title">By Status</div>
+    <table class="data-table">
+      <tbody>
+        <% @status_counts.sort_by { |_, v| -v }.each do |status, count| %>
+          <tr>
+            <td><%= status_badge(status) %></td>
+            <td><%= count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<% if @top_cameras.present? %>
+  <div class="detail-section">
+    <div class="detail-section-title">Top Cameras</div>
+    <table class="data-table">
+      <tbody>
+        <% @top_cameras.each do |camera| %>
+          <tr>
+            <td><%= camera.nickname.presence || "#{camera.brand} #{camera.model}" %></td>
+            <td class="text-muted"><%= camera.roll_count %> rolls</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<% if @top_films.present? %>
+  <div class="detail-section">
+    <div class="detail-section-title">Top Film Stocks</div>
+    <table class="data-table">
+      <tbody>
+        <% @top_films.each do |film| %>
+          <tr>
+            <td><%= film.nickname.presence || "#{film.brand} #{film.name}" %></td>
+            <td class="text-muted"><%= film.roll_count %> rolls</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

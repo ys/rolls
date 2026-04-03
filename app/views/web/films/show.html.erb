@@ -1,0 +1,48 @@
+<div class="page-header">
+  <h1 class="page-title"><%= @film.display_name %></h1>
+  <div class="flex gap-2">
+    <%= link_to "Edit", edit_web_film_path(@film), class: "btn btn-sm" %>
+    <%= button_to "Delete", web_film_path(@film), method: :delete,
+        data: { confirm: "Delete this film?" },
+        class: "btn btn-sm btn-danger" %>
+  </div>
+</div>
+
+<div class="detail-section">
+  <div class="detail-grid">
+    <span class="detail-label">Brand</span>
+    <span class="detail-value"><%= @film.brand %></span>
+    <span class="detail-label">Name</span>
+    <span class="detail-value"><%= @film.name %></span>
+    <% if @film.nickname.present? %>
+      <span class="detail-label">Nickname</span>
+      <span class="detail-value"><%= @film.nickname %></span>
+    <% end %>
+    <span class="detail-label">ISO</span>
+    <span class="detail-value"><%= @film.iso %></span>
+    <span class="detail-label">Type</span>
+    <span class="detail-value"><%= @film.slide ? "Slide (E-6)" : (@film.color ? "Color (C-41)" : "B&W") %></span>
+  </div>
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-title">Rolls (<%= @rolls.count %>)</div>
+  <% if @rolls.empty? %>
+    <div class="empty-state">No rolls with this film.</div>
+  <% else %>
+    <div class="roll-list">
+      <% @rolls.each do |roll| %>
+        <%= link_to web_roll_path(roll), class: "roll-card" do %>
+          <div>
+            <div class="roll-number"><%= roll.roll_number %></div>
+            <%= status_badge(roll.status) %>
+          </div>
+          <div class="roll-meta">
+            <div class="roll-equipment"><%= roll.camera&.display_name %></div>
+            <div class="roll-dates"><%= format_datetime(roll.loaded_at) %></div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

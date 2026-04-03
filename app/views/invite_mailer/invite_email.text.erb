@@ -1,0 +1,9 @@
+<%= @from_user.username %> has invited you to Rolls — analog film roll tracker.
+
+Register here: <%= @register_url %>
+Your invite code: <%= @invite.code %>
+<% if @invite.expires_at %>
+Expires: <%= @invite.expires_at.strftime('%B %d, %Y') %>
+<% end %>
+
+Rolls — <%= @app_url %>

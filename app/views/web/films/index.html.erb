@@ -1,0 +1,31 @@
+<div class="page-header">
+  <h1 class="page-title">Films</h1>
+  <%= link_to "New Film", new_web_film_path, class: "btn btn-sm" %>
+</div>
+
+<% if @films.empty? %>
+  <div class="empty-state">No films yet.</div>
+<% else %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Film</th>
+        <th>ISO</th>
+        <th>Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @films.each do |film| %>
+        <tr>
+          <td><%= link_to film.display_name, web_film_path(film) %></td>
+          <td><%= film.iso %></td>
+          <td class="text-xs text-muted"><%= film.slide ? "Slide" : (film.color ? "Color" : "B&W") %></td>
+          <td>
+            <%= link_to "Edit", edit_web_film_path(film), class: "btn btn-sm" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

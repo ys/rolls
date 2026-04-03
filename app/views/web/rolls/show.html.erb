@@ -1,0 +1,101 @@
+<div class="page-header">
+  <h1 class="page-title">
+    Roll <%= @roll.roll_number %>
+    <%= status_badge(@roll.status) %>
+  </h1>
+  <div class="flex gap-2">
+    <%= link_to "Edit", edit_web_roll_path(@roll), class: "btn btn-sm" %>
+    <%= button_to "Delete", web_roll_path(@roll), method: :delete,
+        data: { confirm: "Delete this roll?" },
+        class: "btn btn-sm btn-danger" %>
+  </div>
+</div>
+
+<% if @roll.contact_sheet_url.present? %>
+  <div class="detail-section">
+    <img src="<%= @roll.contact_sheet_url %>" alt="Contact sheet" class="contact-sheet">
+  </div>
+<% end %>
+
+<div class="detail-section">
+  <div class="detail-section-title">Equipment</div>
+  <div class="detail-grid">
+    <span class="detail-label">Camera</span>
+    <span class="detail-value">
+      <% if @roll.camera %>
+        <%= link_to @roll.camera.display_name, web_camera_path(@roll.camera) %>
+      <% else %>
+        <span class="text-muted">—</span>
+      <% end %>
+    </span>
+    <span class="detail-label">Film</span>
+    <span class="detail-value">
+      <% if @roll.film %>
+        <%= link_to @roll.film.display_name, web_film_path(@roll.film) %>
+        <% if @roll.film.iso %><span class="text-muted text-xs"> ISO <%= @roll.film.iso %></span><% end %>
+      <% else %>
+        <span class="text-muted">—</span>
+      <% end %>
+    </span>
+    <% if @roll.push_pull.present? && @roll.push_pull != 0 %>
+      <span class="detail-label">Push/Pull</span>
+      <span class="detail-value"><%= push_pull_label(@roll.push_pull) %></span>
+    <% end %>
+  </div>
+</div>
+
+<div class="detail-section">
+  <div class="detail-section-title">Timeline</div>
+  <div class="detail-grid">
+    <span class="detail-label">Loaded</span>
+    <span class="detail-value"><%= format_datetime(@roll.loaded_at) %></span>
+    <span class="detail-label">Shot</span>
+    <span class="detail-value"><%= format_date(@roll.shot_at) %></span>
+    <span class="detail-label">Fridge</span>
+    <span class="detail-value"><%= format_datetime(@roll.fridge_at) %></span>
+    <span class="detail-label">Lab sent</span>
+    <span class="detail-value">
+      <%= format_datetime(@roll.lab_at) %>
+      <% if @roll.lab_name.present? %><span class="text-muted text-xs"> · <%= @roll.lab_name %></span><% end %>
+    </span>
+    <span class="detail-label">Scanned</span>
+    <span class="detail-value"><%= format_date(@roll.scanned_at) %></span>
+    <span class="detail-label">Processed</span>
+    <span class="detail-value"><%= format_datetime(@roll.processed_at) %></span>
+    <span class="detail-label">Uploaded</span>
+    <span class="detail-value"><%= format_datetime(@roll.uploaded_at) %></span>
+    <span class="detail-label">Archived</span>
+    <span class="detail-value"><%= format_datetime(@roll.archived_at) %></span>
+  </div>
+</div>
+
+<% if @roll.album_name.present? || @roll.tags.present? || @roll.notes.present? %>
+  <div class="detail-section">
+    <div class="detail-section-title">Notes</div>
+    <div class="detail-grid">
+      <% if @roll.album_name.present? %>
+        <span class="detail-label">Album</span>
+        <span class="detail-value"><%= @roll.album_name %></span>
+      <% end %>
+      <% if @roll.tags.present? %>
+        <span class="detail-label">Tags</span>
+        <span class="detail-value">
+          <div class="roll-tags">
+            <% @roll.tags.each do |tag| %>
+              <span class="tag"><%= tag %></span>
+            <% end %>
+          </div>
+        </span>
+      <% end %>
+      <% if @roll.notes.present? %>
+        <span class="detail-label">Notes</span>
+        <span class="detail-value"><%= @roll.notes %></span>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="text-muted text-xs mt-4">
+  Created <%= format_datetime(@roll.created_at) %> ·
+  Updated <%= format_datetime(@roll.updated_at) %>
+</div>

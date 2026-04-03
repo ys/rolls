@@ -1,0 +1,85 @@
+<div class="page-header">
+  <h1 class="page-title">Edit Roll <%= @roll.roll_number %></h1>
+  <%= link_to "Cancel", web_roll_path(@roll), class: "btn btn-sm" %>
+</div>
+
+<%= form_with model: [:web, @roll], method: :patch do |f| %>
+  <div class="detail-section">
+    <div class="detail-section-title">Equipment</div>
+    <div class="form-group">
+      <%= f.label :camera_uuid, "Camera", class: "form-label" %>
+      <%= f.select :camera_uuid,
+            [["— none —", nil]] + @cameras.map { |c| [c.display_name, c.uuid] },
+            { selected: @roll.camera_uuid },
+            class: "form-select" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :film_uuid, "Film", class: "form-label" %>
+      <%= f.select :film_uuid,
+            [["— none —", nil]] + @films.map { |f| [f.display_name, f.uuid] },
+            { selected: @roll.film_uuid },
+            class: "form-select" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :push_pull, "Push / Pull", class: "form-label" %>
+      <%= f.number_field :push_pull, class: "form-input", placeholder: "0 = box speed, +1 = push 1, -1 = pull 1", step: 1 %>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-title">Timeline</div>
+    <div class="form-group">
+      <%= f.label :loaded_at, "Loaded at", class: "form-label" %>
+      <%= f.datetime_local_field :loaded_at, value: @roll.loaded_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :shot_at, "Shot (date)", class: "form-label" %>
+      <%= f.date_field :shot_at, value: @roll.shot_at, class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :fridge_at, "Fridge at", class: "form-label" %>
+      <%= f.datetime_local_field :fridge_at, value: @roll.fridge_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :lab_at, "Sent to lab", class: "form-label" %>
+      <%= f.datetime_local_field :lab_at, value: @roll.lab_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :lab_name, "Lab name", class: "form-label" %>
+      <%= f.text_field :lab_name, class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :scanned_at, "Scanned (date)", class: "form-label" %>
+      <%= f.date_field :scanned_at, value: @roll.scanned_at, class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :processed_at, "Processed at", class: "form-label" %>
+      <%= f.datetime_local_field :processed_at, value: @roll.processed_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :uploaded_at, "Uploaded at", class: "form-label" %>
+      <%= f.datetime_local_field :uploaded_at, value: @roll.uploaded_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :archived_at, "Archived at", class: "form-label" %>
+      <%= f.datetime_local_field :archived_at, value: @roll.archived_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-title">Notes</div>
+    <div class="form-group">
+      <%= f.label :album_name, "Album name", class: "form-label" %>
+      <%= f.text_field :album_name, class: "form-input" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :notes, "Notes", class: "form-label" %>
+      <%= f.text_area :notes, class: "form-textarea", rows: 3 %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Save", class: "btn btn-primary" %>
+    <%= link_to "Cancel", web_roll_path(@roll), class: "btn" %>
+  </div>
+<% end %>

@@ -1,0 +1,159 @@
+<div class="page-header">
+  <h1 class="page-title">Settings</h1>
+</div>
+
+<div class="settings-section">
+  <div class="settings-section-title">Account</div>
+  <div class="detail-grid">
+    <span class="detail-label">Username</span>
+    <span class="detail-value"><%= current_user.username %></span>
+    <span class="detail-label">Email</span>
+    <span class="detail-value"><%= current_user.email.presence || '—' %></span>
+    <span class="detail-label">Role</span>
+    <span class="detail-value"><%= current_user.role %></span>
+  </div>
+</div>
+
+<div class="settings-section">
+  <div class="settings-section-title">Passkeys (<%= @webauthn_credentials.count %>)</div>
+  <% if @webauthn_credentials.empty? %>
+    <div class="text-muted text-sm">No passkeys registered.</div>
+  <% else %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Added</th>
+          <th>Last used</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @webauthn_credentials.each do |cred| %>
+          <tr>
+            <td><%= cred.device_name.presence || 'Unknown device' %></td>
+            <td class="text-xs text-muted"><%= format_datetime(cred.created_at) %></td>
+            <td class="text-xs text-muted"><%= format_datetime(cred.last_used_at) %></td>
+            <td>
+              <%= button_to "Remove",
+                  api_auth_credential_path(cred),
+                  method: :delete,
+                  data: { confirm: "Remove this passkey?" },
+                  class: "btn btn-sm btn-danger" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
+
+<div class="settings-section">
+  <div class="settings-section-title">API Keys (<%= @api_keys.count %>)</div>
+
+  <div id="new-key-result" class="flash flash-notice" style="display:none; margin-bottom:12px; font-family: monospace; word-break: break-all;"></div>
+
+  <table class="data-table" style="margin-bottom:12px;">
+    <thead>
+      <tr>
+        <th>Label</th>
+        <th>Created</th>
+        <th>Last used</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @api_keys.each do |key| %>
+        <tr>
+          <td><%= key.label %></td>
+          <td class="text-xs text-muted"><%= format_datetime(key.created_at) %></td>
+          <td class="text-xs text-muted"><%= format_datetime(key.last_used_at) %></td>
+          <td>
+            <%= button_to "Revoke",
+                api_auth_api_key_path(key),
+                method: :delete,
+                data: { confirm: "Revoke this API key?" },
+                class: "btn btn-sm btn-danger" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <button class="btn btn-sm" onclick="createApiKey()">Create New API Key</button>
+</div>
+
+<div class="settings-section">
+  <div class="settings-section-title">Invites</div>
+  <% if @invites.empty? %>
+    <div class="text-muted text-sm">No invites created.</div>
+  <% else %>
+    <table class="data-table" style="margin-bottom:12px;">
+      <thead>
+        <tr><th>Code</th><th>Uses</th><th>Expires</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @invites.each do |invite| %>
+          <tr>
+            <td class="mono"><%= invite.code %></td>
+            <td class="text-xs"><%= invite.used_count %> / <%= invite.max_uses %></td>
+            <td class="text-xs text-muted"><%= format_datetime(invite.expires_at) %></td>
+            <td>
+              <%= button_to "Delete",
+                  api_auth_invite_path(invite),
+                  method: :delete,
+                  data: { confirm: "Delete this invite?" },
+                  class: "btn btn-sm btn-danger" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+  <button class="btn btn-sm" onclick="createInvite()">Create Invite</button>
+</div>
+
+<script>
+async function createApiKey() {
+  const label = prompt('API Key label:', 'My Key');
+  if (!label) return;
+
+  const res = await fetch('/api/auth/api-keys', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({ label })
+  });
+
+  const data = await res.json();
+  if (data.raw_key) {
+    const el = document.getElementById('new-key-result');
+    el.innerHTML = '<strong>Your new API key (copy it now — shown once):</strong><br>' + data.raw_key;
+    el.style.display = 'block';
+    setTimeout(() => location.reload(), 5000);
+  } else {
+    alert(data.error || 'Failed to create key');
+  }
+}
+
+async function createInvite() {
+  const res = await fetch('/api/auth/invites', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({})
+  });
+
+  const data = await res.json();
+  if (data.code) {
+    alert('Invite code: ' + data.code);
+    location.reload();
+  } else {
+    alert(data.error || 'Failed');
+  }
+}
+</script>

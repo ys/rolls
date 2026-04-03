@@ -1,0 +1,103 @@
+<% content_for :body_class, 'paper-body' %>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text">ROLLS</div>
+      <div class="auth-subtitle">analog film tracker</div>
+    </div>
+
+    <% if flash[:alert] %>
+      <div class="flash flash-alert" style="margin-bottom:16px;"><%= flash[:alert] %></div>
+    <% end %>
+
+    <button id="passkey-btn" class="btn btn-primary" style="width:100%;" onclick="signInWithPasskey()">
+      Sign In with Passkey
+    </button>
+
+    <div class="auth-divider">or</div>
+
+    <%= form_with url: login_path, method: :post do |f| %>
+      <div class="form-group">
+        <%= f.label :api_key, "API Key", class: "form-label" %>
+        <%= f.password_field :api_key, placeholder: "rk_...", class: "form-input" %>
+      </div>
+      <%= f.submit "Sign In with API Key", class: "btn btn-primary", style: "width:100%;" %>
+    <% end %>
+
+    <div class="auth-link">
+      No account? <%= link_to "Register", register_path %>
+    </div>
+  </div>
+</div>
+
+<script>
+async function signInWithPasskey() {
+  const btn = document.getElementById('passkey-btn');
+  btn.textContent = 'Authenticating...';
+  btn.disabled = true;
+
+  try {
+    // Get login options
+    const optRes = await fetch('/api/auth/webauthn/login-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const options = await optRes.json();
+
+    // Convert base64url to ArrayBuffer
+    options.challenge = base64urlToBuffer(options.challenge);
+    if (options.allowCredentials) {
+      options.allowCredentials = options.allowCredentials.map(c => ({
+        ...c, id: base64urlToBuffer(c.id)
+      }));
+    }
+
+    const credential = await navigator.credentials.get({ publicKey: options });
+    const credJSON = {
+      id: credential.id,
+      rawId: bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        signature: bufferToBase64url(credential.response.signature),
+        userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null
+      }
+    };
+
+    const verifyRes = await fetch('/api/auth/webauthn/login-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credJSON)
+    });
+    const result = await verifyRes.json();
+
+    if (result.success) {
+      window.location.href = '/';
+    } else {
+      alert(result.error || 'Authentication failed');
+      btn.textContent = 'Sign In with Passkey';
+      btn.disabled = false;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Passkey sign-in failed: ' + err.message);
+    btn.textContent = 'Sign In with Passkey';
+    btn.disabled = false;
+  }
+}
+
+function base64urlToBuffer(base64url) {
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(base64);
+  return Uint8Array.from(bin, c => c.charCodeAt(0)).buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  bytes.forEach(b => str += String.fromCharCode(b));
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+</script>

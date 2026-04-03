@@ -1,0 +1,117 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text">ROLLS</div>
+      <div class="auth-subtitle">create account</div>
+    </div>
+
+    <div id="register-error" class="flash flash-alert" style="display:none; margin-bottom:16px;"></div>
+
+    <div class="form-group">
+      <label class="form-label" for="username">Username</label>
+      <input type="text" id="username" class="form-input" placeholder="yourname" autocomplete="username webauthn">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="invite-code">Invite Code</label>
+      <input type="text" id="invite-code" class="form-input" placeholder="Optional">
+    </div>
+
+    <button id="register-btn" class="btn btn-primary" style="width:100%;" onclick="registerPasskey()">
+      Register with Passkey
+    </button>
+
+    <div class="auth-link">
+      Have an account? <%= link_to "Sign in", login_path %>
+    </div>
+  </div>
+</div>
+
+<script>
+async function registerPasskey() {
+  const username = document.getElementById('username').value.trim();
+  const inviteCode = document.getElementById('invite-code').value.trim();
+  const btn = document.getElementById('register-btn');
+  const errorEl = document.getElementById('register-error');
+
+  if (!username) {
+    showError('Username is required');
+    return;
+  }
+
+  btn.textContent = 'Registering...';
+  btn.disabled = true;
+  errorEl.style.display = 'none';
+
+  try {
+    const optRes = await fetch('/api/auth/webauthn/register-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, invite_code: inviteCode })
+    });
+
+    if (!optRes.ok) {
+      const err = await optRes.json();
+      throw new Error(err.error || 'Failed to get registration options');
+    }
+
+    const options = await optRes.json();
+    options.challenge = base64urlToBuffer(options.challenge);
+    options.user.id = base64urlToBuffer(options.user.id);
+    if (options.excludeCredentials) {
+      options.excludeCredentials = options.excludeCredentials.map(c => ({
+        ...c, id: base64urlToBuffer(c.id)
+      }));
+    }
+
+    const credential = await navigator.credentials.create({ publicKey: options });
+    const credJSON = {
+      id: credential.id,
+      rawId: bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        attestationObject: bufferToBase64url(credential.response.attestationObject),
+        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        transports: credential.response.getTransports ? credential.response.getTransports() : []
+      }
+    };
+
+    const verifyRes = await fetch('/api/auth/webauthn/register-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credJSON)
+    });
+
+    const result = await verifyRes.json();
+    if (result.success) {
+      window.location.href = '/';
+    } else {
+      throw new Error(result.error || 'Registration failed');
+    }
+  } catch (err) {
+    console.error(err);
+    showError(err.message);
+    btn.textContent = 'Register with Passkey';
+    btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('register-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function base64urlToBuffer(base64url) {
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(base64);
+  return Uint8Array.from(bin, c => c.charCodeAt(0)).buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  bytes.forEach(b => str += String.fromCharCode(b));
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+</script>

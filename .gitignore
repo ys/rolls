@@ -24,3 +24,6 @@ public/sw.js
 .superpowers/**/.server-info
 .superpowers/**/.server.pid
 .superpowers/**/.server.log
+
+# Ignore master key for decrypting credentials and more.
+/config/master.key

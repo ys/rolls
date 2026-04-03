@@ -1,0 +1,23 @@
+module Api
+  module Auth
+    class CredentialsController < BaseController
+      before_action :require_api_auth!
+
+      def destroy
+        credential = current_user.webauthn_credentials.find_by(id: params[:id])
+        return render_not_found unless credential
+
+        credential.destroy!
+        head :no_content
+      end
+
+      private
+
+      def require_api_auth!
+        unless logged_in?
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+        end
+      end
+    end
+  end
+end

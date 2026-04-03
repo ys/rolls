@@ -1,0 +1,47 @@
+<div class="page-header">
+  <h1 class="page-title">Active Rolls</h1>
+  <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
+</div>
+
+<% if @rolls.empty? %>
+  <div class="empty-state">
+    No active rolls.<br>
+    <small>Load a roll to get started.</small>
+  </div>
+<% else %>
+  <div class="roll-list">
+    <% @rolls.each do |roll| %>
+      <%= link_to web_roll_path(roll), class: "roll-card" do %>
+        <div>
+          <div class="roll-number"><%= roll.roll_number %></div>
+          <%= status_badge(roll.status) %>
+        </div>
+        <div class="roll-meta">
+          <div class="roll-equipment">
+            <% if roll.camera %>
+              <span><%= roll.camera.display_name %></span>
+            <% end %>
+            <% if roll.film %>
+              <span> · <%= roll.film.display_name %></span>
+            <% end %>
+          </div>
+          <div class="roll-dates">
+            <% if roll.loaded_at %>Loaded <%= format_datetime(roll.loaded_at) %><% end %>
+          </div>
+          <% if roll.tags.present? %>
+            <div class="roll-tags">
+              <% roll.tags.each do |tag| %>
+                <span class="tag"><%= tag %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <div>
+          <% if roll.push_pull.present? && roll.push_pull != 0 %>
+            <span class="text-xs text-muted"><%= push_pull_label(roll.push_pull) %></span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

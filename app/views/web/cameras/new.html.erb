@@ -1,0 +1,26 @@
+<div class="page-header">
+  <h1 class="page-title">New Camera</h1>
+  <%= link_to "Cancel", web_cameras_path, class: "btn btn-sm" %>
+</div>
+
+<%= form_with model: [:web, @camera] do |f| %>
+  <div class="form-group">
+    <%= f.label :brand, class: "form-label" %>
+    <%= f.text_field :brand, class: "form-input", autofocus: true %>
+  </div>
+  <div class="form-group">
+    <%= f.label :model, class: "form-label" %>
+    <%= f.text_field :model, class: "form-input" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :nickname, class: "form-label" %>
+    <%= f.text_field :nickname, class: "form-input", placeholder: "Optional" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :format, class: "form-label" %>
+    <%= f.select :format, [["35mm (135)", 135], ["120 (Medium Format)", 120], ["4x5 (Large Format)", 45]], {}, class: "form-select" %>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Add Camera", class: "btn btn-primary" %>
+  </div>
+<% end %>

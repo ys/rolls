@@ -1,0 +1,41 @@
+<div class="page-header">
+  <h1 class="page-title">Archive</h1>
+  <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
+</div>
+
+<% if @rolls.empty? %>
+  <div class="empty-state">No archived rolls.</div>
+<% else %>
+  <div class="roll-list">
+    <% @rolls.each do |roll| %>
+      <%= link_to web_roll_path(roll), class: "roll-card" do %>
+        <div>
+          <div class="roll-number"><%= roll.roll_number %></div>
+          <%= status_badge(roll.status) %>
+        </div>
+        <div class="roll-meta">
+          <div class="roll-equipment">
+            <% if roll.camera %><%= roll.camera.display_name %><% end %>
+            <% if roll.film %> · <%= roll.film.display_name %><% end %>
+          </div>
+          <div class="roll-dates">
+            <% if roll.archived_at %>Archived <%= format_datetime(roll.archived_at) %><% end %>
+            <% if roll.album_name %> · <%= roll.album_name %><% end %>
+          </div>
+          <% if roll.tags.present? %>
+            <div class="roll-tags">
+              <% roll.tags.each do |tag| %>
+                <span class="tag"><%= tag %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <div>
+          <% if roll.contact_sheet_url.present? %>
+            <span class="text-xs text-muted">📷</span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
