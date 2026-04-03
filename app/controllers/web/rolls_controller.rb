@@ -4,8 +4,14 @@ module Web
 
     def new
       @roll = Roll.new
-      @cameras = current_user.cameras.order(:brand, :model)
-      @films = current_user.films.order(:brand, :name)
+      @cameras = current_user.cameras
+        .left_joins(:rolls)
+        .group(:uuid)
+        .order("COUNT(rolls.uuid) DESC, cameras.brand, cameras.model")
+      @films = current_user.films
+        .left_joins(:rolls)
+        .group(:uuid)
+        .order("COUNT(rolls.uuid) DESC, films.brand, films.name")
       @next_number = Roll.next_number_for(current_user)
     end
 
