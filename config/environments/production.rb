@@ -3,9 +3,6 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  # Disable host authorization — Heroku's router handles this
-  config.hosts = []
-
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
@@ -89,10 +86,6 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Allow requests from the app domain
-  config.hosts = [
-    "rolls.yannick.computer",
-    /.*\.yannick\.computer/
-  ]
-  config.host_authorization = {exclude: ->(request) { request.path == "/up" }}
+  # Allow all hosts — domain is controlled via APP_URL env var
+  config.hosts = []
 end
