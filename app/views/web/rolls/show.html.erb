@@ -1,3 +1,7 @@
+<% if @roll.status == "archived" %>
+  <% content_for :body_class, "archive-body" %>
+<% end %>
+
 <div class="page-header">
   <h1 class="page-title">
     Roll <%= @roll.roll_number %>
