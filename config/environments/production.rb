@@ -3,6 +3,9 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Allow any host — the app is behind Heroku's router which handles host validation
+  config.hosts.clear
+
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
