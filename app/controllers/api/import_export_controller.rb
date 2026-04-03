@@ -35,7 +35,7 @@ module Api
           nickname: f[:nickname],
           iso: f[:iso],
           color: f[:color],
-          slide: f[:slide],
+          slide: f[:slide] || false,
           show_iso: f[:show_iso],
           gradient_from: f[:gradient_from],
           gradient_to: f[:gradient_to],

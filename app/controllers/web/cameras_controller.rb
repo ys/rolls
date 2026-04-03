@@ -20,7 +20,7 @@ module Web
       @camera.updated_at = Time.current
 
       if @camera.save
-        redirect_to web_camera_path(@camera), notice: 'Camera added'
+        redirect_to camera_path(@camera), notice: 'Camera added'
       else
         render :new, status: :unprocessable_entity
       end
@@ -32,7 +32,7 @@ module Web
     def update
       @camera.updated_at = Time.current
       if @camera.update(camera_params)
-        redirect_to web_camera_path(@camera), notice: 'Camera updated'
+        redirect_to camera_path(@camera), notice: 'Camera updated'
       else
         render :edit, status: :unprocessable_entity
       end
@@ -40,7 +40,7 @@ module Web
 
     def destroy
       @camera.destroy!
-      redirect_to web_cameras_path, notice: 'Camera deleted'
+      redirect_to cameras_path, notice: 'Camera deleted'
     end
 
     private
@@ -48,7 +48,7 @@ module Web
     def set_camera
       @camera = current_user.cameras.find_by!(slug: params[:id])
     rescue ActiveRecord::RecordNotFound
-      redirect_to web_cameras_path, alert: 'Camera not found'
+      redirect_to cameras_path, alert: 'Camera not found'
     end
 
     def camera_params

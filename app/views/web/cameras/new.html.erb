@@ -1,9 +1,9 @@
 <div class="page-header">
   <h1 class="page-title">New Camera</h1>
-  <%= link_to "Cancel", web_cameras_path, class: "btn btn-sm" %>
+  <%= link_to "Cancel", cameras_path, class: "btn btn-sm" %>
 </div>
 
-<%= form_with model: [:web, @camera] do |f| %>
+<%= form_with model: @camera do |f| %>
   <div class="form-group">
     <%= f.label :brand, class: "form-label" %>
     <%= f.text_field :brand, class: "form-input", autofocus: true %>

@@ -1,9 +1,9 @@
 <div class="page-header">
   <h1 class="page-title">Edit Camera</h1>
-  <%= link_to "Cancel", web_camera_path(@camera), class: "btn btn-sm" %>
+  <%= link_to "Cancel", camera_path(@camera), class: "btn btn-sm" %>
 </div>
 
-<%= form_with model: [:web, @camera], method: :patch do |f| %>
+<%= form_with model: @camera, method: :patch do |f| %>
   <div class="form-group">
     <%= f.label :brand, class: "form-label" %>
     <%= f.text_field :brand, class: "form-input" %>
@@ -22,6 +22,6 @@
   </div>
   <div class="form-actions">
     <%= f.submit "Save", class: "btn btn-primary" %>
-    <%= link_to "Cancel", web_camera_path(@camera), class: "btn" %>
+    <%= link_to "Cancel", camera_path(@camera), class: "btn" %>
   </div>
 <% end %>

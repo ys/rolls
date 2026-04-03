@@ -20,7 +20,7 @@ module Web
       @film.updated_at = Time.current
 
       if @film.save
-        redirect_to web_film_path(@film), notice: 'Film added'
+        redirect_to film_path(@film), notice: 'Film added'
       else
         render :new, status: :unprocessable_entity
       end
@@ -32,7 +32,7 @@ module Web
     def update
       @film.updated_at = Time.current
       if @film.update(film_params)
-        redirect_to web_film_path(@film), notice: 'Film updated'
+        redirect_to film_path(@film), notice: 'Film updated'
       else
         render :edit, status: :unprocessable_entity
       end
@@ -40,7 +40,7 @@ module Web
 
     def destroy
       @film.destroy!
-      redirect_to web_films_path, notice: 'Film deleted'
+      redirect_to films_path, notice: 'Film deleted'
     end
 
     private
@@ -48,7 +48,7 @@ module Web
     def set_film
       @film = current_user.films.find_by!(slug: params[:id])
     rescue ActiveRecord::RecordNotFound
-      redirect_to web_films_path, alert: 'Film not found'
+      redirect_to films_path, alert: 'Film not found'
     end
 
     def film_params

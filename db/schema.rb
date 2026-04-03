@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_03_114057) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_03_114614) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -59,6 +59,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_114057) do
     t.boolean "show_iso", default: false
     t.timestamptz "updated_at", default: -> { "now()" }
     t.text "user_id", null: false
+    t.boolean "slide", default: false, null: false
+    t.text "gradient_from"
+    t.text "gradient_to"
     t.index ["slug"], name: "films_slug_idx"
     t.index ["user_id"], name: "films_user_id_idx"
     t.unique_constraint ["user_id", "slug"], name: "films_user_id_slug_uniq"
@@ -100,6 +103,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_114057) do
     t.decimal "push_pull", precision: 4, scale: 1
     t.integer "frame_count"
     t.timestamptz "loaded_at"
+    t.text "lab_id"
     t.index ["roll_number"], name: "rolls_roll_number_idx"
     t.index ["user_id"], name: "rolls_user_id_idx"
     t.unique_constraint ["user_id", "roll_number"], name: "rolls_user_id_slug_uniq"

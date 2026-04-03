@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1 class="page-title">Cameras</h1>
-  <%= link_to "New Camera", new_web_camera_path, class: "btn btn-sm" %>
+  <%= link_to "New Camera", new_camera_path, class: "btn btn-sm" %>
 </div>
 
 <% if @cameras.empty? %>
@@ -18,11 +18,11 @@
     <tbody>
       <% @cameras.each do |camera| %>
         <tr>
-          <td><%= link_to camera.display_name, web_camera_path(camera) %></td>
+          <td><%= link_to camera.display_name, camera_path(camera) %></td>
           <td><%= camera.format == 135 ? "35mm" : camera.format.to_s + "mm" %></td>
           <td class="text-muted text-xs"><%= camera.slug %></td>
           <td>
-            <%= link_to "Edit", edit_web_camera_path(camera), class: "btn btn-sm" %>
+            <%= link_to "Edit", edit_camera_path(camera), class: "btn btn-sm" %>
           </td>
         </tr>
       <% end %>

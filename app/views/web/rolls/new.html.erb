@@ -3,7 +3,7 @@
   <%= link_to "Cancel", root_path, class: "btn btn-sm" %>
 </div>
 
-<%= form_with model: [:web, @roll], url: web_rolls_path, method: :post do |f| %>
+<%= form_with model: @roll, url: rolls_path, method: :post do |f| %>
   <div class="detail-section">
     <div class="detail-section-title">Roll</div>
     <div class="form-group">

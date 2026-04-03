@@ -8,7 +8,7 @@
 <% else %>
   <div class="roll-list">
     <% @rolls.each do |roll| %>
-      <%= link_to web_roll_path(roll), class: "roll-card" do %>
+      <%= link_to roll_path(roll), class: "roll-card" do %>
         <div>
           <div class="roll-number"><%= roll.roll_number %></div>
           <%= status_badge(roll.status) %>

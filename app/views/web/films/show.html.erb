@@ -1,8 +1,8 @@
 <div class="page-header">
   <h1 class="page-title"><%= @film.display_name %></h1>
   <div class="flex gap-2">
-    <%= link_to "Edit", edit_web_film_path(@film), class: "btn btn-sm" %>
-    <%= button_to "Delete", web_film_path(@film), method: :delete,
+    <%= link_to "Edit", edit_film_path(@film), class: "btn btn-sm" %>
+    <%= button_to "Delete", film_path(@film), method: :delete,
         data: { confirm: "Delete this film?" },
         class: "btn btn-sm btn-danger" %>
   </div>
@@ -32,7 +32,7 @@
   <% else %>
     <div class="roll-list">
       <% @rolls.each do |roll| %>
-        <%= link_to web_roll_path(roll), class: "roll-card" do %>
+        <%= link_to roll_path(roll), class: "roll-card" do %>
           <div>
             <div class="roll-number"><%= roll.roll_number %></div>
             <%= status_badge(roll.status) %>

@@ -2,7 +2,7 @@
   <h1 class="page-title">Active Rolls</h1>
   <div class="flex gap-2 items-center">
     <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
-    <%= link_to "+ New Roll", new_web_roll_path, class: "btn btn-sm btn-primary" %>
+    <%= link_to "+ New Roll", new_roll_path, class: "btn btn-sm btn-primary" %>
   </div>
 </div>
 
@@ -14,7 +14,7 @@
 <% else %>
   <div class="roll-list">
     <% @rolls.each do |roll| %>
-      <%= link_to web_roll_path(roll), class: "roll-card" do %>
+      <%= link_to roll_path(roll), class: "roll-card" do %>
         <div>
           <div class="roll-number"><%= roll.roll_number %></div>
           <%= status_badge(roll.status) %>
