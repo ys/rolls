@@ -17,6 +17,16 @@ class Roll < ApplicationRecord
   scope :archived, -> { where.not(archived_at: nil) }
   scope :by_roll_number, -> { order(roll_number: :desc) }
 
+  def self.next_number_for(user)
+    year_prefix = Time.current.year.to_s[-2..]
+    existing = user.rolls
+      .where("roll_number LIKE ?", "#{year_prefix}%")
+      .pluck(:roll_number)
+      .map { |n| n.sub(year_prefix, '').to_i }
+      .max || 0
+    "#{year_prefix}#{(existing + 1).to_s.rjust(2, '0')}"
+  end
+
   # Status logic (priority order)
   def status
     if archived_at.present?

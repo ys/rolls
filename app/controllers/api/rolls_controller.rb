@@ -34,18 +34,7 @@ module Api
     end
 
     def next_number
-      # Generate next roll number in YYxx format
-      year_prefix = Time.current.year.to_s[-2..]
-      existing = current_user.rolls
-        .where("roll_number LIKE ?", "#{year_prefix}%")
-        .pluck(:roll_number)
-        .map { |n| n.sub(year_prefix, '').to_i }
-        .max || 0
-
-      next_num = existing + 1
-      roll_number = "#{year_prefix}#{next_num.to_s.rjust(2, '0')}"
-
-      render json: { roll_number: roll_number }
+      render json: { roll_number: Roll.next_number_for(current_user) }
     end
 
     def show

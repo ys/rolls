@@ -2,6 +2,27 @@ module Web
   class RollsController < BaseController
     before_action :set_roll, only: [:show, :edit, :update, :destroy]
 
+    def new
+      @roll = Roll.new
+      @cameras = current_user.cameras.order(:brand, :model)
+      @films = current_user.films.order(:brand, :name)
+    end
+
+    def create
+      @roll = current_user.rolls.build(roll_params)
+      @roll.uuid = SecureRandom.uuid
+      @roll.roll_number ||= Roll.next_number_for(current_user)
+      @roll.created_at = Time.current
+      @roll.updated_at = Time.current
+      if @roll.save
+        redirect_to web_roll_path(@roll), notice: 'Roll created'
+      else
+        @cameras = current_user.cameras.order(:brand, :model)
+        @films = current_user.films.order(:brand, :name)
+        render :new, status: :unprocessable_entity
+      end
+    end
+
     def index
       @rolls = current_user.rolls
         .active

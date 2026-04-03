@@ -1,6 +1,9 @@
 <div class="page-header">
   <h1 class="page-title">Active Rolls</h1>
-  <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
+  <div class="flex gap-2 items-center">
+    <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
+    <%= link_to "+ New Roll", new_web_roll_path, class: "btn btn-sm btn-primary" %>
+  </div>
 </div>
 
 <% if @rolls.empty? %>

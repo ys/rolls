@@ -13,7 +13,7 @@ Rails.application.routes.draw do
     get  'archive'  => 'rolls#archive',            as: :archive
     get  'stats'    => 'stats#index',              as: :stats
     get  'settings' => 'settings#index',           as: :settings
-    resources :rolls, except: [:new]
+    resources :rolls
     resources :cameras
     resources :films
   end

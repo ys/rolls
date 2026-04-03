@@ -1,0 +1,57 @@
+<div class="page-header">
+  <h1 class="page-title">New Roll</h1>
+  <%= link_to "Cancel", root_path, class: "btn btn-sm" %>
+</div>
+
+<%= form_with model: [:web, @roll], url: web_rolls_path, method: :post do |f| %>
+  <div class="detail-section">
+    <div class="detail-section-title">Roll</div>
+    <div class="form-group">
+      <%= f.label :roll_number, "Roll Number", class: "form-label" %>
+      <%= f.text_field :roll_number, class: "form-input", placeholder: "Leave blank to auto-generate (e.g. 26a)" %>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-title">Equipment</div>
+    <div class="form-group">
+      <%= f.label :camera_uuid, "Camera", class: "form-label" %>
+      <%= f.select :camera_uuid,
+            [["— none —", nil]] + @cameras.map { |c| [c.display_name, c.uuid] },
+            { selected: nil },
+            class: "form-select" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :film_uuid, "Film", class: "form-label" %>
+      <%= f.select :film_uuid,
+            [["— none —", nil]] + @films.map { |f| [f.display_name, f.uuid] },
+            { selected: nil },
+            class: "form-select" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :push_pull, "Push / Pull", class: "form-label" %>
+      <%= f.number_field :push_pull, class: "form-input", placeholder: "0 = box speed, +1 = push 1, -1 = pull 1", step: 1 %>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-title">Timeline</div>
+    <div class="form-group">
+      <%= f.label :loaded_at, "Loaded at", class: "form-label" %>
+      <%= f.datetime_local_field :loaded_at, class: "form-input" %>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-title">Notes</div>
+    <div class="form-group">
+      <%= f.label :notes, "Notes", class: "form-label" %>
+      <%= f.text_area :notes, class: "form-textarea", rows: 3 %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Create Roll", class: "btn btn-primary" %>
+    <%= link_to "Cancel", root_path, class: "btn" %>
+  </div>
+<% end %>

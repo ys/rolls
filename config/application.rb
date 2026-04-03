@@ -38,5 +38,9 @@ module RollsRailsRewrite
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Use a separate migrations table to avoid conflicting with the existing
+    # Next.js schema_migrations table (which uses id/name/applied_at columns).
+    config.active_record.schema_migrations_table_name = 'rails_schema_migrations'
   end
 end
