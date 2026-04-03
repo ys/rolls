@@ -1045,34 +1045,13 @@ body.archive-body .main-content {
 }
 
 body.archive-body .main-content {
-  color: var(--orange);
-}
-
-body.archive-body .main-content .detail-section-title {
-  border-bottom-color: rgba(255, 149, 0, 0.15);
-  color: rgba(255, 149, 0, 0.45);
-}
-
-body.archive-body .main-content a {
-  color: rgba(255, 149, 0, 0.6);
-}
-
-body.archive-body .main-content a:hover {
-  color: var(--orange);
-}
-
-body.archive-body .main-content .text-muted {
-  color: rgba(255, 149, 0, 0.45);
-}
-
-body.archive-body .main-content .btn {
-  border-color: rgba(255, 149, 0, 0.35);
-  color: rgba(255, 149, 0, 0.6);
-}
-
-body.archive-body .main-content .btn:hover {
-  background: rgba(255, 149, 0, 0.12);
-  color: var(--orange);
+  /* Remap ink variables to orange palette so all components inherit */
+  --ink:           #ff9500;
+  --ink-secondary: rgba(255, 149, 0, 0.7);
+  --ink-muted:     rgba(255, 149, 0, 0.45);
+  --border:        rgba(255, 149, 0, 0.15);
+  --border-light:  rgba(255, 149, 0, 0.1);
+  color: var(--ink);
 }
 
 body.archive-body .main-content .btn-danger {
