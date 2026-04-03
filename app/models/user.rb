@@ -14,6 +14,10 @@ class User < ApplicationRecord
   before_create :set_defaults
   before_create :generate_id
 
+  def admin?
+    role == "admin"
+  end
+
   def self.find_or_initialize_for_webauthn(username:)
     find_or_initialize_by(username: username.downcase.strip)
   end

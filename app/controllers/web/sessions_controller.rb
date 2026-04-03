@@ -1,5 +1,6 @@
 module Web
   class SessionsController < ApplicationController
+    layout "auth", only: [:new]
     skip_before_action :set_current_user, only: [:new]
 
     def new

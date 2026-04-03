@@ -1,0 +1,38 @@
+<div class="page-header">
+  <h1 class="page-title">Shoot</h1>
+  <%= link_to "+ New Roll", new_roll_path, class: "btn btn-sm btn-primary" %>
+</div>
+
+<% loaded_rolls = @rolls.select { |r| r.status == "loaded" } %>
+<% fridge_rolls = @rolls.select { |r| r.status == "fridge" } %>
+
+<% if @rolls.empty? %>
+  <div class="empty-state">
+    No rolls loaded or in fridge.<br>
+    <%= link_to "Start one →", new_roll_path %>
+  </div>
+<% else %>
+
+  <% if loaded_rolls.any? %>
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">Loaded — <%= loaded_rolls.size %></div>
+      <div class="roll-list">
+        <% loaded_rolls.each do |roll| %>
+          <%= render "roll_row", roll: roll %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if fridge_rolls.any? %>
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">In Fridge — <%= fridge_rolls.size %></div>
+      <div class="roll-list">
+        <% fridge_rolls.each do |roll| %>
+          <%= render "roll_row", roll: roll %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+<% end %>

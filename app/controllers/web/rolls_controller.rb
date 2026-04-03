@@ -6,6 +6,7 @@ module Web
       @roll = Roll.new
       @cameras = current_user.cameras.order(:brand, :model)
       @films = current_user.films.order(:brand, :name)
+      @next_number = Roll.next_number_for(current_user)
     end
 
     def create
@@ -14,6 +15,11 @@ module Web
       @roll.roll_number ||= Roll.next_number_for(current_user)
       @roll.created_at = Time.current
       @roll.updated_at = Time.current
+      if @roll.camera_uuid.present?
+        @roll.loaded_at ||= Time.current
+      else
+        @roll.fridge_at ||= Time.current
+      end
       if @roll.save
         redirect_to roll_path(@roll), notice: "Roll created"
       else
@@ -23,18 +29,33 @@ module Web
       end
     end
 
-    def index
+    DEVELOP_STATUSES = %w[lab scanned processed uploaded].freeze
+
+    def shoot
       @rolls = current_user.rolls
         .active
         .includes(:camera, :film)
         .order(created_at: :desc)
+        .reject { |r| DEVELOP_STATUSES.include?(r.status) }
+    end
+
+    def develop
+      @rolls = current_user.rolls
+        .active
+        .includes(:camera, :film)
+        .order(created_at: :desc)
+        .select { |r| %w[lab scanned processed uploaded].include?(r.status) }
+    end
+
+    def index
+      redirect_to shoot_path
     end
 
     def archive
       @rolls = current_user.rolls
         .archived
         .includes(:camera, :film)
-        .order(archived_at: :desc)
+        .order(roll_number: :desc)
     end
 
     def show

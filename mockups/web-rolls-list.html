@@ -3,73 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rolls. — my rolls</title>
+<title>rolls — rolls</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #FAF6EE;
-  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
-  color: #1A1408;
+  background: #f5f0e8;
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a18;
   min-height: 100vh;
-  position: relative;
 }
 
-/* Dot-grid background */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
-  background-size: 18px 18px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ---- Nav ---- */
+/* ── Nav ── */
 .nav {
-  background: #1A1408;
+  background: #1a1a18;
   position: sticky;
   top: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 48px;
-  border-bottom: 1px solid #2C2416;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
+  padding: 12px 16px;
   gap: 16px;
-}
-
-.nav-menu-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-}
-
-.nav-menu-btn span {
-  display: block;
-  width: 18px;
-  height: 1.5px;
-  background: rgba(224,200,128,0.5);
-  border-radius: 1px;
-}
-
-.nav-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(224,200,128,0.9);
 }
 
 .nav-links {
@@ -78,523 +33,306 @@ body::before {
 }
 
 .nav-link {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(224,200,128,0.35);
+  color: rgba(245,240,232,0.6);
   text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   padding: 4px 8px;
   border-radius: 2px;
+  text-transform: uppercase;
 }
 
-.nav-link:hover { color: rgba(224,200,128,0.7); }
-.nav-link.active { color: rgba(224,200,128,0.9); background: rgba(224,200,128,0.08); }
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.nav-link.active {
+  color: #f5f0e8;
+  background: rgba(255,255,255,0.12);
 }
 
-.nav-add-btn {
-  background: #D4900A;
-  border: none;
-  border-radius: 2px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: 300;
-  color: #19150E;
-  line-height: 1;
-}
+.nav-user { font-size: 11px; color: rgba(245,240,232,0.4); letter-spacing: 0.08em; }
 
-.nav-add-btn:hover { background: #C0820A; }
+/* ── Main ── */
+.main { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
 
-/* ---- Content ---- */
-.content {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 24px 16px 100px;
-  position: relative;
-  z-index: 1;
-}
-
-/* ---- Page header ---- */
+/* ── Page header ── */
 .page-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #c8c0b0;
+  padding-bottom: 12px;
 }
 
 .page-title {
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(26,20,8,0.4);
 }
 
-.roll-count {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+.btn {
+  display: inline-block;
+  padding: 4px 10px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(26,20,8,0.3);
-  background: rgba(26,20,8,0.06);
-  border: 1px solid rgba(26,20,8,0.1);
-  padding: 3px 8px;
-  border-radius: 100px;
+  text-decoration: none;
+  border: 1px solid #1a1a18;
+  background: #1a1a18;
+  color: #f5f0e8;
+  cursor: pointer;
+  border-radius: 2px;
 }
 
-/* ---- Section header ---- */
-.section-header {
+/* ── Sections ── */
+.rolls-section { margin-bottom: 32px; }
+
+.rolls-section-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  margin-top: 28px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #c8c0b0;
 }
 
-.section-header:first-of-type {
-  margin-top: 0;
-}
-
-.section-label {
-  font-size: 7px;
+.rolls-section-title {
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(26,20,8,0.35);
 }
 
-.section-line {
-  flex: 1;
-  height: 1px;
-  background: #D9D3CC;
+.rolls-section-count {
+  font-size: 10px;
+  color: #8a8a82;
+  letter-spacing: 0.1em;
 }
 
-.section-count {
-  font-size: 7px;
+.rolls-subsection { margin-bottom: 20px; }
+
+.rolls-subsection-label {
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 1px;
-  color: rgba(26,20,8,0.25);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a8a82;
+  padding: 10px 0 4px;
 }
 
-/* ---- Roll cards ---- */
-.roll-list {
+/* ── Roll rows ── */
+.roll-card {
+  border-bottom: 1px solid #ddd8cc;
+  padding: 12px 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.roll-card {
-  background: #FAF6EE;
-  border: 1px solid #D9D3CC;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
-  overflow: hidden;
-  display: flex;
+  gap: 3px;
   text-decoration: none;
-  color: #1A1408;
-  transition: box-shadow 0.1s, transform 0.1s;
-  cursor: pointer;
+  color: #1a1a18;
 }
 
 .roll-card:hover {
-  box-shadow: 0 2px 8px rgba(60,40,20,0.12);
-  transform: translateY(-1px);
+  background: #ede8df;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
-.status-strip {
-  width: 4px;
-  flex-shrink: 0;
-}
-
-.strip-amber { background: #D4900A; }
-.strip-blue  { background: #4A88C0; }
-.strip-teal  { background: #26A69A; }
-.strip-green { background: #3A9040; }
-.strip-grey  { background: #8A8882; }
-
-.card-body {
-  flex: 1;
-  padding: 11px 14px 10px;
+.roll-card-top {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.card-top {
-  display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
 
-.card-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.film-label {
-  font-size: 7px;
+.roll-film-name {
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(26,20,8,0.35);
-  display: block;
-  margin-bottom: 2px;
 }
 
-.film-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1A1408;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-roll-number {
+.roll-card-number {
   font-size: 11px;
-  font-weight: 700;
-  color: rgba(26,20,8,0.2);
+  color: #8a8a82;
+  letter-spacing: 0.08em;
   white-space: nowrap;
-  flex-shrink: 0;
-  padding-top: 2px;
 }
 
-.card-meta {
-  display: flex;
-  gap: 20px;
+.roll-card-secondary {
+  font-size: 12px;
+  color: #4a4a45;
 }
 
-.meta-field {}
-
-.meta-lbl {
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(26,20,8,0.3);
-  display: block;
-  margin-bottom: 1px;
+.roll-card-notes {
+  font-size: 12px;
+  color: #8a8a82;
+  font-style: italic;
 }
 
-.meta-val {
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(26,20,8,0.65);
-}
-
-.card-footer {
+.roll-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding-top: 2px;
-  border-top: 1px solid rgba(26,20,8,0.06);
+  gap: 8px;
   margin-top: 2px;
 }
 
-.card-date {
-  font-size: 9px;
-  color: rgba(26,20,8,0.3);
-}
-
-.status-dot-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 8px;
+.status-badge {
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
+.status-loaded   { color: #d4860a; }
+.status-fridge   { color: #4a90d9; }
+.status-lab      { color: #4a90d9; }
+.status-scanned  { color: #2a9d8f; }
+.status-processed { color: #2d6a4f; }
 
-.dot-amber { background: #D4900A; }
-.dot-blue  { background: #4A88C0; }
-.dot-teal  { background: #26A69A; }
-.dot-green { background: #3A9040; }
-.dot-grey  { background: #8A8882; }
-
-.label-amber { color: #D4900A; }
-.label-blue  { color: #4A88C0; }
-.label-teal  { color: #26A69A; }
-.label-green { color: #3A9040; }
-.label-grey  { color: #8A8882; }
-
-/* ---- FAB ---- */
-.fab {
-  position: fixed;
-  bottom: 28px;
-  right: 24px;
-  z-index: 100;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #D4900A;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  font-weight: 300;
-  color: #19150E;
-  box-shadow: 0 4px 16px rgba(212,144,10,0.4), 0 2px 4px rgba(0,0,0,0.15);
-  line-height: 1;
-  transition: transform 0.12s, box-shadow 0.12s;
-}
-
-.fab:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(212,144,10,0.5), 0 2px 6px rgba(0,0,0,0.18);
+.roll-card-album {
+  font-size: 10px;
+  color: #8a8a82;
+  letter-spacing: 0.06em;
 }
 </style>
 </head>
 <body>
 
-<!-- Nav -->
 <nav class="nav">
-  <div class="nav-left">
-    <button class="nav-menu-btn">
-      <span></span><span></span><span></span>
-    </button>
-    <span class="nav-title">Rolls</span>
-  </div>
   <div class="nav-links">
     <a href="#" class="nav-link active">Rolls</a>
+    <a href="#" class="nav-link">Archive</a>
     <a href="#" class="nav-link">Cameras</a>
     <a href="#" class="nav-link">Films</a>
     <a href="#" class="nav-link">Stats</a>
+    <a href="#" class="nav-link">Settings</a>
   </div>
-  <div class="nav-right">
-    <button class="nav-add-btn">+</button>
-  </div>
+  <div class="nav-user">ys</div>
 </nav>
 
-<!-- Content -->
-<div class="content">
+<div class="main">
 
   <div class="page-header">
-    <span class="page-title">My Rolls</span>
-    <span class="roll-count">12 rolls</span>
+    <span class="page-title">Rolls</span>
+    <a href="#" class="btn">+ New Roll</a>
   </div>
 
-  <!-- In Camera section -->
-  <div class="section-header">
-    <span class="section-label">In Camera</span>
-    <div class="section-line"></div>
-    <span class="section-count">2</span>
+  <!-- ── SHOOT ─────────────────────────── -->
+  <div class="rolls-section">
+    <div class="rolls-section-header">
+      <span class="rolls-section-title">Shoot</span>
+      <span class="rolls-section-count">4 rolls</span>
+    </div>
+
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">Loaded — 3</div>
+
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Kodak Gold 200</span>
+          <span class="roll-card-number">26x08</span>
+        </div>
+        <div class="roll-card-secondary">Contax T2 · 12 Mar 2026</div>
+        <div class="roll-card-notes">Autumn light, shooting wide open all day. Probably overdid it on the bracketing.</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-loaded">Loaded</span>
+        </div>
+      </a>
+
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Cinestill 800T</span>
+          <span class="roll-card-number">26x03</span>
+        </div>
+        <div class="roll-card-secondary">Leica M6 · 18 Feb 2026</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-loaded">Loaded</span>
+        </div>
+      </a>
+
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Kodak Portra 400</span>
+          <span class="roll-card-number">26x01</span>
+        </div>
+        <div class="roll-card-secondary">Contax T2 · 3 Jan 2026</div>
+        <div class="roll-card-notes">Street portraits, rainy evening in Lisbon.</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-loaded">Loaded</span>
+          <span class="roll-card-album">Lisbon Jan 2026</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">In Fridge — 1</div>
+
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Ilford HP5 Plus</span>
+          <span class="roll-card-number">26x06</span>
+        </div>
+        <div class="roll-card-secondary">5 Mar 2026</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-fridge">In Fridge</span>
+        </div>
+      </a>
+    </div>
   </div>
 
-  <div class="roll-list">
+  <!-- ── DEVELOP ─────────────────────────── -->
+  <div class="rolls-section">
+    <div class="rolls-section-header">
+      <span class="rolls-section-title">Develop</span>
+      <span class="rolls-section-count">3 rolls</span>
+    </div>
 
-    <!-- Roll 1 — loaded amber -->
-    <a class="roll-card" href="#">
-      <div class="status-strip strip-amber"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <div class="card-main">
-            <span class="film-label">Film</span>
-            <div class="film-name">Kodak Gold 200</div>
-          </div>
-          <span class="card-roll-number">#2604</span>
-        </div>
-        <div class="card-meta">
-          <div class="meta-field">
-            <span class="meta-lbl">Camera</span>
-            <span class="meta-val">Contax T2</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Frames</span>
-            <span class="meta-val">18 / 36</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Format</span>
-            <span class="meta-val">35mm</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span class="card-date">Started Mar 12, 2026</span>
-          <div class="status-dot-label">
-            <div class="status-dot dot-amber"></div>
-            <span class="label-amber">Loaded</span>
-          </div>
-        </div>
-      </div>
-    </a>
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">At Lab — 2</div>
 
-    <!-- Roll 2 — loaded amber -->
-    <a class="roll-card" href="#">
-      <div class="status-strip strip-amber"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <div class="card-main">
-            <span class="film-label">Film</span>
-            <div class="film-name">Kodak Portra 400</div>
-          </div>
-          <span class="card-roll-number">#2603</span>
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Lomography Color 800</span>
+          <span class="roll-card-number">26x05</span>
         </div>
-        <div class="card-meta">
-          <div class="meta-field">
-            <span class="meta-lbl">Camera</span>
-            <span class="meta-val">Leica M6</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Frames</span>
-            <span class="meta-val">32 / 36</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Push/Pull</span>
-            <span class="meta-val">+1</span>
-          </div>
+        <div class="roll-card-secondary">Olympus Stylus · 2 Mar 2026</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-lab">At Lab</span>
+          <span class="roll-card-album">Weekend trip</span>
         </div>
-        <div class="card-footer">
-          <span class="card-date">Started Feb 28, 2026</span>
-          <div class="status-dot-label">
-            <div class="status-dot dot-amber"></div>
-            <span class="label-amber">Loaded</span>
-          </div>
-        </div>
-      </div>
-    </a>
+      </a>
 
-  </div>
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Fujifilm Superia 400</span>
+          <span class="roll-card-number">26x04</span>
+        </div>
+        <div class="roll-card-secondary">Nikon FM2 · 20 Feb 2026</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-lab">At Lab</span>
+        </div>
+      </a>
+    </div>
 
-  <!-- Developing / Archive section -->
-  <div class="section-header">
-    <span class="section-label">Developing &amp; Archive</span>
-    <div class="section-line"></div>
-    <span class="section-count">10</span>
-  </div>
+    <div class="rolls-subsection">
+      <div class="rolls-subsection-label">Scanned — 1</div>
 
-  <div class="roll-list">
-
-    <!-- Roll 3 — lab blue -->
-    <a class="roll-card" href="#">
-      <div class="status-strip strip-blue"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <div class="card-main">
-            <span class="film-label">Film</span>
-            <div class="film-name">Lomography 800</div>
-          </div>
-          <span class="card-roll-number">#2602</span>
+      <a class="roll-card" href="#">
+        <div class="roll-card-top">
+          <span class="roll-film-name">Kodak Portra 400</span>
+          <span class="roll-card-number">26x02</span>
         </div>
-        <div class="card-meta">
-          <div class="meta-field">
-            <span class="meta-lbl">Camera</span>
-            <span class="meta-val">Olympus Stylus</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Sent</span>
-            <span class="meta-val">Mar 1, 2026</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Format</span>
-            <span class="meta-val">35mm</span>
-          </div>
+        <div class="roll-card-secondary">Leica M6 · 10 Feb 2026</div>
+        <div class="roll-card-footer">
+          <span class="status-badge status-scanned">Scanned</span>
         </div>
-        <div class="card-footer">
-          <span class="card-date">Shot Feb 10–28, 2026</span>
-          <div class="status-dot-label">
-            <div class="status-dot dot-blue"></div>
-            <span class="label-blue">At Lab</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Roll 4 — scanned teal -->
-    <a class="roll-card" href="#">
-      <div class="status-strip strip-teal"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <div class="card-main">
-            <span class="film-label">Film</span>
-            <div class="film-name">Ilford HP5 Plus</div>
-          </div>
-          <span class="card-roll-number">#2601</span>
-        </div>
-        <div class="card-meta">
-          <div class="meta-field">
-            <span class="meta-lbl">Camera</span>
-            <span class="meta-val">Nikon FM2</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Scanned</span>
-            <span class="meta-val">Feb 20, 2026</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Push/Pull</span>
-            <span class="meta-val">+2</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span class="card-date">Shot Jan 15–Feb 12, 2026</span>
-          <div class="status-dot-label">
-            <div class="status-dot dot-teal"></div>
-            <span class="label-teal">Scanned</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
-    <!-- Roll 5 — archived green -->
-    <a class="roll-card" href="#">
-      <div class="status-strip strip-green"></div>
-      <div class="card-body">
-        <div class="card-top">
-          <div class="card-main">
-            <span class="film-label">Film</span>
-            <div class="film-name">Fuji Superia 400</div>
-          </div>
-          <span class="card-roll-number">#2598</span>
-        </div>
-        <div class="card-meta">
-          <div class="meta-field">
-            <span class="meta-lbl">Camera</span>
-            <span class="meta-val">Contax T2</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Archived</span>
-            <span class="meta-val">Jan 30, 2026</span>
-          </div>
-          <div class="meta-field">
-            <span class="meta-lbl">Frames</span>
-            <span class="meta-val">36 / 36</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span class="card-date">Shot Dec 2025 — Jan 2026</span>
-          <div class="status-dot-label">
-            <div class="status-dot dot-green"></div>
-            <span class="label-green">Archived</span>
-          </div>
-        </div>
-      </div>
-    </a>
-
+      </a>
+    </div>
   </div>
 
 </div>
-
-<!-- FAB -->
-<button class="fab">+</button>
-
 </body>
 </html>

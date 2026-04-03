@@ -3,98 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rolls. — sign in</title>
+<title>rolls — sign in</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #19150E;
+  background: #F2EDE4;
   font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: #E0C880;
-  position: relative;
-  overflow: hidden;
+  justify-content: space-between;
+  color: #1A1310;
 }
 
-/* Subtle dot-grid */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(212,144,10,0.07) 1px, transparent 1px);
-  background-size: 18px 18px;
-  pointer-events: none;
-}
-
-/* Grain overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
-
-.splash-container {
+.hero {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  padding: 80px 40px 40px;
   width: 100%;
-  max-width: 360px;
-  padding: 0 32px;
-  position: relative;
-  z-index: 1;
+  max-width: 400px;
 }
 
-/* Film sprocket strip accent at top */
-.film-accent {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  margin-bottom: 56px;
-  opacity: 0.18;
-}
-
-.sprocket {
-  width: 10px;
-  height: 8px;
-  border-radius: 2px;
-  background: #E0C880;
-}
-
-/* Wordmark */
-.wordmark {
-  font-size: 52px;
+.wordstack {
+  font-size: clamp(52px, 14vw, 80px);
   font-weight: 700;
-  color: #D4900A;
+  line-height: 0.95;
   letter-spacing: -1px;
-  line-height: 1;
-  margin-bottom: 10px;
-  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 20px;
 }
 
-.subtitle {
+.wordstack .shoot   { color: #A89E8E; display: block; }
+.wordstack .develop { color: #5C5248; display: block; }
+.wordstack .archive { color: #FF9500; display: block; }
+
+.app-name {
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 3.5px;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  color: rgba(224, 200, 128, 0.35);
-  margin-bottom: 64px;
-  text-align: center;
+  color: #B0A898;
 }
 
-/* Buttons */
-.btn-group {
+.actions {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 40px 48px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-bottom: 32px;
+  gap: 10px;
 }
 
 .btn {
@@ -103,163 +64,87 @@ body::after {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 14px 20px;
+  padding: 16px 20px;
   font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.8px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   border: none;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: opacity 0.12s;
 }
 
 .btn:hover { opacity: 0.85; }
 .btn:active { opacity: 0.7; }
 
-.btn-passkey {
-  background: #D4900A;
-  color: #19150E;
+.btn-apple {
+  background: #1A1310;
+  color: #F2EDE4;
 }
 
-.btn-apple {
-  background: rgba(224, 200, 128, 0.10);
-  color: #E0C880;
-  border: 1px solid rgba(224, 200, 128, 0.18);
+.btn-passkey {
+  background: transparent;
+  color: #1A1310;
+  border: 1.5px solid rgba(26,19,16,0.2);
 }
 
 .btn-create {
   background: transparent;
-  color: rgba(224, 200, 128, 0.45);
-  border: 1px solid rgba(224, 200, 128, 0.12);
+  border: none;
+  color: #B0A898;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 8px;
+  cursor: pointer;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
 }
 
-/* Passkey icon */
-.icon-passkey {
-  width: 16px;
-  height: 16px;
-  opacity: 0.9;
-  flex-shrink: 0;
-}
+.btn-create:hover { color: #5C5248; }
 
-/* Apple logo SVG */
 .icon-apple {
   width: 14px;
   height: 17px;
   flex-shrink: 0;
-  opacity: 0.8;
 }
 
-/* Divider */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1px;
-  background: rgba(224, 200, 128, 0.10);
-}
-
-.divider-text {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(224, 200, 128, 0.20);
-}
-
-/* Footer */
-.footer {
-  position: fixed;
-  bottom: 32px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  color: rgba(224, 200, 128, 0.18);
-  text-transform: uppercase;
-  z-index: 1;
-}
-
-/* Roll count badge — ambient info */
-.ambient-stat {
-  position: fixed;
-  top: 32px;
-  right: 32px;
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: rgba(224, 200, 128, 0.12);
-  text-transform: uppercase;
-  z-index: 1;
+.icon-passkey {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 </style>
 </head>
 <body>
 
-<span class="ambient-stat">Rolls v2.0</span>
-
-<div class="splash-container">
-
-  <!-- Film sprocket accent -->
-  <div class="film-accent">
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
-    <div class="sprocket"></div>
+<div class="hero">
+  <div class="wordstack">
+    <span class="shoot">shoot</span>
+    <span class="develop">develop</span>
+    <span class="archive">archive</span>
   </div>
-
-  <!-- Wordmark -->
-  <div class="wordmark">rolls.</div>
-  <div class="subtitle">Analog Film Tracker</div>
-
-  <!-- Primary auth buttons -->
-  <div class="btn-group">
-    <button class="btn btn-passkey">
-      <!-- Key icon -->
-      <svg class="icon-passkey" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="5.5" cy="8.5" r="3.5" stroke="#19150E" stroke-width="1.5"/>
-        <path d="M8.5 8.5h5M11.5 8.5v2" stroke="#19150E" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      Sign in with Passkey
-    </button>
-
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span class="divider-text">or</span>
-      <div class="divider-line"></div>
-    </div>
-
-    <button class="btn btn-apple">
-      <!-- Apple logo -->
-      <svg class="icon-apple" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M11.76 9.04c-.02-2.1 1.71-3.1 1.79-3.16-0.97-1.42-2.49-1.61-3.03-1.64-1.3-.13-2.53.76-3.19.76-.66 0-1.68-.74-2.77-.72C3 4.32 1.68 5.12.96 6.39-.5 8.96.56 12.77 1.98 14.85c.7 1.02 1.53 2.16 2.63 2.12 1.05-.04 1.45-.68 2.72-.68 1.26 0 1.62.68 2.73.66 1.13-.02 1.85-1.03 2.54-2.05.81-1.17 1.14-2.32 1.16-2.38-.03-.01-2.01-.77-2.0-3.08zM9.72 2.76C10.26 2.12 10.63 1.22 10.52.28c-.77.03-1.71.52-2.26 1.15-.49.56-.93 1.47-.81 2.34.86.06 1.73-.43 2.27-1.01z" fill="#E0C880"/>
-      </svg>
-      Sign in with Apple
-    </button>
-
-    <button class="btn btn-create">
-      Create Account
-    </button>
-  </div>
-
+  <div class="app-name">Rolls</div>
 </div>
 
-<div class="footer">rolls.yannick.computer</div>
+<div class="actions">
+  <button class="btn btn-apple">
+    <svg class="icon-apple" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.76 9.04c-.02-2.1 1.71-3.1 1.79-3.16-.97-1.42-2.49-1.61-3.03-1.64-1.3-.13-2.53.76-3.19.76-.66 0-1.68-.74-2.77-.72C3 4.32 1.68 5.12.96 6.39-.5 8.96.56 12.77 1.98 14.85c.7 1.02 1.53 2.16 2.63 2.12 1.05-.04 1.45-.68 2.72-.68 1.26 0 1.62.68 2.73.66 1.13-.02 1.85-1.03 2.54-2.05.81-1.17 1.14-2.32 1.16-2.38-.03-.01-2.01-.77-2.0-3.08zM9.72 2.76C10.26 2.12 10.63 1.22 10.52.28c-.77.03-1.71.52-2.26 1.15-.49.56-.93 1.47-.81 2.34.86.06 1.73-.43 2.27-1.01z" fill="#F2EDE4"/>
+    </svg>
+    Sign in with Apple
+  </button>
+
+  <button class="btn btn-passkey">
+    <svg class="icon-passkey" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="5.5" cy="7.5" r="3.5" stroke="#1A1310" stroke-width="1.5"/>
+      <path d="M8.5 7.5h5M11.5 7.5v2" stroke="#1A1310" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Sign in with Passkey
+  </button>
+
+  <button class="btn-create">Create account</button>
+</div>
 
 </body>
 </html>

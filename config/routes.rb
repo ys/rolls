@@ -9,9 +9,11 @@ Rails.application.routes.draw do
   delete "logout" => "web/sessions#destroy", :as => :logout
 
   scope module: :web do
-    root "rolls#index"
+    root "rolls#shoot"
+    get "shoot"   => "rolls#shoot",   :as => :shoot
+    get "develop" => "rolls#develop", :as => :develop
     get "archive" => "rolls#archive", :as => :archive
-    get "stats" => "stats#index", :as => :stats
+    get "stats"   => "stats#index",   :as => :stats
     get "settings" => "settings#index", :as => :settings
     resources :rolls
     resources :cameras

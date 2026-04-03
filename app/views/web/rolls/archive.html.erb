@@ -1,41 +1,62 @@
-<div class="page-header">
-  <h1 class="page-title">Archive</h1>
-  <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
-</div>
+<% content_for :body_class, "archive-body" %>
 
 <% if @rolls.empty? %>
-  <div class="empty-state">No archived rolls.</div>
+  <div class="empty-state" style="color:rgba(245,240,232,0.3);">No archived rolls yet.</div>
 <% else %>
-  <div class="roll-list">
-    <% @rolls.each do |roll| %>
-      <%= link_to roll_path(roll), class: "roll-card" do %>
-        <div>
-          <div class="roll-number"><%= roll.roll_number %></div>
-          <%= status_badge(roll.status) %>
-        </div>
-        <div class="roll-meta">
-          <div class="roll-equipment">
-            <% if roll.camera %><%= roll.camera.display_name %><% end %>
-            <% if roll.film %> · <%= roll.film.display_name %><% end %>
-          </div>
-          <div class="roll-dates">
-            <% if roll.archived_at %>Archived <%= format_datetime(roll.archived_at) %><% end %>
-            <% if roll.album_name %> · <%= roll.album_name %><% end %>
-          </div>
-          <% if roll.tags.present? %>
-            <div class="roll-tags">
-              <% roll.tags.each do |tag| %>
-                <span class="tag"><%= tag %></span>
+  <% years_data = @rolls.group_by { |r| r.roll_number.to_s[0, 2] } %>
+
+  <div class="archive-year-pills">
+    <button class="archive-year-pill active" data-year="all" onclick="filterYear('all', this)">All</button>
+    <% years_data.each_key do |yy| %>
+      <button class="archive-year-pill" data-year="<%= yy %>" onclick="filterYear('<%= yy %>', this)">20<%= yy %></button>
+    <% end %>
+  </div>
+
+  <% years_data.each do |yy, rolls| %>
+    <% year = yy.present? ? "20#{yy}" : "—" %>
+    <div class="archive-year-section" data-year="<%= yy %>">
+      <div class="archive-year-label"><%= year %></div>
+      <div class="archive-grid">
+        <% rolls.each do |roll| %>
+          <%= link_to roll_path(roll), class: "archive-card" do %>
+            <div class="archive-card-info">
+              <div class="archive-card-info-left">
+                <span class="archive-card-film"><%= roll.film&.display_name || "—" %></span>
+                <span class="archive-card-meta">
+                  <%
+                    parts = []
+                    parts << roll.camera.display_name if roll.camera
+                    parts << "#{roll.camera.format}mm" if roll.camera&.format&.positive?
+                  %>
+                  <%= parts.join(" · ") %>
+                </span>
+              </div>
+              <div class="archive-card-info-right">
+                <span class="archive-card-number"><%= roll.roll_number %></span>
+                <span class="archive-card-date">
+                  <%= roll.archived_at&.strftime("%b %Y") %>
+                  <% if roll.album_name.present? %> · <%= roll.album_name %><% end %>
+                </span>
+              </div>
+            </div>
+            <div class="archive-card-image">
+              <% if roll.contact_sheet_url.present? %>
+                <img src="<%= roll.contact_sheet_url %>" alt="" />
               <% end %>
             </div>
           <% end %>
-        </div>
-        <div>
-          <% if roll.contact_sheet_url.present? %>
-            <span class="text-xs text-muted">📷</span>
-          <% end %>
-        </div>
-      <% end %>
-    <% end %>
-  </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 <% end %>
+
+<script>
+function filterYear(yy, btn) {
+  document.querySelectorAll('.archive-year-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.archive-year-section').forEach(s => {
+    s.style.display = (yy === 'all' || s.dataset.year === yy) ? '' : 'none';
+  });
+}
+</script>

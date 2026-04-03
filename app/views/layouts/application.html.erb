@@ -9,7 +9,7 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="paper-body">
+  <body class="paper-body <%= yield :body_class %>">
     <% if notice.present? %>
       <div class="flash flash-notice" data-turbo-temporary><%= notice %></div>
     <% end %>
@@ -20,12 +20,22 @@
     <% if logged_in? %>
       <nav class="main-nav">
         <div class="nav-inner">
-          <%= link_to "ROLLS", root_path, class: nav_active_class(root_path, exact: true) %>
-          <%= link_to "ARCHIVE", archive_path, class: nav_active_class(archive_path) %>
-          <%= link_to "CAMERAS", cameras_path, class: nav_active_class(cameras_path) %>
-          <%= link_to "FILMS", films_path, class: nav_active_class(films_path) %>
-          <%= link_to "STATS", stats_path, class: nav_active_class(stats_path) %>
-          <%= link_to "SETTINGS", settings_path, class: nav_active_class(settings_path) %>
+          <%= link_to "Shoot",   shoot_path,   class: nav_active_class(shoot_path, exact: true) %>
+          <%= link_to "Develop", develop_path, class: nav_active_class(develop_path, exact: true) %>
+          <%= link_to "Archive", archive_path, class: nav_active_class(archive_path, exact: true) %>
+
+          <div class="nav-more">
+            <button class="nav-more-btn" onclick="this.parentElement.classList.toggle('open')" aria-label="More">···</button>
+            <div class="nav-more-dropdown">
+              <%= link_to "Cameras", cameras_path, class: nav_active_class(cameras_path) %>
+              <%= link_to "Films",   films_path,   class: nav_active_class(films_path) %>
+              <%= link_to "Stats",   stats_path,   class: nav_active_class(stats_path) %>
+              <%= link_to "Settings", settings_path, class: nav_active_class(settings_path) %>
+              <% if current_user.admin? %>
+                <%= link_to "Admin", admin_root_path, class: nav_active_class(admin_root_path) %>
+              <% end %>
+            </div>
+          </div>
         </div>
         <div class="nav-user">
           <span class="nav-username"><%= current_user.username %></span>
@@ -37,5 +47,12 @@
     <main class="main-content">
       <%= yield %>
     </main>
+    <script>
+      document.addEventListener('click', function(e) {
+        document.querySelectorAll('.nav-more.open').forEach(function(el) {
+          if (!el.contains(e.target)) el.classList.remove('open');
+        });
+      });
+    </script>
   </body>
 </html>

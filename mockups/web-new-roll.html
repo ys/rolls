@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rolls. — new roll</title>
+<title>rolls — new roll</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -65,21 +65,64 @@ body::before {
 
 /* ---- Content ---- */
 .content {
-  max-width: 560px;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 28px 16px 100px;
+  padding: 32px 16px 100px;
   position: relative;
   z-index: 1;
 }
 
-/* ---- Form ---- */
+/* ---- Roll number header ---- */
+.roll-number-hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.roll-number-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  margin-bottom: 6px;
+}
+
+.roll-number-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(26,20,8,0.08);
+  letter-spacing: 4px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.roll-number-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.25);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.roll-number-edit:hover { color: rgba(26,20,8,0.5); background: rgba(26,20,8,0.04); }
+
+/* ---- Form card ---- */
 .form-card {
   background: #FAF6EE;
   border: 1px solid #D9D3CC;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(60,40,20,0.06);
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .form-section-title {
@@ -97,12 +140,12 @@ body::before {
   border-bottom: 1px solid rgba(26,20,8,0.07);
 }
 
-.form-field:last-child {
-  border-bottom: none;
-}
+.form-field:last-child { border-bottom: none; }
 
 .field-lbl {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -111,34 +154,17 @@ body::before {
   margin-bottom: 6px;
 }
 
-.field-input {
-  display: block;
-  width: 100%;
-  padding: 9px 12px;
-  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
-  font-size: 13px;
-  background: rgba(26,20,8,0.03);
-  border: 1px solid rgba(26,20,8,0.12);
-  border-radius: 3px;
-  color: #1A1408;
-  appearance: none;
-  -webkit-appearance: none;
-  outline: none;
-}
-
-.field-input:focus {
-  border-color: #D4900A;
-  background: rgba(212,144,10,0.03);
-}
-
-.field-input::placeholder {
-  color: rgba(26,20,8,0.25);
+.field-optional {
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: rgba(26,20,8,0.2);
 }
 
 .field-select {
   display: block;
   width: 100%;
-  padding: 9px 32px 9px 12px;
+  padding: 10px 32px 10px 12px;
   font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
   font-size: 13px;
   background: rgba(26,20,8,0.03);
@@ -151,183 +177,54 @@ body::before {
   background-repeat: no-repeat;
   background-position: right 12px center;
   outline: none;
-}
-
-.field-select:focus {
-  border-color: #D4900A;
-}
-
-/* Stepper for push/pull */
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border: 1px solid rgba(26,20,8,0.12);
-  border-radius: 3px;
-  overflow: hidden;
-  width: 140px;
-  background: rgba(26,20,8,0.03);
-}
-
-.stepper-btn {
-  background: none;
-  border: none;
-  padding: 9px 14px;
-  font-size: 16px;
-  font-weight: 300;
-  color: rgba(26,20,8,0.5);
   cursor: pointer;
-  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
-  line-height: 1;
 }
 
-.stepper-btn:hover { background: rgba(26,20,8,0.04); color: #1A1408; }
+.field-select:focus { border-color: #D4900A; }
 
-.stepper-val {
-  flex: 1;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #1A1408;
-  border-left: 1px solid rgba(26,20,8,0.1);
-  border-right: 1px solid rgba(26,20,8,0.1);
-  padding: 9px 0;
-}
+.field-select option[value=""] { color: rgba(26,20,8,0.4); }
 
-/* Toggle group */
-.toggle-group {
-  display: flex;
-  gap: 0;
-  border: 1px solid rgba(26,20,8,0.12);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.toggle-option {
-  flex: 1;
-  padding: 9px 8px;
-  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-align: center;
-  border: none;
-  background: rgba(26,20,8,0.03);
-  color: rgba(26,20,8,0.4);
-  cursor: pointer;
-  border-right: 1px solid rgba(26,20,8,0.1);
-}
-
-.toggle-option:last-child { border-right: none; }
-
-.toggle-option.active {
-  background: #1A1408;
-  color: #FAF6EE;
-}
-
-.toggle-option:hover:not(.active) {
-  background: rgba(26,20,8,0.06);
-  color: rgba(26,20,8,0.65);
-}
-
-/* Radio group */
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.radio-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 2px 0;
-}
-
-.radio-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(26,20,8,0.2);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.radio-dot.checked {
-  border-color: #D4900A;
-}
-
-.radio-dot.checked::after {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #D4900A;
-}
-
-.radio-label {
-  font-size: 12px;
-  color: rgba(26,20,8,0.7);
-}
-
-.radio-option.active .radio-label {
-  color: #1A1408;
-  font-weight: 600;
-}
-
-/* Notes field */
-.field-textarea {
+.field-input {
   display: block;
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 12px;
   font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
   font-size: 13px;
   background: rgba(26,20,8,0.03);
   border: 1px solid rgba(26,20,8,0.12);
   border-radius: 3px;
   color: #1A1408;
-  resize: none;
-  min-height: 80px;
-  line-height: 1.6;
   outline: none;
 }
 
-.field-textarea:focus { border-color: #D4900A; }
-.field-textarea::placeholder { color: rgba(26,20,8,0.25); }
+.field-input:focus { border-color: #D4900A; background: rgba(212,144,10,0.03); }
+.field-input::placeholder { color: rgba(26,20,8,0.25); }
 
-/* Roll number preview */
-.roll-number-preview {
+/* Camera hint */
+.camera-hint {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.roll-number-preview .field-input {
-  width: auto;
-  flex: 1;
-}
-
-.roll-number-regen {
-  margin-left: 8px;
-  background: none;
-  border: 1px solid rgba(26,20,8,0.12);
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(26,20,8,0.03);
   border-radius: 3px;
-  padding: 9px 12px;
-  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(26,20,8,0.4);
-  cursor: pointer;
-  white-space: nowrap;
 }
 
-.roll-number-regen:hover { color: rgba(26,20,8,0.7); background: rgba(26,20,8,0.04); }
+.camera-hint-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5B9BD5;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.camera-hint-text {
+  font-size: 10px;
+  color: rgba(26,20,8,0.35);
+  line-height: 1.5;
+}
 
 /* ---- Submit ---- */
 .submit-area {
@@ -340,7 +237,7 @@ body::before {
 .btn-submit {
   display: block;
   width: 100%;
-  padding: 14px 20px;
+  padding: 15px 20px;
   background: #D4900A;
   border: none;
   border-radius: 4px;
@@ -366,6 +263,7 @@ body::before {
   color: rgba(26,20,8,0.3);
   text-decoration: none;
   padding: 8px;
+  cursor: pointer;
 }
 
 .cancel-link:hover { color: rgba(26,20,8,0.6); }
@@ -380,6 +278,13 @@ body::before {
 </nav>
 
 <div class="content">
+
+  <!-- Ghost roll number -->
+  <div class="roll-number-hero">
+    <div class="roll-number-label">Roll number</div>
+    <div class="roll-number-value">26x05</div>
+    <button class="roll-number-edit">↻ Regenerate</button>
+  </div>
 
   <!-- Film & Camera -->
   <div class="form-card">
@@ -398,79 +303,37 @@ body::before {
     </div>
 
     <div class="form-field">
-      <label class="field-lbl">Camera</label>
+      <label class="field-lbl">
+        Camera
+        <span class="field-optional">optional</span>
+      </label>
       <select class="field-select">
-        <option value="" disabled selected>Select camera…</option>
+        <option value="">No camera yet</option>
         <option>Contax T2</option>
         <option>Leica M6</option>
         <option>Olympus Stylus Epic</option>
         <option>Nikon FM2</option>
         <option>Canonet QL17 GIII</option>
       </select>
-    </div>
-  </div>
-
-  <!-- Roll details -->
-  <div class="form-card">
-    <div class="form-section-title">Roll Details</div>
-
-    <div class="form-field">
-      <label class="field-lbl">Roll Number</label>
-      <div class="roll-number-preview">
-        <input type="text" class="field-input" value="2604" style="font-size:15px;font-weight:700;" />
-        <button class="roll-number-regen">Regenerate</button>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <label class="field-lbl">Shot Date</label>
-      <input type="date" class="field-input" value="2026-04-03" />
-    </div>
-
-    <div class="form-field">
-      <label class="field-lbl">Format</label>
-      <div class="toggle-group">
-        <button class="toggle-option active">35mm</button>
-        <button class="toggle-option">120</button>
-        <button class="toggle-option">4×5</button>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <label class="field-lbl">Push / Pull</label>
-      <div class="stepper">
-        <button class="stepper-btn">−</button>
-        <span class="stepper-val">0</span>
-        <button class="stepper-btn">+</button>
+      <div class="camera-hint">
+        <div class="camera-hint-dot"></div>
+        <div class="camera-hint-text">
+          Without a camera the roll is added to your fridge — track it until you load it.
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Status -->
+  <!-- Details -->
   <div class="form-card">
-    <div class="form-section-title">Status</div>
+    <div class="form-section-title">Details</div>
 
     <div class="form-field">
-      <label class="field-lbl">Initial Status</label>
-      <div class="radio-group">
-        <label class="radio-option active">
-          <div class="radio-dot checked"></div>
-          <span class="radio-label">Loaded — in camera, ready to shoot</span>
-        </label>
-        <label class="radio-option">
-          <div class="radio-dot"></div>
-          <span class="radio-label">Unloaded — just cataloguing</span>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notes -->
-  <div class="form-card">
-    <div class="form-section-title">Notes</div>
-    <div class="form-field">
-      <label class="field-lbl">Notes (optional)</label>
-      <textarea class="field-textarea" placeholder="Location, lighting conditions, experiment notes…"></textarea>
+      <label class="field-lbl">
+        Album name
+        <span class="field-optional">optional</span>
+      </label>
+      <input type="text" class="field-input" placeholder="e.g. Summer 2026, Brittany trip…" />
     </div>
   </div>
 

@@ -41,10 +41,8 @@ class Roll < ApplicationRecord
       "lab"
     elsif fridge_at.present?
       "fridge"
-    elsif loaded_at.present?
-      "loaded"
     else
-      "unloaded"
+      "loaded"
     end
   end
 

@@ -1,50 +1,79 @@
 <div class="page-header">
-  <h1 class="page-title">Active Rolls</h1>
-  <div class="flex gap-2 items-center">
-    <span class="text-muted text-xs"><%= @rolls.size %> roll<%= @rolls.size == 1 ? '' : 's' %></span>
-    <%= link_to "+ New Roll", new_roll_path, class: "btn btn-sm btn-primary" %>
-  </div>
+  <h1 class="page-title">Rolls</h1>
+  <%= link_to "+ New Roll", new_roll_path, class: "btn btn-sm btn-primary" %>
 </div>
+
+<%
+  shoot_statuses  = %w[loaded fridge]
+  develop_statuses = %w[lab scanned processed uploaded]
+  shoot_rolls   = @rolls.select { |r| shoot_statuses.include?(r.status) }
+  develop_rolls = @rolls.select { |r| develop_statuses.include?(r.status) }
+  loaded_rolls  = shoot_rolls.select { |r| r.status == "loaded" }
+  fridge_rolls  = shoot_rolls.select { |r| r.status == "fridge" }
+%>
 
 <% if @rolls.empty? %>
   <div class="empty-state">
     No active rolls.<br>
-    <small>Load a roll to get started.</small>
+    <%= link_to "Load a roll to get started →", new_roll_path %>
   </div>
 <% else %>
-  <div class="roll-list">
-    <% @rolls.each do |roll| %>
-      <%= link_to roll_path(roll), class: "roll-card" do %>
-        <div>
-          <div class="roll-number"><%= roll.roll_number %></div>
-          <%= status_badge(roll.status) %>
-        </div>
-        <div class="roll-meta">
-          <div class="roll-equipment">
-            <% if roll.camera %>
-              <span><%= roll.camera.display_name %></span>
-            <% end %>
-            <% if roll.film %>
-              <span> · <%= roll.film.display_name %></span>
-            <% end %>
-          </div>
-          <div class="roll-dates">
-            <% if roll.loaded_at %>Loaded <%= format_datetime(roll.loaded_at) %><% end %>
-          </div>
-          <% if roll.tags.present? %>
-            <div class="roll-tags">
-              <% roll.tags.each do |tag| %>
-                <span class="tag"><%= tag %></span>
-              <% end %>
-            </div>
+
+  <%# ── SHOOT ─────────────────────────────── %>
+  <div class="rolls-section">
+    <div class="rolls-section-header">
+      <span class="rolls-section-title">Shoot</span>
+      <span class="rolls-section-count"><%= shoot_rolls.size %> roll<%= shoot_rolls.size == 1 ? "" : "s" %></span>
+    </div>
+
+    <% if shoot_rolls.empty? %>
+      <p class="text-muted text-sm" style="padding:12px 0;">Nothing loaded or in fridge.</p>
+    <% end %>
+
+    <% if loaded_rolls.any? %>
+      <div class="rolls-subsection">
+        <div class="rolls-subsection-label">Loaded — <%= loaded_rolls.size %></div>
+        <div class="roll-list">
+          <% loaded_rolls.each do |roll| %>
+            <%= render "roll_row", roll: roll %>
           <% end %>
         </div>
-        <div>
-          <% if roll.push_pull.present? && roll.push_pull != 0 %>
-            <span class="text-xs text-muted"><%= push_pull_label(roll.push_pull) %></span>
+      </div>
+    <% end %>
+
+    <% if fridge_rolls.any? %>
+      <div class="rolls-subsection">
+        <div class="rolls-subsection-label">In Fridge — <%= fridge_rolls.size %></div>
+        <div class="roll-list">
+          <% fridge_rolls.each do |roll| %>
+            <%= render "roll_row", roll: roll %>
           <% end %>
         </div>
-      <% end %>
+      </div>
     <% end %>
   </div>
+
+  <%# ── DEVELOP ─────────────────────────────── %>
+  <% if develop_rolls.any? %>
+    <div class="rolls-section">
+      <div class="rolls-section-header">
+        <span class="rolls-section-title">Develop</span>
+        <span class="rolls-section-count"><%= develop_rolls.size %> roll<%= develop_rolls.size == 1 ? "" : "s" %></span>
+      </div>
+
+      <% %w[lab scanned processed uploaded].each do |s| %>
+        <% group = develop_rolls.select { |r| r.status == s } %>
+        <% next if group.empty? %>
+        <div class="rolls-subsection">
+          <div class="rolls-subsection-label"><%= s.capitalize %> — <%= group.size %></div>
+          <div class="roll-list">
+            <% group.each do |roll| %>
+              <%= render "roll_row", roll: roll %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
 <% end %>

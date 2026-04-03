@@ -1,6 +1,8 @@
 module ApplicationHelper
   def nav_active_class(path, exact: false)
-    active = exact ? (request.path == path) : request.path.start_with?(path)
+    paths = [ path ]
+    paths << root_path if path == shoot_path
+    active = paths.any? { |p| exact ? request.path == p : request.path.start_with?(p) }
     active ? "nav-link nav-link-active" : "nav-link"
   end
 

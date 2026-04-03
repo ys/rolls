@@ -70,7 +70,10 @@
       "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline stash)",
       "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline branch --set-upstream-to=origin/pwa-offline pwa-offline)",
       "Bash(git -C /Users/ys/src/github.com/ys/rolls/.claude/worktrees/pwa-offline pull)",
-      "Bash(heroku:*)"
+      "Bash(heroku:*)",
+      "Bash(git:*)",
+      "Bash(open:*)",
+      "Bash(bundle exec:*)"
     ]
   },
   "enableAllProjectMcpServers": false
