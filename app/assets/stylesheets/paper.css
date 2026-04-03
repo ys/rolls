@@ -261,8 +261,19 @@ a:hover {
 }
 
 .btn-danger {
-  border-color: var(--ink);
-  color: var(--ink);
+  border-color: #cc2200;
+  color: #cc2200;
+}
+
+.btn-danger:hover {
+  background: #cc2200;
+  color: var(--paper);
+}
+
+/* button_to wraps in a <form> — neutralise its effect on button height */
+form.button_to {
+  display: inline-flex;
+  margin: 0;
 }
 
 /* ---- Forms ---- */
