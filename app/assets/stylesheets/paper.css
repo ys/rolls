@@ -524,8 +524,9 @@ body.auth-body {
 }
 
 .auth-wordstack {
+  font-family: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   font-size: clamp(52px, 14vw, 80px);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 0.92;
   letter-spacing: -1px;
   text-transform: uppercase;
