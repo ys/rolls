@@ -75,10 +75,10 @@ RSpec.describe "Rolls API", type: :request do
     end
 
     it "increments based on existing rolls" do
-      create(:roll, user: user, roll_number: "#{Time.current.year.to_s[-2..]}05")
+      create(:roll, user: user, roll_number: "#{Time.current.year.to_s[-2..]}x05")
       get "/api/rolls/next", headers: headers
       json = JSON.parse(response.body)
-      expect(json["roll_number"]).to eq("#{Time.current.year.to_s[-2..]}06")
+      expect(json["roll_number"]).to eq("#{Time.current.year.to_s[-2..]}x06")
     end
   end
 

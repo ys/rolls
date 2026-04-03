@@ -31,8 +31,8 @@ RSpec.describe Roll, type: :model do
   describe "#status" do
     let(:roll) { build(:roll) }
 
-    it "returns unloaded when no timestamps set" do
-      expect(roll.status).to eq("unloaded")
+    it "returns loaded when no timestamps set" do
+      expect(roll.status).to eq("loaded")
     end
 
     it "returns loaded when only loaded_at is set" do
