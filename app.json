@@ -6,41 +6,61 @@
     {
       "plan": "heroku-postgresql:essential-0",
       "as": "DATABASE"
-    },
-    {
-      "plan": "heroku-redis:mini",
-      "as": "REDIS"
     }
   ],
   "buildpacks": [
     {
-      "url": "heroku/nodejs"
+      "url": "heroku/ruby"
     }
   ],
   "env": {
+    "RAILS_ENV": {
+      "value": "production"
+    },
     "JWT_SECRET": {
       "description": "Secret key for JWT tokens",
       "generator": "secret"
     },
     "WEBAUTHN_RP_NAME": {
       "description": "WebAuthn Relying Party name",
-      "value": "Rolls (Review App)",
+      "value": "Rolls",
       "required": false
     },
     "WEBAUTHN_RP_ID": {
-      "description": "WebAuthn Relying Party ID (will be set to review app domain)",
+      "description": "WebAuthn Relying Party ID (set to review app domain)",
       "required": false
     },
     "WEBAUTHN_ORIGIN": {
-      "description": "WebAuthn origin (will be set to review app URL)",
+      "description": "WebAuthn origin (set to review app URL)",
+      "required": false
+    },
+    "R2_ACCOUNT_ID": {
+      "description": "Cloudflare R2 account ID",
+      "required": false
+    },
+    "R2_ACCESS_KEY_ID": {
+      "description": "Cloudflare R2 access key",
+      "required": false
+    },
+    "R2_SECRET_ACCESS_KEY": {
+      "description": "Cloudflare R2 secret key",
+      "required": false
+    },
+    "R2_BUCKET": {
+      "description": "Cloudflare R2 bucket name",
+      "value": "rolls-staging",
+      "required": false
+    },
+    "R2_PUBLIC_URL": {
+      "description": "Cloudflare R2 public URL",
       "required": false
     },
     "MAILJET_API_KEY": {
-      "description": "Mailjet API key for sending emails (optional for review apps)",
+      "description": "Mailjet API key (optional)",
       "required": false
     },
     "MAILJET_SECRET_KEY": {
-      "description": "Mailjet secret key (optional for review apps)",
+      "description": "Mailjet secret key (optional)",
       "required": false
     },
     "MAILJET_FROM_EMAIL": {
@@ -61,23 +81,6 @@
     }
   },
   "scripts": {
-    "postdeploy": "npm run migrate"
-  },
-  "environments": {
-    "review": {
-      "addons": [
-        {
-          "plan": "heroku-postgresql:essential-0",
-          "as": "DATABASE"
-        },
-        {
-          "plan": "heroku-redis:mini",
-          "as": "REDIS"
-        }
-      ],
-      "scripts": {
-        "postdeploy": "npm run migrate"
-      }
-    }
+    "postdeploy": "bundle exec rails db:migrate"
   }
 }
