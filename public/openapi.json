@@ -2,134 +2,75 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Rolls API",
-    "version": "1.0.0",
-    "description": "OpenAPI spec generated from Next.js route handlers."
+    "version": "2.0.0",
+    "description": "OpenAPI spec for the Rolls Rails API (https://rolls.yannick.computer)."
   },
   "servers": [
     {
       "url": "http://localhost:3000/api",
-      "description": "Local dev (API base)"
+      "description": "Local dev"
     },
     {
       "url": "https://rolls.yannick.computer/api",
       "description": "Production"
     }
   ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Authentication and session management" },
+    { "name": "WebAuthn", "description": "Passkey registration and login" },
+    { "name": "API Keys", "description": "API key management" },
+    { "name": "Invites", "description": "Invite code management" },
+    { "name": "Apple", "description": "Sign in with Apple" },
+    { "name": "Rolls", "description": "Film roll management" },
+    { "name": "Cameras", "description": "Camera management" },
+    { "name": "Films", "description": "Film stock management" },
+    { "name": "Catalog", "description": "Global film catalog (no auth)" },
+    { "name": "Sync", "description": "CLI bulk import / export" },
+    { "name": "Cache", "description": "Cache invalidation timestamps" }
+  ],
   "paths": {
-    "/auth/api-keys": {
-      "get": {
-        "operationId": "get-auth-api-keys",
-        "summary": "List API keys",
-        "description": "Lists API keys for the authenticated user (raw keys are never returned).",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiKeyListResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "post-auth-api-keys",
-        "summary": "Create API key",
-        "description": "Creates a new API key for the authenticated user. `raw_key` is returned only once.",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ApiKeyCreateBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiKeyCreateResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/auth/me": {
       "get": {
         "operationId": "get-auth-me",
         "summary": "Get current user",
         "description": "Returns the authenticated user's profile and registered WebAuthn credentials.",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetMeResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/MeResponse" }
               }
             }
           },
-          "404": {
-            "description": "Not Found",
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "post-auth-logout",
+        "summary": "Log out",
+        "description": "Clears the session cookie.",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "enum": [true] }
+                  }
                 }
               }
             }
@@ -137,41 +78,24 @@
         }
       }
     },
-    "/auth/webauthn/login-options": {
-      "post": {
-        "operationId": "post-auth-webauthn-login-options",
-        "summary": "WebAuthn login options",
-        "description": "Returns WebAuthn authentication options + the challenge to be echoed to verify.",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebAuthnLoginOptionsBody"
-              }
-            }
-          }
-        },
+    "/auth/bootstrap": {
+      "get": {
+        "operationId": "get-auth-bootstrap",
+        "summary": "Bootstrap check",
+        "description": "Returns whether an invite is needed (true when no users exist yet).",
+        "tags": ["Auth"],
+        "security": [],
         "responses": {
-          "201": {
-            "description": "Successful response",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WebAuthnLoginOptionsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "needsInvite": { "type": "boolean" }
+                  },
+                  "required": ["needsInvite"]
                 }
               }
             }
@@ -179,41 +103,40 @@
         }
       }
     },
-    "/auth/webauthn/login-verify": {
+    "/auth/check-username": {
       "post": {
-        "operationId": "post-auth-webauthn-login-verify",
-        "summary": "WebAuthn login verify",
-        "description": "Verifies a WebAuthn authentication response and starts a session (via Set-Cookie).",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
+        "operationId": "post-auth-check-username",
+        "summary": "Check username availability",
+        "description": "Checks whether a username is available. Optionally validates an invite code.",
+        "tags": ["Auth"],
+        "security": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WebAuthnLoginVerifyBody"
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "invite_code": { "type": "string", "nullable": true }
+                },
+                "required": ["username"]
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Successful response",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionAuthSuccessResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "available": { "type": "boolean" },
+                    "error": { "type": "string", "nullable": true }
+                  },
+                  "required": ["available"]
                 }
               }
             }
@@ -225,41 +148,35 @@
       "post": {
         "operationId": "post-auth-webauthn-register-options",
         "summary": "WebAuthn registration options",
-        "description": "Returns WebAuthn registration options + the challenge to be echoed to verify.",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
+        "description": "Returns WebAuthn credential creation options. The response includes all WebAuthn option fields at the top level plus a nested `options` object with the same fields, and a `challenge` string.",
+        "tags": ["WebAuthn"],
+        "security": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WebAuthnRegisterOptionsBody"
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "nullable": true },
+                  "invite_code": { "type": "string", "nullable": true }
+                },
+                "required": ["username"]
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Successful response",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebAuthnRegisterOptionsResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/WebAuthnOptionsResponse" }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
+          "400": { "$ref": "#/components/responses/BadRequest" }
         }
       }
     },
@@ -267,41 +184,853 @@
       "post": {
         "operationId": "post-auth-webauthn-register-verify",
         "summary": "WebAuthn registration verify",
-        "description": "Verifies a WebAuthn registration response and starts a session (via Set-Cookie).",
-        "tags": [
-          "Auth"
-        ],
-        "parameters": [],
+        "description": "Verifies a WebAuthn registration response and creates a session (Set-Cookie). The credential can be sent either as flat fields at the top level or nested under a `response` key.",
+        "tags": ["WebAuthn"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WebAuthnVerifyBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RegisterVerifyResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/auth/webauthn/login-options": {
+      "post": {
+        "operationId": "post-auth-webauthn-login-options",
+        "summary": "WebAuthn login options",
+        "description": "Returns WebAuthn authentication options. The response includes all WebAuthn option fields at the top level plus a nested `options` object, a `challenge` string, and optionally a `user_id` when an identifier is provided.",
+        "tags": ["WebAuthn"],
+        "security": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Username or email. Omit for discoverable credential flow."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WebAuthnLoginOptionsResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/auth/webauthn/login-verify": {
+      "post": {
+        "operationId": "post-auth-webauthn-login-verify",
+        "summary": "WebAuthn login verify",
+        "description": "Verifies a WebAuthn authentication response and creates a session (Set-Cookie). The credential can be sent either as flat fields at the top level or nested under a `response` key.",
+        "tags": ["WebAuthn"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WebAuthnVerifyBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginVerifyResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/auth/webauthn/autofill-options": {
+      "post": {
+        "operationId": "post-auth-webauthn-autofill-options",
+        "summary": "WebAuthn autofill (discoverable credential) options",
+        "description": "Returns options for a discoverable credential / autofill flow. No `allowCredentials` are set. Use the same login-verify endpoint to complete authentication.",
+        "tags": ["WebAuthn"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WebAuthnOptionsResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/api-keys": {
+      "get": {
+        "operationId": "get-auth-api-keys",
+        "summary": "List API keys",
+        "description": "Returns API keys for the authenticated user. Raw keys are never returned.",
+        "tags": ["API Keys"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiKeyListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "operationId": "post-auth-api-keys",
+        "summary": "Create API key",
+        "description": "Creates a new API key. The `raw_key` is returned only once.",
+        "tags": ["API Keys"],
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WebAuthnRegisterVerifyBody"
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string", "nullable": true }
+                }
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Successful response",
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiKeyCreateResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/api-keys/{id}": {
+      "delete": {
+        "operationId": "delete-auth-api-keys-id",
+        "summary": "Revoke API key",
+        "tags": ["API Keys"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "API key UUID"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/auth/cli-token": {
+      "get": {
+        "operationId": "get-auth-cli-token",
+        "summary": "Create CLI API key",
+        "description": "Creates a new API key labelled 'CLI'. If a `callback` query param is provided, redirects to `{callback}?key={raw_key}`. Otherwise returns `{ raw_key }`. Requires session cookie auth.",
+        "tags": ["API Keys"],
+        "security": [{ "CookieAuth": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "callback",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Redirect URL to append the generated key to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK (no callback)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionAuthSuccessResponse"
+                  "type": "object",
+                  "properties": {
+                    "raw_key": { "type": "string" }
+                  },
+                  "required": ["raw_key"]
                 }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "302": { "description": "Redirect to callback URL with key" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/credentials/{id}": {
+      "delete": {
+        "operationId": "delete-auth-credentials-id",
+        "summary": "Delete passkey credential",
+        "tags": ["WebAuthn"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Credential UUID"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/auth/email-preferences": {
+      "patch": {
+        "operationId": "patch-auth-email-preferences",
+        "summary": "Update email notification preference",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email_notifications": { "type": "boolean" }
+                },
+                "required": ["email_notifications"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/invites": {
+      "get": {
+        "operationId": "get-auth-invites",
+        "summary": "List invites",
+        "description": "Returns invite codes created by the authenticated user.",
+        "tags": ["Invites"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Invite" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "operationId": "post-auth-invites",
+        "summary": "Create invite",
+        "description": "Creates a new invite code. Admins can specify custom `max_uses` and `expires_at`; regular users get a single-use invite.",
+        "tags": ["Invites"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "max_uses": { "type": "integer", "nullable": true, "default": 1 },
+                  "expires_at": { "type": "string", "format": "date-time", "nullable": true }
                 }
               }
             }
           }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Invite" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/invites/validate": {
+      "get": {
+        "operationId": "get-auth-invites-validate",
+        "summary": "Validate invite code",
+        "description": "Checks whether an invite code is valid. No auth required.",
+        "tags": ["Invites"],
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Invite code to validate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": { "type": "boolean" },
+                    "error": { "type": "string", "nullable": true }
+                  },
+                  "required": ["valid"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/invites/send": {
+      "post": {
+        "operationId": "post-auth-invites-send",
+        "summary": "Send invite by email",
+        "tags": ["Invites"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "invite_id": { "type": "string", "description": "Invite UUID" },
+                  "email": { "type": "string" },
+                  "message": { "type": "string", "nullable": true }
+                },
+                "required": ["invite_id", "email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/auth/invites/{id}": {
+      "delete": {
+        "operationId": "delete-auth-invites-id",
+        "summary": "Delete invite",
+        "tags": ["Invites"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Invite UUID"
+          }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/auth/apple": {
+      "post": {
+        "operationId": "post-auth-apple",
+        "summary": "Sign in with Apple",
+        "description": "Sign in or register using an Apple identity token. If the Apple ID is not linked to any account and no `username` is provided, returns 404 with `{ error: 'new_account_required', email }`. If `username` is provided, creates a new account.",
+        "tags": ["Apple"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identity_token": { "type": "string", "description": "JWT from Apple" },
+                  "full_name": { "type": "string", "nullable": true, "description": "Only sent by Apple on first sign-in" },
+                  "username": { "type": "string", "nullable": true, "description": "Required when creating a new account" },
+                  "invite_code": { "type": "string", "nullable": true }
+                },
+                "required": ["identity_token"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing user signed in",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AppleAuthResponse" }
+              }
+            }
+          },
+          "201": {
+            "description": "New account created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AppleAuthResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": {
+            "description": "New account required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "enum": ["new_account_required"] },
+                    "email": { "type": "string", "nullable": true }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/apple/link": {
+      "post": {
+        "operationId": "post-auth-apple-link",
+        "summary": "Link Apple ID to account",
+        "tags": ["Apple"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identity_token": { "type": "string" }
+                },
+                "required": ["identity_token"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "delete": {
+        "operationId": "delete-auth-apple-link",
+        "summary": "Unlink Apple ID from account",
+        "tags": ["Apple"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls": {
+      "get": {
+        "operationId": "get-rolls",
+        "summary": "List rolls",
+        "description": "Returns all rolls for the authenticated user, ordered by created_at desc. Supports pagination.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": { "type": "integer", "maximum": 200, "default": 200 }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": { "type": "integer", "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Roll" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "operationId": "post-rolls",
+        "summary": "Create a roll",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateRollBody" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RollWithAssociations" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls/next": {
+      "get": {
+        "operationId": "get-rolls-next",
+        "summary": "Next roll number",
+        "description": "Returns the next auto-generated roll number in YYxNN format (e.g. `26x01`).",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "roll_number": { "type": "string", "example": "26x01" }
+                  },
+                  "required": ["roll_number"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls/home": {
+      "get": {
+        "operationId": "get-rolls-home",
+        "summary": "Active rolls (home view)",
+        "description": "Returns all non-archived rolls with nested camera and film associations, ordered by created_at desc.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RollWithAssociations" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls/archive": {
+      "get": {
+        "operationId": "get-rolls-archive",
+        "summary": "Archived rolls",
+        "description": "Returns all archived rolls with nested camera and film associations, ordered by archived_at desc.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RollWithAssociations" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls/bulk-update": {
+      "post": {
+        "operationId": "post-rolls-bulk-update",
+        "summary": "Bulk update rolls",
+        "description": "Sets one field to one value across multiple rolls identified by roll_number.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BulkUpdateBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": { "type": "integer" }
+                  },
+                  "required": ["updated"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/rolls/{id}": {
+      "get": {
+        "operationId": "get-rolls-id",
+        "summary": "Get a roll",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RollId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RollWithAssociations" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "operationId": "patch-rolls-id",
+        "summary": "Update a roll",
+        "description": "Partial update. All fields are optional.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RollId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateRollBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RollWithAssociations" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "delete-rolls-id",
+        "summary": "Delete a roll",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RollId" }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/rolls/{id}/contact-sheet": {
+      "get": {
+        "operationId": "get-rolls-id-contact-sheet",
+        "summary": "Download contact sheet",
+        "description": "Proxies the contact sheet image from R2 and returns it as `image/webp`.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RollId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "image/webp": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "operationId": "put-rolls-id-contact-sheet",
+        "summary": "Upload contact sheet",
+        "description": "Uploads raw image bytes to R2 and saves the resulting public URL on the roll. Request body is the raw file bytes.",
+        "tags": ["Rolls"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RollId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/webp": {
+              "schema": { "type": "string", "format": "binary" }
+            },
+            "application/octet-stream": {
+              "schema": { "type": "string", "format": "binary" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "contact_sheet_url": { "type": "string", "format": "uri" }
+                  },
+                  "required": ["contact_sheet_url"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -309,103 +1038,166 @@
       "get": {
         "operationId": "get-cameras",
         "summary": "List cameras",
-        "description": "",
-        "tags": [
-          "Cameras"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "description": "Returns all cameras for the authenticated user, ordered by updated_at desc.",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Camera"
-                  }
+                  "items": { "$ref": "#/components/schemas/Camera" }
                 }
               }
             }
-          }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       },
       "post": {
         "operationId": "post-cameras",
-        "summary": "Create (or upsert) a camera",
-        "description": "Slug is generated from brand+model. Upserts on (user_id, slug).",
-        "tags": [
-          "Cameras"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "summary": "Create or upsert a camera",
+        "description": "Slug is auto-generated from brand+model if not provided. Upserts on (user_id, slug). Returns 201 for new cameras, 200 for updated.",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCameraBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated existing camera",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Camera" }
+              }
+            }
+          },
+          "201": {
+            "description": "Created new camera",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Camera" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/cameras/merge": {
+      "post": {
+        "operationId": "post-cameras-merge",
+        "summary": "Merge cameras",
+        "description": "Reassigns all rolls from source cameras to the target camera, then deletes the source cameras.",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateCameraBody"
+                "type": "object",
+                "properties": {
+                  "target_id": { "type": "string", "description": "Target camera UUID" },
+                  "source_ids": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Source camera UUIDs to merge into target"
+                  }
+                },
+                "required": ["target_id", "source_ids"]
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Successful response",
+          "200": {
+            "description": "OK — returns the target camera",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Camera"
-                }
+                "schema": { "$ref": "#/components/schemas/Camera" }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
-    "/export": {
+    "/cameras/{slug}": {
       "get": {
-        "operationId": "get-export",
-        "summary": "Export all user data (CLI sync)",
-        "description": "Returns cameras, films, and rolls for the authenticated user.",
-        "tags": [
-          "Export"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
+        "operationId": "get-cameras-slug",
+        "summary": "Get a camera",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/CameraSlug" }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ExportResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/Camera" }
               }
             }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "operationId": "patch-cameras-slug",
+        "summary": "Update a camera",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/CameraSlug" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCameraBody" }
+            }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Camera" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "delete-cameras-slug",
+        "summary": "Delete a camera",
+        "description": "Returns 409 if the camera has rolls associated with it.",
+        "tags": ["Cameras"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/CameraSlug" }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
         }
       }
     },
@@ -413,71 +1205,184 @@
       "get": {
         "operationId": "get-films",
         "summary": "List films",
-        "description": "",
-        "tags": [
-          "Films"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "description": "Returns all films for the authenticated user, ordered by updated_at desc.",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Film"
-                  }
+                  "items": { "$ref": "#/components/schemas/Film" }
                 }
               }
             }
-          }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       },
       "post": {
         "operationId": "post-films",
-        "summary": "Create (or upsert) a film",
-        "description": "Slug is generated from brand+name. Upserts on (user_id, slug).",
-        "tags": [
-          "Films"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "summary": "Create or upsert a film",
+        "description": "Slug is auto-generated from brand+name if not provided. Upserts on (user_id, slug). Returns 201 for new films, 200 for updated.",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateFilmBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated existing film",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Film" }
+              }
+            }
+          },
+          "201": {
+            "description": "Created new film",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Film" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/films/merge": {
+      "post": {
+        "operationId": "post-films-merge",
+        "summary": "Merge films",
+        "description": "Reassigns all rolls from source films to the target film, then deletes the source films.",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateFilmBody"
+                "type": "object",
+                "properties": {
+                  "target_id": { "type": "string", "description": "Target film UUID" },
+                  "source_ids": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Source film UUIDs to merge into target"
+                  }
+                },
+                "required": ["target_id", "source_ids"]
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Successful response",
+          "200": {
+            "description": "OK — returns the target film",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Film"
-                }
+                "schema": { "$ref": "#/components/schemas/Film" }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/films/{slug}": {
+      "get": {
+        "operationId": "get-films-slug",
+        "summary": "Get a film",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/FilmSlug" }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Film" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "operationId": "patch-films-slug",
+        "summary": "Update a film",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/FilmSlug" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateFilmBody" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Film" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "delete-films-slug",
+        "summary": "Delete a film",
+        "description": "Returns 409 if the film has rolls associated with it.",
+        "tags": ["Films"],
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/FilmSlug" }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/catalog/films": {
+      "get": {
+        "operationId": "get-catalog-films",
+        "summary": "Global film catalog",
+        "description": "Returns the global film catalog. No authentication required.",
+        "tags": ["Catalog"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CatalogFilm" }
                 }
               }
             }
@@ -488,1080 +1393,659 @@
     "/import": {
       "post": {
         "operationId": "post-import",
-        "summary": "Import (upsert) cameras, films, and rolls (CLI sync)",
-        "description": "Upserts by slug (id) for cameras/films and roll_number for rolls.",
-        "tags": [
-          "Import"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+        "summary": "Bulk import (CLI sync)",
+        "description": "Upserts cameras, films, and rolls. Cameras/films are keyed by slug; rolls are keyed by uuid then roll_number.",
+        "tags": ["Sync"],
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ImportPayload"
-              }
+              "schema": { "$ref": "#/components/schemas/ImportPayload" }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ImportResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/rolls": {
-      "get": {
-        "operationId": "get-rolls",
-        "summary": "List rolls",
-        "description": "Returns all rolls for the authenticated user, ordered by roll_number desc.",
-        "tags": [
-          "Rolls"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Roll"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "post-rolls",
-        "summary": "Create a roll",
-        "description": "Creates a new roll for the authenticated user. camera_id and film_id are slugs.",
-        "tags": [
-          "Rolls"
-        ],
-        "parameters": [],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRollBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Roll"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/rolls/{id}/contact-sheet": {
-      "get": {
-        "operationId": "get-rolls-{id}-contact-sheet",
-        "summary": "Get a roll contact sheet",
-        "description": "Returns the roll contact sheet image as `image/webp`.",
-        "tags": [
-          "Rolls"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "description": "roll_number"
-            },
-            "required": true,
-            "description": "roll_number",
-            "example": "123"
-          }
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/unknown"
-                }
+                "schema": { "$ref": "#/components/schemas/ImportResponse" }
               }
             }
           },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
-      },
-      "put": {
-        "operationId": "put-rolls-{id}-contact-sheet",
-        "summary": "Upload a roll contact sheet",
-        "description": "Uploads a raw webp payload (request body is the file bytes), stores it in R2, and updates the roll.",
-        "tags": [
-          "Rolls"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "description": "roll_number"
-            },
-            "required": true,
-            "description": "roll_number",
-            "example": "123"
-          }
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
+      }
+    },
+    "/export": {
+      "get": {
+        "operationId": "get-export",
+        "summary": "Full export (CLI sync)",
+        "description": "Returns all cameras, films, and rolls for the authenticated user.",
+        "tags": ["Sync"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactSheetUploadResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/ExportResponse" }
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/cache/timestamps": {
+      "get": {
+        "operationId": "get-cache-timestamps",
+        "summary": "Cache timestamps",
+        "description": "Returns the latest `updated_at` timestamp for rolls, cameras, and films. Use to skip a full re-fetch when nothing has changed.",
+        "tags": ["Cache"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
+                "schema": { "$ref": "#/components/schemas/CacheTimestampsResponse" }
               }
             }
-          }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
     }
   },
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Raw API key (`rk_*`) or JWT token"
+      },
+      "CookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "JWT session cookie set by login/register endpoints"
+      }
+    },
+    "parameters": {
+      "RollId": {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Roll UUID"
+      },
+      "CameraSlug": {
+        "in": "path",
+        "name": "slug",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Camera slug (e.g. `nikon-f3`)"
+      },
+      "FilmSlug": {
+        "in": "path",
+        "name": "slug",
+        "required": true,
+        "schema": { "type": "string" },
+        "description": "Film slug (e.g. `kodak-portra-400`)"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
     "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        },
+        "required": ["error"]
+      },
+      "User": {
+        "type": "object",
+        "description": "Full user object returned by auth endpoints",
+        "properties": {
+          "id": { "type": "string" },
+          "username": { "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "email": { "type": "string", "nullable": true },
+          "email_notifications": { "type": "boolean" },
+          "role": { "type": "string", "example": "user" },
+          "invite_quota": { "type": "integer", "nullable": true },
+          "invites_sent": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "last_seen_at": { "type": "string", "format": "date-time", "nullable": true },
+          "apple_user_id": { "type": "string", "nullable": true }
+        },
+        "required": ["id", "username"]
+      },
+      "WebAuthnCredential": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "credential_id": { "type": "string" },
+          "device_name": { "type": "string", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "last_used_at": { "type": "string", "format": "date-time", "nullable": true },
+          "transports": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
+        },
+        "required": ["id", "credential_id"]
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" },
+          "credentials": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebAuthnCredential" }
+          }
+        },
+        "required": ["user", "credentials"]
+      },
+      "WebAuthnOptionsResponse": {
+        "type": "object",
+        "description": "WebAuthn options response. All standard WebAuthn option fields are returned at the top level AND nested under `options`. `challenge` is always present as a base64url string.",
+        "properties": {
+          "challenge": {
+            "type": "string",
+            "description": "Base64url-encoded challenge to echo back in the verify request"
+          },
+          "options": {
+            "type": "object",
+            "description": "Nested copy of the full WebAuthn options object"
+          }
+        },
+        "required": ["challenge", "options"]
+      },
+      "WebAuthnLoginOptionsResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/WebAuthnOptionsResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "user_id": {
+                "type": "string",
+                "nullable": true,
+                "description": "User UUID, present when an identifier was provided"
+              }
+            }
+          }
+        ]
+      },
+      "WebAuthnVerifyBody": {
+        "type": "object",
+        "description": "Credential can be sent as flat fields at the top level (if `id` is present) or nested under a `response` key.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Credential id — present when sending credential fields flat"
+          },
+          "response": {
+            "type": "object",
+            "nullable": true,
+            "description": "Credential object — present when wrapping the credential"
+          },
+          "challenge": {
+            "type": "string",
+            "nullable": true,
+            "description": "Challenge echoed from the options response (used by some clients)"
+          },
+          "user_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "User UUID echoed from the login options response"
+          }
+        }
+      },
+      "RegisterVerifyResponse": {
+        "type": "object",
+        "properties": {
+          "verified": { "type": "boolean", "enum": [true] },
+          "user": { "$ref": "#/components/schemas/User" },
+          "token": { "type": "string", "description": "JWT session token" }
+        },
+        "required": ["verified", "user", "token"]
+      },
+      "LoginVerifyResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "enum": [true] },
+          "user": { "$ref": "#/components/schemas/User" },
+          "token": { "type": "string", "description": "JWT session token" }
+        },
+        "required": ["success", "user", "token"]
+      },
+      "AppleAuthResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "enum": [true] },
+          "user": { "$ref": "#/components/schemas/User" },
+          "token": { "type": "string", "description": "JWT session token" }
+        },
+        "required": ["success", "user", "token"]
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "last_used_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": ["id", "created_at"]
+      },
       "ApiKeyListResponse": {
         "type": "object",
         "properties": {
           "api_keys": {
             "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "label": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "last_used_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "created_at": {
-                  "type": "string"
-                }
-              }
-            }
+            "items": { "$ref": "#/components/schemas/ApiKey" }
           }
-        }
-      },
-      "ApiKeyCreateBody": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "nullable": true
-          }
-        }
+        },
+        "required": ["api_keys"]
       },
       "ApiKeyCreateResponse": {
         "type": "object",
         "properties": {
-          "api_key": {
+          "api_key": { "$ref": "#/components/schemas/ApiKey" },
+          "raw_key": { "type": "string", "description": "Raw key shown only once" }
+        },
+        "required": ["api_key", "raw_key"]
+      },
+      "Invite": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "code": { "type": "string" },
+          "max_uses": { "type": "integer" },
+          "used_count": { "type": "integer" },
+          "expires_at": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "used_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": ["id", "code", "max_uses", "used_count", "created_at"]
+      },
+      "Roll": {
+        "type": "object",
+        "description": "Film roll as returned by list/index endpoints (no nested associations).",
+        "properties": {
+          "uuid": { "type": "string", "format": "uuid" },
+          "roll_number": { "type": "string", "example": "26x01", "nullable": true },
+          "user_id": { "type": "string" },
+          "camera_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "film_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "camera_name": { "type": "string", "nullable": true, "description": "camera.display_name" },
+          "film_name": { "type": "string", "nullable": true, "description": "film.display_name" },
+          "loaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "shot_at": { "type": "string", "format": "date", "nullable": true, "description": "ISO 8601 datetime string (date stored as date column, serialized via .to_time.iso8601)" },
+          "fridge_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_name": { "type": "string", "nullable": true },
+          "lab_id": { "type": "string", "nullable": true },
+          "scanned_at": { "type": "string", "format": "date", "nullable": true, "description": "ISO 8601 datetime string (date stored as date column, serialized via .to_time.iso8601)" },
+          "processed_at": { "type": "string", "format": "date-time", "nullable": true },
+          "uploaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "archived_at": { "type": "string", "format": "date-time", "nullable": true },
+          "album_name": { "type": "string", "nullable": true },
+          "tags": { "type": "array", "items": { "type": "string" }, "description": "Postgres text array; empty array if none" },
+          "notes": { "type": "string", "nullable": true },
+          "contact_sheet_url": { "type": "string", "format": "uri", "nullable": true },
+          "push_pull": { "type": "integer", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "status": {
+            "type": "string",
+            "enum": ["loaded", "fridge", "lab", "scanned", "processed", "uploaded", "archived"],
+            "description": "Derived from timestamps: archived > uploaded > processed > scanned > lab > fridge > loaded"
+          }
+        },
+        "required": ["uuid", "user_id", "tags", "status", "created_at", "updated_at"]
+      },
+      "RollWithAssociations": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Roll" },
+          {
             "type": "object",
             "properties": {
-              "id": {
-                "type": "string"
+              "camera": {
+                "nullable": true,
+                "allOf": [{ "$ref": "#/components/schemas/Camera" }]
               },
-              "label": {
-                "type": "string",
-                "nullable": true
-              },
-              "created_at": {
-                "type": "string"
+              "film": {
+                "nullable": true,
+                "allOf": [{ "$ref": "#/components/schemas/Film" }]
               }
             }
-          },
-          "raw_key": {
-            "type": "string"
           }
-        }
+        ],
+        "description": "Roll with nested camera and film objects (returned by show, home, archive, create, update)."
       },
-      "GetMeResponse": {},
-      "WebAuthnLoginOptionsBody": {
+      "CreateRollBody": {
         "type": "object",
         "properties": {
-          "identifier": {
+          "roll_number": { "type": "string", "nullable": true },
+          "camera_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "film_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "loaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "shot_at": { "type": "string", "nullable": true },
+          "fridge_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_name": { "type": "string", "nullable": true },
+          "lab_id": { "type": "string", "nullable": true },
+          "scanned_at": { "type": "string", "nullable": true },
+          "processed_at": { "type": "string", "format": "date-time", "nullable": true },
+          "uploaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "archived_at": { "type": "string", "format": "date-time", "nullable": true },
+          "album_name": { "type": "string", "nullable": true },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "notes": { "type": "string", "nullable": true },
+          "contact_sheet_url": { "type": "string", "nullable": true },
+          "push_pull": { "type": "integer", "nullable": true }
+        }
+      },
+      "UpdateRollBody": {
+        "type": "object",
+        "description": "All fields optional — partial update.",
+        "properties": {
+          "roll_number": { "type": "string", "nullable": true },
+          "camera_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "film_uuid": { "type": "string", "format": "uuid", "nullable": true },
+          "loaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "shot_at": { "type": "string", "nullable": true },
+          "fridge_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_at": { "type": "string", "format": "date-time", "nullable": true },
+          "lab_name": { "type": "string", "nullable": true },
+          "lab_id": { "type": "string", "nullable": true },
+          "scanned_at": { "type": "string", "nullable": true },
+          "processed_at": { "type": "string", "format": "date-time", "nullable": true },
+          "uploaded_at": { "type": "string", "format": "date-time", "nullable": true },
+          "archived_at": { "type": "string", "format": "date-time", "nullable": true },
+          "album_name": { "type": "string", "nullable": true },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "notes": { "type": "string", "nullable": true },
+          "contact_sheet_url": { "type": "string", "nullable": true },
+          "push_pull": { "type": "integer", "nullable": true }
+        }
+      },
+      "BulkUpdateBody": {
+        "type": "object",
+        "properties": {
+          "roll_numbers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Roll numbers to update"
+          },
+          "field": {
             "type": "string",
-            "nullable": false
-          }
-        }
-      },
-      "WebAuthnLoginOptionsResponse": {
-        "type": "object",
-        "properties": {
-          "options": {
-            "type": "object"
-          },
-          "challenge": {
-            "type": "string"
-          },
-          "user_id": {
-            "type": "string"
-          }
-        }
-      },
-      "WebAuthnLoginVerifyBody": {
-        "type": "object",
-        "properties": {
-          "response": {
-            "type": "object",
-            "nullable": false
-          },
-          "challenge": {
-            "type": "string",
-            "nullable": false
-          },
-          "user_id": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SessionAuthSuccessResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
+            "description": "Field to update",
             "enum": [
-              true
+              "loaded_at", "shot_at", "fridge_at", "lab_at", "lab_name", "lab_id",
+              "scanned_at", "processed_at", "uploaded_at", "archived_at",
+              "album_name", "notes", "push_pull", "camera_uuid", "film_uuid",
+              "tags", "contact_sheet_url"
             ]
           },
-          "user": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "username": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string",
-                "nullable": true
-              },
-              "email": {
-                "type": "string"
-              }
-            }
+          "value": {
+            "description": "Value to set (string, number, null, or array for tags)"
           }
-        }
+        },
+        "required": ["roll_numbers", "field", "value"]
       },
-      "UserPublic": {
+      "Camera": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string"
-          }
-        }
+          "uuid": { "type": "string", "format": "uuid" },
+          "slug": { "type": "string", "example": "nikon-f3" },
+          "user_id": { "type": "string" },
+          "brand": { "type": "string", "nullable": true },
+          "model": { "type": "string", "nullable": true },
+          "nickname": { "type": "string", "nullable": true },
+          "format": { "type": "integer", "example": 135, "description": "Film format in mm (e.g. 135, 120)" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["uuid", "slug", "user_id"]
       },
-      "WebAuthnRegisterOptionsBody": {
+      "CreateCameraBody": {
         "type": "object",
         "properties": {
-          "username": {
-            "type": "string",
-            "nullable": false
-          },
-          "email": {
-            "type": "string",
-            "nullable": false
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "invite_code": {
-            "type": "string",
-            "nullable": true
-          }
-        }
+          "brand": { "type": "string" },
+          "model": { "type": "string" },
+          "nickname": { "type": "string", "nullable": true },
+          "format": { "type": "integer", "nullable": true, "default": 135 },
+          "slug": { "type": "string", "nullable": true, "description": "Override auto-generated slug" }
+        },
+        "required": ["brand", "model"]
       },
-      "WebAuthnRegisterOptionsResponse": {
+      "UpdateCameraBody": {
         "type": "object",
         "properties": {
-          "options": {
-            "type": "object"
-          },
-          "challenge": {
-            "type": "string"
-          }
+          "brand": { "type": "string", "nullable": true },
+          "model": { "type": "string", "nullable": true },
+          "nickname": { "type": "string", "nullable": true },
+          "format": { "type": "integer", "nullable": true },
+          "slug": { "type": "string", "nullable": true }
         }
       },
-      "WebAuthnRegisterVerifyBody": {
+      "Film": {
         "type": "object",
         "properties": {
-          "username": {
-            "type": "string",
-            "nullable": false
-          },
-          "email": {
-            "type": "string",
-            "nullable": false
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "invite_code": {
-            "type": "string",
-            "nullable": true
-          },
-          "response": {
-            "type": "object",
-            "nullable": false
-          },
-          "challenge": {
-            "type": "string",
-            "nullable": false
-          },
-          "device_name": {
-            "type": "string",
-            "nullable": true
-          }
-        }
+          "uuid": { "type": "string", "format": "uuid" },
+          "slug": { "type": "string", "example": "kodak-portra-400" },
+          "user_id": { "type": "string" },
+          "brand": { "type": "string", "nullable": true },
+          "name": { "type": "string", "nullable": true },
+          "nickname": { "type": "string", "nullable": true },
+          "iso": { "type": "integer", "nullable": true },
+          "color": { "type": "boolean" },
+          "slide": { "type": "boolean" },
+          "show_iso": { "type": "boolean" },
+          "gradient_from": { "type": "string", "nullable": true, "description": "CSS color value for gradient start" },
+          "gradient_to": { "type": "string", "nullable": true, "description": "CSS color value for gradient end" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["uuid", "slug", "user_id"]
       },
-      "Camera": {},
-      "CreateCameraBody": {},
-      "ExportResponse": {
+      "CreateFilmBody": {
         "type": "object",
         "properties": {
-          "cameras": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "uuid": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string",
-                  "description": "slug"
-                },
-                "brand": {
-                  "type": "string"
-                },
-                "model": {
-                  "type": "string"
-                },
-                "nickname": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "format": {
-                  "type": "number"
-                }
-              }
-            }
-          },
-          "films": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "uuid": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "string",
-                  "description": "slug"
-                },
-                "brand": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "nickname": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "iso": {
-                  "type": "number",
-                  "nullable": true
-                },
-                "color": {
-                  "type": "boolean"
-                },
-                "show_iso": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "rolls": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "roll_number": {
-                  "type": "string"
-                },
-                "shot_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "fridge_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "lab_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "lab_name": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "scanned_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "processed_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "uploaded_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "archived_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "album_name": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "tags": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "nullable": true
-                },
-                "notes": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "contact_sheet_url": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "push_pull": {
-                  "type": "number",
-                  "nullable": true
-                },
-                "camera_id": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "film_id": {
-                  "type": "string",
-                  "nullable": true
-                }
-              }
-            }
-          }
-        }
+          "brand": { "type": "string" },
+          "name": { "type": "string" },
+          "nickname": { "type": "string", "nullable": true },
+          "iso": { "type": "integer", "nullable": true },
+          "color": { "type": "boolean", "nullable": true },
+          "slide": { "type": "boolean", "nullable": true },
+          "show_iso": { "type": "boolean", "nullable": true },
+          "gradient_from": { "type": "string", "nullable": true },
+          "gradient_to": { "type": "string", "nullable": true },
+          "slug": { "type": "string", "nullable": true, "description": "Override auto-generated slug" }
+        },
+        "required": ["brand", "name"]
       },
-      "ExportCamera": {
+      "UpdateFilmBody": {
         "type": "object",
         "properties": {
-          "uuid": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string",
-            "description": "slug"
-          },
-          "brand": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "format": {
-            "type": "number"
-          }
+          "brand": { "type": "string", "nullable": true },
+          "name": { "type": "string", "nullable": true },
+          "nickname": { "type": "string", "nullable": true },
+          "iso": { "type": "integer", "nullable": true },
+          "color": { "type": "boolean", "nullable": true },
+          "slide": { "type": "boolean", "nullable": true },
+          "show_iso": { "type": "boolean", "nullable": true },
+          "gradient_from": { "type": "string", "nullable": true },
+          "gradient_to": { "type": "string", "nullable": true },
+          "slug": { "type": "string", "nullable": true }
         }
       },
-      "ExportFilm": {
+      "CatalogFilm": {
         "type": "object",
+        "description": "Global film catalog entry (no user_id, no uuid, keyed by slug).",
         "properties": {
-          "uuid": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string",
-            "description": "slug"
-          },
-          "brand": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "iso": {
-            "type": "number",
-            "nullable": true
-          },
-          "color": {
-            "type": "boolean"
-          },
-          "show_iso": {
-            "type": "boolean"
-          }
-        }
+          "slug": { "type": "string" },
+          "brand": { "type": "string", "nullable": true },
+          "name": { "type": "string", "nullable": true },
+          "nickname": { "type": "string", "nullable": true },
+          "iso": { "type": "integer", "nullable": true },
+          "color": { "type": "boolean" },
+          "slide": { "type": "boolean" },
+          "show_iso": { "type": "boolean" },
+          "gradient_from": { "type": "string", "nullable": true },
+          "gradient_to": { "type": "string", "nullable": true }
+        },
+        "required": ["slug"]
       },
-      "ExportRoll": {
-        "type": "object",
-        "properties": {
-          "roll_number": {
-            "type": "string"
-          },
-          "shot_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "fridge_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "scanned_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "processed_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "uploaded_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "archived_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "album_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "contact_sheet_url": {
-            "type": "string",
-            "nullable": true
-          },
-          "push_pull": {
-            "type": "number",
-            "nullable": true
-          },
-          "camera_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "film_id": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "Film": {},
-      "CreateFilmBody": {},
       "ImportPayload": {
         "type": "object",
         "properties": {
           "cameras": {
             "type": "array",
+            "nullable": true,
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "slug",
-                  "nullable": false
-                },
-                "brand": {
-                  "type": "string",
-                  "nullable": false
-                },
-                "model": {
-                  "type": "string",
-                  "nullable": false
-                },
-                "nickname": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "format": {
-                  "type": "number",
-                  "nullable": true
-                }
-              }
-            },
-            "nullable": true
+                "uuid": { "type": "string", "format": "uuid", "nullable": true },
+                "slug": { "type": "string", "nullable": true, "description": "Slug key for upsert; auto-generated from brand+model if omitted" },
+                "brand": { "type": "string" },
+                "model": { "type": "string" },
+                "nickname": { "type": "string", "nullable": true },
+                "format": { "type": "integer", "nullable": true, "default": 135 },
+                "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+              },
+              "required": ["brand", "model"]
+            }
           },
           "films": {
             "type": "array",
+            "nullable": true,
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "slug",
-                  "nullable": false
-                },
-                "brand": {
-                  "type": "string",
-                  "nullable": false
-                },
-                "name": {
-                  "type": "string",
-                  "nullable": false
-                },
-                "nickname": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "iso": {
-                  "type": "number",
-                  "nullable": true
-                },
-                "color": {
-                  "type": "boolean",
-                  "nullable": true
-                },
-                "show_iso": {
-                  "type": "boolean",
-                  "nullable": true
-                }
-              }
-            },
-            "nullable": true
+                "uuid": { "type": "string", "format": "uuid", "nullable": true },
+                "slug": { "type": "string", "nullable": true, "description": "Slug key for upsert; auto-generated from brand+name if omitted" },
+                "brand": { "type": "string" },
+                "name": { "type": "string" },
+                "nickname": { "type": "string", "nullable": true },
+                "iso": { "type": "integer", "nullable": true },
+                "color": { "type": "boolean", "nullable": true },
+                "slide": { "type": "boolean", "nullable": true },
+                "show_iso": { "type": "boolean", "nullable": true },
+                "gradient_from": { "type": "string", "nullable": true },
+                "gradient_to": { "type": "string", "nullable": true },
+                "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+              },
+              "required": ["brand", "name"]
+            }
           },
           "rolls": {
             "type": "array",
+            "nullable": true,
             "items": {
               "type": "object",
               "properties": {
-                "roll_number": {
-                  "type": "string",
-                  "nullable": false
-                },
-                "camera_id": {
-                  "type": "string",
-                  "description": "camera slug",
-                  "nullable": true
-                },
-                "film_id": {
-                  "type": "string",
-                  "description": "film slug",
-                  "nullable": true
-                },
-                "shot_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "fridge_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "lab_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "lab_name": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "scanned_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "processed_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "uploaded_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "archived_at": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "album_name": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "tags": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "nullable": true
-                },
-                "notes": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "contact_sheet_url": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "push_pull": {
-                  "type": "number",
-                  "nullable": true
-                }
+                "uuid": { "type": "string", "format": "uuid", "nullable": true, "description": "Primary upsert key; falls back to roll_number" },
+                "roll_number": { "type": "string", "nullable": true },
+                "camera_uuid": { "type": "string", "format": "uuid", "nullable": true },
+                "film_uuid": { "type": "string", "format": "uuid", "nullable": true },
+                "loaded_at": { "type": "string", "nullable": true },
+                "shot_at": { "type": "string", "nullable": true },
+                "fridge_at": { "type": "string", "nullable": true },
+                "lab_at": { "type": "string", "nullable": true },
+                "lab_name": { "type": "string", "nullable": true },
+                "lab_id": { "type": "string", "nullable": true },
+                "scanned_at": { "type": "string", "nullable": true },
+                "processed_at": { "type": "string", "nullable": true },
+                "uploaded_at": { "type": "string", "nullable": true },
+                "archived_at": { "type": "string", "nullable": true },
+                "album_name": { "type": "string", "nullable": true },
+                "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
+                "notes": { "type": "string", "nullable": true },
+                "contact_sheet_url": { "type": "string", "nullable": true },
+                "push_pull": { "type": "integer", "nullable": true },
+                "created_at": { "type": "string", "format": "date-time", "nullable": true },
+                "updated_at": { "type": "string", "format": "date-time", "nullable": true }
               }
-            },
-            "nullable": true
-          }
-        }
-      },
-      "ImportCamera": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "slug",
-            "nullable": false
-          },
-          "brand": {
-            "type": "string",
-            "nullable": false
-          },
-          "model": {
-            "type": "string",
-            "nullable": false
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "format": {
-            "type": "number",
-            "nullable": true
-          }
-        }
-      },
-      "ImportFilm": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "slug",
-            "nullable": false
-          },
-          "brand": {
-            "type": "string",
-            "nullable": false
-          },
-          "name": {
-            "type": "string",
-            "nullable": false
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "iso": {
-            "type": "number",
-            "nullable": true
-          },
-          "color": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "show_iso": {
-            "type": "boolean",
-            "nullable": true
-          }
-        }
-      },
-      "ImportRoll": {
-        "type": "object",
-        "properties": {
-          "roll_number": {
-            "type": "string",
-            "nullable": false
-          },
-          "camera_id": {
-            "type": "string",
-            "description": "camera slug",
-            "nullable": true
-          },
-          "film_id": {
-            "type": "string",
-            "description": "film slug",
-            "nullable": true
-          },
-          "shot_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "fridge_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "scanned_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "processed_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "uploaded_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "archived_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "album_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "contact_sheet_url": {
-            "type": "string",
-            "nullable": true
-          },
-          "push_pull": {
-            "type": "number",
-            "nullable": true
+            }
           }
         }
       },
       "ImportResponse": {
         "type": "object",
         "properties": {
+          "cameras": { "type": "integer", "description": "Number of cameras upserted" },
+          "films": { "type": "integer", "description": "Number of films upserted" },
+          "rolls": { "type": "integer", "description": "Number of rolls upserted" }
+        },
+        "required": ["cameras", "films", "rolls"]
+      },
+      "ExportResponse": {
+        "type": "object",
+        "properties": {
           "cameras": {
-            "type": "number"
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Camera" }
           },
           "films": {
-            "type": "number"
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Film" }
           },
           "rolls": {
-            "type": "number"
-          }
-        }
-      },
-      "RollIdPathParams": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "roll_number"
-          }
-        }
-      },
-      "unknown": {},
-      "ContactSheetUploadResponse": {
-        "type": "object",
-        "properties": {
-          "contact_sheet_url": {
-            "type": "string"
-          }
-        }
-      },
-      "Roll": {},
-      "CreateRollBody": {
-        "type": "object",
-        "properties": {
-          "roll_number": {
-            "type": "string",
-            "nullable": false
-          },
-          "camera_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "film_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "shot_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "fridge_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "lab_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "scanned_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "processed_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "uploaded_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "archived_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "album_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "push_pull": {
-            "type": "number",
-            "nullable": true
+            "items": { "$ref": "#/components/schemas/Roll" },
+            "description": "All rolls ordered by created_at asc"
           }
-        }
+        },
+        "required": ["cameras", "films", "rolls"]
+      },
+      "CacheTimestampsResponse": {
+        "type": "object",
+        "properties": {
+          "rolls": { "type": "string", "format": "date-time", "nullable": true },
+          "cameras": { "type": "string", "format": "date-time", "nullable": true },
+          "films": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": ["rolls", "cameras", "films"]
       }
-    },
-    "responses": {}
+    }
   }
 }
