@@ -1,5 +1,5 @@
 <div class="new-roll-header">
-  <div class="new-roll-number" id="next-roll-number">…</div>
+  <div class="new-roll-number"><%= @next_number %></div>
   <div class="new-roll-number-label">next roll</div>
 </div>
 
@@ -49,9 +49,3 @@
   </div>
 <% end %>
 
-<script>
-  fetch('/api/rolls/next', { headers: { 'Accept': 'application/json' } })
-    .then(r => r.json())
-    .then(d => { document.getElementById('next-roll-number').textContent = d.roll_number || '—'; })
-    .catch(() => { document.getElementById('next-roll-number').textContent = '—'; });
-</script>
