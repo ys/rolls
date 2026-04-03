@@ -1,3 +1,7 @@
+<% content_for :head do %>
+  <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" crossorigin="anonymous"></script>
+<% end %>
+
 <div class="auth-hero">
   <div class="auth-wordstack">
     <span class="ws-shoot">shoot</span>
@@ -23,6 +27,13 @@
   <button id="register-btn" class="btn-auth-passkey" onclick="registerPasskey()">
     <%= image_tag "person.badge.key.svg", width: 20, height: 20, class: "auth-icon-dark" %>
     Register with Passkey
+  </button>
+
+  <button class="btn-auth-apple" onclick="registerWithApple()">
+    <svg width="14" height="17" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.76 9.04c-.02-2.1 1.71-3.1 1.79-3.16-.97-1.42-2.49-1.61-3.03-1.64-1.3-.13-2.53.76-3.19.76-.66 0-1.68-.74-2.77-.72C3 4.32 1.68 5.12.96 6.39-.5 8.96.56 12.77 1.98 14.85c.7 1.02 1.53 2.16 2.63 2.12 1.05-.04 1.45-.68 2.72-.68 1.26 0 1.62.68 2.73.66 1.13-.02 1.85-1.03 2.54-2.05.81-1.17 1.14-2.32 1.16-2.38-.03-.01-2.01-.77-2.0-3.08zM9.72 2.76C10.26 2.12 10.63 1.22 10.52.28c-.77.03-1.71.52-2.26 1.15-.49.56-.93 1.47-.81 2.34.86.06 1.73-.43 2.27-1.01z" fill="#f2ede4"/>
+    </svg>
+    Sign up with Apple
   </button>
 
   <%= link_to "Already have an account? Sign in", login_path, class: "btn-auth-create" %>
@@ -94,6 +105,60 @@ async function registerPasskey() {
     showError(err.message);
     btn.textContent = 'Register with Passkey';
     btn.disabled = false;
+  }
+}
+
+async function registerWithApple() {
+  const username = document.getElementById('username').value.trim();
+  const inviteCode = document.getElementById('invite-code').value.trim();
+  const errorEl = document.getElementById('register-error');
+
+  if (!username) { showError('Username is required to sign up with Apple'); return; }
+
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  errorEl.style.display = 'none';
+
+  try {
+    AppleID.auth.init({
+      clientId: '<%= ENV["APPLE_SERVICE_ID"] %>',
+      scope: 'name email',
+      redirectURI: '<%= ENV.fetch("APP_URL", "https://rolls.yannick.computer") %>/auth/apple/callback',
+      usePopup: true
+    });
+
+    const response = await AppleID.auth.signIn();
+    const identityToken = response.authorization.id_token;
+    const name = response.user?.name;
+    const fullName = name ? [name.firstName, name.lastName].filter(Boolean).join(' ') : null;
+
+    const res = await fetch('/api/auth/apple', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identity_token: identityToken,
+        full_name: fullName,
+        username,
+        invite_code: inviteCode || undefined
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      window.location.href = '/';
+    } else {
+      showError(data.error || 'Sign up failed');
+      btn.disabled = false;
+      btn.style.opacity = '';
+    }
+  } catch (err) {
+    if (!err || err.error !== 'popup_closed_by_user') {
+      showError('Apple Sign In failed. Please try again.');
+      console.error(err);
+    }
+    btn.disabled = false;
+    btn.style.opacity = '';
   }
 }
 

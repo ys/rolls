@@ -1,3 +1,7 @@
+<% content_for :head do %>
+  <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" crossorigin="anonymous"></script>
+<% end %>
+
 <div class="page-header">
   <h1 class="page-title">Settings</h1>
 </div>
@@ -22,6 +26,20 @@
       </label>
     </span>
   </div>
+</div>
+
+<div class="settings-section">
+  <div class="settings-section-title">Sign in with Apple</div>
+  <% if current_user.apple_user_id.present? %>
+    <div class="detail-grid" style="margin-bottom:12px;">
+      <span class="detail-label">Status</span>
+      <span class="detail-value">Linked</span>
+    </div>
+    <button class="btn btn-sm btn-danger" onclick="unlinkApple()">Unlink Apple ID</button>
+  <% else %>
+    <div class="text-muted text-sm" style="margin-bottom:12px;">No Apple ID linked.</div>
+    <button class="btn btn-sm" onclick="linkApple()">Link Apple ID</button>
+  <% end %>
 </div>
 
 <div class="settings-section">
@@ -124,6 +142,45 @@
 </div>
 
 <script>
+async function linkApple() {
+  AppleID.auth.init({
+    clientId: '<%= ENV["APPLE_SERVICE_ID"] %>',
+    scope: 'email',
+    redirectURI: '<%= ENV.fetch("APP_URL", "https://rolls.yannick.computer") %>/auth/apple/callback',
+    usePopup: true
+  });
+  try {
+    const response = await AppleID.auth.signIn();
+    const res = await fetch('/api/auth/apple/link', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ identity_token: response.authorization.id_token })
+    });
+    const data = await res.json();
+    if (data.success) { location.reload(); }
+    else { alert(data.error || 'Failed to link Apple ID'); }
+  } catch (err) {
+    if (!err || err.error !== 'popup_closed_by_user') {
+      alert('Apple Sign In failed. Please try again.');
+      console.error(err);
+    }
+  }
+}
+
+async function unlinkApple() {
+  if (!confirm('Unlink your Apple ID from this account?')) return;
+  const res = await fetch('/api/auth/apple/link', {
+    method: 'DELETE',
+    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+  });
+  const data = await res.json();
+  if (data.success) { location.reload(); }
+  else { alert(data.error || 'Failed'); }
+}
+
 document.getElementById('email-notif-toggle').addEventListener('change', async function() {
   const enabled = this.checked;
   document.getElementById('email-notif-text').textContent = enabled ? 'Saving…' : 'Saving…';
