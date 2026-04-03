@@ -34,7 +34,8 @@ module Api
         return render_error("Session expired") if username.blank? || challenge.blank?
 
         begin
-          credential = WebAuthn::Credential.from_create(params)
+          cred_params = params[:id].present? ? params : params.require(:response)
+          credential = WebAuthn::Credential.from_create(cred_params)
           credential.verify(challenge)
 
           user = User.find_or_initialize_by(username: username)
@@ -102,7 +103,8 @@ module Api
         return render_error("Session expired") if challenge.blank?
 
         begin
-          credential = WebAuthn::Credential.from_get(params)
+          cred_params = params[:id].present? ? params : params.require(:response)
+          credential = WebAuthn::Credential.from_get(cred_params)
 
           stored_cred = WebauthnCredential.find_by(credential_id: credential.id)
           return render_error("Credential not found") unless stored_cred
