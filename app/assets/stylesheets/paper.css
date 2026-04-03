@@ -601,6 +601,9 @@ body.auth-body {
 .btn-auth-apple:hover,
 .btn-auth-passkey:hover { opacity: 0.75; color: inherit; }
 
+.auth-icon-dark { opacity: 0.8; }
+.auth-icon-light { filter: invert(1); opacity: 0.9; }
+
 .btn-auth-create {
   background: none;
   border: none;
