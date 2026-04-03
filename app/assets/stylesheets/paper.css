@@ -490,18 +490,28 @@ form.button_to {
 
 .roll-row-outer {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .roll-row-outer .roll-card {
-  flex: 1;
-  min-width: 0;
+  border-bottom: none;
+  padding-bottom: 4px;
+}
+
+.roll-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 10px;
+}
+
+.roll-card-footer .roll-action-btn {
+  margin-left: auto;
 }
 
 .roll-action-btn {
-  flex-shrink: 0;
-  padding: 4px 10px;
+  padding: 2px 8px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 10px;
   font-weight: 700;
@@ -513,7 +523,7 @@ form.button_to {
   cursor: pointer;
   border-radius: 2px;
   white-space: nowrap;
-  opacity: 0.45;
+  opacity: 0.4;
   transition: opacity 0.1s, background 0.1s, color 0.1s;
 }
 
@@ -526,11 +536,11 @@ form.button_to {
 form.button_to:has(.roll-action-btn) {
   display: inline-flex;
   margin: 0;
+  margin-left: auto;
 }
 
 .roll-card {
-  border-bottom: 1px solid var(--border-light);
-  padding: 12px 0;
+  padding: 12px 0 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -576,13 +586,6 @@ form.button_to:has(.roll-action-btn) {
   color: var(--ink-muted);
   font-style: italic;
   line-height: 1.4;
-}
-
-.roll-card-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
 }
 
 .roll-card-album {
@@ -1163,9 +1166,8 @@ body.archive-body .main-content {
 
 .contact-sheet {
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  border: 1px solid var(--border);
+  display: block;
+  object-fit: cover;
   margin-bottom: 12px;
 }
 

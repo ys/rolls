@@ -28,9 +28,7 @@
 </div>
 
 <% if @roll.contact_sheet_url.present? %>
-  <div class="detail-section">
-    <img src="<%= @roll.contact_sheet_url %>" alt="Contact sheet" class="contact-sheet">
-  </div>
+  <img src="<%= @roll.contact_sheet_url %>" alt="Contact sheet" class="contact-sheet">
 <% end %>
 
 <div class="detail-section">
