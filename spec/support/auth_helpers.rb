@@ -1,14 +1,14 @@
 module AuthHelpers
   def sign_in(user)
-    token = JwtService.encode({ userId: user.id })
-    { 'Authorization' => "Bearer #{token}" }
+    token = JwtService.encode({userId: user.id})
+    {"Authorization" => "Bearer #{token}"}
   end
 
   def auth_headers(user)
     sign_in(user)
   end
 
-  def api_key_headers(user, label: 'Test')
+  def api_key_headers(user, label: "Test")
     raw = ApiKeyService.generate_raw_key
     hash = ApiKeyService.hash_key(raw)
     user.api_keys.create!(
@@ -17,7 +17,7 @@ module AuthHelpers
       label: label,
       created_at: Time.current
     )
-    { 'Authorization' => "Bearer #{raw}" }
+    {"Authorization" => "Bearer #{raw}"}
   end
 end
 

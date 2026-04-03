@@ -1,21 +1,21 @@
-require 'aws-sdk-s3'
+require "aws-sdk-s3"
 
 class R2Service
   def self.client
     @client ||= Aws::S3::Client.new(
-      region: 'auto',
-      endpoint: "https://#{ENV.fetch('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
-      access_key_id: ENV.fetch('R2_ACCESS_KEY_ID'),
-      secret_access_key: ENV.fetch('R2_SECRET_ACCESS_KEY')
+      region: "auto",
+      endpoint: "https://#{ENV.fetch("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com",
+      access_key_id: ENV.fetch("R2_ACCESS_KEY_ID"),
+      secret_access_key: ENV.fetch("R2_SECRET_ACCESS_KEY")
     )
   end
 
   def self.bucket
-    ENV.fetch('R2_BUCKET')
+    ENV.fetch("R2_BUCKET")
   end
 
   def self.public_url(roll_number)
-    "#{ENV.fetch('R2_PUBLIC_URL')}/#{roll_number}.webp"
+    "#{ENV.fetch("R2_PUBLIC_URL")}/#{roll_number}.webp"
   end
 
   def self.key_for(roll_number)
@@ -23,7 +23,7 @@ class R2Service
   end
 
   # Upload a contact sheet
-  def self.upload(roll_number, body, content_type: 'image/webp')
+  def self.upload(roll_number, body, content_type: "image/webp")
     client.put_object(
       bucket: bucket,
       key: key_for(roll_number),

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — cameras</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.nav-menu-btn span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: rgba(224,200,128,0.5);
+  border-radius: 1px;
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.35);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.nav-link:hover { color: rgba(224,200,128,0.7); }
+.nav-link.active { color: rgba(224,200,128,0.9); background: rgba(224,200,128,0.08); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-add-btn {
+  background: #D4900A;
+  border: none;
+  border-radius: 2px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 300;
+  color: #19150E;
+  line-height: 1;
+}
+
+.nav-add-btn:hover { background: #C0820A; }
+
+/* ---- Content ---- */
+.content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.4);
+}
+
+.count-badge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  background: rgba(26,20,8,0.06);
+  border: 1px solid rgba(26,20,8,0.1);
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+
+/* ---- Camera list ---- */
+.camera-list {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+}
+
+.camera-row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+  text-decoration: none;
+  color: #1A1408;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.camera-row:last-child {
+  border-bottom: none;
+}
+
+.camera-row:hover {
+  background: rgba(26,20,8,0.025);
+}
+
+.camera-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(26,20,8,0.05);
+  border: 1px solid rgba(26,20,8,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(26,20,8,0.25);
+}
+
+.camera-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.camera-lbl {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.camera-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1408;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.camera-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.camera-meta-item {
+  font-size: 10px;
+  color: rgba(26,20,8,0.4);
+}
+
+.camera-meta-sep {
+  color: rgba(26,20,8,0.15);
+}
+
+.camera-arrow {
+  color: rgba(26,20,8,0.2);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: rgba(26,20,8,0.3);
+}
+
+.empty-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.empty-sub {
+  font-size: 10px;
+  color: rgba(26,20,8,0.25);
+}
+
+/* ---- Add camera row ---- */
+.add-camera-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  color: #D4900A;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(26,20,8,0.07);
+  text-decoration: none;
+  background: rgba(212,144,10,0.02);
+}
+
+.add-camera-row:hover { background: rgba(212,144,10,0.06); }
+
+.add-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(212,144,10,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <button class="nav-menu-btn">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-title">Cameras</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Rolls</a>
+    <a href="#" class="nav-link active">Cameras</a>
+    <a href="#" class="nav-link">Films</a>
+    <a href="#" class="nav-link">Stats</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-add-btn">+</button>
+  </div>
+</nav>
+
+<div class="content">
+
+  <div class="page-header">
+    <span class="page-title">My Cameras</span>
+    <span class="count-badge">5 cameras</span>
+  </div>
+
+  <div class="camera-list">
+
+    <a class="camera-row" href="#">
+      <div class="camera-icon">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="1" y="3" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="5" y="1" width="4" height="2" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="camera-info">
+        <span class="camera-lbl">35mm · Point &amp; Shoot</span>
+        <div class="camera-name">Contax T2</div>
+        <div class="camera-meta">
+          <span class="camera-meta-item">8 rolls</span>
+          <span class="camera-meta-sep">·</span>
+          <span class="camera-meta-item">Last used Mar 12, 2026</span>
+        </div>
+      </div>
+      <span class="camera-arrow">→</span>
+    </a>
+
+    <a class="camera-row" href="#">
+      <div class="camera-icon">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="1" y="3" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="5" y="1" width="4" height="2" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="camera-info">
+        <span class="camera-lbl">35mm · Rangefinder</span>
+        <div class="camera-name">Leica M6</div>
+        <div class="camera-meta">
+          <span class="camera-meta-item">6 rolls</span>
+          <span class="camera-meta-sep">·</span>
+          <span class="camera-meta-item">Last used Feb 28, 2026</span>
+        </div>
+      </div>
+      <span class="camera-arrow">→</span>
+    </a>
+
+    <a class="camera-row" href="#">
+      <div class="camera-icon">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="1" y="3" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="5" y="1" width="4" height="2" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="camera-info">
+        <span class="camera-lbl">35mm · Point &amp; Shoot</span>
+        <div class="camera-name">Olympus Stylus Epic</div>
+        <div class="camera-meta">
+          <span class="camera-meta-item">4 rolls</span>
+          <span class="camera-meta-sep">·</span>
+          <span class="camera-meta-item">Last used Feb 10, 2026</span>
+        </div>
+      </div>
+      <span class="camera-arrow">→</span>
+    </a>
+
+    <a class="camera-row" href="#">
+      <div class="camera-icon">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="1" y="3" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="5" y="1" width="4" height="2" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="camera-info">
+        <span class="camera-lbl">35mm · SLR</span>
+        <div class="camera-name">Nikon FM2</div>
+        <div class="camera-meta">
+          <span class="camera-meta-item">3 rolls</span>
+          <span class="camera-meta-sep">·</span>
+          <span class="camera-meta-item">Last used Jan 15, 2026</span>
+        </div>
+      </div>
+      <span class="camera-arrow">→</span>
+    </a>
+
+    <a class="camera-row" href="#">
+      <div class="camera-icon">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="1" y="3" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="5" y="1" width="4" height="2" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="camera-info">
+        <span class="camera-lbl">35mm · Rangefinder</span>
+        <div class="camera-name">Canonet QL17 GIII</div>
+        <div class="camera-meta">
+          <span class="camera-meta-item">1 roll</span>
+          <span class="camera-meta-sep">·</span>
+          <span class="camera-meta-item">Last used Dec 8, 2025</span>
+        </div>
+      </div>
+      <span class="camera-arrow">→</span>
+    </a>
+
+    <a class="add-camera-row" href="#">
+      <div class="add-icon">+</div>
+      Add Camera
+    </a>
+
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<div class="page-header">
+  <h1 class="page-title">ADMIN</h1>
+  <div>
+    <%= link_to "Users", admin_users_path, class: "btn btn-sm" %>
+    <%= link_to "Catalog Films", admin_catalog_films_path, class: "btn btn-sm" %>
+  </div>
+</div>
+
+<div class="admin-stats">
+  <div class="stat-card">
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value"><%= @total_users %></div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Active Users (30d)</div>
+    <div class="stat-value"><%= @active_users_30d %></div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Rolls This Week</div>
+    <div class="stat-value"><%= @rolls_this_week %></div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Rolls This Month</div>
+    <div class="stat-value"><%= @rolls_this_month %></div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-label">Rolls All Time</div>
+    <div class="stat-value"><%= @rolls_all_time %></div>
+  </div>
+</div>
+
+<style>
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .stat-card {
+    border: 1px solid var(--border);
+    padding: 16px;
+    background: var(--paper-dark);
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+</style>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — new roll</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-cancel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.4);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+}
+
+.nav-cancel:hover { color: rgba(224,200,128,0.7); }
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ---- Content ---- */
+.content {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 16px 100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Form ---- */
+.form-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.form-section-title {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  padding: 12px 16px 0;
+  margin-bottom: -2px;
+}
+
+.form-field {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+}
+
+.form-field:last-child {
+  border-bottom: none;
+}
+
+.field-lbl {
+  display: block;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.35);
+  margin-bottom: 6px;
+}
+
+.field-input {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 13px;
+  background: rgba(26,20,8,0.03);
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  color: #1A1408;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: #D4900A;
+  background: rgba(212,144,10,0.03);
+}
+
+.field-input::placeholder {
+  color: rgba(26,20,8,0.25);
+}
+
+.field-select {
+  display: block;
+  width: 100%;
+  padding: 9px 32px 9px 12px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 13px;
+  background: rgba(26,20,8,0.03);
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  color: #1A1408;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(26,20,8,0.3)' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  outline: none;
+}
+
+.field-select:focus {
+  border-color: #D4900A;
+}
+
+/* Stepper for push/pull */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  overflow: hidden;
+  width: 140px;
+  background: rgba(26,20,8,0.03);
+}
+
+.stepper-btn {
+  background: none;
+  border: none;
+  padding: 9px 14px;
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(26,20,8,0.5);
+  cursor: pointer;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  line-height: 1;
+}
+
+.stepper-btn:hover { background: rgba(26,20,8,0.04); color: #1A1408; }
+
+.stepper-val {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1408;
+  border-left: 1px solid rgba(26,20,8,0.1);
+  border-right: 1px solid rgba(26,20,8,0.1);
+  padding: 9px 0;
+}
+
+/* Toggle group */
+.toggle-group {
+  display: flex;
+  gap: 0;
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.toggle-option {
+  flex: 1;
+  padding: 9px 8px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  border: none;
+  background: rgba(26,20,8,0.03);
+  color: rgba(26,20,8,0.4);
+  cursor: pointer;
+  border-right: 1px solid rgba(26,20,8,0.1);
+}
+
+.toggle-option:last-child { border-right: none; }
+
+.toggle-option.active {
+  background: #1A1408;
+  color: #FAF6EE;
+}
+
+.toggle-option:hover:not(.active) {
+  background: rgba(26,20,8,0.06);
+  color: rgba(26,20,8,0.65);
+}
+
+/* Radio group */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.radio-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(26,20,8,0.2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-dot.checked {
+  border-color: #D4900A;
+}
+
+.radio-dot.checked::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #D4900A;
+}
+
+.radio-label {
+  font-size: 12px;
+  color: rgba(26,20,8,0.7);
+}
+
+.radio-option.active .radio-label {
+  color: #1A1408;
+  font-weight: 600;
+}
+
+/* Notes field */
+.field-textarea {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 13px;
+  background: rgba(26,20,8,0.03);
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  color: #1A1408;
+  resize: none;
+  min-height: 80px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.field-textarea:focus { border-color: #D4900A; }
+.field-textarea::placeholder { color: rgba(26,20,8,0.25); }
+
+/* Roll number preview */
+.roll-number-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.roll-number-preview .field-input {
+  width: auto;
+  flex: 1;
+}
+
+.roll-number-regen {
+  margin-left: 8px;
+  background: none;
+  border: 1px solid rgba(26,20,8,0.12);
+  border-radius: 3px;
+  padding: 9px 12px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.4);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.roll-number-regen:hover { color: rgba(26,20,8,0.7); background: rgba(26,20,8,0.04); }
+
+/* ---- Submit ---- */
+.submit-area {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-submit {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: #D4900A;
+  border: none;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #19150E;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-submit:hover { background: #C0820A; }
+
+.cancel-link {
+  display: block;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  text-decoration: none;
+  padding: 8px;
+}
+
+.cancel-link:hover { color: rgba(26,20,8,0.6); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-cancel">Cancel</button>
+  <span class="nav-title">New Roll</span>
+  <div style="width:50px;"></div>
+</nav>
+
+<div class="content">
+
+  <!-- Film & Camera -->
+  <div class="form-card">
+    <div class="form-section-title">Equipment</div>
+
+    <div class="form-field">
+      <label class="field-lbl">Film</label>
+      <select class="field-select">
+        <option value="" disabled selected>Select film stock…</option>
+        <option>Kodak Gold 200</option>
+        <option>Kodak Portra 400</option>
+        <option>Ilford HP5 Plus 400</option>
+        <option>Fujifilm Superia X-TRA 400</option>
+        <option>Lomography Color 800</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label class="field-lbl">Camera</label>
+      <select class="field-select">
+        <option value="" disabled selected>Select camera…</option>
+        <option>Contax T2</option>
+        <option>Leica M6</option>
+        <option>Olympus Stylus Epic</option>
+        <option>Nikon FM2</option>
+        <option>Canonet QL17 GIII</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Roll details -->
+  <div class="form-card">
+    <div class="form-section-title">Roll Details</div>
+
+    <div class="form-field">
+      <label class="field-lbl">Roll Number</label>
+      <div class="roll-number-preview">
+        <input type="text" class="field-input" value="2604" style="font-size:15px;font-weight:700;" />
+        <button class="roll-number-regen">Regenerate</button>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-lbl">Shot Date</label>
+      <input type="date" class="field-input" value="2026-04-03" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-lbl">Format</label>
+      <div class="toggle-group">
+        <button class="toggle-option active">35mm</button>
+        <button class="toggle-option">120</button>
+        <button class="toggle-option">4×5</button>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-lbl">Push / Pull</label>
+      <div class="stepper">
+        <button class="stepper-btn">−</button>
+        <span class="stepper-val">0</span>
+        <button class="stepper-btn">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="form-card">
+    <div class="form-section-title">Status</div>
+
+    <div class="form-field">
+      <label class="field-lbl">Initial Status</label>
+      <div class="radio-group">
+        <label class="radio-option active">
+          <div class="radio-dot checked"></div>
+          <span class="radio-label">Loaded — in camera, ready to shoot</span>
+        </label>
+        <label class="radio-option">
+          <div class="radio-dot"></div>
+          <span class="radio-label">Unloaded — just cataloguing</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="form-card">
+    <div class="form-section-title">Notes</div>
+    <div class="form-field">
+      <label class="field-lbl">Notes (optional)</label>
+      <textarea class="field-textarea" placeholder="Location, lighting conditions, experiment notes…"></textarea>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-area">
+    <button class="btn-submit">Start Roll</button>
+    <a href="#" class="cancel-link">Cancel</a>
+  </div>
+
+</div>
+
+</body>
+</html>

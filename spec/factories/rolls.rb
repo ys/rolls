@@ -4,7 +4,7 @@ FactoryBot.define do
     association :user
     association :camera
     association :film
-    sequence(:roll_number) { |n| "#{Time.current.year.to_s[-2..]}#{n.to_s.rjust(2, '0')}" }
+    sequence(:roll_number) { |n| "#{Time.current.year.to_s[-2..]}#{n.to_s.rjust(2, "0")}" }
     created_at { Time.current }
     updated_at { Time.current }
 
@@ -21,7 +21,7 @@ FactoryBot.define do
       loaded_at { 2.months.ago }
       fridge_at { 1.month.ago }
       lab_at { 1.week.ago }
-      lab_name { 'The Lab' }
+      lab_name { "The Lab" }
     end
 
     trait :scanned do

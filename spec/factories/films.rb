@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :film do
     uuid { SecureRandom.uuid }
     association :user
-    brand { 'Kodak' }
+    brand { "Kodak" }
     sequence(:name) { |n| "Portra #{n}" }
     sequence(:slug) { |n| "kodak-portra-#{n}" }
     iso { 400 }

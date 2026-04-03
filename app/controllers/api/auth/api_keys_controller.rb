@@ -11,7 +11,7 @@ module Api
       def create
         raw_key = ApiKeyService.generate_raw_key
         key_hash = ApiKeyService.hash_key(raw_key)
-        label = params[:label].presence || 'API Key'
+        label = params[:label].presence || "API Key"
 
         api_key = current_user.api_keys.create!(
           id: SecureRandom.uuid,
@@ -41,7 +41,7 @@ module Api
         current_user.api_keys.create!(
           id: SecureRandom.uuid,
           key_hash: key_hash,
-          label: 'CLI',
+          label: "CLI",
           created_at: Time.current
         )
 
@@ -49,7 +49,7 @@ module Api
         if callback.present?
           redirect_to "#{callback}?key=#{raw_key}", allow_other_host: true
         else
-          render json: { raw_key: raw_key }
+          render json: {raw_key: raw_key}
         end
       end
 
@@ -57,7 +57,7 @@ module Api
 
       def require_api_auth!
         unless logged_in?
-          render json: { error: 'Unauthorized' }, status: :unauthorized
+          render json: {error: "Unauthorized"}, status: :unauthorized
         end
       end
 

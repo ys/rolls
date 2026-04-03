@@ -8,13 +8,13 @@ class WellKnownController < ApplicationController
         apps: [],
         details: [
           {
-            appID: "#{ENV.fetch('APPLE_TEAM_ID', 'XXXXXXXXXX')}.computer.yannick.rolls",
+            appID: "#{ENV.fetch("APPLE_TEAM_ID", "XXXXXXXXXX")}.computer.yannick.rolls",
             paths: ["*"]
           }
         ]
       },
       webcredentials: {
-        apps: ["#{ENV.fetch('APPLE_TEAM_ID', 'XXXXXXXXXX')}.computer.yannick.rolls"]
+        apps: ["#{ENV.fetch("APPLE_TEAM_ID", "XXXXXXXXXX")}.computer.yannick.rolls"]
       }
     }
   end

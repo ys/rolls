@@ -1,12 +1,12 @@
 class Roll < ApplicationRecord
-  self.primary_key = 'uuid'
+  self.primary_key = "uuid"
 
   belongs_to :user, foreign_key: :user_id, primary_key: :id
   belongs_to :camera, foreign_key: :camera_uuid, primary_key: :uuid, optional: true
   belongs_to :film, foreign_key: :film_uuid, primary_key: :uuid, optional: true
 
   validates :user_id, presence: true
-  validates :roll_number, uniqueness: { scope: :user_id }, allow_blank: true
+  validates :roll_number, uniqueness: {scope: :user_id}, allow_blank: true
 
   before_create :generate_uuid
 
@@ -22,29 +22,29 @@ class Roll < ApplicationRecord
     existing = user.rolls
       .where("roll_number LIKE ?", "#{year_prefix}%")
       .pluck(:roll_number)
-      .map { |n| n.sub(year_prefix, '').to_i }
+      .map { |n| n.sub(year_prefix, "").to_i }
       .max || 0
-    "#{year_prefix}#{(existing + 1).to_s.rjust(2, '0')}"
+    "#{year_prefix}#{(existing + 1).to_s.rjust(2, "0")}"
   end
 
   # Status logic (priority order)
   def status
     if archived_at.present?
-      'archived'
+      "archived"
     elsif uploaded_at.present?
-      'uploaded'
+      "uploaded"
     elsif processed_at.present?
-      'processed'
+      "processed"
     elsif scanned_at.present?
-      'scanned'
+      "scanned"
     elsif lab_at.present?
-      'lab'
+      "lab"
     elsif fridge_at.present?
-      'fridge'
+      "fridge"
     elsif loaded_at.present?
-      'loaded'
+      "loaded"
     else
-      'unloaded'
+      "unloaded"
     end
   end
 

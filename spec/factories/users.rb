@@ -5,12 +5,12 @@ FactoryBot.define do
     name { Faker::Name.name }
     email { Faker::Internet.unique.email }
     email_notifications { true }
-    role { 'user' }
+    role { "user" }
     invites_sent { 0 }
     created_at { Time.current }
   end
 
   trait :admin do
-    role { 'admin' }
+    role { "admin" }
   end
 end

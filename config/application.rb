@@ -26,7 +26,7 @@ module RollsRailsRewrite
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -41,6 +41,6 @@ module RollsRailsRewrite
 
     # Use a separate migrations table to avoid conflicting with the existing
     # Next.js schema_migrations table (which uses id/name/applied_at columns).
-    config.active_record.schema_migrations_table_name = 'rails_schema_migrations'
+    config.active_record.schema_migrations_table_name = "rails_schema_migrations"
   end
 end

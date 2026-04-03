@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — settings</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.nav-menu-btn span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: rgba(224,200,128,0.5);
+  border-radius: 1px;
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+}
+
+/* ---- Content ---- */
+.content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.page-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.4);
+  margin-bottom: 28px;
+}
+
+/* ---- Section ---- */
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section-label {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #D9D3CC;
+}
+
+.settings-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+}
+
+/* ---- Row types ---- */
+.settings-row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+  gap: 12px;
+}
+
+.settings-row:last-child { border-bottom: none; }
+
+.row-label {
+  flex: 1;
+}
+
+.row-lbl-tiny {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.row-val {
+  font-size: 13px;
+  color: #1A1408;
+}
+
+.row-val-muted {
+  font-size: 12px;
+  color: rgba(26,20,8,0.45);
+}
+
+.row-action {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.35);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: 1px solid rgba(26,20,8,0.15);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  white-space: nowrap;
+}
+
+.row-action:hover { color: rgba(26,20,8,0.7); border-color: rgba(26,20,8,0.3); }
+.row-action.danger { color: #B83020; border-color: rgba(180,48,32,0.25); }
+.row-action.danger:hover { background: rgba(180,48,32,0.06); }
+
+/* ---- API Key row ---- */
+.api-key-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+  gap: 10px;
+}
+
+.api-key-row:last-of-type {
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+}
+
+.api-key-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  background: rgba(26,20,8,0.05);
+  border: 1px solid rgba(26,20,8,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(26,20,8,0.25);
+}
+
+.api-key-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.api-key-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1408;
+}
+
+.api-key-meta {
+  font-size: 9px;
+  color: rgba(26,20,8,0.35);
+  margin-top: 1px;
+}
+
+.api-key-val {
+  font-size: 10px;
+  color: rgba(26,20,8,0.25);
+  font-family: 'SF Mono', monospace;
+  background: rgba(26,20,8,0.04);
+  padding: 2px 6px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* ---- Passkey row ---- */
+.passkey-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+  gap: 12px;
+}
+
+.passkey-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgba(26,20,8,0.05);
+  border: 1px solid rgba(26,20,8,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(26,20,8,0.3);
+}
+
+.passkey-info { flex: 1; }
+
+.passkey-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1408;
+}
+
+.passkey-meta {
+  font-size: 9px;
+  color: rgba(26,20,8,0.35);
+  margin-top: 2px;
+}
+
+/* ---- Toggle switch ---- */
+.toggle-switch {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(26,20,8,0.12);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.toggle-switch.on { background: #D4900A; }
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch.on::after {
+  transform: translateX(18px);
+}
+
+/* ---- Add row ---- */
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #D4900A;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(26,20,8,0.07);
+  text-decoration: none;
+  background: rgba(212,144,10,0.02);
+}
+
+.add-row:hover { background: rgba(212,144,10,0.06); }
+
+.add-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(212,144,10,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* ---- Danger zone ---- */
+.danger-card {
+  background: #FAF6EE;
+  border: 1px solid rgba(180,48,32,0.2);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.04);
+  overflow: hidden;
+}
+
+.signout-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(180,48,32,0.1);
+}
+
+.signout-row:last-child { border-bottom: none; }
+
+.signout-label {
+  font-size: 13px;
+  color: #B83020;
+  font-weight: 600;
+}
+
+.signout-sub {
+  font-size: 9px;
+  color: rgba(180,48,32,0.5);
+  margin-top: 2px;
+}
+
+.btn-danger {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #B83020;
+  border: 1px solid rgba(180,48,32,0.3);
+  background: transparent;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  white-space: nowrap;
+}
+
+.btn-danger:hover { background: rgba(180,48,32,0.06); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <button class="nav-menu-btn">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-title">Settings</span>
+  </div>
+</nav>
+
+<div class="content">
+
+  <div class="page-title">Settings</div>
+
+  <!-- Account -->
+  <div class="settings-section">
+    <div class="settings-section-label">Account</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="row-label">
+          <span class="row-lbl-tiny">Username</span>
+          <span class="row-val">yannick</span>
+        </div>
+        <button class="row-action">Edit</button>
+      </div>
+      <div class="settings-row">
+        <div class="row-label">
+          <span class="row-lbl-tiny">Email</span>
+          <span class="row-val">hi@yannick.computer</span>
+        </div>
+        <button class="row-action">Edit</button>
+      </div>
+      <div class="settings-row">
+        <div class="row-label">
+          <span class="row-lbl-tiny">Member since</span>
+          <span class="row-val-muted">January 2024</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Keys -->
+  <div class="settings-section">
+    <div class="settings-section-label">API Keys</div>
+    <div class="settings-card">
+      <div class="api-key-row">
+        <div class="api-key-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <circle cx="4" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M6 7h4M8.5 7v1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="api-key-info">
+          <div class="api-key-name">iPhone 16 Pro</div>
+          <div class="api-key-meta">Created Mar 12, 2026 · Last used 2 hours ago</div>
+        </div>
+        <span class="api-key-val">rk_••••3f7a</span>
+        <button class="row-action danger">Revoke</button>
+      </div>
+      <div class="api-key-row">
+        <div class="api-key-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <circle cx="4" cy="7" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M6 7h4M8.5 7v1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="api-key-info">
+          <div class="api-key-name">MacBook Pro</div>
+          <div class="api-key-meta">Created Feb 1, 2026 · Last used 3 days ago</div>
+        </div>
+        <span class="api-key-val">rk_••••9c2e</span>
+        <button class="row-action danger">Revoke</button>
+      </div>
+      <a class="add-row" href="#">
+        <div class="add-circle">+</div>
+        Create New API Key
+      </a>
+    </div>
+  </div>
+
+  <!-- Passkeys -->
+  <div class="settings-section">
+    <div class="settings-section-label">Passkeys</div>
+    <div class="settings-card">
+      <div class="passkey-row">
+        <div class="passkey-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M5 5V3.5a2 2 0 014 0V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="7" cy="8.5" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="passkey-info">
+          <div class="passkey-name">iPhone 16 Pro — Face ID</div>
+          <div class="passkey-meta">Registered Mar 12, 2026 · Last used today</div>
+        </div>
+        <button class="row-action danger">Remove</button>
+      </div>
+      <div class="passkey-row" style="border-bottom:none;">
+        <div class="passkey-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M5 5V3.5a2 2 0 014 0V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="7" cy="8.5" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="passkey-info">
+          <div class="passkey-name">MacBook Pro — Touch ID</div>
+          <div class="passkey-meta">Registered Jan 15, 2026 · Last used 3 days ago</div>
+        </div>
+        <button class="row-action danger">Remove</button>
+      </div>
+      <a class="add-row" href="#">
+        <div class="add-circle">+</div>
+        Add Passkey
+      </a>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="settings-section">
+    <div class="settings-section-label">Notifications</div>
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="row-label">
+          <span class="row-val">Email reminders</span>
+          <div style="font-size:10px;color:rgba(26,20,8,0.35);margin-top:2px;">Get notified when rolls have been at the lab for 2+ weeks</div>
+        </div>
+        <div class="toggle-switch on"></div>
+      </div>
+      <div class="settings-row">
+        <div class="row-label">
+          <span class="row-val">Monthly digest</span>
+          <div style="font-size:10px;color:rgba(26,20,8,0.35);margin-top:2px;">Monthly summary of rolls shot, developed, and archived</div>
+        </div>
+        <div class="toggle-switch"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="settings-section">
+    <div class="settings-section-label">Danger Zone</div>
+    <div class="danger-card">
+      <div class="signout-row">
+        <div>
+          <div class="signout-label">Sign out</div>
+          <div class="signout-sub">You can sign back in with your passkey</div>
+        </div>
+        <button class="btn-danger">Sign Out</button>
+      </div>
+      <div class="signout-row">
+        <div>
+          <div class="signout-label">Delete account</div>
+          <div class="signout-sub">Permanently delete your account and all data. This cannot be undone.</div>
+        </div>
+        <button class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,15 +1,15 @@
 class Invite < ApplicationRecord
-  self.primary_key = 'id'
+  self.primary_key = "id"
 
-  belongs_to :creator, class_name: 'User', foreign_key: :created_by, primary_key: :id, optional: true
-  belongs_to :used_by_user, class_name: 'User', foreign_key: :used_by, primary_key: :id, optional: true
+  belongs_to :creator, class_name: "User", foreign_key: :created_by, primary_key: :id, optional: true
+  belongs_to :used_by_user, class_name: "User", foreign_key: :used_by, primary_key: :id, optional: true
 
   validates :code, presence: true, uniqueness: true
 
   before_create :generate_id
   before_create :generate_code
 
-  scope :valid, -> { where('expires_at IS NULL OR expires_at > ?', Time.current).where('used_count < COALESCE(max_uses, 1)') }
+  scope :valid, -> { where("expires_at IS NULL OR expires_at > ?", Time.current).where("used_count < COALESCE(max_uses, 1)") }
 
   def valid_invite?
     (expires_at.nil? || expires_at > Time.current) &&

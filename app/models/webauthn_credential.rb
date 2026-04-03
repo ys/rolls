@@ -1,6 +1,6 @@
 class WebauthnCredential < ApplicationRecord
-  self.primary_key = 'id'
-  self.table_name = 'webauthn_credentials'
+  self.primary_key = "id"
+  self.table_name = "webauthn_credentials"
 
   belongs_to :user, foreign_key: :user_id, primary_key: :id
 

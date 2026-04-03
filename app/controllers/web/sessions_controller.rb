@@ -13,20 +13,20 @@ module Web
         api_key = ApiKeyService.find_by_raw_key(api_key_raw)
         if api_key
           set_session_cookie!(api_key.user)
-          redirect_to root_path, notice: 'Signed in'
+          redirect_to root_path, notice: "Signed in"
         else
-          flash[:alert] = 'Invalid API key'
+          flash[:alert] = "Invalid API key"
           render :new, status: :unprocessable_entity
         end
       else
-        flash[:alert] = 'Sign in via passkey'
+        flash[:alert] = "Sign in via passkey"
         render :new
       end
     end
 
     def destroy
       cookies.delete(:session)
-      redirect_to login_path, notice: 'Signed out'
+      redirect_to login_path, notice: "Signed out"
     end
   end
 end

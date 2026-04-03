@@ -1,11 +1,11 @@
-require 'jwt'
+require "jwt"
 
 class JwtService
-  ALGORITHM = 'HS256'.freeze
+  ALGORITHM = "HS256".freeze
   EXPIRY = 1.year
 
   def self.secret
-    ENV.fetch('JWT_SECRET') { raise 'JWT_SECRET not set' }
+    ENV.fetch("JWT_SECRET") { raise "JWT_SECRET not set" }
   end
 
   def self.encode(payload)

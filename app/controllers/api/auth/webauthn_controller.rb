@@ -4,7 +4,7 @@ module Api
       # Register options
       def register_options
         username = params[:username]&.downcase&.strip
-        return render_error('Username required') if username.blank?
+        return render_error("Username required") if username.blank?
 
         user = User.find_or_initialize_by(username: username)
 
@@ -30,7 +30,7 @@ module Api
         username = session[:webauthn_register_username]
         challenge = session[:webauthn_register_challenge]
 
-        return render_error('Session expired') if username.blank? || challenge.blank?
+        return render_error("Session expired") if username.blank? || challenge.blank?
 
         begin
           credential = WebAuthn::Credential.from_create(params)
@@ -45,14 +45,14 @@ module Api
             invite_code = session[:webauthn_invite_code]
             if invite_code.present?
               invite = Invite.find_by(code: invite_code)
-              return render_error('Invalid invite code') unless invite&.valid_invite?
+              return render_error("Invalid invite code") unless invite&.valid_invite?
             end
 
             user.save!
             invite&.use!(user)
           end
 
-          webauthn_cred = user.webauthn_credentials.create!(
+          user.webauthn_credentials.create!(
             id: SecureRandom.uuid,
             credential_id: credential.id,
             public_key: credential.public_key,
@@ -81,7 +81,7 @@ module Api
 
         if identifier.present?
           user = User.find_by(username: identifier) || User.find_by(email: identifier)
-          return render_error('User not found', status: :not_found) unless user
+          return render_error("User not found", status: :not_found) unless user
 
           options = WebAuthn::Credential.options_for_get(
             allow: user.webauthn_credentials.pluck(:credential_id)
@@ -97,13 +97,13 @@ module Api
       # Login verify
       def login_verify
         challenge = session[:webauthn_login_challenge]
-        return render_error('Session expired') if challenge.blank?
+        return render_error("Session expired") if challenge.blank?
 
         begin
           credential = WebAuthn::Credential.from_get(params)
 
           stored_cred = WebauthnCredential.find_by(credential_id: credential.id)
-          return render_error('Credential not found') unless stored_cred
+          return render_error("Credential not found") unless stored_cred
 
           credential.verify(
             challenge,

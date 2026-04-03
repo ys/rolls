@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  self.primary_key = 'id'
+  self.primary_key = "id"
 
   has_many :rolls, foreign_key: :user_id, primary_key: :id
   has_many :cameras, foreign_key: :user_id, primary_key: :id
@@ -8,8 +8,8 @@ class User < ApplicationRecord
   has_many :webauthn_credentials, foreign_key: :user_id, primary_key: :id
   has_many :invites, foreign_key: :created_by, primary_key: :id
 
-  validates :username, presence: true, uniqueness: { case_sensitive: false }
-  validates :email, uniqueness: { allow_blank: true, case_sensitive: false }
+  validates :username, presence: true, uniqueness: {case_sensitive: false}
+  validates :email, uniqueness: {allow_blank: true, case_sensitive: false}
 
   before_create :set_defaults
   before_create :generate_id
@@ -26,7 +26,7 @@ class User < ApplicationRecord
 
   def set_defaults
     self.email_notifications = true if email_notifications.nil?
-    self.role ||= 'user'
+    self.role ||= "user"
     self.invites_sent ||= 0
   end
 end

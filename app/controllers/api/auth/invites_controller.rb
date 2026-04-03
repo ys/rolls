@@ -29,7 +29,7 @@ module Api
 
       def send_invite
         email = params[:email]
-        return render_error('Email required') if email.blank?
+        return render_error("Email required") if email.blank?
 
         invite = Invite.find_by(id: params[:invite_id], created_by: current_user.id)
         return render_not_found unless invite
@@ -41,7 +41,7 @@ module Api
           invite: invite
         ).deliver_later
 
-        render json: { success: true }
+        render json: {success: true}
       end
 
       def validate
@@ -49,13 +49,13 @@ module Api
         invite = Invite.find_by(code: code)
 
         if invite.nil?
-          render json: { valid: false, error: 'Invite not found' }
+          render json: {valid: false, error: "Invite not found"}
         elsif invite.valid_invite?
-          render json: { valid: true }
+          render json: {valid: true}
         elsif invite.expires_at&.past?
-          render json: { valid: false, error: 'Invite expired' }
+          render json: {valid: false, error: "Invite expired"}
         else
-          render json: { valid: false, error: 'Invite already used' }
+          render json: {valid: false, error: "Invite already used"}
         end
       end
 
@@ -63,7 +63,7 @@ module Api
 
       def require_api_auth!
         unless logged_in?
-          render json: { error: 'Unauthorized' }, status: :unauthorized
+          render json: {error: "Unauthorized"}, status: :unauthorized
         end
       end
 

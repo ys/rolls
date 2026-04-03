@@ -1,5 +1,5 @@
 class ApiKey < ApplicationRecord
-  self.primary_key = 'id'
+  self.primary_key = "id"
 
   belongs_to :user, foreign_key: :user_id, primary_key: :id
 

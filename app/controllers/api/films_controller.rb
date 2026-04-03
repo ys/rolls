@@ -18,7 +18,7 @@ module Api
       if film.save
         render json: serialize_film(film), status: film.previously_new_record? ? :created : :ok
       else
-        render_error(film.errors.full_messages.join(', '))
+        render_error(film.errors.full_messages.join(", "))
       end
     end
 
@@ -31,7 +31,7 @@ module Api
       if @film.update(film_params)
         render json: serialize_film(@film)
       else
-        render_error(@film.errors.full_messages.join(', '))
+        render_error(@film.errors.full_messages.join(", "))
       end
     end
 
@@ -65,7 +65,7 @@ module Api
 
     def film_params
       params.permit(:slug, :brand, :name, :nickname, :iso, :color, :slide,
-                    :show_iso, :gradient_from, :gradient_to)
+        :show_iso, :gradient_from, :gradient_to)
     end
 
     def serialize_film(film)

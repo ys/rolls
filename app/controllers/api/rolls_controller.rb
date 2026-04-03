@@ -34,7 +34,7 @@ module Api
     end
 
     def next_number
-      render json: { roll_number: Roll.next_number_for(current_user) }
+      render json: {roll_number: Roll.next_number_for(current_user)}
     end
 
     def show
@@ -50,7 +50,7 @@ module Api
       if roll.save
         render json: serialize_roll(roll), status: :created
       else
-        render_error(roll.errors.full_messages.join(', '))
+        render_error(roll.errors.full_messages.join(", "))
       end
     end
 
@@ -59,7 +59,7 @@ module Api
       if @roll.update(roll_params)
         render json: serialize_roll(@roll, include_associations: true)
       else
-        render_error(@roll.errors.full_messages.join(', '))
+        render_error(@roll.errors.full_messages.join(", "))
       end
     end
 
@@ -73,7 +73,7 @@ module Api
       field = params[:field]
       value = params[:value]
 
-      return render_error('roll_numbers, field, and value required') if roll_numbers.blank? || field.blank?
+      return render_error("roll_numbers, field, and value required") if roll_numbers.blank? || field.blank?
 
       allowed_fields = %w[
         loaded_at shot_at fridge_at lab_at lab_name lab_id scanned_at
@@ -84,29 +84,29 @@ module Api
       return render_error("Field '#{field}' not allowed for bulk update") unless allowed_fields.include?(field)
 
       rolls = current_user.rolls.where(roll_number: roll_numbers)
-      rolls.update_all(field => value, updated_at: Time.current)
+      rolls.update_all(field => value, :updated_at => Time.current)
 
-      render json: { updated: rolls.count }
+      render json: {updated: rolls.count}
     end
 
     def contact_sheet_show
-      require 'r2_service'
+      require "r2_service"
       result = R2Service.download(@roll.roll_number)
       return render_not_found unless result
 
-      response.headers['Content-Type'] = result[:content_type]
-      send_data result[:body], type: result[:content_type], disposition: 'inline'
+      response.headers["Content-Type"] = result[:content_type]
+      send_data result[:body], type: result[:content_type], disposition: "inline"
     end
 
     def contact_sheet_upload
-      require 'r2_service'
+      require "r2_service"
       body = request.body.read
-      content_type = request.content_type || 'image/webp'
+      content_type = request.content_type || "image/webp"
 
       url = R2Service.upload(@roll.roll_number, body, content_type: content_type)
       @roll.update!(contact_sheet_url: url, updated_at: Time.current)
 
-      render json: { url: url }
+      render json: {url: url}
     end
 
     private

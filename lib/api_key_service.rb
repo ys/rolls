@@ -1,8 +1,8 @@
-require 'digest'
-require 'securerandom'
+require "digest"
+require "securerandom"
 
 class ApiKeyService
-  PREFIX = 'rk_'.freeze
+  PREFIX = "rk_".freeze
 
   # Generate a new raw API key (not stored)
   def self.generate_raw_key

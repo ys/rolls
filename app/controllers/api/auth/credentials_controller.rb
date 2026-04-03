@@ -15,7 +15,7 @@ module Api
 
       def require_api_auth!
         unless logged_in?
-          render json: { error: 'Unauthorized' }, status: :unauthorized
+          render json: {error: "Unauthorized"}, status: :unauthorized
         end
       end
     end

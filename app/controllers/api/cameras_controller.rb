@@ -18,7 +18,7 @@ module Api
       if camera.save
         render json: serialize_camera(camera), status: camera.previously_new_record? ? :created : :ok
       else
-        render_error(camera.errors.full_messages.join(', '))
+        render_error(camera.errors.full_messages.join(", "))
       end
     end
 
@@ -31,7 +31,7 @@ module Api
       if @camera.update(camera_params)
         render json: serialize_camera(@camera)
       else
-        render_error(@camera.errors.full_messages.join(', '))
+        render_error(@camera.errors.full_messages.join(", "))
       end
     end
 

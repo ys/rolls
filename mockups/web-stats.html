@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — stats</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.nav-menu-btn span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: rgba(224,200,128,0.5);
+  border-radius: 1px;
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.35);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.nav-link:hover { color: rgba(224,200,128,0.7); }
+.nav-link.active { color: rgba(224,200,128,0.9); background: rgba(224,200,128,0.08); }
+
+/* ---- Content ---- */
+.content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.4);
+}
+
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: rgba(26,20,8,0.4);
+}
+
+.year-btn {
+  background: none;
+  border: 1px solid rgba(26,20,8,0.15);
+  border-radius: 2px;
+  padding: 3px 6px;
+  cursor: pointer;
+  color: rgba(26,20,8,0.4);
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 10px;
+}
+
+.year-btn:hover { color: rgba(26,20,8,0.7); }
+
+/* ---- Summary cards ---- */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.summary-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  padding: 16px;
+  text-align: center;
+}
+
+.summary-val {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1A1408;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.summary-val.accent { color: #D4900A; }
+
+.summary-lbl {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.35);
+}
+
+.summary-sub {
+  font-size: 9px;
+  color: rgba(26,20,8,0.3);
+  margin-top: 2px;
+}
+
+/* ---- Section ---- */
+.section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #D9D3CC;
+}
+
+/* ---- Bar chart ---- */
+.chart-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  padding: 20px 20px 0;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+  padding-bottom: 0;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 4px;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  background: rgba(26,20,8,0.1);
+  transition: background 0.1s;
+}
+
+.bar:hover { background: #D4900A; }
+.bar.current { background: #D4900A; }
+.bar.scanned { background: rgba(212,144,10,0.4); }
+
+.bar-count {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(26,20,8,0.35);
+  margin-bottom: 4px;
+}
+
+.chart-labels {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 14px;
+  border-top: 1px solid rgba(26,20,8,0.06);
+  margin-top: 6px;
+}
+
+.chart-label {
+  flex: 1;
+  text-align: center;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.25);
+}
+
+.chart-label.current {
+  color: #D4900A;
+}
+
+/* ---- Tables ---- */
+.data-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  padding: 8px 16px;
+  background: rgba(26,20,8,0.03);
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+}
+
+.th {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+}
+
+.table-header-3 { grid-template-columns: 1fr 60px 60px; }
+.table-header-4 { grid-template-columns: 1fr 80px 60px 60px; }
+.table-row-3 { grid-template-columns: 1fr 60px 60px; }
+.table-row-4 { grid-template-columns: 1fr 80px 60px 60px; }
+
+.data-row {
+  display: grid;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.05);
+  align-items: center;
+}
+
+.data-row:last-child { border-bottom: none; }
+.data-row:hover { background: rgba(26,20,8,0.02); }
+
+.td-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1408;
+}
+
+.td-brand {
+  font-size: 9px;
+  color: rgba(26,20,8,0.4);
+  display: block;
+  margin-top: 1px;
+}
+
+.td-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1408;
+  text-align: right;
+}
+
+.td-pct {
+  text-align: right;
+}
+
+.pct-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.pct-bar {
+  width: 40px;
+  height: 3px;
+  background: rgba(26,20,8,0.08);
+  border-radius: 1.5px;
+  overflow: hidden;
+}
+
+.pct-fill {
+  height: 100%;
+  border-radius: 1.5px;
+  background: #D4900A;
+}
+
+.pct-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(26,20,8,0.35);
+  width: 28px;
+  text-align: right;
+}
+
+.td-last {
+  font-size: 10px;
+  color: rgba(26,20,8,0.35);
+  text-align: right;
+}
+
+/* ---- Two-col layout ---- */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 580px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <button class="nav-menu-btn">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-title">Stats</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Rolls</a>
+    <a href="#" class="nav-link">Cameras</a>
+    <a href="#" class="nav-link">Films</a>
+    <a href="#" class="nav-link active">Stats</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <div class="page-header">
+    <span class="page-title">Overview</span>
+    <div class="year-selector">
+      <button class="year-btn">←</button>
+      <span>2026</span>
+      <button class="year-btn" style="opacity:0.3;" disabled>→</button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-val">47</div>
+      <div class="summary-lbl">Total Rolls</div>
+      <div class="summary-sub">all time</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-val accent">12</div>
+      <div class="summary-lbl">This Year</div>
+      <div class="summary-sub">2026</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-val" style="font-size:14px;padding-top:6px;padding-bottom:4px;">Portra 400</div>
+      <div class="summary-lbl">Fav. Film</div>
+      <div class="summary-sub">8 rolls · 17%</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-val" style="font-size:14px;padding-top:6px;padding-bottom:4px;">Contax T2</div>
+      <div class="summary-lbl">Fav. Camera</div>
+      <div class="summary-sub">14 rolls · 30%</div>
+    </div>
+  </div>
+
+  <!-- Monthly chart -->
+  <div class="section">
+    <div class="section-title">Rolls per Month</div>
+    <div class="chart-card">
+      <div class="chart-bars">
+        <!-- Jan -->
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count">2</span>
+            <div class="bar" style="height:40px;"></div>
+          </div>
+        </div>
+        <!-- Feb -->
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count">3</span>
+            <div class="bar scanned" style="height:60px;"></div>
+          </div>
+        </div>
+        <!-- Mar -->
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count">4</span>
+            <div class="bar current" style="height:80px;"></div>
+          </div>
+        </div>
+        <!-- Apr — current (partial) -->
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count">1</span>
+            <div class="bar current" style="height:20px; opacity:0.4;"></div>
+          </div>
+        </div>
+        <!-- May-Dec placeholder -->
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+        <div class="chart-col">
+          <div class="bar-container">
+            <span class="bar-count" style="opacity:0;"> </span>
+            <div class="bar" style="height:2px; opacity:0.3;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-labels">
+        <span class="chart-label">Jan</span>
+        <span class="chart-label">Feb</span>
+        <span class="chart-label current">Mar</span>
+        <span class="chart-label">Apr</span>
+        <span class="chart-label">May</span>
+        <span class="chart-label">Jun</span>
+        <span class="chart-label">Jul</span>
+        <span class="chart-label">Aug</span>
+        <span class="chart-label">Sep</span>
+        <span class="chart-label">Oct</span>
+        <span class="chart-label">Nov</span>
+        <span class="chart-label">Dec</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Films + Cameras tables -->
+  <div class="two-col">
+
+    <!-- Top Films -->
+    <div class="section">
+      <div class="section-title">Top Films</div>
+      <div class="data-card">
+        <div class="table-header table-header-3">
+          <span class="th">Film</span>
+          <span class="th" style="text-align:right;">Rolls</span>
+          <span class="th" style="text-align:right;">Share</span>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Portra 400</span>
+            <span class="td-brand">Kodak</span>
+          </div>
+          <span class="td-count">8</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:100%"></div></div>
+              <span class="pct-text">17%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Gold 200</span>
+            <span class="td-brand">Kodak</span>
+          </div>
+          <span class="td-count">6</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:75%;opacity:0.7"></div></div>
+              <span class="pct-text">13%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">HP5 Plus</span>
+            <span class="td-brand">Ilford</span>
+          </div>
+          <span class="td-count">5</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:62%;opacity:0.5"></div></div>
+              <span class="pct-text">11%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Superia 400</span>
+            <span class="td-brand">Fujifilm</span>
+          </div>
+          <span class="td-count">4</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:50%;opacity:0.4"></div></div>
+              <span class="pct-text">9%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Color 800</span>
+            <span class="td-brand">Lomography</span>
+          </div>
+          <span class="td-count">2</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:25%;opacity:0.35"></div></div>
+              <span class="pct-text">4%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Cameras -->
+    <div class="section">
+      <div class="section-title">Top Cameras</div>
+      <div class="data-card">
+        <div class="table-header table-header-3">
+          <span class="th">Camera</span>
+          <span class="th" style="text-align:right;">Rolls</span>
+          <span class="th" style="text-align:right;">Share</span>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Contax T2</span>
+            <span class="td-brand">35mm P&amp;S</span>
+          </div>
+          <span class="td-count">14</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:100%"></div></div>
+              <span class="pct-text">30%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Leica M6</span>
+            <span class="td-brand">35mm RF</span>
+          </div>
+          <span class="td-count">11</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:78%;opacity:0.7"></div></div>
+              <span class="pct-text">23%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Olympus Stylus</span>
+            <span class="td-brand">35mm P&amp;S</span>
+          </div>
+          <span class="td-count">8</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:57%;opacity:0.5"></div></div>
+              <span class="pct-text">17%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Nikon FM2</span>
+            <span class="td-brand">35mm SLR</span>
+          </div>
+          <span class="td-count">7</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:50%;opacity:0.4"></div></div>
+              <span class="pct-text">15%</span>
+            </div>
+          </div>
+        </div>
+        <div class="data-row table-row-3">
+          <div>
+            <span class="td-name">Canonet QL17</span>
+            <span class="td-brand">35mm RF</span>
+          </div>
+          <span class="td-count">3</span>
+          <div class="td-pct">
+            <div class="pct-bar-wrap">
+              <div class="pct-bar"><div class="pct-fill" style="width:21%;opacity:0.35"></div></div>
+              <span class="pct-text">6%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

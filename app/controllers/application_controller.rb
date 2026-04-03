@@ -5,9 +5,7 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def current_user
-    @current_user
-  end
+  attr_reader :current_user
 
   def logged_in?
     @current_user.present?
@@ -15,18 +13,18 @@ class ApplicationController < ActionController::Base
 
   def set_current_user
     @current_user = authenticate_from_bearer_token || authenticate_from_session_cookie
-    @current_user&.update_column(:last_seen_at, Time.current) if @current_user
+    @current_user&.update_column(:last_seen_at, Time.current)
   end
 
   def authenticate_from_bearer_token
-    auth_header = request.headers['Authorization']
-    return nil unless auth_header&.start_with?('Bearer ')
+    auth_header = request.headers["Authorization"]
+    return nil unless auth_header&.start_with?("Bearer ")
 
-    token = auth_header.sub('Bearer ', '')
+    token = auth_header.sub("Bearer ", "")
     return nil if token.blank?
 
     # Try API key first (raw key starting with rk_)
-    if token.start_with?('rk_')
+    if token.start_with?("rk_")
       api_key = ApiKeyService.find_by_raw_key(token)
       if api_key
         api_key.touch_last_used!
@@ -37,7 +35,7 @@ class ApplicationController < ActionController::Base
     # Try JWT
     begin
       payload = JwtService.decode(token)
-      User.find_by(id: payload[:userId] || payload['userId'])
+      User.find_by(id: payload[:userId] || payload["userId"])
     rescue JwtService::ExpiredToken, JwtService::InvalidToken
       nil
     end
@@ -49,7 +47,7 @@ class ApplicationController < ActionController::Base
 
     begin
       payload = JwtService.decode(session_token)
-      User.find_by(id: payload[:userId] || payload['userId'])
+      User.find_by(id: payload[:userId] || payload["userId"])
     rescue JwtService::ExpiredToken, JwtService::InvalidToken
       nil
     end
@@ -58,14 +56,24 @@ class ApplicationController < ActionController::Base
   def require_auth!
     unless logged_in?
       respond_to do |format|
-        format.json { render json: { error: 'Unauthorized' }, status: :unauthorized }
+        format.json { render json: {error: "Unauthorized"}, status: :unauthorized }
         format.html { redirect_to login_path }
       end
     end
   end
 
+  def require_admin!
+    unless logged_in?
+      redirect_to login_path
+      return
+    end
+    unless current_user.role == "admin"
+      redirect_to root_path, alert: "Not authorized"
+    end
+  end
+
   def set_session_cookie!(user)
-    token = JwtService.encode({ userId: user.id })
+    token = JwtService.encode({userId: user.id})
     cookies[:session] = {
       value: token,
       expires: 1.year.from_now,

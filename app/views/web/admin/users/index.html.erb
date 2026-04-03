@@ -1,0 +1,66 @@
+<div class="page-header">
+  <h1 class="page-title">Users</h1>
+  <span class="text-muted" style="font-size:11px;letter-spacing:0.08em;">
+    <%= @total_users %> total &middot; page <%= @page + 1 %> of <%= [@total_pages, 1].max %>
+  </span>
+</div>
+
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Rolls</th>
+      <th>Invites</th>
+      <th>Joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.username %></td>
+        <td><%= user.email.presence || '—' %></td>
+        <td><%= user.role %></td>
+        <td><%= user.rolls.count %></td>
+        <td><%= user.invites.count %></td>
+        <td><%= user.created_at.strftime('%Y-%m-%d') %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="pagination" style="margin-top:16px;display:flex;gap:8px;">
+  <% if @page > 0 %>
+    <%= link_to "← Prev", admin_users_path(page: @page - 1), class: "btn btn-sm" %>
+  <% end %>
+  <% if (@page + 1) < @total_pages %>
+    <%= link_to "Next →", admin_users_path(page: @page + 1), class: "btn btn-sm" %>
+  <% end %>
+</div>
+
+<style>
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .admin-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 8px 6px 0;
+  }
+  .admin-table td {
+    padding: 8px 8px 8px 0;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: top;
+  }
+  .admin-table tr:last-child td {
+    border-bottom: none;
+  }
+</style>

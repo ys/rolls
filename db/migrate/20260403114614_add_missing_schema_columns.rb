@@ -26,5 +26,6 @@ class AddMissingSchemaColumns < ActiveRecord::Migration[7.1]
     SQL
   end
 
-  def down; end
+  def down
+  end
 end

@@ -15,7 +15,7 @@ module Web
       @roll.created_at = Time.current
       @roll.updated_at = Time.current
       if @roll.save
-        redirect_to roll_path(@roll), notice: 'Roll created'
+        redirect_to roll_path(@roll), notice: "Roll created"
       else
         @cameras = current_user.cameras.order(:brand, :model)
         @films = current_user.films.order(:brand, :name)
@@ -48,7 +48,7 @@ module Web
     def update
       @roll.updated_at = Time.current
       if @roll.update(roll_params)
-        redirect_to roll_path(@roll), notice: 'Roll updated'
+        redirect_to roll_path(@roll), notice: "Roll updated"
       else
         @cameras = current_user.cameras.order(:brand, :model)
         @films = current_user.films.order(:brand, :name)
@@ -58,7 +58,7 @@ module Web
 
     def destroy
       @roll.destroy!
-      redirect_to root_path, notice: 'Roll deleted'
+      redirect_to root_path, notice: "Roll deleted"
     end
 
     private
@@ -66,7 +66,7 @@ module Web
     def set_roll
       @roll = current_user.rolls.find_by!(uuid: params[:id])
     rescue ActiveRecord::RecordNotFound
-      redirect_to root_path, alert: 'Roll not found'
+      redirect_to root_path, alert: "Roll not found"
     end
 
     def roll_params

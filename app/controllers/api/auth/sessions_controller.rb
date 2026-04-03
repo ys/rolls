@@ -12,11 +12,11 @@ module Api
 
       def logout
         cookies.delete(:session)
-        render json: { success: true }
+        render json: {success: true}
       end
 
       def bootstrap
-        render json: { needsInvite: User.count.zero? }
+        render json: {needsInvite: User.count.zero?}
       end
 
       def check_username
@@ -24,7 +24,7 @@ module Api
         invite_code = params[:invite_code]
 
         if username.blank?
-          return render json: { available: false }
+          return render json: {available: false}
         end
 
         available = !User.exists?(username: username)
@@ -33,18 +33,18 @@ module Api
         if invite_code.present?
           invite = Invite.find_by(code: invite_code)
           if invite.nil? || !invite.valid_invite?
-            return render json: { available: false, error: 'Invalid invite code' }
+            return render json: {available: false, error: "Invalid invite code"}
           end
         end
 
-        render json: { available: available }
+        render json: {available: available}
       end
 
       private
 
       def require_api_auth!
         unless logged_in?
-          render json: { error: 'Unauthorized' }, status: :unauthorized
+          render json: {error: "Unauthorized"}, status: :unauthorized
         end
       end
 

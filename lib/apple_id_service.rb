@@ -1,12 +1,12 @@
-require 'jwt'
-require 'net/http'
-require 'json'
+require "jwt"
+require "net/http"
+require "json"
 
 # Verifies Apple Sign In identity tokens (JWTs signed by Apple).
 # Fetches Apple's JWKS, verifies the token, and returns the sub (apple_user_id).
 class AppleIdService
   APPLE_JWKS_URI = "https://appleid.apple.com/auth/keys".freeze
-  APPLE_ISSUER   = "https://appleid.apple.com".freeze
+  APPLE_ISSUER = "https://appleid.apple.com".freeze
 
   class InvalidToken < StandardError; end
 
@@ -16,7 +16,7 @@ class AppleIdService
 
   def verify(identity_token)
     header = decode_header(identity_token)
-    key    = find_key(header["kid"])
+    key = find_key(header["kid"])
 
     payload, _ = JWT.decode(
       identity_token,
@@ -53,7 +53,7 @@ class AppleIdService
   end
 
   def fetch_jwks
-    uri  = URI(APPLE_JWKS_URI)
+    uri = URI(APPLE_JWKS_URI)
     resp = Net::HTTP.get_response(uri)
     raise InvalidToken, "Failed to fetch Apple JWKS" unless resp.is_a?(Net::HTTPSuccess)
     JSON.parse(resp.body)["keys"]

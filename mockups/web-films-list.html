@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — films</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.nav-menu-btn span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: rgba(224,200,128,0.5);
+  border-radius: 1px;
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.35);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.nav-link:hover { color: rgba(224,200,128,0.7); }
+.nav-link.active { color: rgba(224,200,128,0.9); background: rgba(224,200,128,0.08); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-add-btn {
+  background: #D4900A;
+  border: none;
+  border-radius: 2px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 300;
+  color: #19150E;
+  line-height: 1;
+}
+
+.nav-add-btn:hover { background: #C0820A; }
+
+/* ---- Content ---- */
+.content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.4);
+}
+
+.count-badge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  background: rgba(26,20,8,0.06);
+  border: 1px solid rgba(26,20,8,0.1);
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+
+/* ---- Filter tabs ---- */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.filter-tab {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1px solid rgba(26,20,8,0.12);
+  color: rgba(26,20,8,0.4);
+  background: transparent;
+  cursor: pointer;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+}
+
+.filter-tab.active {
+  background: #1A1408;
+  color: #FAF6EE;
+  border-color: #1A1408;
+}
+
+.filter-tab:hover:not(.active) {
+  border-color: rgba(26,20,8,0.25);
+  color: rgba(26,20,8,0.6);
+}
+
+/* ---- Film list ---- */
+.film-list {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+}
+
+.film-row {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.07);
+  text-decoration: none;
+  color: #1A1408;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.film-row:last-child { border-bottom: none; }
+.film-row:hover { background: rgba(26,20,8,0.025); }
+
+.film-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.swatch-yellow { background: rgba(212,144,10,0.12); color: #D4900A; border: 1px solid rgba(212,144,10,0.2); }
+.swatch-orange { background: rgba(200,100,30,0.1); color: #B85A20; border: 1px solid rgba(200,100,30,0.18); }
+.swatch-grey   { background: rgba(26,20,8,0.06); color: rgba(26,20,8,0.4); border: 1px solid rgba(26,20,8,0.1); }
+.swatch-green  { background: rgba(80,160,80,0.1); color: #3A8040; border: 1px solid rgba(80,160,80,0.18); }
+.swatch-purple { background: rgba(120,80,160,0.1); color: #7050A0; border: 1px solid rgba(120,80,160,0.18); }
+
+.film-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.film-brand-lbl {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.film-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1408;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.film-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.film-iso {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(26,20,8,0.4);
+  background: rgba(26,20,8,0.06);
+  border: 1px solid rgba(26,20,8,0.08);
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+.film-type {
+  font-size: 9px;
+  color: rgba(26,20,8,0.35);
+}
+
+.film-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.film-roll-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(26,20,8,0.5);
+}
+
+.film-roll-lbl {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.25);
+}
+
+.film-arrow {
+  color: rgba(26,20,8,0.2);
+  font-size: 14px;
+}
+
+/* ---- Add film row ---- */
+.add-film-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  color: #D4900A;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-top: 1px solid rgba(26,20,8,0.07);
+  text-decoration: none;
+  background: rgba(212,144,10,0.02);
+}
+
+.add-film-row:hover { background: rgba(212,144,10,0.06); }
+
+.add-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(212,144,10,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-left">
+    <button class="nav-menu-btn">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="nav-title">Films</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Rolls</a>
+    <a href="#" class="nav-link">Cameras</a>
+    <a href="#" class="nav-link active">Films</a>
+    <a href="#" class="nav-link">Stats</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-add-btn">+</button>
+  </div>
+</nav>
+
+<div class="content">
+
+  <div class="page-header">
+    <span class="page-title">Film Stocks</span>
+    <span class="count-badge">5 films</span>
+  </div>
+
+  <div class="filter-tabs">
+    <button class="filter-tab active">All</button>
+    <button class="filter-tab">Color</button>
+    <button class="filter-tab">B&amp;W</button>
+  </div>
+
+  <div class="film-list">
+
+    <a class="film-row" href="#">
+      <div class="film-swatch swatch-yellow">200</div>
+      <div class="film-info">
+        <span class="film-brand-lbl">Kodak</span>
+        <div class="film-name">Gold 200</div>
+        <div class="film-meta">
+          <span class="film-iso">ISO 200</span>
+          <span class="film-type">Color Negative · 35mm</span>
+        </div>
+      </div>
+      <div class="film-right">
+        <span class="film-roll-count">8</span>
+        <span class="film-roll-lbl">rolls</span>
+      </div>
+      <span class="film-arrow">→</span>
+    </a>
+
+    <a class="film-row" href="#">
+      <div class="film-swatch swatch-orange">400</div>
+      <div class="film-info">
+        <span class="film-brand-lbl">Kodak</span>
+        <div class="film-name">Portra 400</div>
+        <div class="film-meta">
+          <span class="film-iso">ISO 400</span>
+          <span class="film-type">Color Negative · 35mm</span>
+        </div>
+      </div>
+      <div class="film-right">
+        <span class="film-roll-count">6</span>
+        <span class="film-roll-lbl">rolls</span>
+      </div>
+      <span class="film-arrow">→</span>
+    </a>
+
+    <a class="film-row" href="#">
+      <div class="film-swatch swatch-grey">HP5</div>
+      <div class="film-info">
+        <span class="film-brand-lbl">Ilford</span>
+        <div class="film-name">HP5 Plus 400</div>
+        <div class="film-meta">
+          <span class="film-iso">ISO 400</span>
+          <span class="film-type">B&amp;W Negative · 35mm</span>
+        </div>
+      </div>
+      <div class="film-right">
+        <span class="film-roll-count">4</span>
+        <span class="film-roll-lbl">rolls</span>
+      </div>
+      <span class="film-arrow">→</span>
+    </a>
+
+    <a class="film-row" href="#">
+      <div class="film-swatch swatch-green">400</div>
+      <div class="film-info">
+        <span class="film-brand-lbl">Fujifilm</span>
+        <div class="film-name">Superia X-TRA 400</div>
+        <div class="film-meta">
+          <span class="film-iso">ISO 400</span>
+          <span class="film-type">Color Negative · 35mm</span>
+        </div>
+      </div>
+      <div class="film-right">
+        <span class="film-roll-count">3</span>
+        <span class="film-roll-lbl">rolls</span>
+      </div>
+      <span class="film-arrow">→</span>
+    </a>
+
+    <a class="film-row" href="#">
+      <div class="film-swatch swatch-purple">800</div>
+      <div class="film-info">
+        <span class="film-brand-lbl">Lomography</span>
+        <div class="film-name">Color 800</div>
+        <div class="film-meta">
+          <span class="film-iso">ISO 800</span>
+          <span class="film-type">Color Negative · 35mm</span>
+        </div>
+      </div>
+      <div class="film-right">
+        <span class="film-roll-count">2</span>
+        <span class="film-roll-lbl">rolls</span>
+      </div>
+      <span class="film-arrow">→</span>
+    </a>
+
+    <a class="add-film-row" href="#">
+      <div class="add-icon">+</div>
+      Add Film Stock
+    </a>
+
+  </div>
+
+</div>
+
+</body>
+</html>

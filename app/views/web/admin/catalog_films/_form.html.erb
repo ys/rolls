@@ -1,0 +1,74 @@
+<%
+  if catalog_film.new_record?
+    form_url = admin_catalog_films_path
+    form_method = :post
+  else
+    persisted_slug = catalog_film.slug_in_database || catalog_film.slug
+    form_url = admin_catalog_film_path(persisted_slug)
+    form_method = :patch
+  end
+%>
+<%= form_with model: catalog_film, url: form_url, method: form_method, local: true do |f| %>
+  <% if catalog_film.errors.any? %>
+    <div class="flash flash-alert" style="margin-bottom:16px;">
+      <% catalog_film.errors.full_messages.each do |msg| %>
+        <div><%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :slug, "Slug", class: "form-label" %>
+    <%= f.text_field :slug, class: "form-input", placeholder: "kodak-portra-400" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :brand, "Brand", class: "form-label" %>
+    <%= f.text_field :brand, class: "form-input", placeholder: "Kodak" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :name, "Name", class: "form-label" %>
+    <%= f.text_field :name, class: "form-input", placeholder: "Portra 400" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :nickname, "Nickname (optional)", class: "form-label" %>
+    <%= f.text_field :nickname, class: "form-input", placeholder: "Portra" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :iso, "ISO", class: "form-label" %>
+    <%= f.number_field :iso, class: "form-input", placeholder: "400" %>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Type</label>
+    <div style="display:flex;gap:16px;margin-top:4px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+        <%= f.check_box :color %> Color
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+        <%= f.check_box :slide %> Slide
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
+        <%= f.check_box :show_iso %> Show ISO
+      </label>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :gradient_from, "Gradient From", class: "form-label" %>
+    <%= f.text_field :gradient_from, class: "form-input", placeholder: "#ff9500" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :gradient_to, "Gradient To", class: "form-label" %>
+    <%= f.text_field :gradient_to, class: "form-input", placeholder: "#cc7700" %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Save Film", class: "btn btn-primary" %>
+    <%= link_to "Cancel", admin_catalog_films_path, class: "btn" %>
+  </div>
+<% end %>

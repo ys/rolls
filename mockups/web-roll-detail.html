@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rolls. — Roll #2604</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #FAF6EE;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color: #1A1408;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(26,20,8,0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Nav ---- */
+.nav {
+  background: #1A1408;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+}
+
+.nav-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.5);
+  text-decoration: none;
+}
+
+.nav-back:hover { color: rgba(224,200,128,0.8); }
+
+.nav-back-arrow {
+  font-size: 13px;
+  line-height: 1;
+  color: rgba(224,200,128,0.4);
+}
+
+.nav-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(224,200,128,0.9);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(224,200,128,0.5);
+  padding: 4px;
+}
+
+.nav-edit:hover { color: rgba(224,200,128,0.9); }
+
+/* ---- Content ---- */
+.content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Roll hero ---- */
+.roll-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #D9D3CC;
+}
+
+.roll-hero-left {}
+
+.lbl-tiny {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.35);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.roll-film-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1408;
+  line-height: 1.15;
+  margin-bottom: 2px;
+}
+
+.roll-camera-name {
+  font-size: 13px;
+  color: rgba(26,20,8,0.5);
+  font-weight: 400;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 100px;
+  border: 1.5px solid #D4900A;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #D4900A;
+  white-space: nowrap;
+}
+
+.status-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #D4900A;
+}
+
+/* ---- Section ---- */
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #D9D3CC;
+}
+
+/* ---- Info card ---- */
+.info-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.info-row {
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(26,20,8,0.06);
+  border-right: 1px solid rgba(26,20,8,0.06);
+}
+
+.info-row:nth-child(2n) {
+  border-right: none;
+}
+
+.info-row:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.info-lbl {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.35);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.info-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1408;
+}
+
+.info-val-muted {
+  color: rgba(26,20,8,0.4);
+  font-weight: 400;
+}
+
+/* ---- Frames ---- */
+.frames-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  padding: 16px;
+}
+
+.frames-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.frames-count {
+  font-size: 28px;
+  font-weight: 700;
+  color: #D4900A;
+  line-height: 1;
+}
+
+.frames-total {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(26,20,8,0.35);
+}
+
+.frames-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.3);
+}
+
+.progress-track {
+  height: 6px;
+  background: rgba(26,20,8,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #D4900A;
+  width: 50%;
+}
+
+.frames-sublabel {
+  font-size: 8px;
+  color: rgba(26,20,8,0.3);
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+/* ---- Notes ---- */
+.notes-card {
+  background: #FAF6EE;
+  border: 1px solid #D9D3CC;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(60,40,20,0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ruled lines in notes */
+.notes-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 20px,
+    rgba(26,20,8,0.05) 20px,
+    rgba(26,20,8,0.05) 21px
+  );
+  pointer-events: none;
+}
+
+.notes-textarea {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100px;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  resize: none;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 13px;
+  color: rgba(26,20,8,0.65);
+  line-height: 21px;
+  outline: none;
+}
+
+.notes-textarea::placeholder {
+  color: rgba(26,20,8,0.25);
+  font-style: italic;
+}
+
+/* ---- Actions ---- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.btn-primary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 20px;
+  background: #D4900A;
+  border: none;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #19150E;
+  cursor: pointer;
+}
+
+.btn-primary-action:hover { background: #C0820A; }
+
+.btn-secondary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 11px 20px;
+  background: transparent;
+  border: 1px solid rgba(26,20,8,0.2);
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(26,20,8,0.45);
+  cursor: pointer;
+}
+
+.btn-secondary-action:hover {
+  border-color: rgba(26,20,8,0.4);
+  color: rgba(26,20,8,0.7);
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#" class="nav-back">
+    <span class="nav-back-arrow">←</span>
+    Rolls
+  </a>
+  <span class="nav-title">Roll #2604</span>
+  <button class="nav-edit">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M11.5 2.5L13.5 4.5L5.5 12.5H3.5V10.5L11.5 2.5Z" stroke="rgba(224,200,128,0.5)" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</nav>
+
+<div class="content">
+
+  <!-- Hero -->
+  <div class="roll-hero">
+    <div class="roll-hero-left">
+      <span class="lbl-tiny">Film</span>
+      <div class="roll-film-name">Kodak Gold 200</div>
+      <div class="roll-camera-name">Contax T2</div>
+    </div>
+    <div class="status-badge">
+      <div class="status-badge-dot"></div>
+      Loaded
+    </div>
+  </div>
+
+  <!-- Roll Info section -->
+  <div class="section">
+    <div class="section-title">Roll Info</div>
+    <div class="info-card">
+      <div class="info-grid">
+        <div class="info-row">
+          <span class="info-lbl">Film</span>
+          <span class="info-val">Kodak Gold 200</span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Camera</span>
+          <span class="info-val">Contax T2</span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Roll No.</span>
+          <span class="info-val">#2604</span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Format</span>
+          <span class="info-val">35mm</span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Shot Date</span>
+          <span class="info-val">Mar 12, 2026</span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Push / Pull</span>
+          <span class="info-val info-val-muted">0 (box speed)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frames section -->
+  <div class="section">
+    <div class="section-title">Frames</div>
+    <div class="frames-card">
+      <div class="frames-header">
+        <div>
+          <span class="frames-count">18<span class="frames-total"> / 36</span></span>
+        </div>
+        <span class="frames-label">Frames Exposed</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="frames-sublabel">50% — 18 frames remaining</div>
+    </div>
+  </div>
+
+  <!-- Notes section -->
+  <div class="section">
+    <div class="section-title">Notes</div>
+    <div class="notes-card">
+      <textarea class="notes-textarea" placeholder="Add notes about this roll — location, lighting conditions, any experiments...">Street photography in Tokyo, Shinjuku area. Mixed daylight and tungsten under the arcades. Some exposures +1 in shadows.</textarea>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn-primary-action">
+      Send to Develop →
+    </button>
+    <button class="btn-secondary-action">
+      Archive Roll
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>
