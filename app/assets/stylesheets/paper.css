@@ -276,6 +276,111 @@ form.button_to {
   margin: 0;
 }
 
+/* ---- Roll timeline (edit form) ---- */
+
+.roll-timeline {
+  padding: 4px 0 0;
+}
+
+.tl-stage {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.tl-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 3px;
+}
+
+.tl-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  opacity: 0.25;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.tl-dot-optional {
+  border-style: dashed;
+}
+
+.tl-done .tl-dot {
+  background: var(--ink);
+  opacity: 1;
+}
+
+.tl-line {
+  width: 1px;
+  flex: 1;
+  min-height: 32px;
+  background: rgba(26, 20, 8, 0.12);
+  margin: 4px 0;
+}
+
+.tl-stage-last .tl-node {
+  justify-content: flex-start;
+}
+
+.tl-body {
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.tl-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.35;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+
+.tl-done .tl-label {
+  opacity: 1;
+}
+
+.tl-optional {
+  font-size: 9px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.5;
+}
+
+.tl-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(26, 20, 8, 0.12);
+  padding: 4px 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+}
+
+.tl-input:focus {
+  border-bottom-color: var(--ink);
+}
+
+.tl-input-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
 /* ---- Forms ---- */
 
 .form-group {
@@ -477,6 +582,55 @@ form.button_to {
 .detail-value {
   font-size: 13px;
   color: var(--ink);
+}
+
+/* ---- Notes editor (roll show, active rolls) ---- */
+
+.notes-editor-section {
+  margin-bottom: 24px;
+}
+
+.notes-editor-wrap {
+  position: relative;
+  border: 1px solid var(--border-light);
+  border-radius: 2px;
+  background: var(--paper);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.notes-editor-focused {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgba(26, 20, 8, 0.06);
+}
+
+.notes-editor {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  resize: none;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  outline: none;
+}
+
+.notes-editor::placeholder {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.notes-editor-status {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  pointer-events: none;
 }
 
 /* ---- Table ---- */

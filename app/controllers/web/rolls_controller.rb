@@ -75,11 +75,19 @@ module Web
     def update
       @roll.updated_at = Time.current
       if @roll.update(roll_params)
-        redirect_to roll_path(@roll), notice: "Roll updated"
+        respond_to do |format|
+          format.json { render json: {ok: true} }
+          format.html { redirect_to roll_path(@roll), notice: "Roll updated" }
+        end
       else
-        @cameras = current_user.cameras.order(:brand, :model)
-        @films = current_user.films.order(:brand, :name)
-        render :edit, status: :unprocessable_entity
+        respond_to do |format|
+          format.json { render json: {error: @roll.errors.full_messages.first}, status: :unprocessable_entity }
+          format.html do
+            @cameras = current_user.cameras.order(:brand, :model)
+            @films = current_user.films.order(:brand, :name)
+            render :edit, status: :unprocessable_entity
+          end
+        end
       end
     end
 

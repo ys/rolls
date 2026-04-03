@@ -1,23 +1,24 @@
 <div class="page-header">
-  <h1 class="page-title">Edit Roll <%= @roll.roll_number %></h1>
+  <h1 class="page-title">Roll <%= @roll.roll_number %></h1>
   <%= link_to "Cancel", roll_path(@roll), class: "btn btn-sm" %>
 </div>
 
 <%= form_with model: @roll, method: :patch do |f| %>
+
   <div class="detail-section">
     <div class="detail-section-title">Equipment</div>
+    <div class="form-group">
+      <%= f.label :film_uuid, "Film", class: "form-label" %>
+      <%= f.select :film_uuid,
+            [["— none —", nil]] + @films.map { |film| [film.display_name, film.uuid] },
+            { selected: @roll.film_uuid },
+            class: "form-select" %>
+    </div>
     <div class="form-group">
       <%= f.label :camera_uuid, "Camera", class: "form-label" %>
       <%= f.select :camera_uuid,
             [["— none —", nil]] + @cameras.map { |c| [c.display_name, c.uuid] },
             { selected: @roll.camera_uuid },
-            class: "form-select" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :film_uuid, "Film", class: "form-label" %>
-      <%= f.select :film_uuid,
-            [["— none —", nil]] + @films.map { |f| [f.display_name, f.uuid] },
-            { selected: @roll.film_uuid },
             class: "form-select" %>
     </div>
     <div class="form-group">
@@ -28,41 +29,113 @@
 
   <div class="detail-section">
     <div class="detail-section-title">Timeline</div>
-    <div class="form-group">
-      <%= f.label :loaded_at, "Loaded at", class: "form-label" %>
-      <%= f.datetime_local_field :loaded_at, value: @roll.loaded_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :shot_at, "Shot (date)", class: "form-label" %>
-      <%= f.date_field :shot_at, value: @roll.shot_at, class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :fridge_at, "Fridge at", class: "form-label" %>
-      <%= f.datetime_local_field :fridge_at, value: @roll.fridge_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :lab_at, "Sent to lab", class: "form-label" %>
-      <%= f.datetime_local_field :lab_at, value: @roll.lab_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :lab_name, "Lab name", class: "form-label" %>
-      <%= f.text_field :lab_name, class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :scanned_at, "Scanned (date)", class: "form-label" %>
-      <%= f.date_field :scanned_at, value: @roll.scanned_at, class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :processed_at, "Processed at", class: "form-label" %>
-      <%= f.datetime_local_field :processed_at, value: @roll.processed_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :uploaded_at, "Uploaded at", class: "form-label" %>
-      <%= f.datetime_local_field :uploaded_at, value: @roll.uploaded_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
-    </div>
-    <div class="form-group">
-      <%= f.label :archived_at, "Archived at", class: "form-label" %>
-      <%= f.datetime_local_field :archived_at, value: @roll.archived_at&.strftime('%Y-%m-%dT%H:%M'), class: "form-input" %>
+
+    <div class="roll-timeline">
+
+      <div class="tl-stage <%= 'tl-done' if @roll.loaded_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Loaded</div>
+          <%= f.datetime_local_field :loaded_at,
+                value: @roll.loaded_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.fridge_at %>">
+        <div class="tl-node">
+          <div class="tl-dot tl-dot-optional"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Fridge <span class="tl-optional">optional</span></div>
+          <%= f.datetime_local_field :fridge_at,
+                value: @roll.fridge_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.shot_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Shot</div>
+          <%= f.date_field :shot_at,
+                value: @roll.shot_at,
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.lab_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Sent to lab</div>
+          <%= f.datetime_local_field :lab_at,
+                value: @roll.lab_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+          <%= f.text_field :lab_name, class: "tl-input tl-input-sub", placeholder: "Lab name" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.scanned_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Scanned</div>
+          <%= f.date_field :scanned_at,
+                value: @roll.scanned_at,
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.processed_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Processed</div>
+          <%= f.datetime_local_field :processed_at,
+                value: @roll.processed_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage <%= 'tl-done' if @roll.uploaded_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Uploaded</div>
+          <%= f.datetime_local_field :uploaded_at,
+                value: @roll.uploaded_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+        </div>
+      </div>
+
+      <div class="tl-stage tl-stage-last <%= 'tl-done' if @roll.archived_at %>">
+        <div class="tl-node">
+          <div class="tl-dot"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-label">Archived</div>
+          <%= f.datetime_local_field :archived_at,
+                value: @roll.archived_at&.strftime('%Y-%m-%dT%H:%M'),
+                class: "tl-input" %>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -82,4 +155,5 @@
     <%= f.submit "Save", class: "btn btn-primary" %>
     <%= link_to "Cancel", roll_path(@roll), class: "btn" %>
   </div>
+
 <% end %>

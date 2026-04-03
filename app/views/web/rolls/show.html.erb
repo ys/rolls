@@ -73,9 +73,9 @@
   </div>
 </div>
 
-<% if @roll.album_name.present? || @roll.tags.present? || @roll.notes.present? %>
+<% if @roll.album_name.present? || @roll.tags.present? %>
   <div class="detail-section">
-    <div class="detail-section-title">Notes</div>
+    <div class="detail-section-title">Details</div>
     <div class="detail-grid">
       <% if @roll.album_name.present? %>
         <span class="detail-label">Album</span>
@@ -91,13 +91,79 @@
           </div>
         </span>
       <% end %>
-      <% if @roll.notes.present? %>
-        <span class="detail-label">Notes</span>
-        <span class="detail-value"><%= @roll.notes %></span>
-      <% end %>
     </div>
   </div>
 <% end %>
+
+<% if @roll.status != "archived" %>
+  <div class="notes-editor-section" id="notes-section">
+    <div class="detail-section-title">Notes</div>
+    <div class="notes-editor-wrap" id="notes-wrap">
+      <textarea
+        id="notes-field"
+        class="notes-editor"
+        placeholder="Add notes — location, lighting, experiments…"
+        data-roll-id="<%= @roll.uuid %>"
+      ><%= @roll.notes %></textarea>
+      <div class="notes-editor-status" id="notes-status"></div>
+    </div>
+  </div>
+<% elsif @roll.notes.present? %>
+  <div class="detail-section">
+    <div class="detail-section-title">Notes</div>
+    <div class="detail-value"><%= @roll.notes %></div>
+  </div>
+<% end %>
+
+<script>
+(function() {
+  const field = document.getElementById('notes-field');
+  if (!field) return;
+
+  const status = document.getElementById('notes-status');
+  const rollId = field.dataset.rollId;
+  let saveTimer;
+
+  function autoResize() {
+    field.style.height = 'auto';
+    field.style.height = Math.max(field.scrollHeight, 80) + 'px';
+  }
+
+  function saveNotes() {
+    status.textContent = 'Saving…';
+    fetch('/rolls/' + rollId, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ roll: { notes: field.value } })
+    })
+    .then(r => r.ok ? (status.textContent = 'Saved') : Promise.reject())
+    .catch(() => { status.textContent = 'Error saving'; })
+    .finally(() => { setTimeout(() => { status.textContent = ''; }, 2000); });
+  }
+
+  field.addEventListener('input', function() {
+    autoResize();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNotes, 800);
+  });
+
+  field.addEventListener('focus', function() {
+    document.getElementById('notes-wrap').classList.add('notes-editor-focused');
+  });
+
+  field.addEventListener('blur', function() {
+    document.getElementById('notes-wrap').classList.remove('notes-editor-focused');
+    clearTimeout(saveTimer);
+    if (field.value !== field.defaultValue) saveNotes();
+  });
+
+  autoResize();
+})();
+</script>
 
 <div class="text-muted text-xs mt-4">
   Created <%= format_datetime(@roll.created_at) %> ·
