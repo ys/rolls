@@ -19,28 +19,12 @@ class Roll < ApplicationRecord
 
   def self.next_number_for(user)
     year_prefix = Time.current.year.to_s[-2..]
-    existing_suffixes = user.rolls
-      .where("roll_number ~ ?", "^#{year_prefix}[a-z]+$")
+    max_n = user.rolls
+      .where("roll_number ~ ?", "^#{year_prefix}x\\d+$")
       .pluck(:roll_number)
-      .map { |n| n.sub(year_prefix, "") }
-    max_index = existing_suffixes.map { |s| letters_to_index(s) }.max || 0
-    "#{year_prefix}#{index_to_letters(max_index + 1)}"
-  end
-
-  # Convert a 1-based index to a letter suffix (1→"a", 26→"z", 27→"aa", …)
-  def self.index_to_letters(n)
-    result = ""
-    while n > 0
-      n -= 1
-      result.prepend(("a".ord + (n % 26)).chr)
-      n /= 26
-    end
-    result
-  end
-
-  # Convert a letter suffix back to a 1-based index ("a"→1, "z"→26, "aa"→27, …)
-  def self.letters_to_index(s)
-    s.chars.reduce(0) { |acc, c| acc * 26 + (c.ord - "a".ord + 1) }
+      .map { |n| n.sub("#{year_prefix}x", "").to_i }
+      .max || 0
+    "#{year_prefix}x#{(max_n + 1).to_s.rjust(2, "0")}"
   end
 
   # Status logic (priority order)
