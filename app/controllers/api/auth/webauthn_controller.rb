@@ -22,7 +22,8 @@ module Api
         session[:webauthn_invite_code] = params[:invite_code] if params[:invite_code].present?
         session[:webauthn_register_email] = params[:email] if params[:email].present?
 
-        render json: options
+        options_hash = options.as_json
+        render json: options_hash.merge(options: options_hash, challenge: options.challenge)
       end
 
       # Register verify
@@ -66,7 +67,7 @@ module Api
           session.delete(:webauthn_register_username)
 
           render json: {
-            success: true,
+            verified: true,
             user: serialize_user(user),
             token: token
           }
@@ -91,7 +92,8 @@ module Api
         end
 
         session[:webauthn_login_challenge] = options.challenge
-        render json: options
+        options_hash = options.as_json
+        render json: options_hash.merge(options: options_hash, challenge: options.challenge, user_id: user&.id)
       end
 
       # Login verify
@@ -134,7 +136,8 @@ module Api
       def autofill_options
         options = WebAuthn::Credential.options_for_get
         session[:webauthn_login_challenge] = options.challenge
-        render json: options
+        options_hash = options.as_json
+        render json: options_hash.merge(options: options_hash, challenge: options.challenge)
       end
     end
   end

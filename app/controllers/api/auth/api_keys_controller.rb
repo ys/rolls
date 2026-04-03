@@ -5,7 +5,7 @@ module Api
 
       def index
         api_keys = current_user.api_keys.order(created_at: :desc)
-        render json: api_keys.map { |k| serialize_key(k) }
+        render json: {api_keys: api_keys.map { |k| serialize_key(k) }}
       end
 
       def create

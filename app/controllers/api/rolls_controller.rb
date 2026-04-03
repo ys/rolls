@@ -106,7 +106,7 @@ module Api
       url = R2Service.upload(@roll.roll_number, body, content_type: content_type)
       @roll.update!(contact_sheet_url: url, updated_at: Time.current)
 
-      render json: {url: url}
+      render json: {contact_sheet_url: url}
     end
 
     private
