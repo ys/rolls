@@ -19,6 +19,8 @@ module Api
 
         session[:webauthn_register_challenge] = options.challenge
         session[:webauthn_register_username] = username
+        session[:webauthn_invite_code] = params[:invite_code] if params[:invite_code].present?
+        session[:webauthn_register_email] = params[:email] if params[:email].present?
 
         render json: options
       end
@@ -37,9 +39,9 @@ module Api
           user = User.find_or_initialize_by(username: username)
           unless user.persisted?
             user.id = SecureRandom.uuid
+            user.email = session[:webauthn_register_email]
             user.created_at = Time.current
 
-            # Apply invite if provided
             invite_code = session[:webauthn_invite_code]
             if invite_code.present?
               invite = Invite.find_by(code: invite_code)
