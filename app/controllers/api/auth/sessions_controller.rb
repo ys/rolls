@@ -16,7 +16,7 @@ module Api
       end
 
       def bootstrap
-        render json: {needsInvite: User.count.zero?}
+        render json: {needsInvite: false}
       end
 
       def check_username

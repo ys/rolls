@@ -30,7 +30,11 @@ module Api
           end
 
           invite_code = params[:invite_code]
-          if invite_code.present?
+          if params[:require_invite]
+            return render_error("Invite code required") if invite_code.blank?
+            invite = Invite.find_by(code: invite_code)
+            return render_error("Invalid invite code") unless invite&.valid_invite?
+          elsif invite_code.present?
             invite = Invite.find_by(code: invite_code)
             return render_error("Invalid invite code") unless invite&.valid_invite?
           end

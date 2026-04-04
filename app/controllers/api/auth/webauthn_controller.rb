@@ -21,6 +21,7 @@ module Api
         session[:webauthn_register_username] = username
         session[:webauthn_invite_code] = params[:invite_code] if params[:invite_code].present?
         session[:webauthn_register_email] = params[:email] if params[:email].present?
+        session[:webauthn_require_invite] = true if params[:require_invite]
 
         options_hash = options.as_json
         render json: options_hash.merge(options: options_hash, challenge: options.challenge)
@@ -45,7 +46,11 @@ module Api
             user.created_at = Time.current
 
             invite_code = session[:webauthn_invite_code]
-            if invite_code.present?
+            if session[:webauthn_require_invite]
+              return render_error("Invite code required") if invite_code.blank?
+              invite = Invite.find_by(code: invite_code)
+              return render_error("Invalid invite code") unless invite&.valid_invite?
+            elsif invite_code.present?
               invite = Invite.find_by(code: invite_code)
               return render_error("Invalid invite code") unless invite&.valid_invite?
             end
